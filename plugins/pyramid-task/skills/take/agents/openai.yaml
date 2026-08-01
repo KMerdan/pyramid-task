@@ -1,0 +1,4 @@
+interface:
+  display_name: "Take Pyramid Task"
+  short_description: "Claim a ready task and receive its packet"
+  default_prompt: "Use $take to claim the next ready task for this agent."

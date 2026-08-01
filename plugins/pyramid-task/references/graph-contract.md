@@ -1,0 +1,66 @@
+# Graph Contract
+
+The canonical source is `.pyramid/plan.json`. Runtime state, lifecycle, reports, archives, and immutable events live beside it. Markdown task files, ready indexes, browser views, and `.pyramid/graph.json` are generated projections.
+
+Use `schema_version: 1`. Use stable IDs such as `INTENT-001`, `OUTCOME-010`, `CAP-020`, `TASK-101`, `RESEARCH-110`, `CONTRACT-120`, and `GATE-190`.
+
+## Required plan fields
+
+- `schema_version`: integer `1`;
+- `plan_id`, `title`, `revision`;
+- `intent`: `id`, `statement`, `success_evidence`, `constraints`, `non_goals`, `assumptions`;
+- `evidence`: evidence ledger entries;
+- `decisions`: selected-path records;
+- `nodes`: graph nodes;
+- `edges`: typed graph relations.
+
+## Node contract
+
+Every node has:
+
+- `id`, `kind`, `title`, `summary`;
+- non-negative `level` and `wave`;
+- `workstream`;
+- `selection`: `primary`, `alternative`, `rejected`, or `superseded`;
+- `source_requirements`;
+- `acceptance_criteria` with stable IDs;
+- `required_evidence` with stable IDs and types;
+- `agent` containing `required_context`, `allowed_write_scope`, `commands`, `deliverables`, and `non_goals`.
+
+Kinds are `intent`, `outcome`, `capability`, `decision`, `research`, `contract`, `implementation`, `integration`, `risk-control`, and `audit`.
+
+Executable kinds are `research`, `contract`, `implementation`, `integration`, `risk-control`, and `audit`. Give every executable node a concrete deliverable and acceptance criterion.
+
+## Edge contract
+
+Each edge has `from`, `to`, and `type`.
+
+- `contributes-to`: the source helps establish the target parent;
+- `requires`: the source cannot start until the target is verified;
+- `contract-requires`: the source cannot start until the target contract is verified;
+- `integration-requires`: the source may start, but cannot pass audit until the target is verified;
+- `validation-requires`: the source cannot pass audit until the target is verified;
+- `validated-by`: the source parent cannot pass until the target audit gate passes;
+- `alternative-to`: the source is an alternate route to the target;
+- `invalidates`: evidence from the source invalidates the target path.
+
+For dependency edges, `from` is the dependent and `to` is the prerequisite. For `contributes-to`, `from` is the child and `to` is the parent.
+
+## Structural invariants
+
+- Exactly one node matches `intent.id`, has kind `intent`, and has level 0.
+- Every primary non-intent node reaches the intent through `contributes-to` edges.
+- A `contributes-to` child has a greater level than its parent.
+- Hard and contract dependency subgraphs are acyclic.
+- All referenced node and evidence IDs exist.
+- Every critical intent success item is referenced by at least one node's `source_requirements`.
+- Any primary outcome with two or more primary contributing children has a `validated-by` audit node.
+- Rejected, alternative, and superseded nodes never become ready.
+
+## State semantics
+
+Execution is `planned`, `working`, `implemented`, `needs-rework`, or `superseded`. Verification is `unverified`, `pending`, `passed`, or `failed`. Health is `clear`, `at-risk`, or `blocked`. Availability is derived as `not-executable`, `not-selected`, `locked`, `ready`, `needs-rework`, `working`, `implemented`, or `verified`.
+
+Do not place execution state in `plan.json`. Use runtime transitions so history and concurrency checks remain intact.
+
+Plan lifecycle is `active`, `completed`, or `archived`. It does not replace node state. Read `lifecycle-contract.md` before closing, reopening, archiving, resetting, cleaning, or restoring a plan.

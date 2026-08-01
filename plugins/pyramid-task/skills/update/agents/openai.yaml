@@ -1,0 +1,4 @@
+interface:
+  display_name: "Update Pyramid Task"
+  short_description: "Record task progress, evidence, and blockers"
+  default_prompt: "Use $update to record this task result and its evidence."

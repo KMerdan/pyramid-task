@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/archive-manifest.schema.json",
+  "title": "Pyramid Task Archive Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "archive_id", "plan_id", "title", "revision", "graph_version", "archived_at", "archived_by", "previous_status", "reason", "plan_sha256", "state_sha256"],
+  "properties": {
+    "schema": {"const": "pyramid-archive-v1"},
+    "archive_id": {"type": "string", "minLength": 1},
+    "plan_id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "revision": {"type": "integer", "minimum": 1},
+    "graph_version": {"type": "integer", "minimum": 1},
+    "archived_at": {"type": "string"},
+    "archived_by": {"type": "string", "minLength": 1},
+    "previous_status": {"enum": ["active", "completed"]},
+    "reason": {"type": "string", "minLength": 1},
+    "plan_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "state_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

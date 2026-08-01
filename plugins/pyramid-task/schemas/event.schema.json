@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/event.schema.json",
+  "title": "Pyramid Task Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "at", "graph_version", "actor", "type", "node", "before", "after", "payload"],
+  "properties": {
+    "schema": {"const": "pyramid-event-v1"},
+    "id": {"type": "string"},
+    "at": {"type": "string"},
+    "graph_version": {"type": "integer", "minimum": 1},
+    "actor": {"type": "string", "minLength": 1},
+    "type": {"type": "string", "minLength": 1},
+    "node": {"type": ["string", "null"]},
+    "before": {},
+    "after": {},
+    "payload": {"type": "object"}
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/state.schema.json",
+  "title": "Pyramid Task Runtime State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "graph_version", "created_at", "updated_at", "lifecycle", "nodes"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "graph_version": {"type": "integer", "minimum": 1},
+    "created_at": {"type": "string"},
+    "updated_at": {"type": "string"},
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "completed_at", "completed_by", "completion_report", "archived_at", "archived_by", "archived_from_status", "archive_id", "archive_path", "restored_from"],
+      "properties": {
+        "status": {"enum": ["active", "completed", "archived"]},
+        "completed_at": {"type": ["string", "null"]},
+        "completed_by": {"type": ["string", "null"]},
+        "completion_report": {"type": ["string", "null"]},
+        "archived_at": {"type": ["string", "null"]},
+        "archived_by": {"type": ["string", "null"]},
+        "archived_from_status": {"enum": ["active", "completed", null]},
+        "archive_id": {"type": ["string", "null"]},
+        "archive_path": {"type": ["string", "null"]},
+        "restored_from": {"type": ["string", "null"]}
+      }
+    },
+    "nodes": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["execution", "verification", "health", "owner", "lease_expires_at", "blocker", "updated_at", "last_result", "last_audit", "last_reopen"],
+        "properties": {
+          "execution": {"enum": ["planned", "working", "implemented", "needs-rework", "superseded"]},
+          "verification": {"enum": ["unverified", "pending", "passed", "failed"]},
+          "health": {"enum": ["clear", "at-risk", "blocked"]},
+          "owner": {"type": ["string", "null"]},
+          "lease_expires_at": {"type": ["string", "null"]},
+          "work_origin": {"enum": ["planned", "needs-rework", null]},
+          "blocker": {"type": ["string", "null"]},
+          "updated_at": {"type": "string"},
+          "last_result": {"type": ["object", "null"]},
+          "last_audit": {"type": ["object", "null"]},
+          "last_reopen": {"type": ["object", "null"]}
+        }
+      }
+    }
+  }
+}

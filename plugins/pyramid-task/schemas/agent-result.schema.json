@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/agent-result.schema.json",
+  "title": "Pyramid Task Agent Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "task", "outcome", "changed_files", "checks", "acceptance_evidence", "discovered_risks", "suggested_graph_changes"],
+  "properties": {
+    "schema": {"const": "agent-result-v1"},
+    "task": {"type": "string"},
+    "outcome": {"const": "implemented"},
+    "changed_files": {"type": "array", "items": {"type": "string"}},
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["command", "result"],
+        "properties": {"command": {"type": "string"}, "result": {"enum": ["passed", "failed", "not-run"]}}
+      }
+    },
+    "acceptance_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["criterion", "result", "reference"],
+        "properties": {"criterion": {"type": "string"}, "result": {"enum": ["passed", "failed"]}, "reference": {"type": "string"}}
+      }
+    },
+    "discovered_risks": {"type": "array"},
+    "suggested_graph_changes": {"type": "array"}
+  }
+}

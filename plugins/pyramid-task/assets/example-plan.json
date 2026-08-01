@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "plan_id": "PLAN-001",
+  "title": "Example Safe Operation Feature",
+  "revision": 1,
+  "intent": {
+    "id": "INTENT-001",
+    "statement": "Users can execute a validated operation safely and observe a recoverable result.",
+    "success_evidence": [
+      {"id": "REQ-001", "description": "A valid operation completes and an invalid operation is rejected."},
+      {"id": "REQ-002", "description": "A failed operation leaves recoverable state."}
+    ],
+    "constraints": ["Preserve existing operation-plan compatibility."],
+    "non_goals": ["Remote execution."],
+    "assumptions": [
+      {"id": "ASM-001", "statement": "The existing operation schema is stable enough to extend.", "confidence": "medium", "validation_node": "RESEARCH-101"}
+    ]
+  },
+  "evidence": [
+    {
+      "id": "EV-001",
+      "claim": "The repository already exposes an operation-plan boundary.",
+      "source": "src/operation-plan",
+      "confidence": "high",
+      "freshness": "Repository observation",
+      "supports": ["RESEARCH-101", "CONTRACT-102"],
+      "contradicts": []
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DECISION-001",
+      "question": "Where should validation occur?",
+      "choice": "At the executor boundary.",
+      "alternatives": ["Only in the caller"],
+      "rationale": "The boundary must protect every caller.",
+      "evidence": ["EV-001"]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "INTENT-001",
+      "kind": "intent",
+      "title": "Safe operation outcome",
+      "summary": "The final user-visible and recoverable operation outcome.",
+      "level": 0,
+      "wave": 4,
+      "workstream": "intent",
+      "selection": "primary",
+      "source_requirements": ["REQ-001", "REQ-002"],
+      "acceptance_criteria": [
+        {"id": "AC-INTENT-01", "description": "All success evidence is demonstrated through the final audit."}
+      ],
+      "required_evidence": [
+        {"id": "EVREQ-INTENT-01", "type": "end-to-end-test", "description": "Valid, invalid, and recoverable failure scenarios pass."}
+      ],
+      "agent": {"required_context": [], "allowed_write_scope": [], "commands": [], "deliverables": [], "non_goals": []}
+    },
+    {
+      "id": "OUTCOME-010",
+      "kind": "outcome",
+      "title": "Validated execution capability",
+      "summary": "Contracts and execution behavior compose into a safe capability.",
+      "level": 1,
+      "wave": 3,
+      "workstream": "execution",
+      "selection": "primary",
+      "source_requirements": ["REQ-001", "REQ-002"],
+      "acceptance_criteria": [
+        {"id": "AC-OUTCOME-01", "description": "Contract and executor evidence compose without an uncovered failure path."}
+      ],
+      "required_evidence": [
+        {"id": "EVREQ-OUTCOME-01", "type": "composition-audit", "description": "The joint audit passes."}
+      ],
+      "agent": {"required_context": [], "allowed_write_scope": [], "commands": [], "deliverables": [], "non_goals": []}
+    },
+    {
+      "id": "RESEARCH-101",
+      "kind": "research",
+      "title": "Validate operation schema stability",
+      "summary": "Confirm the extension boundary and document incompatible cases.",
+      "level": 2,
+      "wave": 0,
+      "workstream": "foundation",
+      "selection": "primary",
+      "source_requirements": ["REQ-001"],
+      "acceptance_criteria": [
+        {"id": "AC-101-01", "description": "Supported and unsupported schema cases are documented from repository evidence."}
+      ],
+      "required_evidence": [
+        {"id": "EVREQ-101-01", "type": "repository-analysis", "description": "References to schema definitions and existing tests."}
+      ],
+      "agent": {
+        "required_context": ["src/operation-plan", "tests"],
+        "allowed_write_scope": ["docs/tasks/evidence/**"],
+        "commands": [],
+        "deliverables": ["Schema compatibility note"],
+        "non_goals": ["Implementing the executor"]
+      }
+    },
+    {
+      "id": "CONTRACT-102",
+      "kind": "contract",
+      "title": "Define executor contract",
+      "summary": "Define validation, execution, failure, and recovery semantics.",
+      "level": 2,
+      "wave": 1,
+      "workstream": "foundation",
+      "selection": "primary",
+      "source_requirements": ["REQ-001", "REQ-002"],
+      "acceptance_criteria": [
+        {"id": "AC-102-01", "description": "The contract distinguishes invalid input, execution failure, and recoverable rollback."}
+      ],
+      "required_evidence": [
+        {"id": "EVREQ-102-01", "type": "contract-test", "description": "Contract tests encode each outcome."}
+      ],
+      "agent": {
+        "required_context": ["src/operation-plan"],
+        "allowed_write_scope": ["src/contracts/**", "tests/contracts/**"],
+        "commands": ["python3 -m unittest"],
+        "deliverables": ["Executor protocol", "Contract tests"],
+        "non_goals": ["Concrete platform execution"]
+      }
+    },
+    {
+      "id": "TASK-201",
+      "kind": "implementation",
+      "title": "Implement safe executor",
+      "summary": "Execute validated plans and recover from partial failure.",
+      "level": 2,
+      "wave": 2,
+      "workstream": "execution",
+      "selection": "primary",
+      "source_requirements": ["REQ-001", "REQ-002"],
+      "acceptance_criteria": [
+        {"id": "AC-201-01", "description": "Invalid plans are rejected before mutation."},
+        {"id": "AC-201-02", "description": "Partial failures return recoverable state."}
+      ],
+      "required_evidence": [
+        {"id": "EVREQ-201-01", "type": "automated-test", "description": "Valid, invalid, and partial-failure tests pass."}
+      ],
+      "agent": {
+        "required_context": ["src/contracts", "src/operation-plan"],
+        "allowed_write_scope": ["src/executor/**", "tests/executor/**"],
+        "commands": ["python3 -m unittest"],
+        "deliverables": ["Executor implementation", "Executor tests"],
+        "non_goals": ["User interface"]
+      }
+    },
+    {
+      "id": "GATE-290",
+      "kind": "audit",
+      "title": "Audit execution composition",
+      "summary": "Verify the contract and implementation compose into the required outcome.",
+      "level": 2,
+      "wave": 3,
+      "workstream": "audit",
+      "selection": "primary",
+      "source_requirements": ["REQ-001", "REQ-002"],
+      "acceptance_criteria": [
+        {"id": "AC-290-01", "description": "Contract, execution, and recovery scenarios pass together."}
+      ],
+      "required_evidence": [
+        {"id": "EVREQ-290-01", "type": "integration-test", "description": "Composition test output and failure-path inspection."}
+      ],
+      "agent": {
+        "required_context": ["src/contracts", "src/executor", "tests"],
+        "allowed_write_scope": ["tests/integration/**", "docs/tasks/evidence/**"],
+        "commands": ["python3 -m unittest"],
+        "deliverables": ["Composition audit result"],
+        "non_goals": ["Changing acceptance criteria"]
+      }
+    }
+  ],
+  "edges": [
+    {"from": "OUTCOME-010", "to": "INTENT-001", "type": "contributes-to"},
+    {"from": "RESEARCH-101", "to": "OUTCOME-010", "type": "contributes-to"},
+    {"from": "CONTRACT-102", "to": "OUTCOME-010", "type": "contributes-to"},
+    {"from": "TASK-201", "to": "OUTCOME-010", "type": "contributes-to"},
+    {"from": "GATE-290", "to": "OUTCOME-010", "type": "contributes-to"},
+    {"from": "CONTRACT-102", "to": "RESEARCH-101", "type": "requires"},
+    {"from": "TASK-201", "to": "CONTRACT-102", "type": "contract-requires"},
+    {"from": "GATE-290", "to": "CONTRACT-102", "type": "validation-requires"},
+    {"from": "GATE-290", "to": "TASK-201", "type": "integration-requires"},
+    {"from": "OUTCOME-010", "to": "GATE-290", "type": "validated-by"},
+    {"from": "INTENT-001", "to": "OUTCOME-010", "type": "validation-requires"}
+  ]
+}

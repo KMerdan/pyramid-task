@@ -1,0 +1,35 @@
+name: Feature request
+description: Propose a planning, execution, audit, lifecycle, or visualization improvement.
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What planning or execution failure does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe observable success evidence rather than only an implementation idea.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Note workarounds, tradeoffs, and compatibility concerns.
+  - type: dropdown
+    id: compatibility
+    attributes:
+      label: Expected compatibility impact
+      options:
+        - None
+        - Backward-compatible extension
+        - Potentially breaking
+        - Unsure
+    validations:
+      required: true

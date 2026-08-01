@@ -1,0 +1,49 @@
+name: Bug report
+description: Report incorrect runtime, skill, schema, or visualization behavior.
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve Pyramid Task. Remove private project data before sharing artifacts.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: 2.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected surface
+      options:
+        - Skill behavior
+        - Runtime command
+        - Graph or state contract
+        - Lifecycle
+        - Visualization
+        - Installation
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Include the expected result and the actual result.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include commands and sanitized input artifacts where possible.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Codex version, Python version, and operating system.
+    validations:
+      required: true

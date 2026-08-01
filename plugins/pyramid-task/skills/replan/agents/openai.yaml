@@ -1,0 +1,4 @@
+interface:
+  display_name: "Replan Pyramid Path"
+  short_description: "Revise invalid paths while preserving evidence"
+  default_prompt: "Use $replan to revise the graph from this new evidence."

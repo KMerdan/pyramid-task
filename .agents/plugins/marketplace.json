@@ -1,0 +1,20 @@
+{
+  "name": "kmerdan-skills",
+  "interface": {
+    "displayName": "KMerdan Agent Skills"
+  },
+  "plugins": [
+    {
+      "name": "pyramid-task",
+      "source": {
+        "source": "local",
+        "path": "./plugins/pyramid-task"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

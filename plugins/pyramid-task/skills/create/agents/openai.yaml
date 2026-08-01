@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create Pyramid Plan"
+  short_description: "Build evidence-backed task pathfinder graphs"
+  default_prompt: "Use $create to turn this idea into a validated task pyramid."

@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/plan.schema.json",
+  "title": "Pyramid Task V2 Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "plan_id", "title", "revision", "intent", "evidence", "decisions", "nodes", "edges"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "plan_id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "revision": {"type": "integer", "minimum": 1},
+    "intent": {"$ref": "#/$defs/intent"},
+    "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}},
+    "decisions": {"type": "array", "items": {"$ref": "#/$defs/decision"}},
+    "nodes": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/node"}},
+    "edges": {"type": "array", "items": {"$ref": "#/$defs/edge"}}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9-]*$"},
+    "stringArray": {"type": "array", "items": {"type": "string"}},
+    "criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "evidenceRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "description"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "type": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "success_evidence", "constraints", "non_goals", "assumptions"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "statement": {"type": "string", "minLength": 1},
+        "success_evidence": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/criterion"}},
+        "constraints": {"$ref": "#/$defs/stringArray"},
+        "non_goals": {"$ref": "#/$defs/stringArray"},
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "statement", "confidence"],
+            "properties": {
+              "id": {"$ref": "#/$defs/id"},
+              "statement": {"type": "string", "minLength": 1},
+              "confidence": {"enum": ["low", "medium", "high"]},
+              "validation_node": {"$ref": "#/$defs/id"}
+            }
+          }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "claim", "source", "confidence", "supports", "contradicts"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "claim": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1},
+        "confidence": {"enum": ["low", "medium", "high"]},
+        "freshness": {"type": "string"},
+        "supports": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+        "contradicts": {"type": "array", "items": {"$ref": "#/$defs/id"}}
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "question", "choice", "alternatives", "rationale", "evidence"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "question": {"type": "string", "minLength": 1},
+        "choice": {"type": "string", "minLength": 1},
+        "alternatives": {"$ref": "#/$defs/stringArray"},
+        "rationale": {"type": "string", "minLength": 1},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/id"}}
+      }
+    },
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_context", "allowed_write_scope", "commands", "deliverables", "non_goals"],
+      "properties": {
+        "required_context": {"$ref": "#/$defs/stringArray"},
+        "allowed_write_scope": {"$ref": "#/$defs/stringArray"},
+        "commands": {"$ref": "#/$defs/stringArray"},
+        "deliverables": {"$ref": "#/$defs/stringArray"},
+        "non_goals": {"$ref": "#/$defs/stringArray"}
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "title", "summary", "level", "wave", "workstream", "selection", "source_requirements", "acceptance_criteria", "required_evidence", "agent"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["intent", "outcome", "capability", "decision", "research", "contract", "implementation", "integration", "risk-control", "audit"]},
+        "title": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "level": {"type": "integer", "minimum": 0},
+        "wave": {"type": "integer", "minimum": 0},
+        "workstream": {"type": "string", "minLength": 1},
+        "selection": {"enum": ["primary", "alternative", "rejected", "superseded"]},
+        "source_requirements": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+        "acceptance_criteria": {"type": "array", "items": {"$ref": "#/$defs/criterion"}},
+        "required_evidence": {"type": "array", "items": {"$ref": "#/$defs/evidenceRequirement"}},
+        "agent": {"$ref": "#/$defs/agent"}
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "type"],
+      "properties": {
+        "from": {"$ref": "#/$defs/id"},
+        "to": {"$ref": "#/$defs/id"},
+        "type": {"enum": ["contributes-to", "requires", "contract-requires", "integration-requires", "validation-requires", "validated-by", "alternative-to", "invalidates"]}
+      }
+    }
+  }
+}

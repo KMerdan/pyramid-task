@@ -1,0 +1,40 @@
+const path = require('path');
+
+if (!process.env.PYRAMID_NODE_MODULES) {
+  throw new Error('PYRAMID_NODE_MODULES is required');
+}
+const { chromium } = require(path.join(process.env.PYRAMID_NODE_MODULES, 'playwright'));
+
+async function main() {
+  const input = process.argv[2];
+  const screenshot = process.argv[3];
+  if (!input || !screenshot) throw new Error('Usage: visual_smoke.cjs <html> <screenshot>');
+  const launchOptions = { headless: true };
+  if (process.env.PYRAMID_BROWSER) launchOptions.executablePath = process.env.PYRAMID_BROWSER;
+  const browser = await chromium.launch(launchOptions);
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(`file://${path.resolve(input)}`);
+  await page.locator('[data-view="pyramid"]').click();
+  await page.locator('[data-filter="ready"]').click();
+  await page.locator('#node-select').selectOption('RESEARCH-101');
+  await page.screenshot({ path: screenshot, fullPage: true });
+  const nodeCount = await page.locator('#node-layer .node').count();
+  const detail = await page.locator('#detail').innerText();
+  const meta = await page.locator('#page-meta').innerText();
+  const reworkFilter = await page.locator('[data-filter="needs-rework"]').count();
+  await browser.close();
+  if (errors.length) throw new Error(`Page errors: ${errors.join('; ')}`);
+  if (nodeCount < 1) throw new Error('No graph nodes rendered');
+  if (!detail.includes('RESEARCH-101')) throw new Error('Selected-node detail did not update');
+  if (!detail.includes('Plan lifecycle')) throw new Error('Lifecycle detail is missing');
+  if (!meta.includes('active')) throw new Error('Lifecycle summary is missing');
+  if (reworkFilter !== 1) throw new Error('Rework filter is missing');
+  process.stdout.write(JSON.stringify({ ok: true, nodeCount, screenshot }) + '\n');
+}
+
+main().catch(error => {
+  process.stderr.write(error.stack + '\n');
+  process.exit(1);
+});

@@ -1,0 +1,40 @@
+{
+  "name": "pyramid-task",
+  "version": "2.1.0",
+  "description": "Build, execute, audit, repair, close, archive, restore, and visualize evidence-backed task pyramids.",
+  "author": {
+    "name": "Dr. Merdan Bay",
+    "url": "https://github.com/KMerdan"
+  },
+  "homepage": "https://github.com/KMerdan/pyramid-task",
+  "repository": "https://github.com/KMerdan/pyramid-task",
+  "license": "MIT",
+  "keywords": [
+    "agent",
+    "planning",
+    "task-graph",
+    "pathfinder",
+    "codex",
+    "software-engineering"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Pyramid Task Planner V2",
+    "shortDescription": "Evidence-backed planning for agents and humans.",
+    "longDescription": "Turn an intent into a validated pathfinder graph, executable agent task packets, audit gates, a safe full lifecycle, and an interactive human-readable task map.",
+    "developerName": "Dr. Merdan Bay",
+    "category": "Productivity",
+    "capabilities": [
+      "Planning",
+      "Lifecycle",
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/KMerdan/pyramid-task",
+    "defaultPrompt": [
+      "Turn this feature into an evidence-backed task pyramid.",
+      "Show what is ready, active, blocked, and unaudited.",
+      "Safely close, archive, reset, or restore this task plan."
+    ]
+  }
+}
