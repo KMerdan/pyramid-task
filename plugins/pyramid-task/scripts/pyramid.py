@@ -15,6 +15,7 @@ from pyramid_core import (
     close_project,
     compile_project,
     create_project,
+    expand_project,
     inspect_lifecycle,
     inspect_project,
     replan_project,
@@ -113,6 +114,19 @@ def build_parser() -> argparse.ArgumentParser:
     replan.add_argument("--allow-intent-change", action="store_true")
     add_version(replan)
     add_json(replan)
+
+    expand = sub.add_parser("expand", help="Preview or apply an approved task subtree")
+    add_project(expand)
+    expand.add_argument("--proposal", required=True)
+    expand.add_argument("--actor", required=True)
+    mode = expand.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--preview", action="store_true")
+    mode.add_argument("--apply", action="store_true")
+    expand.add_argument("--approved-by")
+    expand.add_argument("--approval-reference")
+    expand.add_argument("--approved-proposal-sha256")
+    add_version(expand)
+    add_json(expand)
 
     reopen = sub.add_parser("reopen", help="Return a verified or failed executable node to rework")
     add_project(reopen)
@@ -234,6 +248,17 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             args.reason,
             apply=args.apply,
             allow_intent_change=args.allow_intent_change,
+            expected_version=args.expected_version,
+        ), 0
+    if args.command == "expand":
+        return expand_project(
+            args.project,
+            args.proposal,
+            args.actor,
+            apply=args.apply,
+            approved_by=args.approved_by,
+            approval_reference=args.approval_reference,
+            approved_proposal_sha256=args.approved_proposal_sha256,
             expected_version=args.expected_version,
         ), 0
     if args.command == "reopen":

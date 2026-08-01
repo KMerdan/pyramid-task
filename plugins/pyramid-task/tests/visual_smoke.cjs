@@ -17,20 +17,22 @@ async function main() {
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(`file://${path.resolve(input)}`);
   await page.locator('[data-view="pyramid"]').click();
-  await page.locator('[data-filter="ready"]').click();
-  await page.locator('#node-select').selectOption('RESEARCH-101');
+  await page.locator('[data-filter="all"]').click();
+  await page.locator('#node-select').selectOption('TASK-201');
   await page.screenshot({ path: screenshot, fullPage: true });
   const nodeCount = await page.locator('#node-layer .node').count();
   const detail = await page.locator('#detail').innerText();
   const meta = await page.locator('#page-meta').innerText();
   const reworkFilter = await page.locator('[data-filter="needs-rework"]').count();
+  const workPackageFilter = await page.locator('[data-filter="work-package"]').count();
   await browser.close();
   if (errors.length) throw new Error(`Page errors: ${errors.join('; ')}`);
   if (nodeCount < 1) throw new Error('No graph nodes rendered');
-  if (!detail.includes('RESEARCH-101')) throw new Error('Selected-node detail did not update');
+  if (!detail.includes('TASK-201')) throw new Error('Selected-node detail did not update');
   if (!detail.includes('Plan lifecycle')) throw new Error('Lifecycle detail is missing');
   if (!meta.includes('active')) throw new Error('Lifecycle summary is missing');
   if (reworkFilter !== 1) throw new Error('Rework filter is missing');
+  if (workPackageFilter !== 1) throw new Error('Work-package filter is missing');
   process.stdout.write(JSON.stringify({ ok: true, nodeCount, screenshot }) + '\n');
 }
 

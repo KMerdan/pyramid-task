@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "plugins" / "pyramid-task"
 SEMVER = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$")
 FRONTMATTER_NAME = re.compile(r"^name:\s*['\"]?([a-z0-9-]+)['\"]?\s*$", re.MULTILINE)
+IGNORED_TREES = {".git", ".venv", "venv"}
 
 
 def read_json(path: Path) -> dict:
@@ -76,7 +77,12 @@ def main() -> int:
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             errors.append(str(exc))
 
-    forbidden = [path for path in ROOT.rglob("*") if path.name in {"__pycache__", ".DS_Store"}]
+    forbidden = [
+        path
+        for path in ROOT.rglob("*")
+        if path.name in {"__pycache__", ".DS_Store"}
+        and not IGNORED_TREES.intersection(path.relative_to(ROOT).parts)
+    ]
     errors.extend(f"forbidden generated path: {path.relative_to(ROOT)}" for path in forbidden)
 
     if errors:

@@ -21,6 +21,8 @@ from pyramid_core import (  # noqa: E402
     clean_project,
     close_project,
     create_project,
+    expand_project,
+    expansion_parent_snapshot,
     inspect_lifecycle,
     inspect_project,
     load_json,
@@ -41,6 +43,7 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name) / "project"
         self.example = PLUGIN_ROOT / "assets" / "example-plan.json"
+        self.expansion = PLUGIN_ROOT / "assets" / "example-expansion.json"
         create_project(self.root, self.example, "planner")
 
     def tearDown(self) -> None:
@@ -101,6 +104,83 @@ class PyramidRuntimeTests(unittest.TestCase):
         audit_node(self.root, "OUTCOME-010", "auditor", "pass", self.audit_for("OUTCOME-010"))
         audit_node(self.root, "INTENT-001", "owner", "pass", self.audit_for("INTENT-001"))
 
+    def proposal_for(self, target: str, suffix: str) -> dict:
+        plan = load_json(self.root / ".pyramid" / "plan.json")
+        state = load_json(self.root / ".pyramid" / "state.json")
+        parent = next(node for node in plan["nodes"] if node["id"] == target)
+        level = parent["level"] + 1
+        first = f"TASK-{suffix}1"
+        second = f"TASK-{suffix}2"
+        gate = f"GATE-{suffix}9"
+        requirements = parent["source_requirements"]
+
+        def child(nid: str, kind: str, title: str, wave: int) -> dict:
+            return {
+                "id": nid,
+                "kind": kind,
+                "title": title,
+                "summary": f"Bounded child work for {target}.",
+                "level": level,
+                "wave": wave,
+                "workstream": f"nested-{suffix}",
+                "selection": "primary",
+                "source_requirements": requirements,
+                "acceptance_criteria": [
+                    {"id": f"AC-{nid}-01", "description": f"{title} is demonstrated."}
+                ],
+                "required_evidence": [
+                    {"id": f"EVREQ-{nid}-01", "type": "test", "description": f"Evidence for {title}."}
+                ],
+                "agent": {
+                    "required_context": [],
+                    "allowed_write_scope": [f"work/{nid}/**"],
+                    "commands": ["test"],
+                    "deliverables": [title],
+                    "non_goals": [],
+                },
+            }
+
+        current_dependencies = [
+            edge
+            for edge in plan["edges"]
+            if edge["from"] == target
+            and edge["type"] in {"requires", "contract-requires", "integration-requires", "validation-requires"}
+        ]
+        return {
+            "schema": "expansion-proposal-v1",
+            "target": target,
+            "base_graph_version": state["graph_version"],
+            "reason": "The task has two independently reviewable child outcomes.",
+            "trigger_signals": ["Two independently reviewable deliverables"],
+            "evidence": [{"claim": "The task contract contains separable work.", "reference": target}],
+            "preserved_parent": expansion_parent_snapshot(parent),
+            "nodes": [
+                child(first, "implementation", "Implement first half", parent["wave"]),
+                child(second, "implementation", "Implement second half", parent["wave"] + 1),
+                child(gate, "audit", "Audit child composition", parent["wave"] + 2),
+            ],
+            "audit_gate": gate,
+            "audit_coverage": [
+                {"node": first, "type": "integration-requires"},
+                {"node": second, "type": "integration-requires"},
+            ],
+            "internal_edges": [{"from": second, "to": first, "type": "requires"}],
+            "dependency_mapping": [
+                {
+                    "dependency": {"to": edge["to"], "type": edge["type"]},
+                    "consumers": [first, second],
+                    "rationale": "Both child branches preserve the current prerequisite.",
+                }
+                for edge in current_dependencies
+            ],
+            "user_decisions": [],
+            "impact": {
+                "scope": "The parent contract and external edges are unchanged.",
+                "risk": "One additional coordination gate is introduced.",
+                "execution_order": "The second branch follows the first; the gate follows both.",
+            },
+        }
+
     def test_create_materializes_human_and_agent_views(self) -> None:
         validation = validate_project(self.root)
         self.assertTrue(validation["valid"], validation["errors"])
@@ -134,6 +214,131 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertIn("RESEARCH-101", preview["diff"]["changed_nodes"])
         applied = replan_project(self.root, path, "planner", "New repository evidence", apply=True)
         self.assertEqual(2, applied["diff"]["to_revision"])
+        self.assertTrue(validate_project(self.root)["valid"])
+
+    def test_expand_preview_requires_explicit_approval_and_does_not_mutate(self) -> None:
+        preview = expand_project(self.root, self.expansion, "planner", apply=False)
+        self.assertEqual("preview", preview["status"])
+        self.assertTrue(preview["approval_required"])
+        self.assertEqual(64, len(preview["proposal_sha256"]))
+        self.assertEqual(1, load_json(self.root / ".pyramid" / "state.json")["graph_version"])
+        with self.assertRaises(PyramidError):
+            expand_project(self.root, self.expansion, "planner", apply=True)
+        with self.assertRaisesRegex(PyramidError, "hash"):
+            expand_project(
+                self.root,
+                self.expansion,
+                "planner",
+                apply=True,
+                approved_by="owner",
+                approval_reference="conversation-message-42",
+                approved_proposal_sha256="wrong",
+            )
+
+    def test_expand_applies_stable_work_package_and_records_approval(self) -> None:
+        preview = expand_project(self.root, self.expansion, "planner", apply=False)
+        before = load_json(self.root / ".pyramid" / "plan.json")
+        incident_before = [
+            edge for edge in before["edges"] if "TASK-201" in {edge["from"], edge["to"]}
+        ]
+        result = expand_project(
+            self.root,
+            self.expansion,
+            "planner",
+            apply=True,
+            approved_by="owner",
+            approval_reference="conversation-message-42",
+            approved_proposal_sha256=preview["proposal_sha256"],
+        )
+        self.assertEqual("applied", result["status"])
+        self.assertEqual("work-package", result["parent"]["kind"])
+        self.assertEqual("not-executable", result["parent"]["availability"])
+        self.assertEqual({"TASK-211", "TASK-212", "GATE-219"}, set(result["parent"]["children"]))
+        after = load_json(self.root / ".pyramid" / "plan.json")
+        for edge in incident_before:
+            self.assertIn(edge, after["edges"])
+        event = result["event"]
+        self.assertEqual("task.expanded", event["type"])
+        self.assertEqual("owner", event["payload"]["approval"]["approved_by"])
+        self.assertEqual("conversation-message-42", event["payload"]["approval"]["reference"])
+        self.assertEqual(preview["proposal_sha256"], event["payload"]["approval"]["proposal_sha256"])
+        self.assertTrue(validate_project(self.root)["valid"])
+
+    def test_expand_rejects_stale_changed_or_incomplete_proposals(self) -> None:
+        proposal = load_json(self.expansion)
+        proposal["base_graph_version"] = 99
+        with self.assertRaisesRegex(PyramidError, "stale"):
+            expand_project(self.root, self.write_json("stale-expansion.json", proposal), "planner", apply=False)
+        proposal = load_json(self.expansion)
+        proposal["preserved_parent"]["summary"] = "Changed purpose"
+        with self.assertRaisesRegex(PyramidError, "preserved_parent"):
+            expand_project(self.root, self.write_json("changed-expansion.json", proposal), "planner", apply=False)
+        proposal = load_json(self.expansion)
+        proposal["audit_coverage"] = proposal["audit_coverage"][:1]
+        with self.assertRaisesRegex(PyramidError, "cover every"):
+            expand_project(self.root, self.write_json("uncovered-expansion.json", proposal), "planner", apply=False)
+
+    def test_expand_refuses_an_active_claim(self) -> None:
+        take_task(self.root, "worker", nid="RESEARCH-101")
+        proposal = self.proposal_for("RESEARCH-101", "31")
+        with self.assertRaisesRegex(PyramidError, "release the active claim"):
+            expand_project(self.root, self.write_json("claimed-expansion.json", proposal), "planner", apply=False)
+
+    def test_expansion_subtree_audits_to_closure(self) -> None:
+        preview = expand_project(self.root, self.expansion, "planner", apply=False)
+        expand_project(
+            self.root,
+            self.expansion,
+            "planner",
+            apply=True,
+            approved_by="owner",
+            approval_reference="conversation-message-42",
+            approved_proposal_sha256=preview["proposal_sha256"],
+        )
+        self.complete_and_audit("RESEARCH-101", ["AC-101-01"])
+        self.complete_and_audit("CONTRACT-102", ["AC-102-01"])
+        self.complete_and_audit("TASK-211", ["AC-211-01"])
+        self.complete_and_audit("TASK-212", ["AC-212-01"])
+        self.complete_and_audit("GATE-219", ["AC-219-01"], actor="audit-worker")
+        audit_node(self.root, "TASK-201", "auditor", "pass", self.audit_for("TASK-201"))
+        self.complete_and_audit("GATE-290", ["AC-290-01"], actor="audit-worker")
+        audit_node(self.root, "OUTCOME-010", "auditor", "pass", self.audit_for("OUTCOME-010"))
+        audit_node(self.root, "INTENT-001", "owner", "pass", self.audit_for("INTENT-001"))
+        self.assertTrue(inspect_project(self.root, summary=True)["closure_ready"])
+        self.assertEqual("completed", close_project(self.root, "owner")["status"])
+
+    def test_expansion_is_recursive_and_deep_visualization_scales(self) -> None:
+        first_preview = expand_project(self.root, self.expansion, "planner", apply=False)
+        expand_project(
+            self.root,
+            self.expansion,
+            "planner",
+            apply=True,
+            approved_by="owner",
+            approval_reference="first-approval",
+            approved_proposal_sha256=first_preview["proposal_sha256"],
+        )
+        nested = self.proposal_for("TASK-212", "22")
+        nested_path = self.write_json("nested-expansion.json", nested)
+        nested_preview = expand_project(self.root, nested_path, "planner", apply=False)
+        expand_project(
+            self.root,
+            nested_path,
+            "planner",
+            apply=True,
+            approved_by="owner",
+            approval_reference="second-approval",
+            approved_proposal_sha256=nested_preview["proposal_sha256"],
+        )
+        graph = load_json(self.root / ".pyramid" / "graph.json")
+        task = next(node for node in graph["nodes"] if node["id"] == "TASK-212")
+        self.assertEqual("work-package", task["kind"])
+        self.assertEqual(4, max(node["level"] for node in graph["nodes"]))
+        output = Path(self.temp.name) / "deep-map.html"
+        render_visualization(self.root, output)
+        html = output.read_text(encoding="utf-8")
+        self.assertIn("Work packages", html)
+        self.assertIn("previous + 108", html)
         self.assertTrue(validate_project(self.root)["valid"])
 
     def test_cycle_is_rejected(self) -> None:
@@ -262,6 +467,7 @@ class PyramidRuntimeTests(unittest.TestCase):
             schema = load_json(schema_path)
             jsonschema.Draft202012Validator.check_schema(schema)
             jsonschema.validate(load_json(artifact_path), schema)
+        jsonschema.validate(load_json(self.expansion), load_json(schema_dir / "expansion-proposal.schema.json"))
         event_schema = load_json(schema_dir / "event.schema.json")
         for event_path in (self.root / ".pyramid" / "events").glob("*.json"):
             jsonschema.validate(load_json(event_path), event_schema)

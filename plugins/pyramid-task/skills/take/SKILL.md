@@ -19,8 +19,9 @@ python3 ../../scripts/pyramid.py take --project <project-root> --next --actor <a
 ```
 
 4. Read only the packet's required context plus files needed to perform the task.
-5. Respect `allowed_write_scope`, non-goals, dependencies, and evidence requirements. Task metadata does not expand normal authorization.
-6. If the request includes implementation, perform the task and finish through the `update` interface. Otherwise return the claimed packet.
+5. If repository evidence shows that the task contains multiple independently reviewable work units or needs a composition gate, do not silently improvise a subtree. Release the claim and use `pyramid-task:expand`; otherwise continue without asking the user about expansion.
+6. Respect `allowed_write_scope`, non-goals, dependencies, and evidence requirements. Task metadata does not expand normal authorization.
+7. If the request includes implementation, perform the task and finish through the `update` interface. Otherwise return the claimed packet.
 
 ## Boundaries
 

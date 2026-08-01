@@ -4,7 +4,7 @@ The plan lifecycle is independent from each node's execution, verification, heal
 
 ## Plan states
 
-- `active`: work, audit, and replan mutations are allowed.
+- `active`: work, audit, approved expansion, and replan mutations are allowed.
 - `completed`: the intent and every primary claim are verified, all health is clear, no claim is active, and a final report exists. Ordinary mutations are frozen; reopening verified executable work reactivates the plan.
 - `archived`: canonical plan, state, events, evidence, and reports are frozen in a restorable archive. Inspect and visualize the archive directly, or restore it before mutation.
 
@@ -14,7 +14,7 @@ An executable audit failure changes execution to `needs-rework`, verification to
 
 Manual `reopen` applies the same repair state to a primary executable node. It invalidates stale dependent proof through hierarchy, dependency, integration, validation, and joint-gate relations. Downstream implementation is preserved, but its verification becomes pending or unverified and health becomes at-risk until the affected path is audited again.
 
-Use local repair when the claim and graph contract remain valid. Use `replan` when evidence invalidates topology, a contract, an assumption, or the selected path.
+Use local repair when the claim and graph contract remain valid. Use approved `expand` when the contract remains valid but the work needs a deeper internal subtree. Use `replan` when evidence invalidates topology, a contract, an assumption, or the selected path.
 
 ## Completion lifecycle
 
@@ -61,6 +61,7 @@ The manifest records plan and graph identity, previous lifecycle state, archive 
 Lifecycle mutations use immutable events:
 
 - `task.reopened`;
+- `task.expanded` with proposal hash and approval provenance;
 - `plan.completed`;
 - `plan.archived`;
 - `plan.restored`;

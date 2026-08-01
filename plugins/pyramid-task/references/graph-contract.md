@@ -27,9 +27,11 @@ Every node has:
 - `required_evidence` with stable IDs and types;
 - `agent` containing `required_context`, `allowed_write_scope`, `commands`, `deliverables`, and `non_goals`.
 
-Kinds are `intent`, `outcome`, `capability`, `decision`, `research`, `contract`, `implementation`, `integration`, `risk-control`, and `audit`.
+Kinds are `intent`, `outcome`, `capability`, `work-package`, `decision`, `research`, `contract`, `implementation`, `integration`, `risk-control`, and `audit`.
 
 Executable kinds are `research`, `contract`, `implementation`, `integration`, `risk-control`, and `audit`. Give every executable node a concrete deliverable and acceptance criterion.
+
+A `work-package` is a stable non-executable task contract created by approved expansion. It has at least two primary work branches and a primary audit gate that covers every branch.
 
 ## Edge contract
 
@@ -54,7 +56,7 @@ For dependency edges, `from` is the dependent and `to` is the prerequisite. For 
 - Hard and contract dependency subgraphs are acyclic.
 - All referenced node and evidence IDs exist.
 - Every critical intent success item is referenced by at least one node's `source_requirements`.
-- Any primary outcome with two or more primary contributing children has a `validated-by` audit node.
+- Any primary intent, outcome, capability, or work-package with two or more primary contributing children has a `validated-by` audit node whose dependency closure covers every non-gate branch.
 - Rejected, alternative, and superseded nodes never become ready.
 
 ## State semantics
@@ -64,3 +66,5 @@ Execution is `planned`, `working`, `implemented`, `needs-rework`, or `superseded
 Do not place execution state in `plan.json`. Use runtime transitions so history and concurrency checks remain intact.
 
 Plan lifecycle is `active`, `completed`, or `archived`. It does not replace node state. Read `lifecycle-contract.md` before closing, reopening, archiving, resetting, cleaning, or restoring a plan.
+
+Read `expansion-contract.md` before converting an executable node into a work-package.
