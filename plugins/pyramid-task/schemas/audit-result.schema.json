@@ -19,6 +19,6 @@
       }
     },
     "affected_claims": {"type": "array", "items": {"type": "string"}},
-    "recommended_action": {"enum": ["advance", "repair", "replan", "block"]}
+    "recommended_action": {"enum": ["advance", "repair", "expand", "replan", "block"]}
   }
 }

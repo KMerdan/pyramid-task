@@ -87,6 +87,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .node.blocked .mark { fill: var(--blocked); }
   .node.not-selected { opacity: .34; }
   .node.audit .mark { stroke: var(--audit); stroke-width: 4; }
+  .node.work-package .mark { stroke: var(--focus); stroke-width: 4; }
   .node.verification-pending .verify { stroke: var(--audit); stroke-dasharray: 4 3; }
   .node.verification-failed .verify { stroke: var(--blocked); }
   .node.verification-passed .verify { stroke: var(--verified); }
@@ -123,6 +124,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button type="button" data-filter="needs-rework" aria-pressed="false">Rework</button>
       <button type="button" data-filter="blocked" aria-pressed="false">Blocked</button>
       <button type="button" data-filter="audit" aria-pressed="false">Audit</button>
+      <button type="button" data-filter="work-package" aria-pressed="false">Work packages</button>
       <button type="button" data-filter="verified" aria-pressed="false">Verified</button>
     </div>
     <label>Selected node<select id="node-select"></select></label>
@@ -161,6 +163,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   let filter = 'all';
   let selected = data.intent.id;
   let positions = new Map();
+  let canvas = {width: 1000, height: 720};
 
   document.getElementById('page-title').textContent = data.title;
   document.getElementById('page-meta').textContent = `${data.lifecycle.status} · revision ${data.revision} · graph ${data.graph_version} · ${data.summary.verified_primary_nodes}/${data.summary.primary_nodes} primary nodes verified`;
@@ -187,27 +190,43 @@ HTML_TEMPLATE = r"""<!doctype html>
   function visible(node) {
     if (filter === 'all') return true;
     if (filter === 'audit') return node.kind === 'audit';
+    if (filter === 'work-package') return node.kind === 'work-package';
     if (filter === 'blocked') return node.availability === 'blocked' || node.availability === 'locked';
     return node.availability === filter;
   }
   function computePositions() {
     const map = new Map();
     if (view === 'star') {
-      const cx = 500, cy = 350;
       const groups = new Map();
       data.nodes.forEach(node => {
         if (!groups.has(node.level)) groups.set(node.level, []);
         groups.get(node.level).push(node);
       });
-      [...groups.entries()].sort((a,b) => a[0]-b[0]).forEach(([level, nodes]) => {
+      const levels = [...groups.keys()].sort((a,b) => a-b);
+      const radii = new Map();
+      let previous = 0;
+      levels.filter(level => level > 0).forEach(level => {
+        const count = groups.get(level).length;
+        const circumferenceRadius = count * 92 / (Math.PI * 2);
+        const radius = Math.max(92 + (level - 1) * 108, previous + 108, circumferenceRadius);
+        radii.set(level, radius);
+        previous = radius;
+      });
+      const outer = Math.max(270, previous);
+      const width = Math.max(1000, outer * 2 + 190);
+      const height = width;
+      const cx = width / 2, cy = height / 2;
+      levels.forEach(level => {
+        const nodes = groups.get(level);
         nodes.sort((a,b) => a.wave-b.wave || a.id.localeCompare(b.id));
         if (level === 0) { nodes.forEach(node => map.set(node.id, {x: cx, y: cy})); return; }
-        const radius = Math.min(285, 82 + (level - 1) * 92);
+        const radius = radii.get(level);
         nodes.forEach((node, index) => {
           const angle = -Math.PI / 2 + (index * Math.PI * 2 / nodes.length) + level * 0.17;
           map.set(node.id, {x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius});
         });
       });
+      return {map, width, height};
     } else if (view === 'pyramid') {
       const groups = new Map();
       data.nodes.forEach(node => {
@@ -215,14 +234,17 @@ HTML_TEMPLATE = r"""<!doctype html>
         groups.get(node.level).push(node);
       });
       const levels = [...groups.keys()].sort((a,b) => a-b);
+      const largestLevel = Math.max(...levels.map(level => groups.get(level).length));
+      const width = Math.max(1000, largestLevel * 155 + 140);
       levels.forEach((level, levelIndex) => {
         const nodes = groups.get(level).sort((a,b) => a.wave-b.wave || a.id.localeCompare(b.id));
-        const span = Math.min(880, Math.max(140, (nodes.length - 1) * 150));
+        const span = Math.max(140, (nodes.length - 1) * 150);
         nodes.forEach((node, index) => {
-          const x = nodes.length === 1 ? 500 : 500 - span/2 + index * span/(nodes.length-1);
+          const x = nodes.length === 1 ? width/2 : width/2 - span/2 + index * span/(nodes.length-1);
           map.set(node.id, {x, y: 85 + levelIndex * 145});
         });
       });
+      return {map, width, height: Math.max(430, 155 + (levels.length - 1) * 145)};
     } else {
       const workstreams = [...new Set(data.nodes.map(node => node.workstream))].sort();
       const waves = [...new Set(data.nodes.map(node => node.wave))].sort((a,b) => a-b);
@@ -233,15 +255,19 @@ HTML_TEMPLATE = r"""<!doctype html>
         rowCounts.set(key, offset + 1);
         map.set(node.id, {x: 110 + waves.indexOf(node.wave) * 190, y: 80 + workstreams.indexOf(node.workstream) * 125 + offset * 32});
       });
+      return {
+        map,
+        width: Math.max(1000, 220 + Math.max(0, waves.length - 1) * 190),
+        height: Math.max(430, 130 + workstreams.length * 125)
+      };
     }
-    return map;
   }
   function render() {
-    positions = computePositions();
-    const maxLevel = Math.max(...data.nodes.map(node => node.level));
-    const workstreamCount = new Set(data.nodes.map(node => node.workstream)).size;
-    const height = view === 'star' ? 720 : view === 'pyramid' ? Math.max(430, 155 + maxLevel * 145) : Math.max(430, 130 + workstreamCount * 125);
-    svg.setAttribute('viewBox', `0 0 1000 ${height}`);
+    const layout = computePositions();
+    positions = layout.map;
+    canvas = {width: layout.width, height: layout.height};
+    svg.setAttribute('viewBox', `0 0 ${canvas.width} ${canvas.height}`);
+    svg.style.minWidth = `${Math.max(680, canvas.width)}px`;
     edgeLayer.replaceChildren(); nodeLayer.replaceChildren(); levelLayer.replaceChildren();
     const highlight = new Set(nodeById.get(selected)?.goal_trace || []);
     data.edges.forEach(edge => {
@@ -259,7 +285,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     data.nodes.forEach(node => {
       const p = positions.get(node.id);
       const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      const classes = ['node', node.availability, node.kind === 'audit' ? 'audit' : '', `verification-${node.state.verification}`, node.selection !== 'primary' ? 'not-selected' : '', node.id === selected ? 'selected' : ''].filter(Boolean);
+      const classes = ['node', node.availability, node.kind === 'audit' ? 'audit' : '', node.kind === 'work-package' ? 'work-package' : '', `verification-${node.state.verification}`, node.selection !== 'primary' ? 'not-selected' : '', node.id === selected ? 'selected' : ''].filter(Boolean);
       group.setAttribute('class', classes.join(' '));
       group.dataset.id = node.id;
       group.style.opacity = visible(node) ? '' : '.08';
@@ -300,6 +326,8 @@ HTML_TEMPLATE = r"""<!doctype html>
         <dt>Plan lifecycle</dt><dd>${esc(data.lifecycle.status)}</dd>
       </dl>
       <strong>Goal trace</strong>${list(node.goal_trace, item => esc(item))}
+      <strong>Parent nodes</strong>${list(node.parents, item => esc(item))}
+      <strong>Child nodes</strong>${list(node.children, item => esc(item))}
       <strong>Blocked by</strong>${list(node.blocked_by, item => esc(item))}
       <strong>Audit gates</strong>${list(node.audit_gates, item => esc(item))}
       <strong>Acceptance</strong>${list(node.acceptance_criteria, item => `<code>${esc(item.id)}</code> — ${esc(item.description)}`)}

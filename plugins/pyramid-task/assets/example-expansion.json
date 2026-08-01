@@ -1,0 +1,141 @@
+{
+  "schema": "expansion-proposal-v1",
+  "target": "TASK-201",
+  "base_graph_version": 1,
+  "reason": "The executor task combines pre-mutation validation with failure recovery, which are independently reviewable work units with a composition boundary.",
+  "trigger_signals": [
+    "Two independently reviewable deliverables",
+    "Distinct validation and recovery evidence",
+    "Composition requires an explicit joint audit"
+  ],
+  "evidence": [
+    {
+      "claim": "TASK-201 has separate invalid-input and partial-failure acceptance criteria.",
+      "reference": ".pyramid/plan.json#TASK-201"
+    }
+  ],
+  "preserved_parent": {
+    "id": "TASK-201",
+    "title": "Implement safe executor",
+    "summary": "Execute validated plans and recover from partial failure.",
+    "level": 2,
+    "wave": 2,
+    "workstream": "execution",
+    "selection": "primary",
+    "source_requirements": ["REQ-001", "REQ-002"],
+    "acceptance_criteria": [
+      {"id": "AC-201-01", "description": "Invalid plans are rejected before mutation."},
+      {"id": "AC-201-02", "description": "Partial failures return recoverable state."}
+    ],
+    "required_evidence": [
+      {"id": "EVREQ-201-01", "type": "automated-test", "description": "Valid, invalid, and partial-failure tests pass."}
+    ],
+    "agent": {
+      "required_context": ["src/contracts", "src/operation-plan"],
+      "allowed_write_scope": ["src/executor/**", "tests/executor/**"],
+      "commands": ["python3 -m unittest"],
+      "deliverables": ["Executor implementation", "Executor tests"],
+      "non_goals": ["User interface"]
+    }
+  },
+  "nodes": [
+    {
+      "id": "TASK-211",
+      "kind": "implementation",
+      "title": "Implement pre-mutation validation",
+      "summary": "Reject invalid operation plans before any mutable action begins.",
+      "level": 3,
+      "wave": 2,
+      "workstream": "execution-validation",
+      "selection": "primary",
+      "source_requirements": ["REQ-001"],
+      "acceptance_criteria": [
+        {"id": "AC-211-01", "description": "Every invalid plan case is rejected before mutation."}
+      ],
+      "required_evidence": [
+        {"id": "EVREQ-211-01", "type": "automated-test", "description": "Invalid-plan tests prove that mutation never starts."}
+      ],
+      "agent": {
+        "required_context": ["src/contracts", "src/operation-plan"],
+        "allowed_write_scope": ["src/executor/validation/**", "tests/executor/validation/**"],
+        "commands": ["python3 -m unittest"],
+        "deliverables": ["Validation implementation", "Validation tests"],
+        "non_goals": ["Recovery orchestration"]
+      }
+    },
+    {
+      "id": "TASK-212",
+      "kind": "implementation",
+      "title": "Implement recoverable execution",
+      "summary": "Execute valid plans and return recoverable state after partial failure.",
+      "level": 3,
+      "wave": 3,
+      "workstream": "execution-recovery",
+      "selection": "primary",
+      "source_requirements": ["REQ-001", "REQ-002"],
+      "acceptance_criteria": [
+        {"id": "AC-212-01", "description": "Partial failures expose enough state for deterministic recovery."}
+      ],
+      "required_evidence": [
+        {"id": "EVREQ-212-01", "type": "automated-test", "description": "Partial-failure and recovery tests pass."}
+      ],
+      "agent": {
+        "required_context": ["src/contracts", "src/executor/validation"],
+        "allowed_write_scope": ["src/executor/recovery/**", "tests/executor/recovery/**"],
+        "commands": ["python3 -m unittest"],
+        "deliverables": ["Recovery implementation", "Recovery tests"],
+        "non_goals": ["Input schema design"]
+      }
+    },
+    {
+      "id": "GATE-219",
+      "kind": "audit",
+      "title": "Audit safe executor composition",
+      "summary": "Verify validation and recovery compose into the preserved executor contract.",
+      "level": 3,
+      "wave": 4,
+      "workstream": "audit",
+      "selection": "primary",
+      "source_requirements": ["REQ-001", "REQ-002"],
+      "acceptance_criteria": [
+        {"id": "AC-219-01", "description": "Validation, execution, failure, and recovery scenarios pass together."}
+      ],
+      "required_evidence": [
+        {"id": "EVREQ-219-01", "type": "integration-test", "description": "End-to-end executor test output."}
+      ],
+      "agent": {
+        "required_context": ["src/executor", "tests/executor"],
+        "allowed_write_scope": ["tests/executor/integration/**", "docs/tasks/evidence/**"],
+        "commands": ["python3 -m unittest"],
+        "deliverables": ["Executor composition audit"],
+        "non_goals": ["Changing the preserved parent contract"]
+      }
+    }
+  ],
+  "audit_gate": "GATE-219",
+  "audit_coverage": [
+    {"node": "TASK-211", "type": "integration-requires"},
+    {"node": "TASK-212", "type": "integration-requires"}
+  ],
+  "internal_edges": [
+    {"from": "TASK-212", "to": "TASK-211", "type": "requires"}
+  ],
+  "dependency_mapping": [
+    {
+      "dependency": {"to": "CONTRACT-102", "type": "contract-requires"},
+      "consumers": ["TASK-211", "TASK-212"],
+      "rationale": "Both implementation branches consume the verified executor contract."
+    }
+  ],
+  "user_decisions": [
+    {
+      "question": "Should validation and recovery be independently reviewable branches?",
+      "answer": "Yes; preserve the parent contract and require a joint integration audit."
+    }
+  ],
+  "impact": {
+    "scope": "No external scope change; TASK-201 becomes a stable work-package with two implementation children.",
+    "risk": "Adds coordination overhead but isolates validation and recovery failures.",
+    "execution_order": "Validation precedes recovery implementation; the joint audit follows both."
+  }
+}

@@ -19,7 +19,7 @@ python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 
 python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 --actor <actor> --result fail --evidence <audit-result.json> --json
 ```
 
-5. On failure, identify affected claims and recommend repair or replan. The runtime moves an executable failure to `needs-rework` and invalidates stale dependent proofs. Do not silently weaken the acceptance criterion.
+5. On failure, identify affected claims and recommend repair, approved expansion, or replan. Expand only when the original contract remains valid but needs a deeper internal subtree. The runtime moves an executable failure to `needs-rework` and invalidates stale dependent proofs. Do not silently weaken the acceptance criterion.
 6. Verify a parent outcome only after required children and its joint gate are verified.
 7. After the final intent passes, inspect lifecycle. Run `close` when `closure_ready` is true so the verified intent receives a final report and formal completed state.
 

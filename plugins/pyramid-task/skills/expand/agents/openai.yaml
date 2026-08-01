@@ -1,0 +1,4 @@
+interface:
+  display_name: "Expand Pyramid Task"
+  short_description: "Safely split broad tasks with user approval"
+  default_prompt: "Use $expand to propose and safely apply a deeper task subtree."

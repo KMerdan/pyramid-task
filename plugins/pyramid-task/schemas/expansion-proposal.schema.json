@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/expansion-proposal.schema.json",
+  "title": "Pyramid Task Expansion Proposal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "target",
+    "base_graph_version",
+    "reason",
+    "trigger_signals",
+    "evidence",
+    "preserved_parent",
+    "nodes",
+    "audit_gate",
+    "audit_coverage",
+    "internal_edges",
+    "dependency_mapping",
+    "user_decisions",
+    "impact"
+  ],
+  "properties": {
+    "schema": {"const": "expansion-proposal-v1"},
+    "target": {"$ref": "#/$defs/id"},
+    "base_graph_version": {"type": "integer", "minimum": 1},
+    "reason": {"type": "string", "minLength": 1},
+    "trigger_signals": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim", "reference"],
+        "properties": {
+          "claim": {"type": "string", "minLength": 1},
+          "reference": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "preserved_parent": {"$ref": "#/$defs/preservedParent"},
+    "nodes": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/node"}},
+    "audit_gate": {"$ref": "#/$defs/id"},
+    "audit_coverage": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["node", "type"],
+        "properties": {
+          "node": {"$ref": "#/$defs/id"},
+          "type": {"enum": ["integration-requires", "validation-requires"]}
+        }
+      }
+    },
+    "internal_edges": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/dependencyEdge"}
+    },
+    "dependency_mapping": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["dependency", "consumers", "rationale"],
+        "properties": {
+          "dependency": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["to", "type"],
+            "properties": {
+              "to": {"$ref": "#/$defs/id"},
+              "type": {"enum": ["requires", "contract-requires", "integration-requires", "validation-requires"]}
+            }
+          },
+          "consumers": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/id"}},
+          "rationale": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "user_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["question", "answer"],
+        "properties": {
+          "question": {"type": "string", "minLength": 1},
+          "answer": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "impact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "risk", "execution_order"],
+      "properties": {
+        "scope": {"type": "string", "minLength": 1},
+        "risk": {"type": "string", "minLength": 1},
+        "execution_order": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9-]*$"},
+    "stringArray": {"type": "array", "items": {"type": "string"}},
+    "criterion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "evidenceRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "description"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "type": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_context", "allowed_write_scope", "commands", "deliverables", "non_goals"],
+      "properties": {
+        "required_context": {"$ref": "#/$defs/stringArray"},
+        "allowed_write_scope": {"$ref": "#/$defs/stringArray"},
+        "commands": {"$ref": "#/$defs/stringArray"},
+        "deliverables": {"$ref": "#/$defs/stringArray"},
+        "non_goals": {"$ref": "#/$defs/stringArray"}
+      }
+    },
+    "preservedParent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "summary", "level", "wave", "workstream", "selection", "source_requirements", "acceptance_criteria", "required_evidence", "agent"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "title": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "level": {"type": "integer", "minimum": 0},
+        "wave": {"type": "integer", "minimum": 0},
+        "workstream": {"type": "string", "minLength": 1},
+        "selection": {"const": "primary"},
+        "source_requirements": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+        "acceptance_criteria": {"type": "array", "items": {"$ref": "#/$defs/criterion"}},
+        "required_evidence": {"type": "array", "items": {"$ref": "#/$defs/evidenceRequirement"}},
+        "agent": {"$ref": "#/$defs/agent"}
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "title", "summary", "level", "wave", "workstream", "selection", "source_requirements", "acceptance_criteria", "required_evidence", "agent"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["research", "contract", "implementation", "integration", "risk-control", "audit"]},
+        "title": {"type": "string", "minLength": 1},
+        "summary": {"type": "string", "minLength": 1},
+        "level": {"type": "integer", "minimum": 1},
+        "wave": {"type": "integer", "minimum": 0},
+        "workstream": {"type": "string", "minLength": 1},
+        "selection": {"const": "primary"},
+        "source_requirements": {"type": "array", "items": {"$ref": "#/$defs/id"}},
+        "acceptance_criteria": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/criterion"}},
+        "required_evidence": {"type": "array", "items": {"$ref": "#/$defs/evidenceRequirement"}},
+        "agent": {"$ref": "#/$defs/agent"}
+      }
+    },
+    "dependencyEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "type"],
+      "properties": {
+        "from": {"$ref": "#/$defs/id"},
+        "to": {"$ref": "#/$defs/id"},
+        "type": {"enum": ["requires", "contract-requires", "integration-requires", "validation-requires"]}
+      }
+    }
+  }
+}

@@ -57,6 +57,7 @@ Before creation or replan, check:
 - every primary node traces to the intent;
 - every intent criterion has an implementation and evidence path;
 - every executable node is bounded and independently reviewable;
+- broad executable nodes are left intact unless evidence justifies an approved expansion;
 - every multi-branch composition has an audit gate;
 - every critical assumption has an early validation task;
 - dependencies are typed and minimal;

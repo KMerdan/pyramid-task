@@ -27,7 +27,7 @@ Use `--output <path>` only when the user requests a specific destination.
 - Keep working, verification, health, and path selection as separate dimensions.
 - Show plan lifecycle and `needs-rework` independently from ordinary ready work.
 - Calculate layout from graph semantics; do not write presentation coordinates into the canonical plan.
-- Keep visualization read-only. Route state changes through `take`, `update`, `audit`, or `replan`.
+- Keep visualization read-only. Route state changes through `take`, `update`, `audit`, `expand`, or `replan`.
 
 ## Boundaries
 

@@ -21,7 +21,7 @@ python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203
 ```
 
 4. Report the resulting execution, verification, health, availability, and any remaining rework state separately.
-5. If the agent discovered missing or invalid planning assumptions, include `suggested_graph_changes`; use `replan` rather than changing topology here.
+5. If the agent discovered that the unchanged task contract needs internal decomposition, include `suggested_graph_changes`, release the claim, and use `expand`. Use `replan` when the contract or selected path changed.
 
 ## Boundaries
 

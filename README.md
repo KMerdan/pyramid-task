@@ -5,7 +5,7 @@
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg)](https://www.python.org/)
 [![Codex plugin](https://img.shields.io/badge/Codex-plugin-111827.svg)](https://developers.openai.com/codex/)
 
-Pyramid Task turns a software intent into an evidence-backed pathfinder graph, projects the selected route into an executable task pyramid, and manages that plan through implementation, audit, repair, completion, archive, reset, and restore.
+Pyramid Task turns a software intent into an evidence-backed pathfinder graph, projects the selected route into an executable task pyramid, and manages that plan through approved expansion, implementation, audit, repair, completion, archive, reset, and restore.
 
 It is designed for AI agents without sacrificing human legibility: agents receive compact structured task packets, while people get generated Markdown and an interactive star, pyramid, and dependency map.
 
@@ -35,6 +35,7 @@ Pyramid Task treats planning as a claim-and-evidence problem:
 | `pyramid-task:take` | Claim one safe ready or rework task and receive an agent packet. |
 | `pyramid-task:update` | Record implementation results, evidence, blockers, and risk. |
 | `pyramid-task:audit` | Verify tasks, branch joints, outcomes, and the final intent. |
+| `pyramid-task:expand` | Propose a deeper subtree and apply it only after explicit user approval. |
 | `pyramid-task:replan` | Revise invalid topology while preserving valid work and history. |
 | `pyramid-task:lifecycle` | Reopen, close, archive, reset, clean, and restore plans safely. |
 | `pyramid-task:visualize` | Render a self-contained interactive browser graph. |
@@ -53,6 +54,8 @@ flowchart TD
     A -->|pass| C["Verified intent and final report"]
     A -->|fail| R["Needs rework or replan"]
     R --> T
+    T -->|task is materially broad| X["Preview and approve expansion"]
+    X --> G
     C --> L["Archive / reset / restore lifecycle"]
 ```
 
@@ -84,6 +87,7 @@ Natural-language examples:
 Use $pyramid-task:create to turn this feature request into an evidence-backed implementation plan.
 Use $pyramid-task:inspect to show what is ready, blocked, working, and still unaudited.
 Use $pyramid-task:take to claim the next safe task for this agent.
+Use $pyramid-task:expand when this task is materially broad and needs an approved subtree.
 Use $pyramid-task:visualize to render the current task graph.
 Use $pyramid-task:lifecycle to close and archive this fully verified plan.
 ```
@@ -109,6 +113,15 @@ python3 plugins/pyramid-task/scripts/pyramid.py archive --project /path/to/proje
 
 Run `--help` on any command for the complete interface.
 
+Expansion is deliberately two-phase:
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py expand --project /path/to/project --proposal expansion.json --actor planner --preview --json
+python3 plugins/pyramid-task/scripts/pyramid.py expand --project /path/to/project --proposal expansion.json --actor planner --approved-by user --approval-reference task-message --approved-proposal-sha256 <preview-hash> --apply --json
+```
+
+The agent recommends expansion only from concrete scope evidence. The user approves the exact previewed topology. The stable parent ID becomes a non-executable work-package, and a mandatory joint audit covers every new branch.
+
 ## State model
 
 Node state is intentionally multidimensional:
@@ -126,11 +139,11 @@ An implementation is not verified merely because an agent marked it implemented.
 .agents/plugins/marketplace.json        Public Codex marketplace
 plugins/pyramid-task/
 ├── .codex-plugin/plugin.json          Plugin manifest
-├── skills/                            Eight agent-facing interfaces
+├── skills/                            Nine agent-facing interfaces
 ├── scripts/                           Deterministic runtime and visualizer
 ├── schemas/                           Published JSON contracts
 ├── references/                        Graph, evidence, agent, and lifecycle contracts
-├── assets/example-plan.json           Valid example plan
+├── assets/                            Valid plan and expansion examples
 └── tests/                              Runtime and visualization tests
 tools/validate_repository.py           Self-contained repository validation
 ```
@@ -148,7 +161,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for design invariants and pull-request ex
 
 ## Project status
 
-Version 2.1.0 provides the complete planning, execution, audit, repair, visualization, and lifecycle loop. The serialized contracts are versioned; backward-incompatible changes will use a major release.
+Version 2.2.0 adds user-approved recursive task expansion, stable work-packages, stronger joint-gate coverage, and deep-graph visualization. The serialized contracts are versioned; backward-incompatible changes will use a major release.
 
 ## License
 

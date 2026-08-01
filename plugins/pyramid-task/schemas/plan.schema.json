@@ -109,7 +109,7 @@
       "required": ["id", "kind", "title", "summary", "level", "wave", "workstream", "selection", "source_requirements", "acceptance_criteria", "required_evidence", "agent"],
       "properties": {
         "id": {"$ref": "#/$defs/id"},
-        "kind": {"enum": ["intent", "outcome", "capability", "decision", "research", "contract", "implementation", "integration", "risk-control", "audit"]},
+        "kind": {"enum": ["intent", "outcome", "capability", "work-package", "decision", "research", "contract", "implementation", "integration", "risk-control", "audit"]},
         "title": {"type": "string", "minLength": 1},
         "summary": {"type": "string", "minLength": 1},
         "level": {"type": "integer", "minimum": 0},

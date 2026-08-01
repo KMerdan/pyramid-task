@@ -9,7 +9,7 @@ The runtime produces compact packets so a worker does not need the entire graph.
 - task and graph version;
 - title, purpose, kind, level, wave, and workstream;
 - execution, verification, health, blocker, and derived availability;
-- goal trace to the intent;
+- goal trace to the intent plus direct parents and children;
 - typed dependencies and their state;
 - required context and allowed write scope;
 - commands, deliverables, and non-goals;
@@ -35,7 +35,7 @@ Submit `agent-result-v1` as JSON:
 }
 ```
 
-Use `blocked` when the task cannot continue inside its existing contract. Use `suggested_graph_changes` for evidence that may require replanning; do not mutate topology through a result.
+Use `blocked` when the task cannot continue inside its existing contract. Use `suggested_graph_changes` for evidence that may require expansion or replanning; do not mutate topology through a result.
 
 ## Audit result
 
@@ -52,7 +52,7 @@ Submit `audit-result-v1` as JSON:
 }
 ```
 
-A passing audit requires a non-empty check list and no failed check. A failure records the failed check, affected claims, and a repair or replan recommendation.
+A passing audit requires a non-empty check list and no failed check. A failure records the failed check, affected claims, and a repair, expansion, or replan recommendation.
 
 ## Ownership and transitions
 
@@ -63,7 +63,8 @@ A passing audit requires a non-empty check list and no failed check. A failure r
 - `audit fail` sets an executable node to needs-rework, verification failed, and health at-risk, then invalidates stale dependent proofs.
 - `reopen` applies the same repair state to a primary executable claim and reactivates a completed plan when needed.
 - Replanning preserves unchanged node state, initializes new nodes, and marks removed nodes superseded.
+- Approved expansion preserves the task ID and contract, converts it to a work-package, initializes child branches and a joint gate, and invalidates stale dependent proofs.
 
-A completed plan rejects take, update, audit, and replan. An archived plan rejects every canonical mutation. Use the lifecycle interface for close, archive, reset, restore, clean, and manual reopen semantics.
+A completed plan rejects take, update, audit, expand, and replan. An archived plan rejects every canonical mutation. Use the lifecycle interface for close, archive, reset, restore, clean, and manual reopen semantics.
 
 Every mutation supplies an actor, expected graph version when available, reason or result, timestamp, and unique event ID. Events are immutable. Generated graph and Markdown files are projections, not mutation interfaces.

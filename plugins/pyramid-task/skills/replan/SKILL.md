@@ -7,6 +7,8 @@ description: Replan an existing Pyramid Task V2 graph from new evidence, audit f
 
 Read `../../references/pathfinder-workflow.md`, `../../references/graph-contract.md`, `../../references/agent-contracts.md`, and `../../references/lifecycle-contract.md` completely before changing topology.
 
+Use `pyramid-task:expand` instead when a single executable task keeps the same purpose, contract, selected path, and external relations and only needs a deeper approved subtree.
+
 ## Workflow
 
 1. Capture the triggering evidence or audit result.
