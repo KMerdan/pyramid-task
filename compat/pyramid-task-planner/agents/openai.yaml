@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pyramid Task Planner Compatibility"
+  short_description: "Route legacy planner requests into Pyramid Task V3."
+  default_prompt: "Use $pyramid-task-planner to route this planning request safely through the installed Pyramid Task V3 plugin."

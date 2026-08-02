@@ -5,6 +5,8 @@ description: Upgrade an active Pyramid Task V2 or V2.1 project to V3 in place wi
 
 # Upgrade a Pyramid Task Project
 
+Use this skill to continue the current legacy intent. When a completed legacy cluster is followed by a distinct new intent, use `pyramid-task:new-intent`; it composes upgrade, archive, and reset under one approval hash.
+
 Read `../../references/upgrade-contract.md`, `../../references/brownfield-assurance.md`, and `../../references/lifecycle-contract.md` completely before upgrading.
 
 ## Workflow

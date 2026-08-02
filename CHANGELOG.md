@@ -2,6 +2,17 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## 3.1.0
+
+### Safe intent transitions
+
+- Add a deterministic `new-intent` preview/apply workflow for fresh projects, completed V3 plans, and completed V2/V2.1 clusters.
+- Compose legacy upgrade, validated snapshots, archive, reset, baseline carry-over, and new-plan initialization under one approval-bound transition hash.
+- Block active plans, active claims, and ambiguous archived-legacy transitions instead of replacing work by inference.
+- Extend `doctor` with runtime version, project format, lifecycle routing, recommended action, and stale standalone planner detection.
+- Add a dedicated `pyramid-task:new-intent` skill and a V3 compatibility shim for old `pyramid-task-planner` installations.
+- Clarify that `project.json` identifies V3 project format while `plan.json` and `state.json` remain compatible canonical contracts.
+
 ## 3.0.0
 
 ### Brownfield by default

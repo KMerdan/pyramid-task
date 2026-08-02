@@ -35,6 +35,7 @@ Pyramid Task treats planning as a claim-and-evidence problem:
 | Skill | Purpose |
 | --- | --- |
 | `pyramid-task:create` | Clarify intent, gather evidence, compare paths, and create the graph. |
+| `pyramid-task:new-intent` | Safely create, upgrade/archive/reset, or archive/reset when starting another intent. |
 | `pyramid-task:assess` | Establish or refresh the existing-system baseline. |
 | `pyramid-task:impact` | Map affected assets, inspections, findings, drift, and controls. |
 | `pyramid-task:upgrade` | Migrate a running V2/V2.1 plan in place without rebuilding it. |
@@ -67,6 +68,8 @@ flowchart TD
     T -->|task is materially broad| Q["Preview and approve expansion"]
     Q --> G
     C --> L["Archive / reset / restore lifecycle"]
+    L -->|new intent| N["Hash-bound create / upgrade / archive / reset transition"]
+    N --> G
 ```
 
 The canonical plan lives in `.pyramid/plan.json`. V3 adds a project manifest and, in brownfield mode, separate baseline and assurance companions. Keeping these contracts separate lets an active V2 plan upgrade without graph reconstruction. Graph snapshots, ready indexes, Markdown, and HTML remain generated projections—not mutation interfaces.
@@ -95,6 +98,7 @@ Natural-language examples:
 
 ```text
 Use $pyramid-task:create to turn this feature request into an evidence-backed implementation plan.
+Use $pyramid-task:new-intent to start another intent after this completed V2 or V3 task cluster.
 Use $pyramid-task:assess to baseline this existing software system before planning the change.
 Use $pyramid-task:impact to map affected assets and required inspections for this plan.
 Use $pyramid-task:upgrade to migrate this running V2.1 plan to V3 without rebuilding it.
@@ -125,6 +129,15 @@ python3 plugins/pyramid-task/scripts/pyramid.py close --project /path/to/project
 python3 plugins/pyramid-task/scripts/pyramid.py archive --project /path/to/project --actor owner --reason "Release complete" --json
 ```
 
+Start a distinct intent through one previewed transition. The runtime, not the agent, chooses whether this means `create`, `upgrade → archive → reset`, or `archive → reset`:
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py new-intent --project /path/to/project --plan next-plan.json --actor planner --reason "Start the next intent" --from-version 2.1 --mode auto --preview --json
+python3 plugins/pyramid-task/scripts/pyramid.py new-intent --project /path/to/project --plan next-plan.json --actor planner --reason "Start the next intent" --from-version 2.1 --mode auto --apply --approved-by owner --approval-reference task-message --approved-new-intent-sha256 <preview-hash> --expected-version <graph-version> --json
+```
+
+Existing plans require approval of the exact transition hash. Active plans and active claims are preserved and reported as blockers. A completed legacy plan is upgraded first so its state can seed the next brownfield baseline.
+
 Run `--help` on any command for the complete interface.
 
 Brownfield creation is the default for a non-empty repository. Supply reviewed candidates when available:
@@ -146,6 +159,10 @@ python3 plugins/pyramid-task/scripts/pyramid.py upgrade --project /path/to/proje
 ```
 
 Previously verified nodes stay verified; no work is replayed. Derived legacy inspections remain partial, so future audits and final closure must address the reported bridge gaps.
+
+### Upgrading from the standalone planner skill
+
+Older Codex installations may still discover `~/.codex/skills/pyramid-task-planner`, whose original workflow wrote `docs/tasks/` directly. Run `doctor --json`; V3 reports this as `standalone-v2-planner`. Replace it with the compatibility shim in `compat/pyramid-task-planner` or remove it from skill discovery, then start a new Codex task. The shim delegates planning to the plugin and never mutates canonical or generated files itself.
 
 Expansion is deliberately two-phase:
 
@@ -174,7 +191,7 @@ An implementation is not verified merely because an agent marked it implemented.
 .agents/plugins/marketplace.json        Public Codex marketplace
 plugins/pyramid-task/
 ├── .codex-plugin/plugin.json          Plugin manifest
-├── skills/                            Twelve agent-facing interfaces
+├── skills/                            Thirteen agent-facing interfaces
 ├── scripts/                           Deterministic runtime and visualizer
 ├── schemas/                           Published JSON contracts
 ├── references/                        Graph, evidence, agent, and lifecycle contracts
@@ -197,7 +214,7 @@ Release details are recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## Project status
 
-Version 3.0.0 makes brownfield assurance the default for existing repositories. It adds baselines, impact and inspection records, scope-drift and stale-evidence enforcement, change dossiers, interactive assurance overlays, and an in-place V2/V2.1 upgrade bridge. Legacy plans remain readable and upgrade without rebuilding their graph.
+Version 3.1.0 adds a deterministic, approval-bound `new-intent` transition and stale standalone-skill detection. A completed V2/V2.1 cluster can now become the preserved evidence and baseline for a new V3 intent without asking an agent to improvise the lifecycle route.
 
 ## License
 

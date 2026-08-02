@@ -20,6 +20,8 @@ from pyramid_core import (
     inspect_lifecycle,
     inspect_project,
     impact_project,
+    intent_transition_route,
+    new_intent_project,
     replan_project,
     reopen_node,
     reset_project,
@@ -65,6 +67,29 @@ def build_parser() -> argparse.ArgumentParser:
     create.add_argument("--assurance", help="Optional pyramid-assurance-v1 JSON")
     create.add_argument("--force", action="store_true", help="Deprecated; unsafe replacement is rejected")
     add_json(create)
+
+    new_intent = sub.add_parser(
+        "new-intent",
+        help="Preview or start a new intent through the safe lifecycle transition",
+    )
+    add_project(new_intent)
+    new_intent.add_argument("--plan", required=True)
+    new_intent.add_argument("--actor", required=True)
+    new_intent.add_argument("--reason", required=True)
+    new_intent.add_argument("--from-version", default="2.1")
+    new_intent.add_argument(
+        "--mode",
+        choices=["auto", "greenfield", "brownfield"],
+        default="auto",
+    )
+    new_intent_mode = new_intent.add_mutually_exclusive_group(required=True)
+    new_intent_mode.add_argument("--preview", action="store_true")
+    new_intent_mode.add_argument("--apply", action="store_true")
+    new_intent.add_argument("--approved-by")
+    new_intent.add_argument("--approval-reference")
+    new_intent.add_argument("--approved-new-intent-sha256")
+    add_version(new_intent)
+    add_json(new_intent)
 
     upgrade = sub.add_parser(
         "upgrade",
@@ -255,6 +280,20 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             baseline_path=args.baseline,
             assurance_path=args.assurance,
         ), 0
+    if args.command == "new-intent":
+        return new_intent_project(
+            args.project,
+            args.plan,
+            args.actor,
+            args.reason,
+            source_version=args.from_version,
+            mode=args.mode,
+            apply=args.apply,
+            approved_by=args.approved_by,
+            approval_reference=args.approval_reference,
+            approved_new_intent_sha256=args.approved_new_intent_sha256,
+            expected_version=args.expected_version,
+        ), 0
     if args.command == "upgrade":
         return upgrade_project(
             args.project,
@@ -293,9 +332,22 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
         if not validation["valid"]:
             return {"status": "invalid", **validation}, 1
         lifecycle = inspect_lifecycle(args.project)
+        transition = intent_transition_route(args.project)
         if lifecycle.get("lifecycle", {}).get("status") == "archived":
-            return {"status": "healthy", "validation": validation, "lifecycle": lifecycle, "compiled": None}, 0
-        return {"status": "healthy", "validation": validation, "compiled": compile_project(args.project)}, 0
+            return {
+                "status": "healthy",
+                "validation": validation,
+                "lifecycle": lifecycle,
+                "intent_transition": transition,
+                "compiled": None,
+            }, 0
+        return {
+            "status": "healthy",
+            "validation": validation,
+            "lifecycle": lifecycle,
+            "intent_transition": transition,
+            "compiled": compile_project(args.project),
+        }, 0
     if args.command == "inspect":
         return inspect_project(
             args.project,

@@ -32,3 +32,5 @@ Previously verified nodes remain verified; the graph is not replayed. Enforcemen
 Running upgrade on a V3 project returns `up-to-date` and does not create another event. Archived current plans must be restored before upgrade. The pre-upgrade snapshot can be inspected or restored with normal lifecycle commands if recovery is required.
 
 Do not delete V2 state, recreate the graph, synthesize user approval, or claim that derived low-confidence records are verified evidence.
+
+When a completed legacy intent is immediately followed by a distinct new intent, use `new-intent` instead of manually sequencing commands. Its parent approval hash covers the candidate and the upgrade/archive/reset route, while the component upgrade hash remains recorded in the upgrade event.

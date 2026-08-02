@@ -1,7 +1,7 @@
 {
   "name": "pyramid-task",
-  "version": "3.0.0",
-  "description": "Plan and assure brownfield software changes with evidence-backed task pyramids, impact analysis, inspections, audit gates, migration, dossiers, and interactive overlays.",
+  "version": "3.1.0",
+  "description": "Plan and assure brownfield software changes with evidence-backed task pyramids, safe new-intent transitions, impact analysis, inspections, audit gates, migration, dossiers, and interactive overlays.",
   "author": {
     "name": "Dr. Merdan Bay",
     "url": "https://github.com/KMerdan"
@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "Pyramid Task V3",
     "shortDescription": "Brownfield change assurance for agents and humans.",
-    "longDescription": "Turn an intent into a validated pathfinder graph, baseline an existing system, map change impact, enforce inspection-aware audit gates, migrate active V2 plans without rebuilding, carry the verified baseline through the full lifecycle, and explore interactive task and assurance overlays.",
+    "longDescription": "Turn an intent into a validated pathfinder graph, baseline an existing system, map change impact, enforce inspection-aware audit gates, migrate active V2 plans without rebuilding, safely transition completed V2 or V3 clusters into a new intent, carry the verified baseline through the full lifecycle, and explore interactive task and assurance overlays.",
     "developerName": "Dr. Merdan Bay",
     "category": "Productivity",
     "capabilities": [
@@ -29,6 +29,7 @@
       "Brownfield Assurance",
       "Impact Analysis",
       "Migration",
+      "Intent Transition",
       "Expansion",
       "Lifecycle",
       "Interactive",
@@ -39,6 +40,7 @@
       "Turn this feature into an evidence-backed task pyramid.",
       "Assess this existing system and map the change impact before implementation.",
       "Upgrade this running V2.1 plan to V3 without rebuilding it.",
+      "Start a new intent after this completed task cluster without losing its history.",
       "Show what is ready, active, blocked, and unaudited.",
       "Propose and preview a safe expansion for this broad task."
     ]

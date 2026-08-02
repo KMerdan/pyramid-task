@@ -8,6 +8,7 @@ import tempfile
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
+from unittest import mock
 
 import jsonschema
 
@@ -28,7 +29,9 @@ from pyramid_core import (  # noqa: E402
     inspect_lifecycle,
     inspect_project,
     impact_project,
+    intent_transition_route,
     load_json,
+    new_intent_project,
     replan_project,
     reopen_node,
     reset_project,
@@ -737,6 +740,147 @@ class PyramidRuntimeTests(unittest.TestCase):
         )
         self.assertTrue((Path(archived["path"]) / ".pyramid" / "assurance.json").exists())
 
+    def test_new_intent_preview_and_apply_from_completed_v3(self) -> None:
+        self.complete_graph()
+        close_project(self.root, "owner")
+        candidate = load_json(self.example)
+        candidate["plan_id"] = "PLAN-NEXT-V3"
+        candidate["title"] = "Next V3 intent"
+        candidate_path = self.write_json("next-v3-plan.json", candidate)
+
+        preview = new_intent_project(
+            self.root,
+            candidate_path,
+            "planner",
+            "Start the next verified intent",
+        )
+        self.assertEqual("preview", preview["status"])
+        self.assertEqual(["archive", "reset"], preview["transition"])
+        self.assertTrue(preview["approval_required"])
+        jsonschema.validate(
+            preview,
+            load_json(PLUGIN_ROOT / "schemas" / "new-intent-preview.schema.json"),
+        )
+        with self.assertRaisesRegex(PyramidError, "approved-by"):
+            new_intent_project(
+                self.root,
+                candidate_path,
+                "planner",
+                "Start the next verified intent",
+                apply=True,
+            )
+
+        started = new_intent_project(
+            self.root,
+            candidate_path,
+            "planner",
+            "Start the next verified intent",
+            apply=True,
+            approved_by="owner",
+            approval_reference="conversation-101",
+            approved_new_intent_sha256=preview["new_intent_sha256"],
+            expected_version=preview["current"]["graph_version"],
+        )
+        self.assertEqual("started", started["status"])
+        self.assertEqual("PLAN-NEXT-V3", inspect_project(self.root, summary=True)["plan_id"])
+        self.assertIsNone(started["upgrade"])
+        event_files = sorted((self.root / ".pyramid" / "events").glob("*.json"))
+        created_event = load_json(event_files[-1])
+        self.assertEqual(
+            preview["new_intent_sha256"],
+            created_event["payload"]["transition_approval"]["new_intent_sha256"],
+        )
+        self.assertTrue(validate_project(self.root)["valid"])
+
+    def test_new_intent_upgrades_completed_v2_before_reset(self) -> None:
+        self.complete_graph()
+        close_project(self.root, "owner")
+        (self.root / "src").mkdir()
+        (self.root / "src" / "legacy.py").write_text("value = 1\n", encoding="utf-8")
+        (self.root / ".pyramid" / "project.json").unlink()
+        candidate = load_json(self.example)
+        candidate["plan_id"] = "PLAN-AFTER-V2"
+        candidate["title"] = "Intent after completed V2"
+        candidate_path = self.write_json("after-v2-plan.json", candidate)
+
+        preview = new_intent_project(
+            self.root,
+            candidate_path,
+            "planner",
+            "Continue from the completed legacy intent",
+            source_version="2.1",
+        )
+        self.assertEqual(["upgrade", "archive", "reset"], preview["transition"])
+        self.assertIn("upgrade_sha256", preview["components"])
+        started = new_intent_project(
+            self.root,
+            candidate_path,
+            "planner",
+            "Continue from the completed legacy intent",
+            source_version="2.1",
+            apply=True,
+            approved_by="owner",
+            approval_reference="conversation-102",
+            approved_new_intent_sha256=preview["new_intent_sha256"],
+            expected_version=preview["current"]["graph_version"],
+        )
+        self.assertIsNotNone(started["upgrade"])
+        self.assertEqual("PLAN-AFTER-V2", inspect_project(self.root, summary=True)["plan_id"])
+        project = load_json(self.root / ".pyramid" / "project.json")
+        self.assertEqual(3, project["format_version"])
+        self.assertEqual("brownfield", project["mode"])
+        self.assertTrue((self.root / ".pyramid" / "baseline.json").exists())
+        self.assertGreaterEqual(len(inspect_lifecycle(self.root)["archives"]), 2)
+        self.assertTrue(validate_project(self.root)["valid"])
+
+    def test_new_intent_blocks_an_active_plan_and_reports_legacy_skill_conflict(self) -> None:
+        codex_home = Path(self.temp.name) / "codex-home"
+        legacy_skill = codex_home / "skills" / "pyramid-task-planner" / "SKILL.md"
+        legacy_skill.parent.mkdir(parents=True)
+        legacy_skill.write_text(
+            "---\nname: pyramid-task-planner\ndescription: old\n---\n"
+            "## Default Output Shape\nCreate docs/tasks/README.md directly.\n",
+            encoding="utf-8",
+        )
+        with mock.patch.dict("os.environ", {"CODEX_HOME": str(codex_home)}):
+            route = intent_transition_route(self.root)
+            self.assertFalse(route["can_start_new_intent"])
+            self.assertEqual("continue-current-intent", route["recommended_action"])
+            self.assertEqual("standalone-v2-planner", route["legacy_skill_conflicts"][0]["kind"])
+            candidate = load_json(self.example)
+            candidate["plan_id"] = "PLAN-BLOCKED-NEXT"
+            preview = new_intent_project(
+                self.root,
+                self.write_json("blocked-next-plan.json", candidate),
+                "planner",
+                "Do not replace active work",
+            )
+        self.assertEqual("blocked", preview["status"])
+        self.assertIn("current intent is active", " ".join(preview["blockers"]).lower())
+
+    def test_new_intent_routes_verified_but_unclosed_plan_to_close_first(self) -> None:
+        self.complete_graph()
+        route = intent_transition_route(self.root)
+        self.assertTrue(route["closure_ready"])
+        self.assertFalse(route["can_start_new_intent"])
+        self.assertEqual("close-then-preview-new-intent", route["recommended_action"])
+        self.assertIn("not formally closed", " ".join(route["blockers"]))
+
+    def test_new_intent_creates_a_fresh_project_without_transition_approval(self) -> None:
+        root = Path(self.temp.name) / "fresh-new-intent"
+        preview = new_intent_project(root, self.example, "planner", "Start the first intent")
+        self.assertEqual(["create"], preview["transition"])
+        self.assertFalse(preview["approval_required"])
+        started = new_intent_project(
+            root,
+            self.example,
+            "planner",
+            "Start the first intent",
+            apply=True,
+        )
+        self.assertEqual("started", started["status"])
+        self.assertEqual("PLAN-001", inspect_project(root, summary=True)["plan_id"])
+
     def test_v3_cli_exposes_brownfield_and_upgrade_interfaces(self) -> None:
         completed = subprocess.run(
             [sys.executable, str(PLUGIN_ROOT / "scripts" / "pyramid.py"), "--help"],
@@ -744,7 +888,7 @@ class PyramidRuntimeTests(unittest.TestCase):
             capture_output=True,
             text=True,
         )
-        for command in ("upgrade", "assess", "impact"):
+        for command in ("new-intent", "upgrade", "assess", "impact"):
             self.assertIn(command, completed.stdout)
 
 

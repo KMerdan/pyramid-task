@@ -1,6 +1,6 @@
 ---
 name: create
-description: Create a Pyramid Task V3 project from an intent, idea, feature, product design, or architecture proposal. Use when Codex must clarify the desired outcome, assess an existing system, gather evidence, compare feasible paths, construct a hierarchical pathfinder graph, insert audit gates, and materialize agent-ready task files with brownfield assurance by default.
+description: Create the first Pyramid Task V3 project from an intent, idea, feature, product design, or architecture proposal when no canonical plan exists. Use when Codex must clarify the desired outcome, assess an existing system, gather evidence, compare feasible paths, construct a hierarchical pathfinder graph, insert audit gates, and materialize agent-ready task files with brownfield assurance by default. Use `pyramid-task:new-intent`, not this skill, when `.pyramid/plan.json` already exists and the user wants another intent.
 ---
 
 # Create a Pyramid Task Plan
@@ -21,7 +21,7 @@ Use `../../assets/example-plan.json` as a structural example, never as product e
 
 ## Workflow
 
-1. Read the source request, repository shape, existing plans, tests, schemas, history, and constraints. If a legacy Pyramid Task project already exists, stop creation and use `pyramid-task:upgrade`.
+1. Read the source request, repository shape, existing plans, tests, schemas, history, and constraints. Run `doctor --json` when `.pyramid/plan.json` exists. Use `pyramid-task:new-intent` for another intent; use `pyramid-task:upgrade` only when continuing the same legacy intent.
 2. Normalize the intent into actors, target state, success evidence, invariants, constraints, non-goals, and assumptions. Ask only about ambiguities that would materially change the path; otherwise record the assumption.
 3. Gather evidence. Separate observed facts, sourced claims, assumptions, and unknowns. For an existing system, build a `pyramid-baseline-v1` asset, relation, history, ownership, and unknown ledger; use `pyramid-task:assess` when this needs a dedicated pass.
 4. Backward-chain from the intent to required outcomes. Forward-chain from the current state to feasible work. Reconcile both chains.
@@ -47,3 +47,5 @@ python3 ../../scripts/pyramid.py create --project <project-root> --plan <candida
 - Do not treat generated task completion as proof that the parent outcome is verified.
 - Do not delete or overwrite an existing graph to restart; archive and reset it through lifecycle.
 - Do not classify an existing repository as greenfield merely to bypass assurance.
+- Treat `.pyramid/project.json` as the V3 project-format marker. `plan.json` and `state.json` remain canonical across versions and do not identify the installed runtime.
+- If a standalone `pyramid-task-planner` skill also triggers, Pyramid Task V3 owns canonical state and generated task projections; ignore obsolete instructions to write `docs/tasks/` directly.

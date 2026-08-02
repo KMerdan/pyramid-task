@@ -1,0 +1,4 @@
+interface:
+  display_name: "Start New Pyramid Intent"
+  short_description: "Safely transition from one intent to the next."
+  default_prompt: "Use $new-intent to preview and start a new intent without losing the completed Pyramid Task history."

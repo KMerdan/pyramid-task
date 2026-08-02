@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/new-intent-preview.schema.json",
+  "title": "Pyramid Task New Intent Preview",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "runtime_version",
+    "mode",
+    "current",
+    "candidate",
+    "transition",
+    "preserves",
+    "blockers",
+    "components",
+    "approval_required",
+    "new_intent_sha256"
+  ],
+  "properties": {
+    "schema": {"const": "pyramid-new-intent-preview-v1"},
+    "status": {"enum": ["preview", "blocked"]},
+    "runtime_version": {"type": "string", "minLength": 1},
+    "mode": {"enum": ["greenfield", "brownfield"]},
+    "current": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "plan_id",
+            "project_format_version",
+            "lifecycle",
+            "graph_version",
+            "active_claims",
+            "plan_sha256",
+            "state_sha256"
+          ],
+          "properties": {
+            "plan_id": {"type": "string", "minLength": 1},
+            "project_format_version": {
+              "oneOf": [
+                {"const": "legacy-v2"},
+                {"type": "integer", "minimum": 3}
+              ]
+            },
+            "lifecycle": {"enum": ["active", "completed", "archived"]},
+            "graph_version": {"type": "integer", "minimum": 1},
+            "active_claims": {"type": "array", "items": {"type": "string"}},
+            "plan_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "state_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+          }
+        }
+      ]
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plan_id", "title", "plan_sha256"],
+      "properties": {
+        "plan_id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "plan_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "transition": {
+      "type": "array",
+      "items": {"enum": ["create", "upgrade", "archive", "reset"]}
+    },
+    "preserves": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "components": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "upgrade_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "approval_required": {"type": "boolean"},
+    "new_intent_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

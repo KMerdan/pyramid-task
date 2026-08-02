@@ -76,7 +76,10 @@ A passing audit requires a non-empty check list and no failed check. In brownfie
 - Baseline change, replan, expansion, reopen, audit failure, or undeclared scope stales affected inspections and assurance.
 - Brownfield close writes a change dossier and advances the baseline revision.
 - In-place upgrade preserves legacy node state and active ownership while introducing conservative future assurance enforcement.
+- New-intent preview separates installed runtime, project format, and lifecycle state, then binds any upgrade/archive/reset sequence to one user-approved hash.
 
 A completed plan rejects take, update, audit, expand, and replan. An archived plan rejects every canonical mutation. Use the lifecycle interface for close, archive, reset, restore, clean, and manual reopen semantics.
 
 Every mutation supplies an actor, expected graph version when available, reason or result, timestamp, and unique event ID. Events are immutable. Generated graph and Markdown files are projections, not mutation interfaces.
+
+When an older standalone `pyramid-task-planner` is also discoverable, the V3 plugin remains authoritative for `.pyramid` and `docs/tasks/`. `doctor` reports the conflict; the compatibility shim delegates rather than writing files.

@@ -47,6 +47,8 @@ Reset requires a fully validated candidate plan with a new `plan_id`. It archive
 python3 ../../scripts/pyramid.py reset --project <project-root> --plan <new-plan.json> --actor <actor> --reason <reason> --json
 ```
 
+When the user is starting a distinct intent, prefer `pyramid-task:new-intent`. Its preview chooses create, upgrade/archive/reset, or archive/reset from the actual format and lifecycle and binds user approval to the complete transition.
+
 Clean only generated graph, ready, Markdown, and browser artifacts, then regenerate them. It preserves plan, state, reports, and events byte-for-byte:
 
 ```bash

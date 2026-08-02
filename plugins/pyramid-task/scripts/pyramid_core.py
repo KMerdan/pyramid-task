@@ -247,6 +247,122 @@ def active_claims(state: dict[str, Any]) -> list[str]:
     )
 
 
+def detect_legacy_planner_conflicts() -> list[dict[str, str]]:
+    """Return stale standalone planner skills that can conflict with the V3 plugin."""
+    configured_home = os.environ.get("CODEX_HOME")
+    codex_home = (
+        Path(configured_home).expanduser()
+        if configured_home
+        else Path.home() / ".codex"
+    )
+    skill_file = codex_home / "skills" / "pyramid-task-planner" / "SKILL.md"
+    if not skill_file.exists():
+        return []
+    try:
+        text = skill_file.read_text(encoding="utf-8")
+    except OSError:
+        return []
+    stale_markers = (
+        "The output should be a directory of markdown task files",
+        "docs/tasks/README.md",
+        "## Default Output Shape",
+    )
+    if "name: pyramid-task-planner" not in text or not any(
+        marker in text for marker in stale_markers
+    ):
+        return []
+    return [
+        {
+            "path": str(skill_file),
+            "kind": "standalone-v2-planner",
+            "resolution": (
+                "Replace this skill with the published V3 compatibility shim or remove it "
+                "from Codex skill discovery; Pyramid Task V3 owns .pyramid state and generated tasks."
+            ),
+        }
+    ]
+
+
+def intent_transition_route(project: str | Path) -> dict[str, Any]:
+    """Describe the safe lifecycle route for starting another intent."""
+    paths = project_paths(project)
+    conflicts = detect_legacy_planner_conflicts()
+    if not paths["plan"].exists():
+        return {
+            "runtime_version": RUNTIME_VERSION,
+            "project_format_version": None,
+            "lifecycle": None,
+            "closure_ready": False,
+            "active_claims": [],
+            "can_start_new_intent": True,
+            "recommended_action": "create",
+            "transition": ["create"],
+            "blockers": [],
+            "legacy_skill_conflicts": conflicts,
+        }
+
+    paths, plan, state = load_project(project)
+    manifest = load_json(paths["project"]) if paths["project"].exists() else None
+    _, baseline, assurance = load_assurance_bundle(paths, plan)
+    project_format = manifest.get("format_version") if manifest else "legacy-v2"
+    status = lifecycle_status(state)
+    claims = active_claims(state)
+    closure_ready = (
+        status == "active"
+        and not claims
+        and not completion_errors(plan, state, baseline, assurance)
+    )
+    blockers: list[str] = []
+    transition: list[str] = []
+    recommended_action = "continue-current-intent"
+    can_start = False
+
+    if claims:
+        blockers.append("Release active claims before changing intents: " + ", ".join(claims))
+    elif status == "completed":
+        can_start = True
+        recommended_action = "preview-new-intent"
+        transition = (
+            ["upgrade", "archive", "reset"]
+            if manifest is None
+            else ["archive", "reset"]
+        )
+    elif status == "archived" and manifest is not None:
+        can_start = True
+        recommended_action = "preview-new-intent"
+        transition = ["reset"]
+    elif status == "archived":
+        recommended_action = "restore-upgrade-or-start-without-legacy-baseline"
+        blockers.append(
+            "The current legacy plan is archived; restore it before deriving a V3 baseline, "
+            "or explicitly choose a new baseline before reset."
+        )
+    elif closure_ready:
+        recommended_action = "close-then-preview-new-intent"
+        blockers.append(
+            "The current graph is verified but not formally closed. Run close to produce its final "
+            "report and change dossier, then preview the new intent again."
+        )
+    else:
+        blockers.append(
+            "The current intent is active. Complete it, or explicitly archive/reset it after user approval."
+        )
+
+    return {
+        "runtime_version": RUNTIME_VERSION,
+        "project_format_version": project_format,
+        "plan_id": plan["plan_id"],
+        "lifecycle": status,
+        "closure_ready": closure_ready,
+        "active_claims": claims,
+        "can_start_new_intent": can_start,
+        "recommended_action": recommended_action,
+        "transition": transition,
+        "blockers": blockers,
+        "legacy_skill_conflicts": conflicts,
+    }
+
+
 @contextmanager
 def project_lock(paths: dict[str, Path]):
     paths["meta"].mkdir(parents=True, exist_ok=True)
@@ -3522,6 +3638,7 @@ def reset_project(
     actor: str,
     reason: str,
     expected_version: int | None = None,
+    transition_approval: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if not reason.strip():
         raise PyramidError("reset requires a non-empty reason")
@@ -3551,7 +3668,11 @@ def reset_project(
             paths,
             candidate,
             actor,
-            {"reset_from_archive": archived["archive_id"], "reason": reason},
+            {
+                "reset_from_archive": archived["archive_id"],
+                "reason": reason,
+                **({"transition_approval": transition_approval} if transition_approval else {}),
+            },
             mode=next_mode,
             baseline=current_baseline,
         )
@@ -3562,6 +3683,191 @@ def reset_project(
         "event": event,
         "plan_id": candidate["plan_id"],
         **compiled,
+    }
+
+
+def _new_intent_material(
+    project: str | Path,
+    plan_path: str | Path,
+    actor: str,
+    reason: str,
+    *,
+    source_version: str,
+    mode: str,
+    expected_version: int | None,
+) -> tuple[dict[str, Any], dict[str, Any] | None]:
+    if not reason.strip():
+        raise PyramidError("new-intent requires a non-empty reason")
+    candidate_path = Path(plan_path).expanduser().resolve()
+    candidate = load_json(candidate_path)
+    errors = validate_plan(candidate)
+    if errors:
+        raise PyramidError("Candidate new-intent plan is invalid:\n- " + "\n- ".join(errors))
+
+    paths = project_paths(project)
+    route = intent_transition_route(project)
+    current: dict[str, Any] | None = None
+    components: dict[str, Any] = {}
+    selected_mode = detect_repository_mode(paths["root"]) if mode == "auto" else mode
+    if selected_mode not in {"greenfield", "brownfield"}:
+        raise PyramidError("new-intent mode must be auto, greenfield, or brownfield")
+
+    if paths["plan"].exists():
+        paths, current_plan, state = load_project(project)
+        check_expected_version(state, expected_version)
+        if candidate["plan_id"] == current_plan["plan_id"]:
+            raise PyramidError("A new intent must use a new plan_id; use replan for the current intent")
+        manifest = load_json(paths["project"]) if paths["project"].exists() else None
+        if manifest is not None:
+            selected_mode = manifest["mode"]
+        current = {
+            "plan_id": current_plan["plan_id"],
+            "project_format_version": (
+                manifest.get("format_version") if manifest else "legacy-v2"
+            ),
+            "lifecycle": lifecycle_status(state),
+            "graph_version": state["graph_version"],
+            "active_claims": active_claims(state),
+            "plan_sha256": _file_sha256(paths["plan"]),
+            "state_sha256": _file_sha256(paths["state"]),
+        }
+        if manifest is None and route["can_start_new_intent"]:
+            upgrade_preview = upgrade_project(
+                project,
+                actor,
+                source_version=source_version,
+                mode=mode,
+                apply=False,
+                expected_version=expected_version,
+            )
+            components["upgrade_sha256"] = upgrade_preview["upgrade_sha256"]
+
+    material = {
+        "actor": actor,
+        "reason": reason,
+        "mode": selected_mode,
+        "current": current,
+        "candidate": {
+            "plan_id": candidate["plan_id"],
+            "title": candidate["title"],
+            "plan_sha256": _file_sha256(candidate_path),
+        },
+        "transition": route["transition"],
+        "blockers": route["blockers"],
+        "components": components,
+    }
+    approval_required = current is not None
+    preview = {
+        "schema": "pyramid-new-intent-preview-v1",
+        "status": "preview" if route["can_start_new_intent"] else "blocked",
+        "runtime_version": RUNTIME_VERSION,
+        "mode": selected_mode,
+        "current": current,
+        "candidate": copy.deepcopy(material["candidate"]),
+        "transition": copy.deepcopy(route["transition"]),
+        "preserves": [
+            "canonical plan and node history in a restorable archive",
+            "events, reports, dossiers, and completed evidence",
+            *(["legacy node state in a validated pre-upgrade snapshot"] if components else []),
+            *(["the current brownfield baseline for the next assurance cycle"] if selected_mode == "brownfield" else []),
+        ],
+        "blockers": copy.deepcopy(route["blockers"]),
+        "components": components,
+        "approval_required": approval_required,
+        "new_intent_sha256": canonical_sha256(material),
+    }
+    return preview, current
+
+
+def new_intent_project(
+    project: str | Path,
+    plan_path: str | Path,
+    actor: str,
+    reason: str,
+    *,
+    source_version: str = "2.x-legacy",
+    mode: str = "auto",
+    apply: bool = False,
+    approved_by: str | None = None,
+    approval_reference: str | None = None,
+    approved_new_intent_sha256: str | None = None,
+    expected_version: int | None = None,
+) -> dict[str, Any]:
+    preview, current = _new_intent_material(
+        project,
+        plan_path,
+        actor,
+        reason,
+        source_version=source_version,
+        mode=mode,
+        expected_version=expected_version,
+    )
+    if not apply:
+        return preview
+    if preview["status"] == "blocked":
+        raise PyramidError("New intent is blocked:\n- " + "\n- ".join(preview["blockers"]))
+
+    if current is None:
+        created = create_project(project, plan_path, actor, mode=mode)
+        return {
+            "schema": "pyramid-new-intent-result-v1",
+            "status": "started",
+            "transition": ["create"],
+            "new_intent_sha256": preview["new_intent_sha256"],
+            "upgrade": None,
+            "reset": None,
+            "created": created,
+        }
+
+    if not approved_by or not approval_reference or not approved_new_intent_sha256:
+        raise PyramidError(
+            "new-intent apply requires approved-by, approval-reference, and approved-new-intent-sha256"
+        )
+    if approved_new_intent_sha256 != preview["new_intent_sha256"]:
+        raise PyramidError("Approved new-intent hash does not match the current preview")
+
+    approval = {
+        "approved_by": approved_by,
+        "reference": approval_reference,
+        "new_intent_sha256": approved_new_intent_sha256,
+    }
+    upgrade_result: dict[str, Any] | None = None
+    reset_expected = current["graph_version"]
+    if current["project_format_version"] == "legacy-v2":
+        upgrade_result = upgrade_project(
+            project,
+            actor,
+            source_version=source_version,
+            mode=mode,
+            apply=True,
+            approved_by=approved_by,
+            approval_reference=(
+                f"{approval_reference}; parent new-intent {approved_new_intent_sha256}"
+            ),
+            approved_upgrade_sha256=preview["components"]["upgrade_sha256"],
+            expected_version=expected_version,
+        )
+        reset_expected = upgrade_result["graph_version"]
+
+    reset_result = reset_project(
+        project,
+        plan_path,
+        actor,
+        reason,
+        expected_version=reset_expected,
+        transition_approval=approval,
+    )
+    return {
+        "schema": "pyramid-new-intent-result-v1",
+        "status": "started",
+        "transition": preview["transition"],
+        "new_intent_sha256": approved_new_intent_sha256,
+        "approval": approval,
+        "upgrade": upgrade_result,
+        "reset": reset_result,
+        "plan_id": reset_result["plan_id"],
+        "previous_archive": reset_result["previous_archive"],
+        "graph_version": reset_result["graph_version"],
     }
 
 
