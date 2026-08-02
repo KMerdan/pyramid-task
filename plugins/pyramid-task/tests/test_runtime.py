@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from datetime import datetime, timezone
 from pathlib import Path
 
 import jsonschema
@@ -17,6 +18,7 @@ sys.path.insert(0, str(PLUGIN_ROOT / "scripts"))
 from pyramid_core import (  # noqa: E402
     PyramidError,
     archive_project,
+    assess_project,
     audit_node,
     clean_project,
     close_project,
@@ -25,6 +27,7 @@ from pyramid_core import (  # noqa: E402
     expansion_parent_snapshot,
     inspect_lifecycle,
     inspect_project,
+    impact_project,
     load_json,
     replan_project,
     reopen_node,
@@ -32,6 +35,7 @@ from pyramid_core import (  # noqa: E402
     restore_project,
     take_task,
     update_task,
+    upgrade_project,
     validate_plan,
     validate_project,
 )
@@ -90,6 +94,17 @@ class PyramidRuntimeTests(unittest.TestCase):
                 "recommended_action": "advance" if result == "pass" else "replan",
             },
         )
+
+    def assurance_audit_for(self, nid: str, result: str = "pass") -> Path:
+        payload = load_json(self.audit_for(nid, result))
+        payload["assurance"] = {
+            "impact_ids": ["IMPACT-001"],
+            "inspection_ids": ["INSPECTION-001"],
+            "finding_ids": [],
+            "scope_review": "complete",
+            "limitations": [],
+        }
+        return self.write_json(f"{nid}-assurance-audit.json", payload)
 
     def complete_and_audit(self, nid: str, criteria: list[str], actor: str = "worker") -> None:
         take_task(self.root, actor, nid=nid)
@@ -460,6 +475,7 @@ class PyramidRuntimeTests(unittest.TestCase):
         artifacts = [
             (schema_dir / "plan.schema.json", self.root / ".pyramid" / "plan.json"),
             (schema_dir / "state.schema.json", self.root / ".pyramid" / "state.json"),
+            (schema_dir / "project.schema.json", self.root / ".pyramid" / "project.json"),
             (schema_dir / "final-report.schema.json", Path(closed["report"])),
             (schema_dir / "archive-manifest.schema.json", Path(archived["archive"]) / "manifest.json"),
         ]
@@ -489,6 +505,247 @@ class PyramidRuntimeTests(unittest.TestCase):
         payload = json.loads(completed.stdout)
         self.assertEqual("pyramid-lifecycle-v1", payload["schema"])
         self.assertEqual("active", payload["lifecycle"]["status"])
+
+    def test_auto_mode_makes_existing_repository_brownfield_by_default(self) -> None:
+        root = Path(self.temp.name) / "existing-project"
+        (root / "src").mkdir(parents=True)
+        (root / "src" / "existing.py").write_text("value = 1\n", encoding="utf-8")
+        created = create_project(root, self.example, "planner")
+        self.assertEqual("brownfield", created["mode"])
+        self.assertEqual("incomplete", load_json(root / ".pyramid" / "baseline.json")["status"])
+        assurance = inspect_project(root, assurance_view=True)
+        self.assertEqual("brownfield", assurance["mode"])
+        self.assertEqual("blocked", assurance["summary"]["status"])
+
+    def test_brownfield_audits_require_inspection_coverage_and_close_with_dossier(self) -> None:
+        root = Path(self.temp.name) / "assured-project"
+        create_project(
+            root,
+            self.example,
+            "planner",
+            mode="brownfield",
+            baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+            assurance_path=PLUGIN_ROOT / "assets" / "example-assurance.json",
+        )
+
+        def refresh_assurance(label: str) -> None:
+            candidate = load_json(root / ".pyramid" / "assurance.json")
+            candidate["status"] = "ready"
+            candidate["stale_reasons"] = []
+            candidate["inspections"][0]["status"] = "performed"
+            candidate["inspections"][0]["result"] = "pass"
+            candidate["inspections"][0]["sufficiency"] = "sufficient"
+            candidate["inspections"][0]["performed_at"] = datetime.now(timezone.utc).isoformat()
+            candidate["inspections"][0]["performed_by"] = "auditor"
+            impact_project(
+                root,
+                self.write_json(f"{label}-assurance.json", candidate),
+                "auditor",
+                apply=True,
+            )
+
+        def complete(nid: str, criteria: list[str], actor: str = "worker") -> None:
+            take_task(root, actor, nid=nid)
+            result = load_json(self.result_for(nid, criteria))
+            result["changed_files"] = []
+            result["changed_assets"] = ["ASSET-EXECUTOR"]
+            result_path = self.write_json(f"{nid}-assured-result.json", result)
+            update_task(root, nid, actor, "implemented", result_path=result_path)
+            refresh_assurance(nid)
+            audit_node(root, nid, "auditor", "pass", self.assurance_audit_for(nid))
+
+        take_task(root, "worker", nid="RESEARCH-101")
+        result = load_json(self.result_for("RESEARCH-101", ["AC-101-01"]))
+        result["changed_files"] = []
+        result["changed_assets"] = ["ASSET-EXECUTOR"]
+        update_task(
+            root,
+            "RESEARCH-101",
+            "worker",
+            "implemented",
+            result_path=self.write_json("research-assured-result.json", result),
+        )
+        refresh_assurance("RESEARCH-101-initial")
+        with self.assertRaisesRegex(PyramidError, "assurance coverage"):
+            audit_node(root, "RESEARCH-101", "auditor", "pass", self.audit_for("RESEARCH-101"))
+        audit_node(root, "RESEARCH-101", "auditor", "pass", self.assurance_audit_for("RESEARCH-101"))
+        complete("CONTRACT-102", ["AC-102-01"])
+        complete("TASK-201", ["AC-201-01", "AC-201-02"])
+        complete("GATE-290", ["AC-290-01"], actor="audit-worker")
+        audit_node(root, "OUTCOME-010", "auditor", "pass", self.assurance_audit_for("OUTCOME-010"))
+        audit_node(root, "INTENT-001", "owner", "pass", self.assurance_audit_for("INTENT-001"))
+        closed = close_project(root, "owner")
+        self.assertTrue(Path(closed["change_dossier"]).exists())
+        self.assertTrue(Path(closed["change_dossier_markdown"]).exists())
+        self.assertEqual(2, load_json(root / ".pyramid" / "baseline.json")["revision"])
+        self.assertEqual("passed", load_json(root / ".pyramid" / "assurance.json")["status"])
+        schema = load_json(PLUGIN_ROOT / "schemas" / "change-dossier.schema.json")
+        jsonschema.validate(load_json(Path(closed["change_dossier"])), schema)
+        visual = render_visualization(root, Path(self.temp.name) / "assured-map.html")
+        visual_text = Path(visual["output"]).read_text(encoding="utf-8")
+        self.assertIn("Assurance status", visual_text)
+        self.assertIn("Impact", visual_text)
+        self.assertIn("INSPECTION-001", visual_text)
+
+    def test_scope_drift_stales_assurance_until_impact_is_reconciled(self) -> None:
+        root = Path(self.temp.name) / "drift-project"
+        create_project(
+            root,
+            self.example,
+            "planner",
+            mode="brownfield",
+            baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+            assurance_path=PLUGIN_ROOT / "assets" / "example-assurance.json",
+        )
+        take_task(root, "worker", nid="RESEARCH-101")
+        result = load_json(self.result_for("RESEARCH-101", ["AC-101-01"]))
+        result["changed_files"] = ["outside/unknown.py"]
+        updated = update_task(
+            root,
+            "RESEARCH-101",
+            "worker",
+            "implemented",
+            result_path=self.write_json("drift-result.json", result),
+        )
+        self.assertEqual(1, len(updated["scope_drift"]))
+        with self.assertRaisesRegex(PyramidError, "stale|Scope drift"):
+            audit_node(root, "RESEARCH-101", "auditor", "pass", self.assurance_audit_for("RESEARCH-101"))
+        candidate = load_json(root / ".pyramid" / "assurance.json")
+        candidate["scope_drift"][0]["status"] = "resolved"
+        candidate["scope_drift"][0]["resolved_impact_id"] = "IMPACT-001"
+        candidate["inspections"][0]["status"] = "performed"
+        candidate["inspections"][0]["result"] = "pass"
+        candidate["inspections"][0]["sufficiency"] = "sufficient"
+        candidate["inspections"][0]["performed_at"] = datetime.now(timezone.utc).isoformat()
+        candidate["inspections"][0]["performed_by"] = "auditor"
+        candidate["stale_reasons"] = []
+        candidate["status"] = "ready"
+        applied = impact_project(
+            root,
+            self.write_json("reconciled-assurance.json", candidate),
+            "planner",
+            apply=True,
+        )
+        self.assertEqual("ready", applied["assurance_status"])
+        audit_node(root, "RESEARCH-101", "auditor", "pass", self.assurance_audit_for("RESEARCH-101"))
+
+    def test_assess_invalidates_performed_inspections(self) -> None:
+        root = Path(self.temp.name) / "reassessed-project"
+        create_project(
+            root,
+            self.example,
+            "planner",
+            mode="brownfield",
+            baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+            assurance_path=PLUGIN_ROOT / "assets" / "example-assurance.json",
+        )
+        baseline = load_json(root / ".pyramid" / "baseline.json")
+        baseline["revision"] = 2
+        baseline["captured_at"] = "2026-08-02T01:00:00Z"
+        applied = assess_project(
+            root,
+            self.write_json("baseline-r2.json", baseline),
+            "assessor",
+            apply=True,
+        )
+        self.assertEqual("applied", applied["status"])
+        assurance = load_json(root / ".pyramid" / "assurance.json")
+        self.assertEqual("stale", assurance["status"])
+        self.assertEqual("stale", assurance["inspections"][0]["status"])
+
+    def test_upgrade_v21_plan_in_place_preserves_running_work_and_history(self) -> None:
+        root = Path(self.temp.name) / "legacy-project"
+        create_project(root, self.example, "planner", mode="greenfield")
+        take_task(root, "worker", nid="RESEARCH-101")
+        (root / "src").mkdir(parents=True)
+        (root / "src" / "legacy.py").write_text("value = 1\n", encoding="utf-8")
+        (root / ".pyramid" / "project.json").unlink()
+        legacy_state = load_json(root / ".pyramid" / "state.json")
+        legacy_state["lifecycle"].pop("change_dossier", None)
+        (root / ".pyramid" / "state.json").write_text(
+            json.dumps(legacy_state, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        before_plan = (root / ".pyramid" / "plan.json").read_bytes()
+        before_state = load_json(root / ".pyramid" / "state.json")
+        before_events = sorted((root / ".pyramid" / "events").glob("*.json"))
+        self.assertTrue(validate_project(root)["valid"])
+        self.assertEqual("legacy", inspect_project(root, summary=True)["project"]["mode"])
+
+        preview = upgrade_project(root, "migrator", source_version="2.1", mode="auto")
+        repeated = upgrade_project(root, "migrator", source_version="2.1", mode="auto")
+        self.assertEqual(preview["upgrade_sha256"], repeated["upgrade_sha256"])
+        self.assertEqual("brownfield", preview["generated"]["mode"])
+        jsonschema.validate(
+            preview,
+            load_json(PLUGIN_ROOT / "schemas" / "upgrade-preview.schema.json"),
+        )
+        applied = upgrade_project(
+            root,
+            "migrator",
+            source_version="2.1",
+            mode="auto",
+            apply=True,
+            approved_by="owner",
+            approval_reference="upgrade-approval-001",
+            approved_upgrade_sha256=preview["upgrade_sha256"],
+            expected_version=before_state["graph_version"],
+        )
+        after_state = load_json(root / ".pyramid" / "state.json")
+        self.assertEqual(before_plan, (root / ".pyramid" / "plan.json").read_bytes())
+        self.assertEqual(before_state["nodes"], after_state["nodes"])
+        self.assertEqual(before_state["graph_version"] + 1, after_state["graph_version"])
+        self.assertEqual(len(before_events) + 1, len(list((root / ".pyramid" / "events").glob("*.json"))))
+        self.assertEqual("working", after_state["nodes"]["RESEARCH-101"]["execution"])
+        self.assertEqual("worker", after_state["nodes"]["RESEARCH-101"]["owner"])
+        self.assertTrue(Path(applied["archive"]).exists())
+        self.assertTrue(validate_project(Path(applied["archive"]))["valid"])
+        self.assertEqual("incomplete", load_json(root / ".pyramid" / "baseline.json")["status"])
+        self.assertEqual("pending", load_json(root / ".pyramid" / "assurance.json")["legacy_bridge"]["status"])
+        self.assertEqual("up-to-date", upgrade_project(root, "migrator")["status"])
+        self.assertTrue(validate_project(root)["valid"])
+
+    def test_brownfield_reset_carries_baseline_and_archives_assurance(self) -> None:
+        root = Path(self.temp.name) / "reset-brownfield"
+        create_project(
+            root,
+            self.example,
+            "planner",
+            mode="brownfield",
+            baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+            assurance_path=PLUGIN_ROOT / "assets" / "example-assurance.json",
+        )
+        baseline_before = load_json(root / ".pyramid" / "baseline.json")
+        candidate = load_json(self.example)
+        candidate["plan_id"] = "PLAN-RESET-BROWNFIELD"
+        reset = reset_project(
+            root,
+            self.write_json("brownfield-reset-plan.json", candidate),
+            "owner",
+            "Start the next change",
+        )
+        baseline_after = load_json(root / ".pyramid" / "baseline.json")
+        self.assertEqual(baseline_before, baseline_after)
+        next_assurance = load_json(root / ".pyramid" / "assurance.json")
+        self.assertEqual("PLAN-RESET-BROWNFIELD", next_assurance["plan_id"])
+        self.assertEqual("incomplete", next_assurance["status"])
+        archive_meta = Path(reset["previous_archive"])
+        archived = next(
+            item
+            for item in inspect_lifecycle(root)["archives"]
+            if item["archive_id"] == archive_meta.name
+        )
+        self.assertTrue((Path(archived["path"]) / ".pyramid" / "assurance.json").exists())
+
+    def test_v3_cli_exposes_brownfield_and_upgrade_interfaces(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, str(PLUGIN_ROOT / "scripts" / "pyramid.py"), "--help"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        for command in ("upgrade", "assess", "impact"):
+            self.assertIn(command, completed.stdout)
 
 
 if __name__ == "__main__":

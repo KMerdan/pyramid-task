@@ -14,6 +14,24 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable
 
+from pyramid_assurance import (
+    PROJECT_FORMAT_VERSION,
+    RUNTIME_VERSION,
+    asset_ids_for_file,
+    assurance_blockers,
+    assurance_for_tasks,
+    assurance_summary,
+    default_assurance,
+    default_baseline,
+    default_project_manifest,
+    derive_legacy_bundle,
+    detect_repository_mode,
+    mark_assurance_stale,
+    validate_assurance,
+    validate_baseline,
+    validate_project_manifest,
+)
+
 try:
     import fcntl
 except ImportError:  # pragma: no cover - Windows fallback
@@ -120,15 +138,70 @@ def project_paths(project: str | Path) -> dict[str, Path]:
         "meta": meta,
         "plan": meta / "plan.json",
         "state": meta / "state.json",
+        "project": meta / "project.json",
+        "baseline": meta / "baseline.json",
+        "assurance": meta / "assurance.json",
         "graph": meta / "graph.json",
         "ready": meta / "ready.json",
         "events": meta / "events",
         "reports": meta / "reports",
+        "dossiers": meta / "dossiers",
         "archives": meta / "archives",
         "lock": meta / "lock",
         "docs": root / "docs" / "tasks",
         "html": meta / "pyramid.html",
     }
+
+
+def load_assurance_bundle(
+    paths: dict[str, Path],
+    plan: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None, dict[str, Any] | None]:
+    manifest = load_json(paths["project"]) if paths["project"].exists() else None
+    baseline = load_json(paths["baseline"]) if paths["baseline"].exists() else None
+    assurance = load_json(paths["assurance"]) if paths["assurance"].exists() else None
+    if plan is not None and manifest is not None:
+        errors = validate_project_manifest(manifest, plan["plan_id"])
+        if manifest.get("mode") == "brownfield":
+            if baseline is None:
+                errors.append("brownfield project is missing .pyramid/baseline.json")
+            else:
+                errors.extend(validate_baseline(baseline))
+            if assurance is None:
+                errors.append("brownfield project is missing .pyramid/assurance.json")
+            elif baseline is not None:
+                errors.extend(validate_assurance(assurance, plan=plan, baseline=baseline))
+        elif baseline is not None or assurance is not None:
+            errors.append("greenfield projects cannot contain brownfield baseline or assurance state")
+        if errors:
+            raise PyramidError("Project assurance validation failed:\n- " + "\n- ".join(errors))
+    return manifest, baseline, assurance
+
+
+def assurance_validation_errors(
+    paths: dict[str, Path],
+    plan: dict[str, Any],
+) -> list[str]:
+    errors: list[str] = []
+    try:
+        manifest, baseline, assurance = load_assurance_bundle(paths)
+    except PyramidError as exc:
+        return [str(exc)]
+    if manifest is None:
+        return errors
+    errors.extend(validate_project_manifest(manifest, plan.get("plan_id")))
+    if manifest.get("mode") == "brownfield":
+        if baseline is None:
+            errors.append("brownfield project is missing .pyramid/baseline.json")
+        else:
+            errors.extend(validate_baseline(baseline))
+        if assurance is None:
+            errors.append("brownfield project is missing .pyramid/assurance.json")
+        elif baseline is not None:
+            errors.extend(validate_assurance(assurance, plan=plan, baseline=baseline))
+    elif baseline is not None or assurance is not None:
+        errors.append("greenfield projects cannot contain baseline or assurance state")
+    return errors
 
 
 def default_lifecycle() -> dict[str, Any]:
@@ -137,6 +210,7 @@ def default_lifecycle() -> dict[str, Any]:
         "completed_at": None,
         "completed_by": None,
         "completion_report": None,
+        "change_dossier": None,
         "archived_at": None,
         "archived_by": None,
         "archived_from_status": None,
@@ -634,7 +708,7 @@ def load_project(project: str | Path, check: bool = True) -> tuple[dict[str, Pat
     plan = load_json(paths["plan"])
     state = load_json(paths["state"])
     if check:
-        errors = validate_plan(plan) + validate_state(plan, state)
+        errors = validate_plan(plan) + validate_state(plan, state) + assurance_validation_errors(paths, plan)
         if errors:
             raise PyramidError("Project validation failed:\n- " + "\n- ".join(errors))
     return paths, plan, state
@@ -705,7 +779,13 @@ def goal_trace(plan: dict[str, Any], start: str) -> list[str]:
     return [start]
 
 
-def task_packet(plan: dict[str, Any], state: dict[str, Any], nid: str) -> dict[str, Any]:
+def task_packet(
+    plan: dict[str, Any],
+    state: dict[str, Any],
+    nid: str,
+    baseline: dict[str, Any] | None = None,
+    assurance: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     nodes = node_map(plan)
     if nid not in nodes:
         raise PyramidError(f"Unknown node: {nid}")
@@ -727,7 +807,7 @@ def task_packet(plan: dict[str, Any], state: dict[str, Any], nid: str) -> dict[s
         )
     gates = [edge["to"] for edge in edges_from(plan, nid, {"validated-by"})]
     item = state["nodes"][nid]
-    return {
+    packet = {
         "schema": "agent-task-v1",
         "task": nid,
         "graph_version": state["graph_version"],
@@ -760,9 +840,21 @@ def task_packet(plan: dict[str, Any], state: dict[str, Any], nid: str) -> dict[s
         "lease_expires_at": item["lease_expires_at"],
         "completion_report_schema": "agent-result-v1",
     }
+    if baseline is not None and assurance is not None:
+        packet["assurance"] = assurance_for_tasks(
+            baseline,
+            assurance,
+            _covered_assurance_tasks(plan, node),
+        )
+    return packet
 
 
-def completion_errors(plan: dict[str, Any], state: dict[str, Any]) -> list[str]:
+def completion_errors(
+    plan: dict[str, Any],
+    state: dict[str, Any],
+    baseline: dict[str, Any] | None = None,
+    assurance: dict[str, Any] | None = None,
+) -> list[str]:
     errors: list[str] = []
     intent_id = plan["intent"]["id"]
     if state["nodes"][intent_id]["verification"] != "passed":
@@ -784,10 +876,18 @@ def completion_errors(plan: dict[str, Any], state: dict[str, Any]) -> list[str]:
     )
     if unhealthy:
         errors.append("Primary nodes are not clear: " + ", ".join(unhealthy))
+    if baseline is not None and assurance is not None:
+        errors.extend(assurance_blockers(baseline, assurance, full=True))
     return errors
 
 
-def graph_snapshot(plan: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
+def graph_snapshot(
+    plan: dict[str, Any],
+    state: dict[str, Any],
+    baseline: dict[str, Any] | None = None,
+    assurance: dict[str, Any] | None = None,
+    manifest: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     nodes = node_map(plan)
     enriched = []
     counts: dict[str, int] = defaultdict(int)
@@ -807,10 +907,16 @@ def graph_snapshot(plan: dict[str, Any], state: dict[str, Any]) -> dict[str, Any
         ]
         item["audit_gates"] = [edge["to"] for edge in edges_from(plan, nid, {"validated-by"})]
         item["evidence"] = [entry["id"] for entry in plan["evidence"] if nid in entry.get("supports", [])]
+        if baseline is not None and assurance is not None:
+            item["assurance"] = assurance_for_tasks(
+                baseline,
+                assurance,
+                _covered_assurance_tasks(plan, node),
+            )
         enriched.append(item)
     primary = [node for node in enriched if node["selection"] == "primary"]
     verified = sum(node["state"]["verification"] == "passed" for node in primary)
-    return {
+    snapshot = {
         "schema": "pyramid-graph-v1",
         "generated_at": utc_now(),
         "graph_version": state["graph_version"],
@@ -822,7 +928,7 @@ def graph_snapshot(plan: dict[str, Any], state: dict[str, Any]) -> dict[str, Any
         "summary": {
             "primary_nodes": len(primary),
             "verified_primary_nodes": verified,
-            "closure_ready": not completion_errors(plan, state),
+            "closure_ready": not completion_errors(plan, state, baseline, assurance),
             "availability": dict(sorted(counts.items())),
         },
         "nodes": enriched,
@@ -830,6 +936,24 @@ def graph_snapshot(plan: dict[str, Any], state: dict[str, Any]) -> dict[str, Any
         "evidence": copy.deepcopy(plan["evidence"]),
         "decisions": copy.deepcopy(plan["decisions"]),
     }
+    snapshot["project"] = copy.deepcopy(manifest) if manifest else {
+        "format_version": "legacy-v2",
+        "mode": "legacy",
+    }
+    if baseline is not None and assurance is not None:
+        snapshot["assurance"] = {
+            "summary": assurance_summary(baseline, assurance),
+            "baseline": copy.deepcopy(baseline),
+            "impacts": copy.deepcopy(assurance.get("impacts", [])),
+            "inspections": copy.deepcopy(assurance.get("inspections", [])),
+            "findings": copy.deepcopy(assurance.get("findings", [])),
+            "scope_drift": copy.deepcopy(assurance.get("scope_drift", [])),
+            "controls": copy.deepcopy(assurance.get("controls", {})),
+            "legacy_bridge": copy.deepcopy(assurance.get("legacy_bridge", {})),
+        }
+    else:
+        snapshot["assurance"] = None
+    return snapshot
 
 
 def slugify(value: str) -> str:
@@ -849,13 +973,35 @@ def _markdown_list(values: list[str], empty: str = "None") -> str:
     return "\n".join(f"- {value}" for value in values) if values else f"- {empty}"
 
 
-def render_node_markdown(paths: dict[str, Path], plan: dict[str, Any], state: dict[str, Any], node: dict[str, Any]) -> str:
-    packet = task_packet(plan, state, node["id"])
+def render_node_markdown(
+    paths: dict[str, Path],
+    plan: dict[str, Any],
+    state: dict[str, Any],
+    node: dict[str, Any],
+    baseline: dict[str, Any] | None = None,
+    assurance: dict[str, Any] | None = None,
+) -> str:
+    packet = task_packet(plan, state, node["id"], baseline, assurance)
     dependencies = [f"`{item['id']}` ({item['type']}, {item['verification']})" for item in packet["dependencies"]]
     criteria = [f"`{item['id']}` — {item['description']}" for item in node["acceptance_criteria"]]
     evidence = [f"`{item['id']}` ({item['type']}) — {item['description']}" for item in node["required_evidence"]]
     status = state["nodes"][node["id"]]
-    return f"""<!-- Generated by Pyramid Task V2. Change .pyramid/plan.json through create, expand, or replan, not this file. -->
+    assurance_section = ""
+    if "assurance" in packet:
+        coverage = packet["assurance"]
+        assurance_section = f"""
+## Brownfield Assurance
+
+- Status: `{coverage['status']}`
+- Impact records: {', '.join(f'`{item}`' for item in coverage['impact_ids']) or 'None'}
+- Affected assets: {', '.join(f'`{item}`' for item in coverage['asset_ids']) or 'None'}
+- Inspections: {', '.join(f'`{item}`' for item in coverage['inspection_ids']) or 'None'}
+
+### Assurance Blockers
+
+{_markdown_list(coverage['blockers'])}
+"""
+    return f"""<!-- Generated by Pyramid Task V3. Change canonical files through Pyramid Task interfaces, not this file. -->
 # {node['id']}: {node['title']}
 
 ## Metadata
@@ -910,20 +1056,22 @@ def render_node_markdown(paths: dict[str, Path], plan: dict[str, Any], state: di
 ## Audit Gates
 
 {_markdown_list([f'`{gate}`' for gate in packet['audit_gates']])}
+{assurance_section}
 """
 
 
 def compile_project(project: str | Path, *, allow_archived: bool = False) -> dict[str, Any]:
     paths, plan, state = load_project(project)
+    manifest, baseline, assurance = load_assurance_bundle(paths, plan)
     if lifecycle_status(state) == "archived" and not allow_archived:
         raise PyramidError("Archived plans are frozen; use their existing projections or restore the plan")
-    snapshot = graph_snapshot(plan, state)
+    snapshot = graph_snapshot(plan, state, baseline, assurance, manifest)
     by_id = node_map(plan)
     for item in snapshot["nodes"]:
         item["source_path"] = str(node_doc_path(paths, by_id[item["id"]]).relative_to(paths["root"]))
     write_json(paths["graph"], snapshot)
     ready_packets = [
-        task_packet(plan, state, node["id"])
+        task_packet(plan, state, node["id"], baseline, assurance)
         for node in plan["nodes"]
         if availability(plan, state, node) in {"ready", "needs-rework"}
     ]
@@ -937,10 +1085,10 @@ def compile_project(project: str | Path, *, allow_archived: bool = False) -> dic
     for node in plan["nodes"]:
         path = node_doc_path(paths, node)
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(render_node_markdown(paths, plan, state, node), encoding="utf-8")
+        path.write_text(render_node_markdown(paths, plan, state, node, baseline, assurance), encoding="utf-8")
 
     intent = plan["intent"]
-    intent_text = f"""<!-- Generated by Pyramid Task V2. -->
+    intent_text = f"""<!-- Generated by Pyramid Task V3. -->
 # Intent: {plan['title']}
 
 {intent['statement']}
@@ -976,7 +1124,7 @@ def compile_project(project: str | Path, *, allow_archived: bool = False) -> dic
 
     summary = snapshot["summary"]
     readme_lines = [
-        "<!-- Generated by Pyramid Task V2. -->",
+        "<!-- Generated by Pyramid Task V3. -->",
         f"# {plan['title']}",
         "",
         intent["statement"],
@@ -993,6 +1141,20 @@ def compile_project(project: str | Path, *, allow_archived: bool = False) -> dic
         "",
     ]
     readme_lines.extend([f"- `{packet['task']}` — {packet['title']}" for packet in ready_packets] or ["- None"])
+    if baseline is not None and assurance is not None:
+        summary_assurance = assurance_summary(baseline, assurance)
+        readme_lines.extend(
+            [
+                "",
+                "## Brownfield Assurance",
+                "",
+                f"- Status: `{summary_assurance['status']}`",
+                f"- Baseline: `{summary_assurance['baseline_status']}` revision `{summary_assurance['baseline_revision']}`",
+                f"- Impacted assets inspected sufficiently: `{summary_assurance['sufficiently_inspected_assets']}/{summary_assurance['impacted_assets']}`",
+                f"- Open scope drift: `{summary_assurance['open_scope_drift']}`",
+                f"- Open material findings: `{summary_assurance['open_material_findings']}`",
+            ]
+        )
     readme_lines.extend(["", "## Batch Order", ""])
     readme_lines.extend([f"- [`{folder}`]({folder}/README.md)" for folder in sorted(batches)] or ["- No executable batches"])
     readme_lines.extend(
@@ -1054,12 +1216,59 @@ def commit_event(
     return event
 
 
-def create_project(project: str | Path, plan_path: str | Path, actor: str, force: bool = False) -> dict[str, Any]:
+def _prepare_new_project_bundle(
+    paths: dict[str, Path],
+    plan: dict[str, Any],
+    actor: str,
+    mode: str,
+    baseline_path: str | Path | None,
+    assurance_path: str | Path | None,
+) -> tuple[dict[str, Any], dict[str, Any] | None, dict[str, Any] | None]:
+    selected_mode = detect_repository_mode(paths["root"]) if mode == "auto" else mode
+    if selected_mode not in {"greenfield", "brownfield"}:
+        raise PyramidError("mode must be auto, greenfield, or brownfield")
+    manifest = default_project_manifest(plan_id=plan["plan_id"], mode=selected_mode, actor=actor)
+    if selected_mode == "greenfield":
+        if baseline_path or assurance_path:
+            raise PyramidError("greenfield creation cannot accept baseline or assurance files")
+        return manifest, None, None
+    baseline = (
+        load_json(Path(baseline_path).expanduser().resolve())
+        if baseline_path
+        else default_baseline(actor=actor)
+    )
+    baseline_errors = validate_baseline(baseline)
+    if baseline_errors:
+        raise PyramidError("Candidate baseline is invalid:\n- " + "\n- ".join(baseline_errors))
+    assurance = (
+        load_json(Path(assurance_path).expanduser().resolve())
+        if assurance_path
+        else default_assurance(plan_id=plan["plan_id"], baseline=baseline, actor=actor)
+    )
+    assurance_errors = validate_assurance(assurance, plan=plan, baseline=baseline)
+    if assurance_errors:
+        raise PyramidError("Candidate assurance is invalid:\n- " + "\n- ".join(assurance_errors))
+    return manifest, baseline, assurance
+
+
+def create_project(
+    project: str | Path,
+    plan_path: str | Path,
+    actor: str,
+    force: bool = False,
+    *,
+    mode: str = "auto",
+    baseline_path: str | Path | None = None,
+    assurance_path: str | Path | None = None,
+) -> dict[str, Any]:
     paths = project_paths(project)
     plan = load_json(Path(plan_path).expanduser().resolve())
     errors = validate_plan(plan)
     if errors:
         raise PyramidError("Candidate plan is invalid:\n- " + "\n- ".join(errors))
+    manifest, baseline, assurance = _prepare_new_project_bundle(
+        paths, plan, actor, mode, baseline_path, assurance_path
+    )
     with project_lock(paths):
         if paths["plan"].exists():
             if force:
@@ -1077,6 +1286,10 @@ def create_project(project: str | Path, plan_path: str | Path, actor: str, force
         paths["events"].mkdir(parents=True, exist_ok=True)
         write_json(paths["plan"], plan)
         write_json(paths["state"], state)
+        write_json(paths["project"], manifest)
+        if baseline is not None and assurance is not None:
+            write_json(paths["baseline"], baseline)
+            write_json(paths["assurance"], assurance)
         event = {
             "schema": "pyramid-event-v1",
             "id": _event_id(),
@@ -1087,16 +1300,357 @@ def create_project(project: str | Path, plan_path: str | Path, actor: str, force
             "node": plan["intent"]["id"],
             "before": None,
             "after": {"plan_id": plan["plan_id"], "revision": plan["revision"]},
-            "payload": {},
+            "payload": {"mode": manifest["mode"], "project_format_version": PROJECT_FORMAT_VERSION},
         }
         write_json(paths["events"] / f"{event['id']}.json", event)
     compiled = compile_project(project)
-    return {"status": "created", "project": str(paths["root"]), "event": event, **compiled}
+    return {
+        "status": "created",
+        "project": str(paths["root"]),
+        "mode": manifest["mode"],
+        "project_format_version": PROJECT_FORMAT_VERSION,
+        "event": event,
+        **compiled,
+    }
 
 
 def check_expected_version(state: dict[str, Any], expected: int | None) -> None:
     if expected is not None and state["graph_version"] != expected:
         raise PyramidError(f"Stale graph version: expected {expected}, current {state['graph_version']}")
+
+
+def _upgrade_material(
+    project: str | Path,
+    actor: str,
+    source_version: str,
+    mode: str,
+) -> tuple[dict[str, Path], dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any] | None, dict[str, Any] | None, dict[str, Any]]:
+    paths, plan, state = load_project(project)
+    if lifecycle_status(state) == "archived":
+        raise PyramidError("Restore an archived legacy project before upgrading it")
+    if paths["project"].exists():
+        manifest, baseline, assurance = load_assurance_bundle(paths, plan)
+        return paths, plan, state, manifest or {}, baseline, assurance, {
+            "status": "up-to-date",
+            "project_format_version": manifest.get("format_version") if manifest else None,
+        }
+    selected_mode = detect_repository_mode(paths["root"]) if mode == "auto" else mode
+    if selected_mode not in {"greenfield", "brownfield"}:
+        raise PyramidError("upgrade mode must be auto, greenfield, or brownfield")
+    migration_time = state.get("updated_at") or state.get("created_at") or utc_now()
+    manifest = default_project_manifest(
+        plan_id=plan["plan_id"],
+        mode=selected_mode,
+        actor=actor,
+        created_at=state.get("created_at") or migration_time,
+    )
+    baseline: dict[str, Any] | None = None
+    assurance: dict[str, Any] | None = None
+    if selected_mode == "brownfield":
+        baseline, assurance = derive_legacy_bundle(
+            plan=plan,
+            state=state,
+            actor=actor,
+            source_version=source_version,
+            at=migration_time,
+        )
+    material = {
+        "plan_sha256": canonical_sha256(plan),
+        "state_sha256": canonical_sha256(state),
+        "graph_version": state["graph_version"],
+        "source_version": source_version,
+        "target_format_version": PROJECT_FORMAT_VERSION,
+        "mode": selected_mode,
+        "manifest": manifest,
+        "baseline": baseline,
+        "assurance": assurance,
+    }
+    preview = {
+        "schema": "pyramid-upgrade-preview-v1",
+        "status": "preview",
+        "plan_id": plan["plan_id"],
+        "from": source_version,
+        "to": PROJECT_FORMAT_VERSION,
+        "graph_version": state["graph_version"],
+        "preserved": {
+            "plan_revision": plan["revision"],
+            "nodes": len(plan["nodes"]),
+            "node_states": len(state["nodes"]),
+            "verified_nodes": sum(item.get("verification") == "passed" for item in state["nodes"].values()),
+            "active_claims": active_claims(state),
+            "immutable_events": len(list(paths["events"].glob("*.json"))) if paths["events"].exists() else 0,
+        },
+        "generated": {
+            "mode": selected_mode,
+            "assets": len(baseline.get("assets", [])) if baseline else 0,
+            "impacts": len(assurance.get("impacts", [])) if assurance else 0,
+            "legacy_inspections": len(assurance.get("inspections", [])) if assurance else 0,
+        },
+        "assurance_gaps": (
+            copy.deepcopy(assurance.get("legacy_bridge", {}).get("gap_asset_ids", []))
+            if assurance
+            else []
+        ),
+        "upgrade_sha256": canonical_sha256(material),
+        "approval_required": True,
+    }
+    return paths, plan, state, manifest, baseline, assurance, preview
+
+
+def upgrade_project(
+    project: str | Path,
+    actor: str,
+    *,
+    source_version: str = "2.x-legacy",
+    mode: str = "auto",
+    apply: bool = False,
+    approved_by: str | None = None,
+    approval_reference: str | None = None,
+    approved_upgrade_sha256: str | None = None,
+    expected_version: int | None = None,
+) -> dict[str, Any]:
+    paths, plan, state, manifest, baseline, assurance, preview = _upgrade_material(
+        project, actor, source_version, mode
+    )
+    check_expected_version(state, expected_version)
+    if preview.get("status") == "up-to-date":
+        return preview
+    if not apply:
+        return preview
+    if not approved_by or not approval_reference or not approved_upgrade_sha256:
+        raise PyramidError("upgrade apply requires approved-by, approval-reference, and approved-upgrade-sha256")
+    if approved_upgrade_sha256 != preview["upgrade_sha256"]:
+        raise PyramidError("Approved upgrade hash does not match the current preview")
+    with project_lock(paths):
+        current = _upgrade_material(project, actor, source_version, mode)
+        paths, plan, state, manifest, baseline, assurance, current_preview = current
+        check_expected_version(state, expected_version)
+        if current_preview.get("status") == "up-to-date":
+            return current_preview
+        if current_preview["upgrade_sha256"] != approved_upgrade_sha256:
+            raise PyramidError("Upgrade inputs changed after preview; preview and approve again")
+        archive_id, archive_path = _create_upgrade_snapshot(
+            paths,
+            plan,
+            state,
+            actor=actor,
+            reason=f"Pre-v3 upgrade snapshot from {source_version}",
+            token=approved_upgrade_sha256[:12],
+        )
+        timestamp = utc_now()
+        migration = {
+            "id": f"MIGRATION-V3-{approved_upgrade_sha256[:12].upper()}",
+            "from": source_version,
+            "to": PROJECT_FORMAT_VERSION,
+            "at": timestamp,
+            "actor": actor,
+            "preview_sha256": approved_upgrade_sha256,
+            "archive_id": archive_id,
+        }
+        manifest.update(
+            {
+                "runtime_version": RUNTIME_VERSION,
+                "last_upgraded_at": timestamp,
+                "last_upgraded_by": actor,
+                "upgraded_from": source_version,
+                "migrations": [migration],
+            }
+        )
+        write_json(paths["project"], manifest)
+        if baseline is not None and assurance is not None:
+            write_json(paths["baseline"], baseline)
+            write_json(paths["assurance"], assurance)
+        event = commit_event(
+            paths,
+            state,
+            actor=actor,
+            event_type="project.upgraded",
+            node=plan["intent"]["id"],
+            before={"project_format_version": "legacy-v2", "graph_version": preview["graph_version"]},
+            after={"project_format_version": PROJECT_FORMAT_VERSION, "mode": manifest["mode"]},
+            payload={
+                "migration": migration,
+                "approval": {
+                    "approved_by": approved_by,
+                    "reference": approval_reference,
+                    "upgrade_sha256": approved_upgrade_sha256,
+                },
+                "snapshot": str(archive_path),
+                "preserved": preview["preserved"],
+                "generated": preview["generated"],
+                "assurance_gaps": preview["assurance_gaps"],
+            },
+        )
+    compiled = compile_project(project)
+    return {
+        "status": "upgraded",
+        "from": source_version,
+        "to": PROJECT_FORMAT_VERSION,
+        "mode": manifest["mode"],
+        "archive_id": archive_id,
+        "archive": str(archive_path),
+        "upgrade_sha256": approved_upgrade_sha256,
+        "event": event,
+        "preserved": preview["preserved"],
+        "assurance_gaps": preview["assurance_gaps"],
+        **compiled,
+    }
+
+
+def assess_project(
+    project: str | Path,
+    baseline_path: str | Path,
+    actor: str,
+    *,
+    apply: bool = False,
+    expected_version: int | None = None,
+) -> dict[str, Any]:
+    candidate = load_json(Path(baseline_path).expanduser().resolve())
+    errors = validate_baseline(candidate)
+    if errors:
+        raise PyramidError("Candidate baseline is invalid:\n- " + "\n- ".join(errors))
+    paths, plan, state = load_project(project)
+    check_expected_version(state, expected_version)
+    require_active(state, "assess the baseline")
+    manifest, current, assurance = load_assurance_bundle(paths, plan)
+    if not manifest or manifest.get("mode") != "brownfield" or current is None or assurance is None:
+        raise PyramidError("assess requires a v3 brownfield project; upgrade legacy projects first")
+    if candidate["revision"] < current["revision"] or (
+        candidate["revision"] == current["revision"] and current.get("status") != "incomplete"
+    ):
+        raise PyramidError("Candidate baseline revision must advance the current assessed baseline")
+    retained_assets = {item["id"] for item in candidate["assets"]}
+    referenced_assets = {
+        item["asset_id"] for item in assurance.get("impacts", [])
+    } | {
+        asset_id
+        for key in ("inspections", "findings")
+        for item in assurance.get(key, [])
+        for asset_id in item.get("asset_ids", [])
+    }
+    missing_references = sorted(referenced_assets - retained_assets)
+    if missing_references:
+        raise PyramidError(
+            "Candidate baseline removes assets still referenced by assurance: "
+            + ", ".join(missing_references)
+            + ". Retain them as historical assets, then update impact records."
+        )
+    preview = {
+        "status": "preview",
+        "schema": "pyramid-assess-preview-v1",
+        "graph_version": state["graph_version"],
+        "from_revision": current["revision"],
+        "to_revision": candidate["revision"],
+        "assets": len(candidate["assets"]),
+        "relations": len(candidate["relations"]),
+        "history": len(candidate["history"]),
+        "unknowns": copy.deepcopy(candidate["unknowns"]),
+        "baseline_sha256": canonical_sha256(candidate),
+    }
+    if not apply:
+        return preview
+    with project_lock(paths):
+        paths, plan, state = load_project(project)
+        check_expected_version(state, expected_version)
+        require_active(state, "assess the baseline")
+        manifest, current, assurance = load_assurance_bundle(paths, plan)
+        if current is None or assurance is None:
+            raise PyramidError("Brownfield assurance state disappeared before apply")
+        if current["revision"] != preview["from_revision"]:
+            raise PyramidError("Baseline changed after preview; inspect and apply again")
+        next_assurance = copy.deepcopy(assurance)
+        next_assurance["baseline_id"] = candidate["baseline_id"]
+        next_assurance["baseline_revision"] = candidate["revision"]
+        for inspection in next_assurance.get("inspections", []):
+            if inspection.get("status") == "performed":
+                inspection["status"] = "stale"
+                limitations = inspection.setdefault("limitations", [])
+                message = "Baseline revision changed after this inspection was performed."
+                if message not in limitations:
+                    limitations.append(message)
+        mark_assurance_stale(
+            next_assurance,
+            f"Baseline changed from revision {current['revision']} to {candidate['revision']}; impact and inspections require review.",
+            actor,
+        )
+        write_json(paths["baseline"], candidate)
+        write_json(paths["assurance"], next_assurance)
+        event = commit_event(
+            paths,
+            state,
+            actor=actor,
+            event_type="assurance.baseline-assessed",
+            node=plan["intent"]["id"],
+            before={"baseline_id": current["baseline_id"], "revision": current["revision"]},
+            after={"baseline_id": candidate["baseline_id"], "revision": candidate["revision"]},
+            payload={"baseline_sha256": preview["baseline_sha256"]},
+        )
+    compiled = compile_project(project)
+    return {**preview, "status": "applied", "event": event, **compiled}
+
+
+def impact_project(
+    project: str | Path,
+    assurance_path: str | Path,
+    actor: str,
+    *,
+    apply: bool = False,
+    expected_version: int | None = None,
+) -> dict[str, Any]:
+    candidate = load_json(Path(assurance_path).expanduser().resolve())
+    paths, plan, state = load_project(project)
+    check_expected_version(state, expected_version)
+    require_active(state, "update change impact")
+    manifest, baseline, current = load_assurance_bundle(paths, plan)
+    if not manifest or manifest.get("mode") != "brownfield" or baseline is None or current is None:
+        raise PyramidError("impact requires a v3 brownfield project; upgrade legacy projects first")
+    errors = validate_assurance(candidate, plan=plan, baseline=baseline)
+    if errors:
+        raise PyramidError("Candidate assurance is invalid:\n- " + "\n- ".join(errors))
+    normalized = copy.deepcopy(candidate)
+    normalized["updated_at"] = utc_now()
+    normalized["updated_by"] = actor
+    blockers = assurance_blockers(baseline, normalized, full=True)
+    normalized["status"] = "ready" if not blockers else "incomplete"
+    if normalized["status"] == "ready":
+        normalized["stale_reasons"] = []
+    preview = {
+        "status": "preview",
+        "schema": "pyramid-impact-preview-v1",
+        "graph_version": state["graph_version"],
+        "impacts": len(normalized["impacts"]),
+        "inspections": len(normalized["inspections"]),
+        "findings": len(normalized["findings"]),
+        "open_scope_drift": sum(item.get("status") == "open" for item in normalized["scope_drift"]),
+        "assurance_status": normalized["status"],
+        "blockers": blockers,
+        "assurance_sha256": canonical_sha256(normalized),
+    }
+    if not apply:
+        return preview
+    with project_lock(paths):
+        paths, plan, state = load_project(project)
+        check_expected_version(state, expected_version)
+        require_active(state, "update change impact")
+        _, baseline, current_assurance = load_assurance_bundle(paths, plan)
+        if baseline is None or current_assurance is None:
+            raise PyramidError("Baseline disappeared before impact apply")
+        errors = validate_assurance(normalized, plan=plan, baseline=baseline)
+        if errors:
+            raise PyramidError("Candidate assurance became invalid:\n- " + "\n- ".join(errors))
+        write_json(paths["assurance"], normalized)
+        event = commit_event(
+            paths,
+            state,
+            actor=actor,
+            event_type="assurance.impact-updated",
+            node=plan["intent"]["id"],
+            before={"assurance_sha256": canonical_sha256(current_assurance)},
+            after={"assurance_sha256": canonical_sha256(normalized), "status": normalized["status"]},
+            payload={"blockers": blockers},
+        )
+    compiled = compile_project(project)
+    return {**preview, "status": "applied", "event": event, **compiled}
 
 
 def take_task(
@@ -1111,7 +1665,6 @@ def take_task(
     with project_lock(paths):
         paths, plan, state = load_project(project)
         check_expected_version(state, expected_version)
-        require_active(state, "update work")
         require_active(state, "take work")
         nodes = node_map(plan)
         if take_next:
@@ -1151,8 +1704,13 @@ def take_task(
             payload={"lease_minutes": lease_minutes},
         )
     compile_project(project)
-    _, plan, state = load_project(project)
-    return {"status": "taken", "event": event, "packet": task_packet(plan, state, nid)}
+    paths, plan, state = load_project(project)
+    _, baseline, assurance = load_assurance_bundle(paths, plan)
+    return {
+        "status": "taken",
+        "event": event,
+        "packet": task_packet(plan, state, nid, baseline, assurance),
+    }
 
 
 def _validate_agent_result(result: dict[str, Any], node: dict[str, Any]) -> list[str]:
@@ -1166,6 +1724,8 @@ def _validate_agent_result(result: dict[str, Any], node: dict[str, Any]) -> list
     for field in ("changed_files", "checks", "acceptance_evidence", "discovered_risks", "suggested_graph_changes"):
         if not isinstance(result.get(field), list):
             errors.append(f"result.{field} must be an array")
+    if "changed_assets" in result and not _is_string_list(result.get("changed_assets")):
+        errors.append("result.changed_assets must be a string array when provided")
     evidence_by_id = {
         item.get("criterion"): item
         for item in result.get("acceptance_evidence", [])
@@ -1176,6 +1736,155 @@ def _validate_agent_result(result: dict[str, Any], node: dict[str, Any]) -> list
         if not evidence or evidence.get("result") != "passed" or not evidence.get("reference"):
             errors.append(f"Missing passing acceptance evidence for {criterion['id']}")
     return errors
+
+
+def _record_scope_drift(
+    paths: dict[str, Path],
+    plan: dict[str, Any],
+    state: dict[str, Any],
+    nid: str,
+    result: dict[str, Any],
+    actor: str,
+) -> tuple[list[str], list[str]]:
+    manifest, baseline, assurance = load_assurance_bundle(paths, plan)
+    if not manifest or manifest.get("mode") != "brownfield" or baseline is None or assurance is None:
+        return [], []
+    expected_assets = {
+        impact["asset_id"]
+        for impact in assurance.get("impacts", [])
+        if nid in impact.get("task_ids", []) and impact.get("status") != "dismissed"
+    }
+    candidates: list[tuple[str, set[str]]] = []
+    for changed_file in result.get("changed_files", []):
+        if isinstance(changed_file, str) and changed_file.strip():
+            candidates.append((changed_file, asset_ids_for_file(baseline, changed_file)))
+    known_assets = {item["id"] for item in baseline.get("assets", [])}
+    for changed_asset in result.get("changed_assets", []):
+        matched = {changed_asset} if changed_asset in known_assets else set()
+        candidates.append((f"asset:{changed_asset}", matched))
+    drift_ids: list[str] = []
+    affected_assets: set[str] = set()
+    for changed_file, matched_assets in candidates:
+        if matched_assets and matched_assets.issubset(expected_assets):
+            continue
+        token = hashlib.sha256(
+            f"{nid}\0{changed_file}\0{state['graph_version']}".encode("utf-8")
+        ).hexdigest()[:12].upper()
+        drift_id = f"DRIFT-{token}"
+        if any(item.get("id") == drift_id for item in assurance.get("scope_drift", [])):
+            continue
+        assurance.setdefault("scope_drift", []).append(
+            {
+                "id": drift_id,
+                "task": nid,
+                "changed_file": changed_file,
+                "matched_asset_ids": sorted(matched_assets),
+                "status": "open",
+                "detected_at": utc_now(),
+                "resolved_impact_id": None,
+            }
+        )
+        drift_ids.append(drift_id)
+        affected_assets.update(matched_assets or expected_assets)
+    if not drift_ids:
+        return [], []
+    for inspection in assurance.get("inspections", []):
+        if affected_assets.intersection(inspection.get("asset_ids", [])):
+            inspection["status"] = "stale"
+            limitations = inspection.setdefault("limitations", [])
+            message = f"Scope drift from {nid} invalidated this inspection."
+            if message not in limitations:
+                limitations.append(message)
+    mark_assurance_stale(
+        assurance,
+        f"Unexpected implementation scope was recorded for {nid}: {', '.join(drift_ids)}",
+        actor,
+    )
+    assurance["updated_at"] = utc_now()
+    assurance["updated_by"] = actor
+    write_json(paths["assurance"], assurance)
+    invalidated = invalidate_dependent_claims(
+        plan,
+        state,
+        nid,
+        f"Scope drift for {nid} made dependent assurance stale.",
+    )
+    return drift_ids, invalidated
+
+
+def _invalidate_inspections_for_actual_change(
+    paths: dict[str, Path],
+    plan: dict[str, Any],
+    nid: str,
+    result: dict[str, Any],
+    actor: str,
+) -> list[str]:
+    manifest, baseline, assurance = load_assurance_bundle(paths, plan)
+    if not manifest or manifest.get("mode") != "brownfield" or baseline is None or assurance is None:
+        return []
+    known_assets = {item["id"] for item in baseline.get("assets", [])}
+    changed_assets = {
+        asset_id
+        for asset_id in result.get("changed_assets", [])
+        if asset_id in known_assets
+    }
+    for changed_file in result.get("changed_files", []):
+        if isinstance(changed_file, str):
+            changed_assets.update(asset_ids_for_file(baseline, changed_file))
+    if not changed_assets:
+        return []
+    stale: list[str] = []
+    for inspection in assurance.get("inspections", []):
+        if not changed_assets.intersection(inspection.get("asset_ids", [])):
+            continue
+        if inspection.get("status") == "performed":
+            inspection["status"] = "stale"
+            stale.append(inspection["id"])
+        limitations = inspection.setdefault("limitations", [])
+        message = f"Implementation result for {nid} changed covered assets after this inspection."
+        if message not in limitations:
+            limitations.append(message)
+    mark_assurance_stale(
+        assurance,
+        f"Implementation for {nid} changed assets {', '.join(sorted(changed_assets))}; post-change inspection is required.",
+        actor,
+    )
+    write_json(paths["assurance"], assurance)
+    return sorted(stale)
+
+
+def _invalidate_assurance_for_change(
+    paths: dict[str, Path],
+    plan: dict[str, Any],
+    task_ids: set[str],
+    actor: str,
+    reason: str,
+) -> list[str]:
+    manifest, _, assurance = load_assurance_bundle(paths, plan)
+    if not manifest or manifest.get("mode") != "brownfield" or assurance is None:
+        return []
+    impacted_assets = {
+        impact["asset_id"]
+        for impact in assurance.get("impacts", [])
+        if task_ids.intersection(impact.get("task_ids", []))
+        and impact.get("status") != "dismissed"
+    }
+    invalidated: list[str] = []
+    for inspection in assurance.get("inspections", []):
+        if not (
+            task_ids.intersection(inspection.get("task_ids", []))
+            or impacted_assets.intersection(inspection.get("asset_ids", []))
+        ):
+            continue
+        if inspection.get("status") == "performed":
+            inspection["status"] = "stale"
+            invalidated.append(inspection["id"])
+        limitations = inspection.setdefault("limitations", [])
+        if reason not in limitations:
+            limitations.append(reason)
+    mark_assurance_stale(assurance, reason, actor)
+    write_json(paths["assurance"], assurance)
+    return sorted(invalidated)
 
 
 def update_task(
@@ -1194,6 +1903,7 @@ def update_task(
     with project_lock(paths):
         paths, plan, state = load_project(project)
         check_expected_version(state, expected_version)
+        require_active(state, "update work")
         nodes = node_map(plan)
         if nid not in nodes:
             raise PyramidError(f"Unknown node: {nid}")
@@ -1201,6 +1911,9 @@ def update_task(
         if item.get("owner") != actor:
             raise PyramidError(f"{actor} does not own {nid}")
         before = copy.deepcopy(item)
+        scope_drift: list[str] = []
+        assurance_invalidated: list[str] = []
+        stale_inspections: list[str] = []
         if status == "implemented":
             if item["execution"] != "working":
                 raise PyramidError(f"{nid} must be working before it can be implemented")
@@ -1217,6 +1930,12 @@ def update_task(
             item["lease_expires_at"] = None
             item["work_origin"] = None
             item["last_result"] = result
+            scope_drift, assurance_invalidated = _record_scope_drift(
+                paths, plan, state, nid, result, actor
+            )
+            stale_inspections = _invalidate_inspections_for_actual_change(
+                paths, plan, nid, result, actor
+            )
         elif status == "blocked":
             if not reason:
                 raise PyramidError("blocked requires --reason")
@@ -1256,11 +1975,25 @@ def update_task(
             node=nid,
             before=before,
             after=copy.deepcopy(item),
-            payload={"reason": reason, "result": result},
+            payload={
+                "reason": reason,
+                "result": result,
+                "scope_drift": scope_drift,
+                "assurance_invalidated": assurance_invalidated,
+                "stale_inspections": stale_inspections,
+            },
         )
     compile_project(project)
-    _, plan, state = load_project(project)
-    return {"status": status, "event": event, "packet": task_packet(plan, state, nid)}
+    paths, plan, state = load_project(project)
+    _, baseline, assurance = load_assurance_bundle(paths, plan)
+    return {
+        "status": status,
+        "event": event,
+        "packet": task_packet(plan, state, nid, baseline, assurance),
+        "scope_drift": scope_drift,
+        "assurance_invalidated": assurance_invalidated,
+        "stale_inspections": stale_inspections,
+    }
 
 
 def _audit_prerequisite_errors(plan: dict[str, Any], state: dict[str, Any], node: dict[str, Any]) -> list[str]:
@@ -1297,7 +2030,169 @@ def _validate_audit_result(result: dict[str, Any], nid: str, expected_result: st
             errors.append("all checks must be passed for a passing audit")
         if expected_result == "fail" and "failed" not in statuses:
             errors.append("a failing audit must include a failed check")
+    assertion = result.get("assurance")
+    if assertion is not None:
+        if not isinstance(assertion, dict):
+            errors.append("audit assurance must be an object")
+        else:
+            for field in ("impact_ids", "inspection_ids", "finding_ids", "limitations"):
+                if not _is_string_list(assertion.get(field)):
+                    errors.append(f"audit assurance.{field} must be a string array")
+            if assertion.get("scope_review") not in {"complete", "incomplete"}:
+                errors.append("audit assurance.scope_review must be complete or incomplete")
     return errors
+
+
+def _covered_assurance_tasks(plan: dict[str, Any], node: dict[str, Any]) -> set[str]:
+    nid = node["id"]
+    if node["kind"] == "intent":
+        return {item["id"] for item in plan["nodes"] if item.get("selection") == "primary"}
+    if node["kind"] == "audit":
+        covered = {edge["to"] for edge in edges_from(plan, nid, AUDIT_BLOCKING)}
+        queue = deque(covered)
+        while queue:
+            current = queue.popleft()
+            for edge in edges_from(plan, current, AUDIT_BLOCKING):
+                if edge["to"] not in covered:
+                    covered.add(edge["to"])
+                    queue.append(edge["to"])
+        return covered or {nid}
+    if node["kind"] in {"outcome", "capability", "work-package"}:
+        covered = {edge["from"] for edge in edges_to(plan, nid, {"contributes-to"})}
+        queue = deque(covered)
+        while queue:
+            current = queue.popleft()
+            for edge in edges_to(plan, current, {"contributes-to"}):
+                if edge["from"] not in covered:
+                    covered.add(edge["from"])
+                    queue.append(edge["from"])
+        return covered or {nid}
+    return {nid}
+
+
+def _assurance_audit_errors(
+    paths: dict[str, Path],
+    plan: dict[str, Any],
+    state: dict[str, Any],
+    node: dict[str, Any],
+    evidence: dict[str, Any],
+) -> list[str]:
+    manifest, baseline, assurance = load_assurance_bundle(paths, plan)
+    if not manifest or manifest.get("mode") != "brownfield" or baseline is None or assurance is None:
+        return []
+    if state["graph_version"] < assurance.get("enforce_from_graph_version", 1):
+        return []
+    assertion = evidence.get("assurance")
+    if not isinstance(assertion, dict):
+        return ["Brownfield audit pass requires an assurance coverage assertion"]
+    errors: list[str] = []
+    covered_tasks = _covered_assurance_tasks(plan, node)
+    full = node["id"] == plan["intent"]["id"]
+    errors.extend(
+        assurance_blockers(
+            baseline,
+            assurance,
+            task_ids=None if full else covered_tasks,
+            full=full,
+        )
+    )
+    relevant_impacts = [
+        item
+        for item in assurance.get("impacts", [])
+        if item.get("status") != "dismissed"
+        and (full or covered_tasks.intersection(item.get("task_ids", [])))
+    ]
+    relevant_assets = {item["asset_id"] for item in relevant_impacts}
+    relevant_inspections = [
+        item
+        for item in assurance.get("inspections", [])
+        if relevant_assets.intersection(item.get("asset_ids", []))
+        and (
+            full
+            or not item.get("task_ids")
+            or covered_tasks.intersection(item.get("task_ids", []))
+        )
+    ]
+    expected_impacts = {item["id"] for item in relevant_impacts}
+    expected_inspections = {
+        item["id"]
+        for item in relevant_inspections
+        if item.get("required")
+        or (
+            item.get("status") == "performed"
+            and item.get("result") == "pass"
+            and item.get("sufficiency") == "sufficient"
+        )
+    }
+    latest_implementation: dict[str, datetime] = {}
+    if paths["events"].exists():
+        for event_path in paths["events"].glob("*.json"):
+            event = load_json(event_path)
+            if event.get("type") != "task.implemented" or event.get("node") not in covered_tasks:
+                continue
+            timestamp = parse_time(event.get("at"))
+            if timestamp is not None and (
+                event["node"] not in latest_implementation
+                or timestamp > latest_implementation[event["node"]]
+            ):
+                latest_implementation[event["node"]] = timestamp
+    for inspection in relevant_inspections:
+        performed_at = parse_time(inspection.get("performed_at"))
+        inspected_tasks = covered_tasks.intersection(inspection.get("task_ids", []))
+        stale_for = sorted(
+            task_id
+            for task_id in inspected_tasks
+            if task_id in latest_implementation
+            and (
+                performed_at is None
+                or performed_at < latest_implementation[task_id]
+            )
+        )
+        if stale_for:
+            errors.append(
+                f"Inspection {inspection.get('id')} predates implementation for: "
+                + ", ".join(stale_for)
+            )
+    expected_findings = {
+        item["id"]
+        for item in assurance.get("findings", [])
+        if relevant_assets.intersection(item.get("asset_ids", []))
+    }
+    asserted_impacts = set(assertion.get("impact_ids", []))
+    asserted_inspections = set(assertion.get("inspection_ids", []))
+    asserted_findings = set(assertion.get("finding_ids", []))
+    known_impacts = {item["id"] for item in assurance.get("impacts", [])}
+    known_inspections = {item["id"] for item in assurance.get("inspections", [])}
+    known_findings = {item["id"] for item in assurance.get("findings", [])}
+    if not expected_impacts.issubset(asserted_impacts):
+        errors.append(
+            "Audit assurance omits impact records: "
+            + ", ".join(sorted(expected_impacts - asserted_impacts))
+        )
+    if not expected_inspections.issubset(asserted_inspections):
+        errors.append(
+            "Audit assurance omits inspection records: "
+            + ", ".join(sorted(expected_inspections - asserted_inspections))
+        )
+    if not expected_findings.issubset(asserted_findings):
+        errors.append(
+            "Audit assurance omits findings: "
+            + ", ".join(sorted(expected_findings - asserted_findings))
+        )
+    for label, asserted, known in (
+        ("impact", asserted_impacts, known_impacts),
+        ("inspection", asserted_inspections, known_inspections),
+        ("finding", asserted_findings, known_findings),
+    ):
+        unknown = asserted - known
+        if unknown:
+            errors.append(
+                f"Audit assurance references unknown {label} records: "
+                + ", ".join(sorted(unknown))
+            )
+    if assertion.get("scope_review") != "complete":
+        errors.append("Audit assurance scope review is incomplete")
+    return sorted(set(errors))
 
 
 def dependent_claims(plan: dict[str, Any], origin: str) -> list[str]:
@@ -1366,11 +2261,15 @@ def audit_node(
             raise PyramidError(f"Unknown node: {nid}")
         if result_value == "pass":
             prerequisite_errors = _audit_prerequisite_errors(plan, state, nodes[nid])
+            prerequisite_errors.extend(
+                _assurance_audit_errors(paths, plan, state, nodes[nid], evidence)
+            )
             if prerequisite_errors:
                 raise PyramidError("Audit prerequisites are not satisfied:\n- " + "\n- ".join(prerequisite_errors))
         item = state["nodes"][nid]
         before = copy.deepcopy(item)
         invalidated: list[str] = []
+        stale_inspections: list[str] = []
         item["verification"] = "passed" if result_value == "pass" else "failed"
         item["health"] = "clear" if result_value == "pass" else "at-risk"
         item["blocker"] = None if result_value == "pass" else "Audit failed; repair, approved expansion, or replan is required."
@@ -1386,6 +2285,13 @@ def audit_node(
                 nid,
                 f"Evidence for {nid} failed; dependent verification is stale.",
             )
+            stale_inspections = _invalidate_assurance_for_change(
+                paths,
+                plan,
+                {nid},
+                actor,
+                f"Audit failure for {nid} invalidated prior inspection evidence.",
+            )
         item["last_audit"] = evidence
         item["updated_at"] = utc_now()
         event = commit_event(
@@ -1396,11 +2302,22 @@ def audit_node(
             node=nid,
             before=before,
             after=copy.deepcopy(item),
-            payload={"audit": evidence, "invalidated": invalidated},
+            payload={
+                "audit": evidence,
+                "invalidated": invalidated,
+                "stale_inspections": stale_inspections,
+            },
         )
     compile_project(project)
-    _, plan, state = load_project(project)
-    response = {"status": result_value, "event": event, "packet": task_packet(plan, state, nid), "invalidated": invalidated}
+    paths, plan, state = load_project(project)
+    _, baseline, assurance = load_assurance_bundle(paths, plan)
+    response = {
+        "status": result_value,
+        "event": event,
+        "packet": task_packet(plan, state, nid, baseline, assurance),
+        "invalidated": invalidated,
+        "stale_inspections": stale_inspections,
+    }
     if result_value == "pass" and nid == plan["intent"]["id"]:
         response["next_action"] = "close"
     return response
@@ -1788,6 +2705,13 @@ def expand_project(
             target,
             f"{target} was expanded; dependent verification must follow the approved subtree.",
         )
+        stale_inspections = _invalidate_assurance_for_change(
+            paths,
+            candidate,
+            {target, *diff["added_nodes"]},
+            actor,
+            f"Approved expansion of {target} changed assurance coverage and requires renewed impact review.",
+        )
         write_json(paths["plan"], candidate)
         event = commit_event(
             paths,
@@ -1812,17 +2736,26 @@ def expand_project(
                 },
                 "diff": diff,
                 "invalidated": invalidated,
+                "stale_inspections": stale_inspections,
             },
         )
     compiled = compile_project(project)
-    _, applied_plan, applied_state = load_project(project)
+    paths, applied_plan, applied_state = load_project(project)
+    _, baseline, assurance = load_assurance_bundle(paths, applied_plan)
     return {
         "status": "applied",
         "event": event,
         "proposal_sha256": proposal_hash,
         "diff": diff,
         "invalidated": invalidated,
-        "parent": task_packet(applied_plan, applied_state, proposal["target"]),
+        "stale_inspections": stale_inspections,
+        "parent": task_packet(
+            applied_plan,
+            applied_state,
+            proposal["target"],
+            baseline,
+            assurance,
+        ),
         **compiled,
     }
 
@@ -1886,6 +2819,14 @@ def replan_project(
             next_states[nid] = item
         state["nodes"] = next_states
         write_json(paths["plan"], merged)
+        affected_tasks = set(diff["added_nodes"]) | set(diff["changed_nodes"]) | set(diff["superseded_nodes"])
+        stale_inspections = _invalidate_assurance_for_change(
+            paths,
+            merged,
+            affected_tasks,
+            actor,
+            "Replan changed task contracts or graph relations; impact and inspection evidence require review.",
+        )
         event = commit_event(
             paths,
             state,
@@ -1894,10 +2835,20 @@ def replan_project(
             node=merged["intent"]["id"],
             before=before,
             after={"revision": merged["revision"]},
-            payload={"reason": reason, "diff": diff},
+            payload={
+                "reason": reason,
+                "diff": diff,
+                "stale_inspections": stale_inspections,
+            },
         )
     compiled = compile_project(project)
-    return {"status": "applied", "event": event, "diff": diff, **compiled}
+    return {
+        "status": "applied",
+        "event": event,
+        "diff": diff,
+        "stale_inspections": stale_inspections,
+        **compiled,
+    }
 
 
 def reopen_node(
@@ -1944,6 +2895,7 @@ def reopen_node(
                     "completed_at": None,
                     "completed_by": None,
                     "completion_report": None,
+                    "change_dossier": None,
                 }
             )
         timestamp = utc_now()
@@ -1971,6 +2923,13 @@ def reopen_node(
             nid,
             f"{nid} was reopened; dependent verification must be repeated.",
         )
+        stale_inspections = _invalidate_assurance_for_change(
+            paths,
+            plan,
+            {nid},
+            actor,
+            f"{nid} was reopened; prior change-assurance evidence is stale.",
+        )
         event = commit_event(
             paths,
             state,
@@ -1984,24 +2943,27 @@ def reopen_node(
                 "evidence_path": evidence_reference,
                 "evidence": evidence,
                 "invalidated": invalidated,
+                "stale_inspections": stale_inspections,
                 "plan_reactivated": reactivated,
             },
         )
     compiled = compile_project(project)
-    _, plan, state = load_project(project)
+    paths, plan, state = load_project(project)
+    _, baseline, assurance = load_assurance_bundle(paths, plan)
     return {
         "status": "reopened",
         "event": event,
         "invalidated": invalidated,
+        "stale_inspections": stale_inspections,
         "plan_reactivated": reactivated,
-        "packet": task_packet(plan, state, nid),
+        "packet": task_packet(plan, state, nid, baseline, assurance),
         **compiled,
     }
 
 
 def _report_markdown(report: dict[str, Any]) -> str:
     lines = [
-        "<!-- Generated by Pyramid Task V2. -->",
+        "<!-- Generated by Pyramid Task V3. -->",
         f"# Final Report: {report['title']}",
         "",
         f"- Plan: `{report['plan_id']}`",
@@ -2025,6 +2987,171 @@ def _report_markdown(report: dict[str, Any]) -> str:
     lines.extend(f"- {item}" for item in report["residual_risks"] or ["None recorded"])
     lines.append("")
     return "\n".join(lines)
+
+
+def _dossier_markdown(dossier: dict[str, Any]) -> str:
+    lines = [
+        "<!-- Generated by Pyramid Task V3. -->",
+        f"# Change Dossier: {dossier['title']}",
+        "",
+        f"- Dossier: `{dossier['dossier_id']}`",
+        f"- Plan: `{dossier['plan_id']}`",
+        f"- Completed at: `{dossier['completed_at']}`",
+        f"- Completed by: `{dossier['completed_by']}`",
+        f"- Baseline: revision `{dossier['baseline_before']['revision']}` → `{dossier['baseline_after']['revision']}`",
+        "",
+        "## Intent",
+        "",
+        dossier["intent"]["statement"],
+        "",
+        "## Predicted Impact",
+        "",
+    ]
+    lines.extend(
+        f"- `{item['id']}` → `{item['asset_id']}` ({item['type']}, {item['status']})"
+        for item in dossier["predicted_impacts"]
+    )
+    if not dossier["predicted_impacts"]:
+        lines.append("- None recorded")
+    lines.extend(["", "## Actual Changes", ""])
+    lines.extend(
+        f"- `{item['task']}`: `{item['file']}` → "
+        + (", ".join(f"`{asset}`" for asset in item["asset_ids"]) or "unmapped")
+        for item in dossier["actual_changes"]
+    )
+    if not dossier["actual_changes"]:
+        lines.append("- None recorded")
+    lines.extend(["", "## Inspections", ""])
+    lines.extend(
+        f"- `{item['id']}` — {item['method']} ({item['result']}, {item['sufficiency']})"
+        for item in dossier["inspections"]
+    )
+    if not dossier["inspections"]:
+        lines.append("- None recorded")
+    lines.extend(["", "## Scope Drift", ""])
+    lines.extend(
+        f"- `{item['id']}` — `{item['changed_file']}` ({item['status']})"
+        for item in dossier["scope_drift"]
+    )
+    if not dossier["scope_drift"]:
+        lines.append("- None recorded")
+    lines.extend(["", "## Findings and Residual Risk", ""])
+    lines.extend(
+        f"- `{item['id']}` — {item['title']} ({item['severity']}, {item['status']})"
+        for item in dossier["findings"]
+    )
+    lines.extend(f"- {item}" for item in dossier["residual_risks"])
+    if not dossier["findings"] and not dossier["residual_risks"]:
+        lines.append("- None recorded")
+    lines.extend(["", "## Recovery and Observation", ""])
+    for name in ("rollback", "monitoring"):
+        control = dossier["controls"][name]
+        lines.append(f"- {name.capitalize()}: `{control['status']}`")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _build_change_dossier(
+    plan: dict[str, Any],
+    state: dict[str, Any],
+    baseline: dict[str, Any],
+    assurance: dict[str, Any],
+    actor: str,
+    completed_at: str,
+    dossier_id: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    baseline_before = copy.deepcopy(baseline)
+    baseline_after = copy.deepcopy(baseline)
+    baseline_after["revision"] += 1
+    baseline_after["status"] = "current"
+    baseline_after["captured_at"] = completed_at
+    baseline_after["captured_by"] = actor
+    baseline_after["capture_method"] = "verified-change-close"
+    history_id = f"HISTORY-{slugify(plan['plan_id']).upper()}-R{plan['revision']}"
+    existing_history_ids = {item.get("id") for item in baseline_after.get("history", [])}
+    if history_id in existing_history_ids:
+        history_id = f"{history_id}-G{state['graph_version'] + 1}"
+    impacted_assets = sorted(
+        {item["asset_id"] for item in assurance.get("impacts", []) if item.get("status") != "dismissed"}
+    )
+    baseline_after.setdefault("history", []).append(
+        {
+            "id": history_id,
+            "kind": "change",
+            "summary": f"Completed {plan['title']} under dossier {dossier_id}.",
+            "asset_ids": impacted_assets,
+            "evidence": [dossier_id],
+            "date": completed_at,
+            "controls": [
+                name
+                for name, control in assurance.get("controls", {}).items()
+                if control.get("status") == "ready"
+            ],
+        }
+    )
+    actual_changes: list[dict[str, str]] = []
+    audits: list[dict[str, Any]] = []
+    residual_risks: list[Any] = []
+    for node in plan["nodes"]:
+        item = state["nodes"][node["id"]]
+        result = item.get("last_result")
+        if isinstance(result, dict):
+            recorded_assets: set[str] = set()
+            for changed in result.get("changed_files", []):
+                if not isinstance(changed, str):
+                    continue
+                mapped_assets = sorted(asset_ids_for_file(baseline, changed))
+                recorded_assets.update(mapped_assets)
+                actual_changes.append(
+                    {
+                        "task": node["id"],
+                        "file": changed,
+                        "asset_ids": mapped_assets,
+                    }
+                )
+            for asset_id in result.get("changed_assets", []):
+                if isinstance(asset_id, str) and asset_id not in recorded_assets:
+                    actual_changes.append(
+                        {
+                            "task": node["id"],
+                            "file": f"asset:{asset_id}",
+                            "asset_ids": [asset_id],
+                        }
+                    )
+            residual_risks.extend(result.get("discovered_risks", []))
+        if isinstance(item.get("last_audit"), dict):
+            audits.append({"node": node["id"], "audit": copy.deepcopy(item["last_audit"])})
+    residual_risks.extend(
+        {
+            "finding": item["id"],
+            "severity": item["severity"],
+            "status": item["status"],
+            "acceptance_reason": item.get("acceptance_reason"),
+        }
+        for item in assurance.get("findings", [])
+        if item.get("status") == "accepted"
+    )
+    dossier = {
+        "schema": "pyramid-change-dossier-v1",
+        "dossier_id": dossier_id,
+        "plan_id": plan["plan_id"],
+        "title": plan["title"],
+        "completed_at": completed_at,
+        "completed_by": actor,
+        "baseline_before": baseline_before,
+        "baseline_after": copy.deepcopy(baseline_after),
+        "intent": copy.deepcopy(plan["intent"]),
+        "predicted_impacts": copy.deepcopy(assurance.get("impacts", [])),
+        "actual_changes": actual_changes,
+        "inspections": copy.deepcopy(assurance.get("inspections", [])),
+        "scope_drift": copy.deepcopy(assurance.get("scope_drift", [])),
+        "findings": copy.deepcopy(assurance.get("findings", [])),
+        "controls": copy.deepcopy(assurance.get("controls", {})),
+        "audits": audits,
+        "residual_risks": residual_risks,
+        "legacy_bridge": copy.deepcopy(assurance.get("legacy_bridge", {})),
+    }
+    return dossier, baseline_after
 
 
 def _completion_report(plan: dict[str, Any], state: dict[str, Any], actor: str, completed_at: str) -> dict[str, Any]:
@@ -2082,7 +3209,8 @@ def close_project(
                 "report": lifecycle_state(state).get("completion_report"),
                 "already_completed": True,
             }
-        errors = completion_errors(plan, state)
+        manifest, baseline, assurance = load_assurance_bundle(paths, plan)
+        errors = completion_errors(plan, state, baseline, assurance)
         if errors:
             raise PyramidError("Plan cannot close:\n- " + "\n- ".join(errors))
         completed_at = utc_now()
@@ -2090,6 +3218,18 @@ def close_project(
         report_id = f"FINAL-{slugify(plan['plan_id']).upper()}-R{plan['revision']}-G{state['graph_version'] + 1}"
         report_json = paths["reports"] / f"{report_id}.json"
         report_markdown = paths["reports"] / f"{report_id}.md"
+        dossier: dict[str, Any] | None = None
+        baseline_after: dict[str, Any] | None = None
+        dossier_json: Path | None = None
+        dossier_markdown: Path | None = None
+        if manifest and manifest.get("mode") == "brownfield" and baseline is not None and assurance is not None:
+            dossier_id = f"DOSSIER-{slugify(plan['plan_id']).upper()}-R{plan['revision']}-G{state['graph_version'] + 1}"
+            dossier_json = paths["dossiers"] / f"{dossier_id}.json"
+            dossier_markdown = paths["dossiers"] / f"{dossier_id}.md"
+            dossier, baseline_after = _build_change_dossier(
+                plan, state, baseline, assurance, actor, completed_at, dossier_id
+            )
+            report["change_dossier"] = str(dossier_json.relative_to(paths["root"]))
         lifecycle = lifecycle_state(state)
         before = copy.deepcopy(lifecycle)
         lifecycle.update(
@@ -2098,6 +3238,7 @@ def close_project(
                 "completed_at": completed_at,
                 "completed_by": actor,
                 "completion_report": str(report_json.relative_to(paths["root"])),
+                "change_dossier": str(dossier_json.relative_to(paths["root"])) if dossier_json else None,
             }
         )
         event = commit_event(
@@ -2111,17 +3252,34 @@ def close_project(
             payload={
                 "report_json": str(report_json.relative_to(paths["root"])),
                 "report_markdown": str(report_markdown.relative_to(paths["root"])),
+                "change_dossier_json": str(dossier_json.relative_to(paths["root"])) if dossier_json else None,
+                "change_dossier_markdown": str(dossier_markdown.relative_to(paths["root"])) if dossier_markdown else None,
             },
         )
         write_json(report_json, report)
         report_markdown.parent.mkdir(parents=True, exist_ok=True)
         report_markdown.write_text(_report_markdown(report), encoding="utf-8")
+        if dossier is not None and dossier_json is not None and dossier_markdown is not None and baseline_after is not None and assurance is not None:
+            write_json(dossier_json, dossier)
+            dossier_markdown.parent.mkdir(parents=True, exist_ok=True)
+            dossier_markdown.write_text(_dossier_markdown(dossier), encoding="utf-8")
+            next_assurance = copy.deepcopy(assurance)
+            next_assurance["baseline_id"] = baseline_after["baseline_id"]
+            next_assurance["baseline_revision"] = baseline_after["revision"]
+            next_assurance["status"] = "passed"
+            next_assurance["updated_at"] = completed_at
+            next_assurance["updated_by"] = actor
+            next_assurance["stale_reasons"] = []
+            write_json(paths["baseline"], baseline_after)
+            write_json(paths["assurance"], next_assurance)
     compiled = compile_project(project)
     return {
         "status": "completed",
         "event": event,
         "report": str(report_json),
         "report_markdown": str(report_markdown),
+        "change_dossier": str(dossier_json) if dossier_json else None,
+        "change_dossier_markdown": str(dossier_markdown) if dossier_markdown else None,
         **compiled,
     }
 
@@ -2145,11 +3303,11 @@ def _copy_current_snapshot(paths: dict[str, Path], destination: Path, manifest: 
     archive_meta = destination / ".pyramid"
     archive_docs = destination / "docs" / "tasks"
     archive_meta.mkdir(parents=True, exist_ok=False)
-    for key in ("plan", "state", "graph", "ready"):
+    for key in ("plan", "state", "project", "baseline", "assurance", "graph", "ready"):
         source = paths[key]
         if source.exists():
             shutil.copy2(source, archive_meta / source.name)
-    for key in ("events", "reports"):
+    for key in ("events", "reports", "dossiers"):
         source = paths[key]
         if source.exists():
             shutil.copytree(source, archive_meta / source.name)
@@ -2157,6 +3315,42 @@ def _copy_current_snapshot(paths: dict[str, Path], destination: Path, manifest: 
         archive_docs.parent.mkdir(parents=True, exist_ok=True)
         shutil.copytree(paths["docs"], archive_docs)
     write_json(destination / "manifest.json", manifest)
+
+
+def _create_upgrade_snapshot(
+    paths: dict[str, Path],
+    plan: dict[str, Any],
+    state: dict[str, Any],
+    *,
+    actor: str,
+    reason: str,
+    token: str,
+) -> tuple[str, Path]:
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    archive_id = (
+        f"{slugify(plan['plan_id']).upper()}-R{plan['revision']}-"
+        f"G{state['graph_version']}-PRE-UPGRADE-{token.upper()}-{stamp}"
+    )
+    destination = paths["archives"] / archive_id
+    manifest = {
+        "schema": "pyramid-archive-v1",
+        "archive_id": archive_id,
+        "plan_id": plan["plan_id"],
+        "title": plan["title"],
+        "revision": plan["revision"],
+        "graph_version": state["graph_version"],
+        "archived_at": utc_now(),
+        "archived_by": actor,
+        "previous_status": lifecycle_status(state),
+        "reason": reason,
+        "plan_sha256": _file_sha256(paths["plan"]),
+        "state_sha256": _file_sha256(paths["state"]),
+    }
+    _copy_current_snapshot(paths, destination, manifest)
+    validation = validate_project(destination)
+    if not validation["valid"]:
+        raise PyramidError("Pre-upgrade snapshot validation failed:\n- " + "\n- ".join(validation["errors"]))
+    return archive_id, destination
 
 
 def list_archives(project: str | Path) -> list[dict[str, Any]]:
@@ -2255,12 +3449,23 @@ def archive_project(
     }
 
 
-def _purge_current(paths: dict[str, Path]) -> None:
-    for key in ("events", "reports", "docs"):
+def _purge_current(
+    paths: dict[str, Path],
+    *,
+    preserve_baseline: bool = False,
+    preserve_dossiers: bool = False,
+) -> None:
+    directory_keys = ["events", "reports", "docs"]
+    if not preserve_dossiers:
+        directory_keys.append("dossiers")
+    for key in directory_keys:
         target = paths[key]
         if target.exists():
             shutil.rmtree(target)
-    for key in ("plan", "state", "graph", "ready", "html"):
+    file_keys = ["plan", "state", "project", "assurance", "graph", "ready", "html"]
+    if not preserve_baseline:
+        file_keys.append("baseline")
+    for key in file_keys:
         target = paths[key]
         if target.exists():
             target.unlink()
@@ -2271,6 +3476,9 @@ def _initialize_current(
     plan: dict[str, Any],
     actor: str,
     payload: dict[str, Any],
+    *,
+    mode: str = "greenfield",
+    baseline: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     timestamp = utc_now()
     state = {
@@ -2283,6 +3491,15 @@ def _initialize_current(
     }
     write_json(paths["plan"], plan)
     write_json(paths["state"], state)
+    manifest = default_project_manifest(plan_id=plan["plan_id"], mode=mode, actor=actor, created_at=timestamp)
+    write_json(paths["project"], manifest)
+    if mode == "brownfield":
+        next_baseline = copy.deepcopy(baseline) if baseline is not None else default_baseline(actor=actor)
+        next_assurance = default_assurance(
+            plan_id=plan["plan_id"], baseline=next_baseline, actor=actor
+        )
+        write_json(paths["baseline"], next_baseline)
+        write_json(paths["assurance"], next_assurance)
     event = {
         "schema": "pyramid-event-v1",
         "id": _event_id(),
@@ -2293,7 +3510,7 @@ def _initialize_current(
         "node": plan["intent"]["id"],
         "before": None,
         "after": {"plan_id": plan["plan_id"], "revision": plan["revision"]},
-        "payload": payload,
+        "payload": {**payload, "mode": mode, "project_format_version": PROJECT_FORMAT_VERSION},
     }
     write_json(paths["events"] / f"{event['id']}.json", event)
     return state, event
@@ -2313,6 +3530,8 @@ def reset_project(
     if errors:
         raise PyramidError("Candidate reset plan is invalid:\n- " + "\n- ".join(errors))
     paths, current, state = load_project(project)
+    manifest, current_baseline, _ = load_assurance_bundle(paths, current)
+    next_mode = manifest.get("mode") if manifest else detect_repository_mode(paths["root"])
     check_expected_version(state, expected_version)
     if candidate["plan_id"] == current["plan_id"]:
         raise PyramidError("A reset must use a new plan_id; use replan to revise the current plan")
@@ -2323,12 +3542,18 @@ def reset_project(
             raise PyramidError("Reset safety check failed: current plan was not archived")
         if not Path(archived["archive"]).exists():
             raise PyramidError("Reset safety check failed: archive snapshot is missing")
-        _purge_current(paths)
+        _purge_current(
+            paths,
+            preserve_baseline=next_mode == "brownfield" and current_baseline is not None,
+            preserve_dossiers=True,
+        )
         _, event = _initialize_current(
             paths,
             candidate,
             actor,
             {"reset_from_archive": archived["archive_id"], "reason": reason},
+            mode=next_mode,
+            baseline=current_baseline,
         )
     compiled = compile_project(project)
     return {
@@ -2373,6 +3598,10 @@ def restore_project(
     with project_lock(paths):
         _purge_current(paths)
         shutil.copy2(source / ".pyramid" / "plan.json", paths["plan"])
+        for key in ("project", "baseline", "assurance"):
+            source_file = source / ".pyramid" / paths[key].name
+            if source_file.exists():
+                shutil.copy2(source_file, paths[key])
         restored_state = copy.deepcopy(source_state)
         lifecycle = lifecycle_state(restored_state)
         completion = {
@@ -2398,6 +3627,9 @@ def restore_project(
         source_reports = source / ".pyramid" / "reports"
         if source_reports.exists():
             shutil.copytree(source_reports, paths["reports"])
+        source_dossiers = source / ".pyramid" / "dossiers"
+        if source_dossiers.exists():
+            shutil.copytree(source_dossiers, paths["dossiers"])
         event = commit_event(
             paths,
             restored_state,
@@ -2425,8 +3657,12 @@ def clean_project(project: str | Path) -> dict[str, Any]:
     canonical = {
         "plan": _file_sha256(paths["plan"]),
         "state": _file_sha256(paths["state"]),
+        "project": _file_sha256(paths["project"]) if paths["project"].exists() else None,
+        "baseline": _file_sha256(paths["baseline"]) if paths["baseline"].exists() else None,
+        "assurance": _file_sha256(paths["assurance"]) if paths["assurance"].exists() else None,
         "events": sorted((path.name, _file_sha256(path)) for path in paths["events"].glob("*.json")),
         "reports": sorted((path.name, _file_sha256(path)) for path in paths["reports"].glob("*")) if paths["reports"].exists() else [],
+        "dossiers": sorted((path.name, _file_sha256(path)) for path in paths["dossiers"].glob("*")) if paths["dossiers"].exists() else [],
     }
     removed = []
     for key in ("graph", "ready", "html", "docs"):
@@ -2441,8 +3677,12 @@ def clean_project(project: str | Path) -> dict[str, Any]:
     preserved = (
         canonical["plan"] == _file_sha256(paths["plan"])
         and canonical["state"] == _file_sha256(paths["state"])
+        and canonical["project"] == (_file_sha256(paths["project"]) if paths["project"].exists() else None)
+        and canonical["baseline"] == (_file_sha256(paths["baseline"]) if paths["baseline"].exists() else None)
+        and canonical["assurance"] == (_file_sha256(paths["assurance"]) if paths["assurance"].exists() else None)
         and canonical["events"] == sorted((path.name, _file_sha256(path)) for path in paths["events"].glob("*.json"))
         and canonical["reports"] == (sorted((path.name, _file_sha256(path)) for path in paths["reports"].glob("*")) if paths["reports"].exists() else [])
+        and canonical["dossiers"] == (sorted((path.name, _file_sha256(path)) for path in paths["dossiers"].glob("*")) if paths["dossiers"].exists() else [])
     )
     if not preserved:
         raise PyramidError("Clean safety check failed: canonical data changed")
@@ -2454,8 +3694,13 @@ def inspect_lifecycle(project: str | Path) -> dict[str, Any]:
     archives = list_archives(project)
     if not paths["plan"].exists():
         return {"schema": "pyramid-lifecycle-v1", "current": None, "archives": archives}
-    _, plan, state = load_project(project)
-    errors = completion_errors(plan, state) if lifecycle_status(state) == "active" else []
+    paths, plan, state = load_project(project)
+    manifest, baseline, assurance = load_assurance_bundle(paths, plan)
+    errors = (
+        completion_errors(plan, state, baseline, assurance)
+        if lifecycle_status(state) == "active"
+        else []
+    )
     return {
         "schema": "pyramid-lifecycle-v1",
         "plan_id": plan["plan_id"],
@@ -2464,6 +3709,13 @@ def inspect_lifecycle(project: str | Path) -> dict[str, Any]:
         "closure_ready": lifecycle_status(state) == "active" and not errors,
         "closure_blockers": errors,
         "active_claims": active_claims(state),
+        "project": copy.deepcopy(manifest) if manifest else {
+            "format_version": "legacy-v2",
+            "mode": "legacy",
+        },
+        "assurance": assurance_summary(baseline, assurance)
+        if baseline is not None and assurance is not None
+        else None,
         "archives": archives,
     }
 
@@ -2475,15 +3727,33 @@ def inspect_project(
     ready: bool = False,
     blocked: bool = False,
     pending_audits: bool = False,
+    assurance_view: bool = False,
     nid: str | None = None,
 ) -> dict[str, Any]:
-    _, plan, state = load_project(project)
-    snapshot = graph_snapshot(plan, state)
+    paths, plan, state = load_project(project)
+    manifest, baseline, assurance = load_assurance_bundle(paths, plan)
+    snapshot = graph_snapshot(plan, state, baseline, assurance, manifest)
+    if assurance_view:
+        if baseline is None or assurance is None:
+            return {
+                "schema": "pyramid-assurance-query-v1",
+                "mode": manifest.get("mode") if manifest else "legacy",
+                "assurance": None,
+                "message": "This project has no brownfield assurance bundle.",
+            }
+        return {
+            "schema": "pyramid-assurance-query-v1",
+            "mode": manifest.get("mode") if manifest else "brownfield",
+            "graph_version": state["graph_version"],
+            "summary": assurance_summary(baseline, assurance),
+            "baseline": copy.deepcopy(baseline),
+            "assurance": copy.deepcopy(assurance),
+        }
     if nid:
-        return task_packet(plan, state, nid)
+        return task_packet(plan, state, nid, baseline, assurance)
     if ready:
         tasks = [
-            task_packet(plan, state, node["id"])
+            task_packet(plan, state, node["id"], baseline, assurance)
             for node in plan["nodes"]
             if availability(plan, state, node) in {"ready", "needs-rework"}
         ]
@@ -2502,7 +3772,15 @@ def inspect_project(
         "revision": plan["revision"],
         "graph_version": state["graph_version"],
         "lifecycle": copy.deepcopy(lifecycle_state(state)),
-        "closure_ready": lifecycle_status(state) == "active" and not completion_errors(plan, state),
+        "project": copy.deepcopy(manifest) if manifest else {
+            "format_version": "legacy-v2",
+            "mode": "legacy",
+        },
+        "assurance": assurance_summary(baseline, assurance)
+        if baseline is not None and assurance is not None
+        else None,
+        "closure_ready": lifecycle_status(state) == "active"
+        and not completion_errors(plan, state, baseline, assurance),
         "intent": plan["intent"],
         "summary": snapshot["summary"],
         "ready": [node["id"] for node in snapshot["nodes"] if node["availability"] in {"ready", "needs-rework"}],
@@ -2516,11 +3794,14 @@ def validate_project(project: str | Path) -> dict[str, Any]:
     paths = project_paths(project)
     plan = load_json(paths["plan"])
     state = load_json(paths["state"])
-    errors = validate_plan(plan) + validate_state(plan, state)
+    errors = validate_plan(plan) + validate_state(plan, state) + assurance_validation_errors(paths, plan)
+    manifest = load_json(paths["project"]) if paths["project"].exists() else None
     return {
         "valid": not errors,
         "errors": errors,
         "plan_id": plan.get("plan_id"),
         "revision": plan.get("revision"),
         "graph_version": state.get("graph_version"),
+        "project_format_version": manifest.get("format_version") if manifest else "legacy-v2",
+        "mode": manifest.get("mode") if manifest else "legacy",
     }

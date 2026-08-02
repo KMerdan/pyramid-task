@@ -18,7 +18,7 @@ Classify ambiguity as blocking, assumption-worthy, or locally decidable. Ask abo
 
 ## 2. Gather evidence
 
-Inspect the repository, tests, schemas, architecture, existing plans, and relevant authoritative sources. Give each evidence item a stable ID, claim, source, confidence, freshness note, and supported nodes. Record contradictions instead of averaging them away.
+Inspect the repository, tests, schemas, architecture, existing plans, operational history, incidents, and relevant authoritative sources. In an existing system, build or validate the asset baseline and dependency relations before selecting the change path. Give each evidence item a stable ID, claim, source, confidence, freshness note, and supported nodes. Record contradictions instead of averaging them away.
 
 Stop research when every critical edge is supported, explicitly assumed with an early validation node, or identified as blocking. More sources are not a substitute for resolving a load-bearing contradiction.
 
@@ -29,6 +29,8 @@ Backward-chain from the final intent by asking what must be true immediately bef
 Forward-chain from the repository's current state by asking what can be built and meaningfully tested now. Reject backward paths that cannot connect to the forward chain.
 
 Use outcome nodes for required states. Use executable nodes for actions that establish or test those states. Use joint audit nodes to test whether sibling branches compose.
+
+For brownfield paths, map proposed tasks to direct and transitive assets. Use past failures and criticality to determine required inspection, recovery, compatibility, and monitoring nodes. An impact edge without a credible inspection path remains a planning gap.
 
 ## 4. Compare paths
 
@@ -59,6 +61,7 @@ Before creation or replan, check:
 - every executable node is bounded and independently reviewable;
 - broad executable nodes are left intact unless evidence justifies an approved expansion;
 - every multi-branch composition has an audit gate;
+- every brownfield impact has an evidenced inspection and control path proportional to risk;
 - every critical assumption has an early validation task;
 - dependencies are typed and minimal;
 - no hard dependency or hierarchy cycle exists;

@@ -15,6 +15,7 @@ Render `.pyramid/graph.json`, which combines the canonical plan with validated r
 - Filter all, ready, working, needs-rework, blocked, audit, work-package, and verified nodes.
 - Provide keyboard-accessible view and filter controls plus a node-selection fallback.
 - Link to the generated Markdown source when the environment supports local links.
+- Overlay assurance status, impact membership, inspections, and findings from the canonical assurance bundle.
 
 ## Visual encoding
 
@@ -23,13 +24,14 @@ Render `.pyramid/graph.json`, which combines the canonical plan with validated r
 - Encode health with a warning mark and text.
 - Encode selection with opacity and a label.
 - Pair every color signal with text, shape, or line treatment.
+- Encode brownfield assurance with a distinct dashed ring and detailed text; never reuse task execution color as assurance state.
 - Keep inactive structure neutral and visually subordinate.
 
 The browser is read-only. Actions that claim, update, audit, expand, or replan must call their authoritative interface rather than modifying local presentation state.
 
 ## Progress
 
-Show plan lifecycle, verified nodes, ready frontier, rework, active work, blockers, and pending audits. Do not invent a completion percentage unless the plan explicitly contains reviewed weights. A count of verified required nodes is acceptable when its denominator is labeled.
+Show project mode, plan lifecycle, verified nodes, ready frontier, rework, active work, blockers, pending audits, baseline revision, impacted versus sufficiently inspected assets, open scope drift, and material findings. Do not invent a completion percentage unless the plan explicitly contains reviewed weights. A labeled coverage count is acceptable.
 
 ## Layout
 

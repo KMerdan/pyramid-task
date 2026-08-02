@@ -6,7 +6,15 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from pyramid_core import compile_project, graph_snapshot, lifecycle_status, load_json, load_project, project_paths
+from pyramid_core import (
+    compile_project,
+    graph_snapshot,
+    lifecycle_status,
+    load_assurance_bundle,
+    load_json,
+    load_project,
+    project_paths,
+)
 
 
 HTML_TEMPLATE = r"""<!doctype html>
@@ -33,6 +41,8 @@ HTML_TEMPLATE = r"""<!doctype html>
     --locked: #7c8798;
     --audit: #c57a13;
     --focus: #2867c7;
+    --assurance-covered: #1b9a72;
+    --assurance-blocked: #e05a36;
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -51,6 +61,8 @@ HTML_TEMPLATE = r"""<!doctype html>
       --locked: #909bad;
       --audit: #e3a74d;
       --focus: #8dc3ff;
+      --assurance-covered: #4fd3a8;
+      --assurance-blocked: #ff8d69;
     }
   }
   * { box-sizing: border-box; }
@@ -58,6 +70,11 @@ HTML_TEMPLATE = r"""<!doctype html>
   main { max-width: 1500px; margin: 0 auto; padding: 18px; }
   h1 { margin: 0 0 4px; font-size: 1.35rem; font-weight: 600; }
   .meta { color: var(--muted); margin-bottom: 14px; }
+  .assurance-panel { display: none; margin: 0 0 12px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 9px; }
+  .assurance-panel.visible { display: block; }
+  .assurance-panel strong { margin-right: 8px; }
+  .assurance-panel.blocked { border-color: var(--assurance-blocked); }
+  .assurance-panel.ready { border-color: var(--assurance-covered); }
   .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; margin-bottom: 12px; }
   .group { display: flex; gap: 6px; flex-wrap: wrap; }
   button, select { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--border); border-radius: 7px; padding: 7px 10px; }
@@ -92,6 +109,10 @@ HTML_TEMPLATE = r"""<!doctype html>
   .node.verification-failed .verify { stroke: var(--blocked); }
   .node.verification-passed .verify { stroke: var(--verified); }
   .node .verify { fill: none; stroke: transparent; stroke-width: 3; }
+  .node .assure { fill: none; stroke: transparent; stroke-width: 3; stroke-dasharray: 3 3; }
+  .node.assurance-covered .assure { stroke: var(--assurance-covered); }
+  .node.assurance-blocked .assure { stroke: var(--assurance-blocked); }
+  .node.assurance-hidden .assure { stroke: transparent; }
   .node.selected .verify { stroke: var(--focus); stroke-width: 4; }
   .edge { stroke: var(--edge); stroke-width: 1.25; fill: none; opacity: .65; }
   .edge.dependency { stroke-dasharray: 5 4; }
@@ -111,6 +132,7 @@ HTML_TEMPLATE = r"""<!doctype html>
 <main>
   <h1 id="page-title"></h1>
   <div class="meta" id="page-meta"></div>
+  <div class="assurance-panel" id="assurance-panel"></div>
   <div class="toolbar">
     <div class="group" aria-label="Graph view">
       <button type="button" data-view="star" aria-pressed="true">Star</button>
@@ -126,6 +148,15 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button type="button" data-filter="audit" aria-pressed="false">Audit</button>
       <button type="button" data-filter="work-package" aria-pressed="false">Work packages</button>
       <button type="button" data-filter="verified" aria-pressed="false">Verified</button>
+      <button type="button" data-filter="assurance-blocked" aria-pressed="false">Assurance blocked</button>
+    </div>
+    <div class="group" aria-label="Assurance overlay">
+      <button type="button" data-overlay="none" aria-pressed="false">No assurance</button>
+      <button type="button" data-overlay="status" aria-pressed="true">Assurance status</button>
+      <button type="button" data-overlay="impact" aria-pressed="false">Impact</button>
+      <button type="button" data-overlay="inspection" aria-pressed="false">Inspections</button>
+      <button type="button" data-overlay="finding" aria-pressed="false">Findings</button>
+      <button type="button" data-overlay="drift" aria-pressed="false">Scope drift</button>
     </div>
     <label>Selected node<select id="node-select"></select></label>
   </div>
@@ -143,6 +174,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         <span class="swatch"><span class="dot verified"></span>Verified</span>
         <span class="swatch"><span class="dot blocked"></span>Blocked</span>
         <span class="swatch"><span class="dot"></span>Locked or inactive</span>
+        <span class="swatch">Dashed ring: brownfield assurance</span>
       </div>
     </section>
     <aside class="detail" id="detail" aria-live="polite"></aside>
@@ -158,15 +190,23 @@ HTML_TEMPLATE = r"""<!doctype html>
   const levelLayer = document.getElementById('level-layer');
   const detail = document.getElementById('detail');
   const select = document.getElementById('node-select');
+  const assurancePanel = document.getElementById('assurance-panel');
   const nodeById = new Map(data.nodes.map(node => [node.id, node]));
   let view = 'star';
   let filter = 'all';
+  let overlay = data.assurance ? 'status' : 'none';
   let selected = data.intent.id;
   let positions = new Map();
   let canvas = {width: 1000, height: 720};
 
   document.getElementById('page-title').textContent = data.title;
-  document.getElementById('page-meta').textContent = `${data.lifecycle.status} · revision ${data.revision} · graph ${data.graph_version} · ${data.summary.verified_primary_nodes}/${data.summary.primary_nodes} primary nodes verified`;
+  const projectMode = data.project?.mode || 'legacy';
+  document.getElementById('page-meta').textContent = `${projectMode} · ${data.lifecycle.status} · revision ${data.revision} · graph ${data.graph_version} · ${data.summary.verified_primary_nodes}/${data.summary.primary_nodes} primary nodes verified`;
+  if (data.assurance) {
+    const summary = data.assurance.summary;
+    assurancePanel.classList.add('visible', summary.status);
+    assurancePanel.innerHTML = `<strong>Change assurance: ${esc(summary.status)}</strong> baseline r${summary.baseline_revision} (${esc(summary.baseline_status)}) · ${summary.sufficiently_inspected_assets}/${summary.impacted_assets} impacted assets sufficiently inspected · ${summary.open_scope_drift} open drift · ${summary.open_material_findings} material findings`;
+  }
   data.nodes.forEach(node => {
     const option = document.createElement('option');
     option.value = node.id;
@@ -191,6 +231,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     if (filter === 'all') return true;
     if (filter === 'audit') return node.kind === 'audit';
     if (filter === 'work-package') return node.kind === 'work-package';
+    if (filter === 'assurance-blocked') return node.assurance?.status === 'blocked';
     if (filter === 'blocked') return node.availability === 'blocked' || node.availability === 'locked';
     return node.availability === filter;
   }
@@ -286,6 +327,10 @@ HTML_TEMPLATE = r"""<!doctype html>
       const p = positions.get(node.id);
       const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       const classes = ['node', node.availability, node.kind === 'audit' ? 'audit' : '', node.kind === 'work-package' ? 'work-package' : '', `verification-${node.state.verification}`, node.selection !== 'primary' ? 'not-selected' : '', node.id === selected ? 'selected' : ''].filter(Boolean);
+      const assuranceStatus = node.assurance?.status;
+      if (assuranceStatus) classes.push(`assurance-${assuranceStatus}`);
+      const overlayRecords = overlay === 'impact' ? node.assurance?.impact_ids : overlay === 'inspection' ? node.assurance?.inspection_ids : overlay === 'finding' ? node.assurance?.finding_ids : overlay === 'drift' ? node.assurance?.scope_drift_ids : null;
+      if (overlay === 'none' || (overlayRecords && !overlayRecords.length)) classes.push('assurance-hidden');
       group.setAttribute('class', classes.join(' '));
       group.dataset.id = node.id;
       group.style.opacity = visible(node) ? '' : '.08';
@@ -295,6 +340,9 @@ HTML_TEMPLATE = r"""<!doctype html>
       const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       ring.setAttribute('class', 'verify'); ring.setAttribute('cx', p.x); ring.setAttribute('cy', p.y); ring.setAttribute('r', node.level === 0 ? 25 : 20);
       group.appendChild(ring);
+      const assure = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      assure.setAttribute('class', 'assure'); assure.setAttribute('cx', p.x); assure.setAttribute('cy', p.y); assure.setAttribute('r', node.level === 0 ? 30 : 25);
+      group.appendChild(assure);
       const mark = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
       mark.setAttribute('class', 'mark'); mark.setAttribute('points', starPoints(p.x, p.y, node.level === 0 ? 22 : 17, node.level === 0 ? 10 : 8));
       group.appendChild(mark);
@@ -314,6 +362,15 @@ HTML_TEMPLATE = r"""<!doctype html>
     const node = nodeById.get(selected);
     if (!node) return;
     const source = node.source_path ? `<a href="../${esc(node.source_path)}">Open generated task</a>` : '';
+    const assurance = node.assurance;
+    const assuranceDetail = assurance ? `
+      <strong>Assurance status</strong><p>${esc(assurance.status)}</p>
+      <strong>Affected assets</strong>${list(assurance.asset_ids, item => `<code>${esc(item)}</code>`)}
+      <strong>Impact records</strong>${list(assurance.impact_ids, item => `<code>${esc(item)}</code>`)}
+      <strong>Inspections</strong>${list(assurance.inspection_ids, item => `<code>${esc(item)}</code>`)}
+      <strong>Findings</strong>${list(assurance.finding_ids, item => `<code>${esc(item)}</code>`)}
+      <strong>Scope drift</strong>${list(assurance.scope_drift_ids, item => `<code>${esc(item)}</code>`)}
+      <strong>Assurance blockers</strong>${list(assurance.blockers, item => esc(item))}` : '';
     detail.innerHTML = `
       <h2>${esc(node.id)}: ${esc(node.title)}</h2>
       <p>${esc(node.summary)}</p>
@@ -331,6 +388,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <strong>Blocked by</strong>${list(node.blocked_by, item => esc(item))}
       <strong>Audit gates</strong>${list(node.audit_gates, item => esc(item))}
       <strong>Acceptance</strong>${list(node.acceptance_criteria, item => `<code>${esc(item.id)}</code> — ${esc(item.description)}`)}
+      ${assuranceDetail}
       ${source}`;
   }
   function choose(id) { selected = id; select.value = id; render(); }
@@ -345,6 +403,15 @@ HTML_TEMPLATE = r"""<!doctype html>
     document.querySelectorAll('[data-filter]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
     render();
   }));
+  document.querySelectorAll('[data-overlay]').forEach(button => {
+    if (!data.assurance) button.disabled = true;
+    button.setAttribute('aria-pressed', String(button.dataset.overlay === overlay));
+    button.addEventListener('click', () => {
+      overlay = button.dataset.overlay;
+      document.querySelectorAll('[data-overlay]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+      render();
+    });
+  });
   render();
 })();
 </script>
@@ -371,8 +438,13 @@ def write_text_atomic(path: Path, text: str) -> None:
 def render_visualization(project: str | Path, output: str | Path | None = None) -> dict[str, Any]:
     paths = project_paths(project)
     _, plan, state = load_project(project)
+    manifest, baseline, assurance = load_assurance_bundle(paths, plan)
     if lifecycle_status(state) == "archived":
-        graph = load_json(paths["graph"]) if paths["graph"].exists() else graph_snapshot(plan, state)
+        graph = (
+            load_json(paths["graph"])
+            if paths["graph"].exists()
+            else graph_snapshot(plan, state, baseline, assurance, manifest)
+        )
     else:
         compile_project(project)
         graph = load_json(paths["graph"])
@@ -386,4 +458,5 @@ def render_visualization(project: str | Path, output: str | Path | None = None) 
         "graph_version": graph["graph_version"],
         "nodes": len(graph["nodes"]),
         "views": ["star", "pyramid", "dependency"],
+        "overlays": ["assurance-status", "impact", "inspection", "finding", "scope-drift"],
     }

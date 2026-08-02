@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/upgrade-preview.schema.json",
+  "title": "Pyramid Task Upgrade Preview",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "status", "plan_id", "from", "to", "graph_version", "preserved", "generated", "assurance_gaps", "upgrade_sha256", "approval_required"],
+  "properties": {
+    "schema": {"const": "pyramid-upgrade-preview-v1"}, "status": {"const": "preview"},
+    "plan_id": {"type": "string"}, "from": {"type": "string"}, "to": {"const": 3},
+    "graph_version": {"type": "integer", "minimum": 1},
+    "preserved": {
+      "type": "object", "additionalProperties": false,
+      "required": ["plan_revision", "nodes", "node_states", "verified_nodes", "active_claims", "immutable_events"],
+      "properties": {
+        "plan_revision": {"type": "integer", "minimum": 1}, "nodes": {"type": "integer", "minimum": 1},
+        "node_states": {"type": "integer", "minimum": 1}, "verified_nodes": {"type": "integer", "minimum": 0},
+        "active_claims": {"type": "array", "items": {"type": "string"}}, "immutable_events": {"type": "integer", "minimum": 0}
+      }
+    },
+    "generated": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mode", "assets", "impacts", "legacy_inspections"],
+      "properties": {
+        "mode": {"enum": ["greenfield", "brownfield"]}, "assets": {"type": "integer", "minimum": 0},
+        "impacts": {"type": "integer", "minimum": 0}, "legacy_inspections": {"type": "integer", "minimum": 0}
+      }
+    },
+    "assurance_gaps": {"type": "array", "items": {"type": "string"}},
+    "upgrade_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "approval_required": {"const": true}
+  }
+}

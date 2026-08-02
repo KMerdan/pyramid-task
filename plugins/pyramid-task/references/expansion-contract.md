@@ -40,7 +40,7 @@ The immutable `task.expanded` event records the complete proposal, hash, approva
 
 ## State and audit semantics
 
-On application, the parent becomes an unverified work-package. New children start planned. Previously valid downstream proofs become stale and at-risk, while historical results remain in state and events.
+On application, the parent becomes an unverified work-package. New children start planned. Previously valid downstream proofs become stale and at-risk, while historical results remain in state and events. Brownfield assurance becomes stale for the changed topology, affected inspections are marked stale, and new child tasks need explicit impact mapping before audit.
 
 The work-package is not executable. Its audit can pass only after its contributing children and joint gate pass. External consumers still depend on the stable parent, so they cannot treat individual child completion as proof of the original task contract.
 

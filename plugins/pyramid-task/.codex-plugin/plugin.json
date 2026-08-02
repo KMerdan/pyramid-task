@@ -1,7 +1,7 @@
 {
   "name": "pyramid-task",
-  "version": "2.2.0",
-  "description": "Build, expand with approval, execute, audit, repair, close, archive, restore, and visualize evidence-backed task pyramids.",
+  "version": "3.0.0",
+  "description": "Plan and assure brownfield software changes with evidence-backed task pyramids, impact analysis, inspections, audit gates, migration, dossiers, and interactive overlays.",
   "author": {
     "name": "Dr. Merdan Bay",
     "url": "https://github.com/KMerdan"
@@ -19,13 +19,16 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "Pyramid Task Planner V2",
-    "shortDescription": "Evidence-backed planning for agents and humans.",
-    "longDescription": "Turn an intent into a validated pathfinder graph, recursively expand broad work with explicit user approval, execute agent task packets, enforce audit gates, manage the full lifecycle, and explore an interactive human-readable task map.",
+    "displayName": "Pyramid Task V3",
+    "shortDescription": "Brownfield change assurance for agents and humans.",
+    "longDescription": "Turn an intent into a validated pathfinder graph, baseline an existing system, map change impact, enforce inspection-aware audit gates, migrate active V2 plans without rebuilding, carry the verified baseline through the full lifecycle, and explore interactive task and assurance overlays.",
     "developerName": "Dr. Merdan Bay",
     "category": "Productivity",
     "capabilities": [
       "Planning",
+      "Brownfield Assurance",
+      "Impact Analysis",
+      "Migration",
       "Expansion",
       "Lifecycle",
       "Interactive",
@@ -34,6 +37,8 @@
     "websiteURL": "https://github.com/KMerdan/pyramid-task",
     "defaultPrompt": [
       "Turn this feature into an evidence-backed task pyramid.",
+      "Assess this existing system and map the change impact before implementation.",
+      "Upgrade this running V2.1 plan to V3 without rebuilding it.",
       "Show what is ready, active, blocked, and unaudited.",
       "Propose and preview a safe expansion for this broad task."
     ]

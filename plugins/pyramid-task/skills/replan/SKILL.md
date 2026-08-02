@@ -1,11 +1,11 @@
 ---
 name: replan
-description: Replan an existing Pyramid Task V2 graph from new evidence, audit failure, invalid assumptions, architecture changes, or an explicitly changed intent. Use when topology or path selection must change while preserving valid work, state history, and traceability.
+description: Replan an existing Pyramid Task V3 graph from new evidence, audit failure, invalid assumptions, architecture changes, or an explicitly changed intent. Use when topology or path selection must change while preserving valid work, state history, assurance provenance, and traceability.
 ---
 
 # Replan a Pyramid Task Path
 
-Read `../../references/pathfinder-workflow.md`, `../../references/graph-contract.md`, `../../references/agent-contracts.md`, and `../../references/lifecycle-contract.md` completely before changing topology.
+Read `../../references/pathfinder-workflow.md`, `../../references/graph-contract.md`, `../../references/agent-contracts.md`, `../../references/brownfield-assurance.md`, and `../../references/lifecycle-contract.md` completely before changing topology.
 
 Use `pyramid-task:expand` instead when a single executable task keeps the same purpose, contract, selected path, and external relations and only needs a deeper approved subtree.
 
@@ -24,7 +24,7 @@ python3 ../../scripts/pyramid.py replan --project <project-root> --plan <candida
 ```
 
 8. Explain added, changed, superseded, and newly blocked or ready nodes. Obtain direction before a material intent change or scope expansion.
-9. Apply the approved revision:
+9. Apply the approved revision. Brownfield replan stales affected inspections and assurance; run `pyramid-task:impact` to map new and changed tasks before their audits:
 
 ```bash
 python3 ../../scripts/pyramid.py replan --project <project-root> --plan <candidate-plan.json> --actor <actor> --reason <reason> --apply --json

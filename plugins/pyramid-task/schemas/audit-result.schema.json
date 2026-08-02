@@ -19,6 +19,18 @@
       }
     },
     "affected_claims": {"type": "array", "items": {"type": "string"}},
-    "recommended_action": {"enum": ["advance", "repair", "expand", "replan", "block"]}
+    "recommended_action": {"enum": ["advance", "repair", "expand", "replan", "block"]},
+    "assurance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["impact_ids", "inspection_ids", "finding_ids", "scope_review", "limitations"],
+      "properties": {
+        "impact_ids": {"type": "array", "items": {"type": "string"}},
+        "inspection_ids": {"type": "array", "items": {"type": "string"}},
+        "finding_ids": {"type": "array", "items": {"type": "string"}},
+        "scope_review": {"enum": ["complete", "incomplete"]},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    }
   }
 }

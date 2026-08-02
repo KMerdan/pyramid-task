@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/change-dossier.schema.json",
+  "title": "Pyramid Task Change Dossier",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "dossier_id", "plan_id", "title", "completed_at", "completed_by", "baseline_before", "baseline_after", "intent", "predicted_impacts", "actual_changes", "inspections", "scope_drift", "findings", "controls", "audits", "residual_risks", "legacy_bridge"],
+  "properties": {
+    "schema": {"const": "pyramid-change-dossier-v1"}, "dossier_id": {"type": "string"},
+    "plan_id": {"type": "string"}, "title": {"type": "string"}, "completed_at": {"type": "string"}, "completed_by": {"type": "string"},
+    "baseline_before": {"$ref": "#/$defs/baseline"},
+    "baseline_after": {"$ref": "#/$defs/baseline"},
+    "intent": {"type": "object"},
+    "predicted_impacts": {"type": "array", "items": {"$ref": "#/$defs/impact"}},
+    "actual_changes": {"type": "array", "items": {"$ref": "#/$defs/change"}},
+    "inspections": {"type": "array", "items": {"$ref": "#/$defs/inspection"}},
+    "scope_drift": {"type": "array", "items": {"$ref": "#/$defs/drift"}},
+    "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
+    "controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rollback", "monitoring"],
+      "properties": {"rollback": {"$ref": "#/$defs/control"}, "monitoring": {"$ref": "#/$defs/control"}}
+    },
+    "audits": {"type": "array", "items": {"$ref": "#/$defs/audit"}},
+    "residual_risks": {"type": "array", "items": {"type": ["string", "object"]}},
+    "legacy_bridge": {"type": "object"}
+  },
+  "$defs": {
+    "strings": {"type": "array", "items": {"type": "string"}},
+    "baseline": {
+      "type": "object",
+      "required": ["schema", "baseline_id", "revision", "status", "assets", "relations", "history", "unknowns"],
+      "properties": {
+        "schema": {"const": "pyramid-baseline-v1"}, "baseline_id": {"type": "string"},
+        "revision": {"type": "integer", "minimum": 1}, "status": {"enum": ["incomplete", "current", "stale"]},
+        "assets": {"type": "array"}, "relations": {"type": "array"}, "history": {"type": "array"}, "unknowns": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "impact": {
+      "type": "object",
+      "required": ["id", "asset_id", "task_ids", "type", "status", "confidence", "evidence", "path"],
+      "properties": {
+        "id": {"type": "string"}, "asset_id": {"type": "string"}, "task_ids": {"$ref": "#/$defs/strings"},
+        "type": {"type": "string"}, "status": {"type": "string"}, "confidence": {"type": "string"},
+        "evidence": {"$ref": "#/$defs/strings"}, "path": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "change": {
+      "type": "object", "additionalProperties": false, "required": ["task", "file", "asset_ids"],
+      "properties": {
+        "task": {"type": "string"}, "file": {"type": "string", "minLength": 1},
+        "asset_ids": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "inspection": {
+      "type": "object",
+      "required": ["id", "asset_ids", "task_ids", "method", "required", "status", "result", "sufficiency", "evidence", "limitations"],
+      "properties": {
+        "id": {"type": "string"}, "asset_ids": {"$ref": "#/$defs/strings"}, "task_ids": {"$ref": "#/$defs/strings"},
+        "method": {"type": "string"}, "required": {"type": "boolean"}, "status": {"type": "string"},
+        "result": {"type": "string"}, "sufficiency": {"type": "string"}, "evidence": {"$ref": "#/$defs/strings"},
+        "limitations": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": ["id", "asset_ids", "title", "severity", "status", "evidence"],
+      "properties": {
+        "id": {"type": "string"}, "asset_ids": {"$ref": "#/$defs/strings"}, "title": {"type": "string"},
+        "severity": {"type": "string"}, "status": {"type": "string"}, "evidence": {"$ref": "#/$defs/strings"}
+      }
+    },
+    "drift": {
+      "type": "object",
+      "required": ["id", "task", "changed_file", "matched_asset_ids", "status", "detected_at", "resolved_impact_id"],
+      "properties": {
+        "id": {"type": "string"}, "task": {"type": "string"}, "changed_file": {"type": "string"},
+        "matched_asset_ids": {"$ref": "#/$defs/strings"}, "status": {"enum": ["open", "resolved"]},
+        "detected_at": {"type": "string"}, "resolved_impact_id": {"type": ["string", "null"]}
+      }
+    },
+    "control": {
+      "type": "object", "required": ["status", "evidence", "rationale"],
+      "properties": {"status": {"type": "string"}, "evidence": {"$ref": "#/$defs/strings"}, "rationale": {"type": "string"}}
+    },
+    "audit": {
+      "type": "object", "additionalProperties": false, "required": ["node", "audit"],
+      "properties": {"node": {"type": "string"}, "audit": {"type": "object"}}
+    }
+  }
+}

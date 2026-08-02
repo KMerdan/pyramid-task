@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://local.codex/pyramid-task/plan.schema.json",
-  "title": "Pyramid Task V2 Plan",
+  "title": "Pyramid Task Plan",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "plan_id", "title", "revision", "intent", "evidence", "decisions", "nodes", "edges"],

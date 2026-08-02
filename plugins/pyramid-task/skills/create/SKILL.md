@@ -1,6 +1,6 @@
 ---
 name: create
-description: Create a Pyramid Task V2 project from an intent, idea, feature, product design, or architecture proposal. Use when Codex must clarify the desired outcome, gather repository or external evidence, compare feasible paths, construct a hierarchical pathfinder graph, insert audit gates, and materialize agent-ready task files.
+description: Create a Pyramid Task V3 project from an intent, idea, feature, product design, or architecture proposal. Use when Codex must clarify the desired outcome, assess an existing system, gather evidence, compare feasible paths, construct a hierarchical pathfinder graph, insert audit gates, and materialize agent-ready task files with brownfield assurance by default.
 ---
 
 # Create a Pyramid Task Plan
@@ -15,26 +15,28 @@ Read these files completely before planning:
 - `../../references/graph-contract.md`
 - `../../references/agent-contracts.md`
 - `../../references/lifecycle-contract.md`
+- `../../references/brownfield-assurance.md`
 
 Use `../../assets/example-plan.json` as a structural example, never as product evidence.
 
 ## Workflow
 
-1. Read the source request, repository shape, existing plans, tests, schemas, and constraints.
+1. Read the source request, repository shape, existing plans, tests, schemas, history, and constraints. If a legacy Pyramid Task project already exists, stop creation and use `pyramid-task:upgrade`.
 2. Normalize the intent into actors, target state, success evidence, invariants, constraints, non-goals, and assumptions. Ask only about ambiguities that would materially change the path; otherwise record the assumption.
-3. Gather evidence. Separate observed facts, sourced claims, assumptions, and unknowns. Turn a critical unknown into a research or decision node.
+3. Gather evidence. Separate observed facts, sourced claims, assumptions, and unknowns. For an existing system, build a `pyramid-baseline-v1` asset, relation, history, ownership, and unknown ledger; use `pyramid-task:assess` when this needs a dedicated pass.
 4. Backward-chain from the intent to required outcomes. Forward-chain from the current state to feasible work. Reconcile both chains.
 5. Compare material alternatives by evidence strength, constraint fit, risk, reversibility, dependency burden, and testability. Preserve rejected alternatives and rationale.
 6. Create a graph in a temporary JSON file that follows `graph-contract.md`. Use outcome nodes for required states and executable nodes for work. Add a joint audit wherever multiple branches compose.
-7. Ensure each executable node has bounded scope, agent context, deliverables, acceptance criteria, and evidence requirements.
+7. Ensure each executable node has bounded scope, agent context, deliverables, acceptance criteria, and evidence requirements. For brownfield work, create `pyramid-assurance-v1` impact hypotheses, required inspections, material finding policy, rollback, and monitoring controls; use `pyramid-task:impact` for a dedicated pass.
 8. Run:
 
 ```bash
-python3 ../../scripts/pyramid.py create --project <project-root> --plan <candidate-plan.json> --actor <actor>
+python3 ../../scripts/pyramid.py create --project <project-root> --plan <candidate-plan.json> --actor <actor> --mode auto --baseline <baseline.json> --assurance <assurance.json> --json
 ```
 
-9. Run `validate` and inspect the ready frontier. Fix the candidate plan and recreate only when creation failed before committing any project state. Use `reset`, never `create --force`, when a project already exists.
-10. Summarize the intent, selected path, levels, ready tasks, audit gates, rejected alternatives, and important assumptions.
+9. Omit baseline and assurance inputs only when an incomplete placeholder is honest; complete assessment and impact analysis before a brownfield audit can pass.
+10. Run `validate` and inspect the ready frontier plus assurance blockers. Fix candidates and recreate only when creation failed before committing project state. Use `reset`, never `create --force`, when a project already exists.
+11. Summarize the intent, selected path, levels, ready tasks, audit gates, affected assets, inspection gaps, rejected alternatives, and assumptions.
 
 ## Boundaries
 
@@ -44,3 +46,4 @@ python3 ../../scripts/pyramid.py create --project <project-root> --plan <candida
 - Do not make an implementation task double as its independent joint audit.
 - Do not treat generated task completion as proof that the parent outcome is verified.
 - Do not delete or overwrite an existing graph to restart; archive and reset it through lifecycle.
+- Do not classify an existing repository as greenfield merely to bypass assurance.

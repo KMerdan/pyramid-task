@@ -1,6 +1,6 @@
 # Graph Contract
 
-The canonical source is `.pyramid/plan.json`. Runtime state, lifecycle, reports, archives, and immutable events live beside it. Markdown task files, ready indexes, browser views, and `.pyramid/graph.json` are generated projections.
+The canonical task source is `.pyramid/plan.json`. Runtime state, lifecycle, reports, archives, and immutable events live beside it. V3 project mode is in `project.json`; brownfield baseline and assurance are separate canonical companions so old plan graphs remain compatible. Markdown task files, ready indexes, browser views, and `.pyramid/graph.json` are generated projections.
 
 Use `schema_version: 1`. Use stable IDs such as `INTENT-001`, `OUTCOME-010`, `CAP-020`, `TASK-101`, `RESEARCH-110`, `CONTRACT-120`, and `GATE-190`.
 
@@ -68,3 +68,5 @@ Do not place execution state in `plan.json`. Use runtime transitions so history 
 Plan lifecycle is `active`, `completed`, or `archived`. It does not replace node state. Read `lifecycle-contract.md` before closing, reopening, archiving, resetting, cleaning, or restoring a plan.
 
 Read `expansion-contract.md` before converting an executable node into a work-package.
+
+Read `brownfield-assurance.md` before creating or auditing changes in an existing system. Read `upgrade-contract.md` before adding V3 companions to a legacy plan.

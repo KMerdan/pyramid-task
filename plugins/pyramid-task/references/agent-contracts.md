@@ -15,6 +15,7 @@ The runtime produces compact packets so a worker does not need the entire graph.
 - commands, deliverables, and non-goals;
 - acceptance criteria and required evidence;
 - audit gates and lease expiry.
+- brownfield impact IDs, affected asset IDs, inspections, findings, and canonical assurance blockers when applicable.
 
 Treat a packet as stale after a graph-version conflict. Refresh instead of guessing how the plan changed.
 
@@ -28,6 +29,7 @@ Submit `agent-result-v1` as JSON:
   "task": "TASK-101",
   "outcome": "implemented",
   "changed_files": ["src/example.py"],
+  "changed_assets": ["ASSET-EXAMPLE"],
   "checks": [{"command": "python3 -m unittest", "result": "passed"}],
   "acceptance_evidence": [{"criterion": "AC-101-01", "result": "passed", "reference": "tests/test_example.py"}],
   "discovered_risks": [],
@@ -35,7 +37,7 @@ Submit `agent-result-v1` as JSON:
 }
 ```
 
-Use `blocked` when the task cannot continue inside its existing contract. Use `suggested_graph_changes` for evidence that may require expansion or replanning; do not mutate topology through a result.
+Use `blocked` when the task cannot continue inside its existing contract. Report every changed file and known asset. The runtime compares actual scope with predicted impact and opens drift when they differ. Use `suggested_graph_changes` for evidence that may require expansion or replanning; do not mutate topology through a result.
 
 ## Audit result
 
@@ -48,11 +50,18 @@ Submit `audit-result-v1` as JSON:
   "result": "pass",
   "checks": [{"id": "CHECK-190-01", "result": "passed", "evidence": ["test-output.txt"]}],
   "affected_claims": ["OUTCOME-010"],
-  "recommended_action": "advance"
+  "recommended_action": "advance",
+  "assurance": {
+    "impact_ids": ["IMPACT-001"],
+    "inspection_ids": ["INSPECTION-001"],
+    "finding_ids": [],
+    "scope_review": "complete",
+    "limitations": []
+  }
 }
 ```
 
-A passing audit requires a non-empty check list and no failed check. A failure records the failed check, affected claims, and a repair, expansion, or replan recommendation.
+A passing audit requires a non-empty check list and no failed check. In brownfield mode it also requires an assurance assertion after enforcement begins. The runtime resolves asserted IDs against canonical impact, inspection, and finding records, rejects missing or invented coverage, and enforces scope drift, material finding, control, and legacy-bridge blockers. A failure records the failed check, affected claims, and a repair, impact reconciliation, expansion, or replan recommendation.
 
 ## Ownership and transitions
 
@@ -64,6 +73,9 @@ A passing audit requires a non-empty check list and no failed check. A failure r
 - `reopen` applies the same repair state to a primary executable claim and reactivates a completed plan when needed.
 - Replanning preserves unchanged node state, initializes new nodes, and marks removed nodes superseded.
 - Approved expansion preserves the task ID and contract, converts it to a work-package, initializes child branches and a joint gate, and invalidates stale dependent proofs.
+- Baseline change, replan, expansion, reopen, audit failure, or undeclared scope stales affected inspections and assurance.
+- Brownfield close writes a change dossier and advances the baseline revision.
+- In-place upgrade preserves legacy node state and active ownership while introducing conservative future assurance enforcement.
 
 A completed plan rejects take, update, audit, expand, and replan. An archived plan rejects every canonical mutation. Use the lifecycle interface for close, archive, reset, restore, clean, and manual reopen semantics.
 

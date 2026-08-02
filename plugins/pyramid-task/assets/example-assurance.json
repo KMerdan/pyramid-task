@@ -1,0 +1,53 @@
+{
+  "schema": "pyramid-assurance-v1",
+  "plan_id": "PLAN-001",
+  "baseline_id": "BASELINE-001",
+  "baseline_revision": 1,
+  "policy": "brownfield",
+  "status": "ready",
+  "updated_at": "2026-08-02T00:00:00Z",
+  "updated_by": "planner",
+  "enforce_from_graph_version": 1,
+  "impacts": [
+    {
+      "id": "IMPACT-001",
+      "asset_id": "ASSET-EXECUTOR",
+      "task_ids": ["RESEARCH-101", "CONTRACT-102", "TASK-201", "GATE-290"],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": ["Repository dependency and contract analysis"],
+      "path": ["operation plan", "executor"]
+    }
+  ],
+  "inspections": [
+    {
+      "id": "INSPECTION-001",
+      "asset_ids": ["ASSET-EXECUTOR"],
+      "task_ids": ["RESEARCH-101", "CONTRACT-102", "TASK-201", "GATE-290"],
+      "method": "Contract, recovery, integration, and regression tests",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": ["tests/contracts", "tests/executor", "tests/integration"],
+      "limitations": [],
+      "performed_at": "2026-08-02T00:00:00Z",
+      "performed_by": "auditor"
+    }
+  ],
+  "findings": [],
+  "scope_drift": [],
+  "controls": {
+    "rollback": {"status": "ready", "evidence": ["recovery-test"], "rationale": ""},
+    "monitoring": {"status": "ready", "evidence": ["failure-telemetry-test"], "rationale": ""}
+  },
+  "legacy_bridge": {
+    "required": false,
+    "status": "not-required",
+    "gap_asset_ids": [],
+    "evidence": [],
+    "upgraded_from": null
+  },
+  "stale_reasons": []
+}

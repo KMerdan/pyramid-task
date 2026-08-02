@@ -27,6 +27,7 @@
       }
     },
     "discovered_risks": {"type": "array"},
-    "suggested_graph_changes": {"type": "array"}
+    "suggested_graph_changes": {"type": "array"},
+    "changed_assets": {"type": "array", "items": {"type": "string"}}
   }
 }

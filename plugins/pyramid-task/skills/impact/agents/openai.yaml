@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analyze Change Impact"
+  short_description: "Map impact, inspections, drift, and controls"
+  default_prompt: "Use $impact to build or reconcile brownfield change assurance for this plan."

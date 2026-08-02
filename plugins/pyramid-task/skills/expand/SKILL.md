@@ -1,11 +1,11 @@
 ---
 name: expand
-description: Propose and apply a deeper subtree for a broad executable Pyramid Task V2 node while preserving its purpose, stable ID, dependencies, evidence contract, and history. Use only when Codex detects that a current task contains multiple independently reviewable work units, mixed work modes, unsafe scope, or a composition boundary that needs explicit children and a joint audit; obtain user clarification and explicit approval before changing topology.
+description: Propose and apply a deeper subtree for a broad executable Pyramid Task V3 node while preserving its purpose, stable ID, dependencies, evidence contract, assurance provenance, and history. Use only when Codex detects multiple independently reviewable work units, mixed work modes, unsafe scope, or a composition boundary needing explicit children and a joint audit; obtain user clarification and approval before changing topology.
 ---
 
 # Expand a Pyramid Task
 
-Read `../../references/expansion-contract.md`, `../../references/graph-contract.md`, `../../references/agent-contracts.md`, and `../../references/lifecycle-contract.md` completely before proposing expansion. Use `../../assets/example-expansion.json` as a structural example only.
+Read `../../references/expansion-contract.md`, `../../references/graph-contract.md`, `../../references/agent-contracts.md`, `../../references/brownfield-assurance.md`, and `../../references/lifecycle-contract.md` completely before proposing expansion. Use `../../assets/example-expansion.json` as a structural example only.
 
 ## Decide whether to propose
 
@@ -43,7 +43,7 @@ Record the approving user and a durable conversation or task reference:
 python3 ../../scripts/pyramid.py expand --project <project-root> --proposal <expansion.json> --actor <actor> --approved-by <user> --approval-reference <reference> --approved-proposal-sha256 <preview-hash> --apply --json
 ```
 
-Report the new ready frontier, invalidated proofs, and audit path. A child may later be expanded through the same workflow, creating arbitrary depth one reviewed level at a time.
+Report the new ready frontier, invalidated proofs and inspections, assurance gaps for new child tasks, and audit path. A child may later be expanded through the same workflow, creating arbitrary depth one reviewed level at a time. Re-run `pyramid-task:impact` before brownfield child audits.
 
 ## Boundaries
 

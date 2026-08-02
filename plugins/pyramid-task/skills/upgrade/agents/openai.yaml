@@ -1,0 +1,4 @@
+interface:
+  display_name: "Upgrade Pyramid Project"
+  short_description: "Migrate V2 plans without rebuilding work"
+  default_prompt: "Use $upgrade to safely migrate this running Pyramid Task plan to V3."

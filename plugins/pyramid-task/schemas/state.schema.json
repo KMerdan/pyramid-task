@@ -19,6 +19,7 @@
         "completed_at": {"type": ["string", "null"]},
         "completed_by": {"type": ["string", "null"]},
         "completion_report": {"type": ["string", "null"]},
+        "change_dossier": {"type": ["string", "null"]},
         "archived_at": {"type": ["string", "null"]},
         "archived_by": {"type": ["string", "null"]},
         "archived_from_status": {"enum": ["active", "completed", null]},

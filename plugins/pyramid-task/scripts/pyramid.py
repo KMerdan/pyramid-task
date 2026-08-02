@@ -10,6 +10,7 @@ from typing import Any
 from pyramid_core import (
     PyramidError,
     archive_project,
+    assess_project,
     audit_node,
     clean_project,
     close_project,
@@ -18,12 +19,14 @@ from pyramid_core import (
     expand_project,
     inspect_lifecycle,
     inspect_project,
+    impact_project,
     replan_project,
     reopen_node,
     reset_project,
     restore_project,
     take_task,
     update_task,
+    upgrade_project,
     validate_project,
 )
 from pyramid_visualizer import render_visualization
@@ -42,15 +45,70 @@ def add_json(parser: argparse.ArgumentParser) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="pyramid", description="Pyramid Task Planner V2 runtime")
+    parser = argparse.ArgumentParser(
+        prog="pyramid",
+        description="Pyramid Task V3 brownfield change-assurance runtime",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     create = sub.add_parser("create", help="Create a project from a candidate plan")
     add_project(create)
     create.add_argument("--plan", required=True)
     create.add_argument("--actor", required=True)
+    create.add_argument(
+        "--mode",
+        choices=["auto", "greenfield", "brownfield"],
+        default="auto",
+        help="Auto-detect existing-system work by default",
+    )
+    create.add_argument("--baseline", help="Optional pyramid-baseline-v1 JSON")
+    create.add_argument("--assurance", help="Optional pyramid-assurance-v1 JSON")
     create.add_argument("--force", action="store_true", help="Deprecated; unsafe replacement is rejected")
     add_json(create)
+
+    upgrade = sub.add_parser(
+        "upgrade",
+        help="Preview or apply an in-place legacy plan upgrade without rebuilding it",
+    )
+    add_project(upgrade)
+    upgrade.add_argument("--actor", required=True)
+    upgrade.add_argument("--from-version", default="2.1")
+    upgrade.add_argument(
+        "--mode",
+        choices=["auto", "greenfield", "brownfield"],
+        default="auto",
+    )
+    upgrade_mode = upgrade.add_mutually_exclusive_group(required=True)
+    upgrade_mode.add_argument("--preview", action="store_true")
+    upgrade_mode.add_argument("--apply", action="store_true")
+    upgrade.add_argument("--approved-by")
+    upgrade.add_argument("--approval-reference")
+    upgrade.add_argument("--approved-upgrade-sha256")
+    add_version(upgrade)
+    add_json(upgrade)
+
+    assess = sub.add_parser("assess", help="Preview or apply a brownfield system baseline")
+    add_project(assess)
+    assess.add_argument("--baseline", required=True)
+    assess.add_argument("--actor", required=True)
+    assess_mode = assess.add_mutually_exclusive_group(required=True)
+    assess_mode.add_argument("--preview", action="store_true")
+    assess_mode.add_argument("--apply", action="store_true")
+    add_version(assess)
+    add_json(assess)
+
+    impact = sub.add_parser(
+        "impact",
+        help="Preview or apply impact, inspection, finding, drift, and control records",
+    )
+    add_project(impact)
+    impact.add_argument("--assurance", required=True)
+    impact.add_argument("--actor", required=True)
+    impact_mode = impact.add_mutually_exclusive_group(required=True)
+    impact_mode.add_argument("--preview", action="store_true")
+    impact_mode.add_argument("--apply", action="store_true")
+    add_version(impact)
+    add_json(impact)
 
     validate = sub.add_parser("validate", help="Validate canonical plan and state")
     add_project(validate)
@@ -71,6 +129,7 @@ def build_parser() -> argparse.ArgumentParser:
     group.add_argument("--ready", action="store_true")
     group.add_argument("--blocked", action="store_true")
     group.add_argument("--pending-audits", action="store_true")
+    group.add_argument("--assurance", action="store_true")
     group.add_argument("--node")
     add_json(inspect)
 
@@ -187,7 +246,43 @@ def emit(data: dict[str, Any], _: bool = False) -> None:
 
 def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     if args.command == "create":
-        return create_project(args.project, args.plan, args.actor, args.force), 0
+        return create_project(
+            args.project,
+            args.plan,
+            args.actor,
+            args.force,
+            mode=args.mode,
+            baseline_path=args.baseline,
+            assurance_path=args.assurance,
+        ), 0
+    if args.command == "upgrade":
+        return upgrade_project(
+            args.project,
+            args.actor,
+            source_version=args.from_version,
+            mode=args.mode,
+            apply=args.apply,
+            approved_by=args.approved_by,
+            approval_reference=args.approval_reference,
+            approved_upgrade_sha256=args.approved_upgrade_sha256,
+            expected_version=args.expected_version,
+        ), 0
+    if args.command == "assess":
+        return assess_project(
+            args.project,
+            args.baseline,
+            args.actor,
+            apply=args.apply,
+            expected_version=args.expected_version,
+        ), 0
+    if args.command == "impact":
+        return impact_project(
+            args.project,
+            args.assurance,
+            args.actor,
+            apply=args.apply,
+            expected_version=args.expected_version,
+        ), 0
     if args.command == "validate":
         result = validate_project(args.project)
         return result, 0 if result["valid"] else 1
@@ -208,6 +303,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             ready=args.ready,
             blocked=args.blocked,
             pending_audits=args.pending_audits,
+            assurance_view=args.assurance,
             nid=args.node,
         ), 0
     if args.command == "take":

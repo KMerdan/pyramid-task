@@ -1,11 +1,11 @@
 ---
 name: lifecycle
-description: Manage the full lifecycle of a Pyramid Task V2 plan. Use when Codex must reopen failed or stale work, reactivate a completed intent, formally close a fully verified graph, freeze it in an archive, safely reset to a new plan, clean generated projections, inspect archives, or restore an earlier plan without losing history.
+description: Manage the full lifecycle of a Pyramid Task V3 plan. Use when Codex must reopen failed or stale work, reactivate a completed intent, close a fully assured graph with a change dossier, freeze it, safely reset while carrying the baseline, clean projections, inspect archives, or restore a plan without losing history.
 ---
 
 # Manage a Pyramid Task Lifecycle
 
-Read `../../references/lifecycle-contract.md`, `../../references/graph-contract.md`, and `../../references/agent-contracts.md` completely before changing lifecycle state.
+Read `../../references/lifecycle-contract.md`, `../../references/graph-contract.md`, `../../references/agent-contracts.md`, and `../../references/brownfield-assurance.md` completely before changing lifecycle state.
 
 ## Start with status
 
@@ -33,7 +33,7 @@ Close only after the intent audit passes and `closure_ready` is true:
 python3 ../../scripts/pyramid.py close --project <project-root> --actor <actor> --json
 ```
 
-Closing writes a versioned JSON and Markdown final report and blocks ordinary execution mutations. Archive a completed or intentionally paused plan after releasing every active claim:
+Closing writes a versioned JSON and Markdown final report and blocks ordinary execution mutations. In brownfield mode it also writes a change dossier and advances the baseline revision. Archive a completed or intentionally paused plan after releasing every active claim:
 
 ```bash
 python3 ../../scripts/pyramid.py archive --project <project-root> --actor <actor> --reason <reason> --json
@@ -41,7 +41,7 @@ python3 ../../scripts/pyramid.py archive --project <project-root> --actor <actor
 
 ## Reset, clean, and restore
 
-Reset requires a fully validated candidate plan with a new `plan_id`. It archives the current plan before replacing current canonical state:
+Reset requires a fully validated candidate plan with a new `plan_id`. It archives the current plan before replacement; brownfield mode carries the current baseline and prior dossiers into a fresh assurance cycle:
 
 ```bash
 python3 ../../scripts/pyramid.py reset --project <project-root> --plan <new-plan.json> --actor <actor> --reason <reason> --json

@@ -18,6 +18,7 @@
     "verified_primary_nodes": {"type": "array", "minItems": 1, "items": {"type": "object"}},
     "decisions": {"type": "array"},
     "evidence": {"type": "array"},
-    "residual_risks": {"type": "array", "items": {"type": "string"}}
+    "residual_risks": {"type": "array", "items": {"type": "string"}},
+    "change_dossier": {"type": "string"}
   }
 }

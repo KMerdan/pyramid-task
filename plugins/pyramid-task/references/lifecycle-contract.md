@@ -12,7 +12,7 @@ The plan lifecycle is independent from each node's execution, verification, heal
 
 An executable audit failure changes execution to `needs-rework`, verification to `failed`, and health to `at-risk`. `take` may claim `needs-rework` nodes and prioritizes them in the ready frontier. Implementation moves the node back to `implemented` with verification `pending`; only a passing audit restores `passed`.
 
-Manual `reopen` applies the same repair state to a primary executable node. It invalidates stale dependent proof through hierarchy, dependency, integration, validation, and joint-gate relations. Downstream implementation is preserved, but its verification becomes pending or unverified and health becomes at-risk until the affected path is audited again.
+Manual `reopen` applies the same repair state to a primary executable node. It invalidates stale dependent proof through hierarchy, dependency, integration, validation, and joint-gate relations. Downstream implementation is preserved, but its verification becomes pending or unverified and health becomes at-risk until the affected path is audited again. Brownfield reopening also stales affected inspections and assurance; reopening a completed plan keeps the prior report and dossier as historical artifacts but clears them as the current completion references.
 
 Use local repair when the claim and graph contract remain valid. Use approved `expand` when the contract remains valid but the work needs a deeper internal subtree. Use `replan` when evidence invalidates topology, a contract, an assumption, or the selected path.
 
@@ -24,8 +24,9 @@ The final intent audit establishes that the intended state is verified. `close` 
 - every primary node verification is `passed`;
 - every primary node health is `clear`;
 - no active ownership or lease remains.
+- for brownfield mode, the baseline and assurance have no final blockers: impact and inspections are sufficient, drift and material findings are dispositioned, controls are ready or justified, and any legacy bridge is sufficient.
 
-Closure writes immutable, versioned `pyramid-final-report-v1` JSON and Markdown reports under `.pyramid/reports/`, records `plan.completed`, and changes the lifecycle to `completed`. Reports contain the intent, success-evidence coverage, verified primary nodes and their audits, decisions, evidence, and residual risks.
+Closure writes immutable, versioned `pyramid-final-report-v1` JSON and Markdown reports under `.pyramid/reports/`, records `plan.completed`, and changes lifecycle to `completed`. Brownfield closure also writes `pyramid-change-dossier-v1` JSON and Markdown under `.pyramid/dossiers/`, advances the baseline revision, and marks assurance passed. The dossier reconciles predicted impact with actual changes and records inspections, findings, audits, controls, residual risk, and the baseline transition.
 
 ## Archive lifecycle
 
@@ -37,8 +38,12 @@ Archive refuses active claims. It records `plan.archived`, changes the current l
 ├── .pyramid/
 │   ├── plan.json
 │   ├── state.json
+│   ├── project.json
+│   ├── baseline.json
+│   ├── assurance.json
 │   ├── events/
 │   ├── reports/
+│   ├── dossiers/
 │   ├── graph.json
 │   └── ready.json
 └── docs/tasks/
@@ -48,13 +53,13 @@ The manifest records plan and graph identity, previous lifecycle state, archive 
 
 ## Reset and restore
 
-`reset` validates the candidate before mutation, requires a new `plan_id`, refuses active claims, creates or verifies an archive snapshot, then starts the candidate at graph version 1. The new `plan.created` event points to the previous archive. It never mixes event histories between plans.
+`reset` validates the candidate before mutation, requires a new `plan_id`, refuses active claims, creates or verifies an archive snapshot, then starts the candidate at graph version 1. The new `plan.created` event points to the previous archive. It never mixes event histories between plans. Brownfield reset carries the current baseline and prior dossiers, but starts a fresh assurance bundle for the new intent.
 
 `restore` resolves an archive ID or archived plan ID, validates the snapshot, archives the current plan when present, installs the selected plan and its history, clears ownership and leases, records `plan.restored`, and regenerates projections. It restores the lifecycle that existed before archiving: active plans resume active, and completed plans remain completed until reopened.
 
 ## Clean
 
-`clean` removes only `.pyramid/graph.json`, `.pyramid/ready.json`, `.pyramid/pyramid.html`, and generated `docs/tasks/`, then recompiles them. It hashes the canonical plan, state, and event files before and after and fails if any changed. It does not run against an archived current plan.
+`clean` removes only `.pyramid/graph.json`, `.pyramid/ready.json`, `.pyramid/pyramid.html`, and generated `docs/tasks/`, then recompiles them. It hashes plan, state, project manifest, baseline, assurance, events, reports, and dossiers before and after and fails if canonical data changed. It does not run against an archived current plan.
 
 ## Events
 
@@ -66,5 +71,7 @@ Lifecycle mutations use immutable events:
 - `plan.archived`;
 - `plan.restored`;
 - `plan.created` with reset provenance.
+- `project.upgraded` with approval hash and snapshot provenance;
+- `assurance.baseline-assessed` and `assurance.impact-updated`.
 
 All mutations require an actor. Evidence, reasons, invalidated nodes, report paths, archive IDs, and reset/restore provenance live in event payloads.

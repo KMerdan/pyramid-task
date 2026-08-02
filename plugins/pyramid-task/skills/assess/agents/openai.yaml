@@ -1,0 +1,4 @@
+interface:
+  display_name: "Assess Brownfield System"
+  short_description: "Build an evidence-backed system baseline"
+  default_prompt: "Use $assess to establish the current-system baseline for this change."

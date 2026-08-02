@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/project.schema.json",
+  "title": "Pyramid Task Project Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "format_version", "runtime_version", "plan_id", "mode", "created_at", "created_by", "last_upgraded_at", "last_upgraded_by", "upgraded_from", "migrations"],
+  "properties": {
+    "schema": {"const": "pyramid-project-v1"},
+    "format_version": {"const": 3},
+    "runtime_version": {"type": "string", "minLength": 1},
+    "plan_id": {"type": "string", "minLength": 1},
+    "mode": {"enum": ["greenfield", "brownfield"]},
+    "created_at": {"type": "string"},
+    "created_by": {"type": "string", "minLength": 1},
+    "last_upgraded_at": {"type": ["string", "null"]},
+    "last_upgraded_by": {"type": ["string", "null"]},
+    "upgraded_from": {"type": ["string", "null"]},
+    "migrations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "from", "to", "at", "actor", "preview_sha256", "archive_id"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "from": {"type": "string", "minLength": 1},
+          "to": {"type": "integer", "minimum": 1},
+          "at": {"type": "string"},
+          "actor": {"type": "string", "minLength": 1},
+          "preview_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "archive_id": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "pyramid-baseline-v1",
+  "baseline_id": "BASELINE-001",
+  "revision": 1,
+  "status": "current",
+  "captured_at": "2026-08-02T00:00:00Z",
+  "captured_by": "planner",
+  "capture_method": "repository-and-history-review",
+  "assets": [
+    {
+      "id": "ASSET-EXECUTOR",
+      "kind": "module",
+      "name": "Operation executor",
+      "locators": ["src/executor/**", "src/contracts/**"],
+      "owner": "platform-team",
+      "criticality": "high",
+      "confidence": "high",
+      "evidence": ["Repository inspection and existing contract tests"]
+    }
+  ],
+  "relations": [],
+  "history": [
+    {
+      "id": "HISTORY-001",
+      "kind": "incident",
+      "summary": "A prior partial failure required manual recovery.",
+      "asset_ids": ["ASSET-EXECUTOR"],
+      "evidence": ["incident-001"],
+      "date": "2025-12-01",
+      "controls": ["Require rollback and recovery tests"]
+    }
+  ],
+  "unknowns": []
+}
