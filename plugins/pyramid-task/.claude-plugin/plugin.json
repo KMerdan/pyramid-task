@@ -1,0 +1,19 @@
+{
+  "name": "pyramid-task",
+  "version": "3.1.0",
+  "description": "Plan and assure brownfield software changes with evidence-backed task pyramids, safe new-intent transitions, impact analysis, inspections, audit gates, migration, dossiers, and interactive overlays.",
+  "author": {
+    "name": "Dr. Merdan Bay",
+    "url": "https://github.com/KMerdan"
+  },
+  "homepage": "https://github.com/KMerdan/pyramid-task",
+  "repository": "https://github.com/KMerdan/pyramid-task",
+  "license": "MIT",
+  "keywords": [
+    "agent",
+    "planning",
+    "task-graph",
+    "pathfinder",
+    "software-engineering"
+  ]
+}

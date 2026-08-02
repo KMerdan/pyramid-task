@@ -1,0 +1,15 @@
+{
+  "name": "kmerdan-skills",
+  "owner": {
+    "name": "Dr. Merdan Bay",
+    "url": "https://github.com/KMerdan"
+  },
+  "plugins": [
+    {
+      "name": "pyramid-task",
+      "source": "./plugins/pyramid-task",
+      "description": "Evidence-backed pathfinder planning, task pyramids, audit gates, lifecycle management, and interactive visualization for AI agents.",
+      "category": "productivity"
+    }
+  ]
+}
