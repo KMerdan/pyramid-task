@@ -1,6 +1,6 @@
 ---
 name: create
-description: Create the first Pyramid Task V3 project from an intent, idea, feature, product design, or architecture proposal when no canonical plan exists. Use when Codex must clarify the desired outcome, assess an existing system, gather evidence, compare feasible paths, construct a hierarchical pathfinder graph, insert audit gates, and materialize agent-ready task files with brownfield assurance by default. Use `pyramid-task:new-intent`, not this skill, when `.pyramid/plan.json` already exists and the user wants another intent.
+description: Create the first Pyramid Task V3 project from an intent, idea, feature, product design, or architecture proposal when no canonical plan exists. Use when the agent must clarify the desired outcome, assess an existing system, gather evidence, compare feasible paths, construct a hierarchical pathfinder graph, insert audit gates, and materialize agent-ready task files with brownfield assurance by default. Use `pyramid-task:new-intent`, not this skill, when `.pyramid/plan.json` already exists and the user wants another intent.
 ---
 
 # Create a Pyramid Task Plan

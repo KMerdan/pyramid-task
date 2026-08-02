@@ -1,6 +1,6 @@
 ---
 name: inspect
-description: Inspect an existing Pyramid Task V3 or compatible legacy project without changing it. Use when Codex or a human needs status, ready work, blockers, pending audits, baseline and impact coverage, stale inspections, scope drift, evidence gaps, task details, or the trace from a node to the final intent.
+description: Inspect an existing Pyramid Task V3 or compatible legacy project without changing it. Use when an agent or a human needs status, ready work, blockers, pending audits, baseline and impact coverage, stale inspections, scope drift, evidence gaps, task details, or the trace from a node to the final intent.
 ---
 
 # Inspect a Pyramid Task Plan

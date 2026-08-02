@@ -1,6 +1,6 @@
 ---
 name: lifecycle
-description: Manage the full lifecycle of a Pyramid Task V3 plan. Use when Codex must reopen failed or stale work, reactivate a completed intent, close a fully assured graph with a change dossier, freeze it, safely reset while carrying the baseline, clean projections, inspect archives, or restore a plan without losing history.
+description: Manage the full lifecycle of a Pyramid Task V3 plan. Use when the agent must reopen failed or stale work, reactivate a completed intent, close a fully assured graph with a change dossier, freeze it, safely reset while carrying the baseline, clean projections, inspect archives, or restore a plan without losing history.
 ---
 
 # Manage a Pyramid Task Lifecycle

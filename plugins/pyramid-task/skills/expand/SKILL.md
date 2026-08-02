@@ -1,6 +1,6 @@
 ---
 name: expand
-description: Propose and apply a deeper subtree for a broad executable Pyramid Task V3 node while preserving its purpose, stable ID, dependencies, evidence contract, assurance provenance, and history. Use only when Codex detects multiple independently reviewable work units, mixed work modes, unsafe scope, or a composition boundary needing explicit children and a joint audit; obtain user clarification and approval before changing topology.
+description: Propose and apply a deeper subtree for a broad executable Pyramid Task V3 node while preserving its purpose, stable ID, dependencies, evidence contract, assurance provenance, and history. Use only when the agent detects multiple independently reviewable work units, mixed work modes, unsafe scope, or a composition boundary needing explicit children and a joint audit; obtain user clarification and approval before changing topology.
 ---
 
 # Expand a Pyramid Task

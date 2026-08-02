@@ -76,14 +76,14 @@ The canonical plan lives in `.pyramid/plan.json`. V3 adds a project manifest and
 
 ## Install
 
-Requirements: Codex with plugin support and Python 3.10 or newer.
+Requirements: an agent runtime with plugin support (Codex or Claude Code) and Python 3.10 or newer.
+
+### Codex
 
 ```bash
 codex plugin marketplace add KMerdan/pyramid-task
 codex plugin add pyramid-task@kmerdan-skills
 ```
-
-Start a new Codex task after installation so the skills are discovered.
 
 To update later:
 
@@ -91,6 +91,18 @@ To update later:
 codex plugin marketplace upgrade kmerdan-skills
 codex plugin add pyramid-task@kmerdan-skills
 ```
+
+### Claude Code
+
+Claude Code manifests live on the [`claude_code`](https://github.com/KMerdan/pyramid-task/tree/claude_code) branch:
+
+```bash
+git clone --branch claude_code https://github.com/KMerdan/pyramid-task
+claude plugin marketplace add ./pyramid-task
+claude plugin install pyramid-task@kmerdan-skills
+```
+
+Start a new agent session after installation so the skills are discovered.
 
 ## Use
 

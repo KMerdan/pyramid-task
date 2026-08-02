@@ -1,6 +1,6 @@
 ---
 name: audit
-description: Audit a Pyramid Task V3 implementation node, joint gate, level outcome, or final intent against explicit evidence and brownfield inspection coverage. Use when Codex must determine whether completed work is correct, whether branches compose, whether predicted impact matches actual scope, or whether a parent claim may become verified.
+description: Audit a Pyramid Task V3 implementation node, joint gate, level outcome, or final intent against explicit evidence and brownfield inspection coverage. Use when the agent must determine whether completed work is correct, whether branches compose, whether predicted impact matches actual scope, or whether a parent claim may become verified.
 ---
 
 # Audit a Pyramid Task
