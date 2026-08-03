@@ -32,8 +32,10 @@ from pyramid_core import (  # noqa: E402
     intent_transition_route,
     load_json,
     new_intent_project,
+    pause_task,
     replan_project,
     reopen_node,
+    resume_task,
     reset_project,
     restore_project,
     take_task,
@@ -51,6 +53,7 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.root = Path(self.temp.name) / "project"
         self.example = PLUGIN_ROOT / "assets" / "example-plan.json"
         self.expansion = PLUGIN_ROOT / "assets" / "example-expansion.json"
+        self.handoff_draft = PLUGIN_ROOT / "assets" / "example-handoff-draft.json"
         create_project(self.root, self.example, "planner")
 
     def tearDown(self) -> None:
@@ -97,6 +100,9 @@ class PyramidRuntimeTests(unittest.TestCase):
                 "recommended_action": "advance" if result == "pass" else "replan",
             },
         )
+
+    def handoff_for(self, name: str = "handoff.json") -> Path:
+        return self.write_json(name, load_json(self.handoff_draft))
 
     def assurance_audit_for(self, nid: str, result: str = "pass") -> Path:
         payload = load_json(self.audit_for(nid, result))
@@ -223,6 +229,118 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertEqual(2, packet["graph_version"])
         with self.assertRaises(PyramidError):
             update_task(self.root, "RESEARCH-101", "worker", "release", expected_version=1)
+
+    def test_pause_resume_persists_handoff_and_blocks_lifecycle_mutation(self) -> None:
+        taken = take_task(self.root, "worker", nid="RESEARCH-101")
+        draft_path = self.handoff_for()
+        jsonschema.validate(
+            load_json(draft_path),
+            load_json(PLUGIN_ROOT / "schemas" / "handoff-draft.schema.json"),
+        )
+        paused = pause_task(
+            self.root,
+            "RESEARCH-101",
+            "worker",
+            "Coffee break after validation research",
+            draft_path,
+            mode="hold",
+            resume_minutes=60,
+            expected_version=taken["packet"]["graph_version"],
+        )
+        self.assertEqual("paused", paused["status"])
+        handoff_path = Path(paused["handoff"]["json"])
+        handoff = load_json(handoff_path)
+        jsonschema.validate(handoff, load_json(PLUGIN_ROOT / "schemas" / "handoff.schema.json"))
+        state = load_json(self.root / ".pyramid" / "state.json")
+        task_state = state["nodes"]["RESEARCH-101"]
+        self.assertEqual("paused", task_state["execution"])
+        self.assertEqual("worker", task_state["owner"])
+        self.assertEqual(handoff["id"], task_state["active_handoff_id"])
+        self.assertEqual(
+            ["RESEARCH-101"],
+            [node["id"] for node in inspect_project(self.root, paused=True)["nodes"]],
+        )
+        with self.assertRaisesRegex(PyramidError, "paused"):
+            take_task(self.root, "other", nid="RESEARCH-101")
+        with self.assertRaisesRegex(PyramidError, "resume"):
+            update_task(self.root, "RESEARCH-101", "worker", "at-risk", reason="Still paused")
+        with self.assertRaisesRegex(PyramidError, "resume"):
+            audit_node(self.root, "RESEARCH-101", "auditor", "fail", self.audit_for("RESEARCH-101", "fail"))
+        with self.assertRaisesRegex(PyramidError, "held by worker"):
+            resume_task(self.root, "RESEARCH-101", "other", takeover=True)
+        with self.assertRaisesRegex(PyramidError, "active claims"):
+            archive_project(self.root, "owner", "Do not discard a handoff")
+
+        resumed = resume_task(self.root, "RESEARCH-101", "worker")
+        self.assertEqual("resumed", resumed["status"])
+        self.assertEqual(handoff["id"], resumed["packet"]["handoff"]["id"])
+        self.assertEqual("working", resumed["packet"]["execution"])
+        self.assertTrue(validate_project(self.root)["valid"])
+        event_types = [
+            load_json(path)["type"]
+            for path in sorted((self.root / ".pyramid" / "events").glob("*.json"))
+        ]
+        self.assertIn("task.paused", event_types)
+        self.assertIn("task.resumed", event_types)
+        update_task(self.root, "RESEARCH-101", "worker", "release")
+        archived = archive_project(self.root, "owner", "Preserve completed handoff history")
+        archived_handoffs = list((Path(archived["archive"]) / ".pyramid" / "handoffs").glob("*"))
+        self.assertEqual(2, len(archived_handoffs))
+
+    def test_resume_detects_stale_handoff_and_handoff_mode_allows_transfer(self) -> None:
+        source = self.root / "src" / "worker.py"
+        source.parent.mkdir(parents=True)
+        source.write_text("value = 1\n", encoding="utf-8")
+        subprocess.run(["git", "init", "-q", str(self.root)], check=True)
+        subprocess.run(["git", "-C", str(self.root), "config", "user.name", "Pyramid Test"], check=True)
+        subprocess.run(["git", "-C", str(self.root), "config", "user.email", "pyramid@example.invalid"], check=True)
+        subprocess.run(["git", "-C", str(self.root), "add", "src/worker.py"], check=True)
+        subprocess.run(["git", "-C", str(self.root), "commit", "-qm", "fixture"], check=True)
+        take_task(self.root, "worker", nid="RESEARCH-101")
+        paused = pause_task(
+            self.root,
+            "RESEARCH-101",
+            "worker",
+            "Transfer work safely",
+            self.handoff_for("transfer-handoff.json"),
+            mode="handoff",
+        )
+        plan = load_json(self.root / ".pyramid" / "plan.json")
+        plan["title"] = "Changed after pause"
+        (self.root / ".pyramid" / "plan.json").write_text(json.dumps(plan), encoding="utf-8")
+        source.write_text("value = 2\n", encoding="utf-8")
+        stale = resume_task(self.root, "RESEARCH-101", "next-worker")
+        self.assertEqual("stale-handoff", stale["status"])
+        self.assertIn("plan_sha256 changed", " ".join(stale["drift"]))
+        self.assertIn("worktree changed", " ".join(stale["drift"]))
+        resumed = resume_task(
+            self.root,
+            "RESEARCH-101",
+            "next-worker",
+            handoff_id=paused["handoff"]["id"],
+            accept_stale=True,
+        )
+        self.assertEqual("resumed", resumed["status"])
+        self.assertEqual("next-worker", resumed["packet"]["owner"])
+
+    def test_handoff_content_is_hash_bound_to_pause_event(self) -> None:
+        take_task(self.root, "worker", nid="RESEARCH-101")
+        paused = pause_task(
+            self.root,
+            "RESEARCH-101",
+            "worker",
+            "Protect the continuation record",
+            self.handoff_for("tamper-handoff.json"),
+        )
+        path = Path(paused["handoff"]["json"])
+        handoff = load_json(path)
+        handoff["summary"] = "Edited after the pause event"
+        path.write_text(json.dumps(handoff), encoding="utf-8")
+        validation = validate_project(self.root)
+        self.assertFalse(validation["valid"])
+        self.assertIn("content hash no longer matches", " ".join(validation["errors"]))
+        with self.assertRaisesRegex(PyramidError, "content hash"):
+            resume_task(self.root, "RESEARCH-101", "worker")
 
     def test_replan_preview_and_apply(self) -> None:
         candidate = load_json(self.example)

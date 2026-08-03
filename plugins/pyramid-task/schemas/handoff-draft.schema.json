@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/handoff-draft.schema.json",
+  "title": "Pyramid Task Pause Handoff Draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "summary", "progress", "changed_files", "changed_assets", "checks", "decisions", "assumptions", "blockers", "risks", "next_steps", "recommended_first_action", "context_references", "external_session_refs", "running_resources"],
+  "properties": {
+    "schema": {"const": "pyramid-handoff-draft-v1"},
+    "summary": {"type": "string", "minLength": 1},
+    "progress": {"type": "array", "items": {"type": "string"}},
+    "changed_files": {"type": "array", "items": {"type": "string"}},
+    "changed_assets": {"type": "array", "items": {"type": "string"}},
+    "checks": {"type": "array", "items": {"$ref": "#/$defs/check"}},
+    "decisions": {"type": "array", "items": {"$ref": "#/$defs/decision"}},
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "risks": {"type": "array", "items": {"type": "string"}},
+    "next_steps": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "recommended_first_action": {"type": "string", "minLength": 1},
+    "context_references": {"type": "array", "items": {"type": "string"}},
+    "external_session_refs": {"type": "array", "items": {"type": "string"}},
+    "running_resources": {"type": "array", "items": {"$ref": "#/$defs/resource"}}
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command", "result", "notes"],
+      "properties": {
+        "command": {"type": "string"},
+        "result": {"enum": ["passed", "failed", "not-run", "partial"]},
+        "notes": {"type": "string"}
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "rationale", "reference"],
+      "properties": {
+        "decision": {"type": "string"},
+        "rationale": {"type": "string"},
+        "reference": {"type": "string"}
+      }
+    },
+    "resource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "status", "resume_command"],
+      "properties": {
+        "description": {"type": "string"},
+        "status": {"type": "string"},
+        "resume_command": {"type": "string"}
+      }
+    }
+  }
+}

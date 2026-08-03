@@ -10,9 +10,9 @@ Render `.pyramid/graph.json`, which combines the canonical plan with validated r
 
 ## Required interactions
 
-- Select a node and show its title, purpose, kind, path selection, execution, verification, health, and availability.
+- Select a node and show its title, purpose, kind, path selection, execution, verification, health, availability, and active or latest handoff identity.
 - Highlight its goal trace, prerequisites, children, and audit gate.
-- Filter all, ready, working, needs-rework, blocked, audit, work-package, and verified nodes.
+- Filter all, ready, working, paused, needs-rework, blocked, audit, work-package, and verified nodes.
 - Provide keyboard-accessible view and filter controls plus a node-selection fallback.
 - Link to the generated Markdown source when the environment supports local links.
 - Overlay assurance status, impact membership, inspections, and findings from the canonical assurance bundle.
@@ -20,6 +20,7 @@ Render `.pyramid/graph.json`, which combines the canonical plan with validated r
 ## Visual encoding
 
 - Encode execution with node fill.
+- Encode paused work with a distinct amber fill and paired handoff text.
 - Encode verification with a ring or mark.
 - Encode health with a warning mark and text.
 - Encode selection with opacity and a label.
@@ -27,11 +28,11 @@ Render `.pyramid/graph.json`, which combines the canonical plan with validated r
 - Encode brownfield assurance with a distinct dashed ring and detailed text; never reuse task execution color as assurance state.
 - Keep inactive structure neutral and visually subordinate.
 
-The browser is read-only. Actions that claim, update, audit, expand, or replan must call their authoritative interface rather than modifying local presentation state.
+The browser is read-only. Actions that claim, pause, resume, update, audit, expand, or replan must call their authoritative interface rather than modifying local presentation state.
 
 ## Progress
 
-Show project mode, plan lifecycle, verified nodes, ready frontier, rework, active work, blockers, pending audits, baseline revision, impacted versus sufficiently inspected assets, open scope drift, and material findings. Do not invent a completion percentage unless the plan explicitly contains reviewed weights. A labeled coverage count is acceptable.
+Show project mode, plan lifecycle, verified nodes, ready frontier, rework, active and paused work, blockers, pending audits, baseline revision, impacted versus sufficiently inspected assets, open scope drift, and material findings. Do not invent a completion percentage unless the plan explicitly contains reviewed weights. A labeled coverage count is acceptable.
 
 ## Layout
 

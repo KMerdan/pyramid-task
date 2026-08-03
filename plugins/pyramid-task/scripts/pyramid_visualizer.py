@@ -34,6 +34,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     --edge: #9aa4b5;
     --ready: #12a594;
     --working: #2878d0;
+    --paused: #d88426;
     --implemented: #8a63d2;
     --rework: #d45d18;
     --verified: #258a4b;
@@ -54,6 +55,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       --edge: #596579;
       --ready: #39c6b4;
       --working: #66a9ef;
+      --paused: #f0ae56;
       --implemented: #aa8ee8;
       --rework: #ff985f;
       --verified: #61c782;
@@ -98,6 +100,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .node .mark { fill: var(--locked); stroke: var(--panel); stroke-width: 2; }
   .node.ready .mark { fill: var(--ready); }
   .node.working .mark { fill: var(--working); }
+  .node.paused .mark { fill: var(--paused); }
   .node.implemented .mark { fill: var(--implemented); }
   .node.needs-rework .mark { fill: var(--rework); }
   .node.verified .mark { fill: var(--verified); }
@@ -122,6 +125,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .swatch { display: inline-flex; align-items: center; gap: 5px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--locked); }
   .dot.ready { background: var(--ready); } .dot.working { background: var(--working); }
+  .dot.paused { background: var(--paused); }
   .dot.verified { background: var(--verified); } .dot.blocked { background: var(--blocked); }
   .dot.rework { background: var(--rework); }
   @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } .detail { position: static; } }
@@ -143,6 +147,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button type="button" data-filter="all" aria-pressed="true">All</button>
       <button type="button" data-filter="ready" aria-pressed="false">Ready</button>
       <button type="button" data-filter="working" aria-pressed="false">Working</button>
+      <button type="button" data-filter="paused" aria-pressed="false">Paused</button>
       <button type="button" data-filter="needs-rework" aria-pressed="false">Rework</button>
       <button type="button" data-filter="blocked" aria-pressed="false">Blocked</button>
       <button type="button" data-filter="audit" aria-pressed="false">Audit</button>
@@ -170,6 +175,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div class="legend" aria-label="Status legend">
         <span class="swatch"><span class="dot ready"></span>Ready</span>
         <span class="swatch"><span class="dot working"></span>Working</span>
+        <span class="swatch"><span class="dot paused"></span>Paused / handoff</span>
         <span class="swatch"><span class="dot rework"></span>Needs rework</span>
         <span class="swatch"><span class="dot verified"></span>Verified</span>
         <span class="swatch"><span class="dot blocked"></span>Blocked</span>
@@ -363,6 +369,15 @@ HTML_TEMPLATE = r"""<!doctype html>
     if (!node) return;
     const source = node.source_path ? `<a href="../${esc(node.source_path)}">Open generated task</a>` : '';
     const assurance = node.assurance;
+    const pause = node.state.execution === 'paused' ? `
+      <strong>Pause handoff</strong>
+      <dl>
+        <dt>Handoff</dt><dd>${esc(node.state.active_handoff_id || '—')}</dd>
+        <dt>Mode</dt><dd>${esc(node.state.pause_mode || '—')}</dd>
+        <dt>Paused by</dt><dd>${esc(node.state.paused_by || '—')}</dd>
+        <dt>Paused at</dt><dd>${esc(node.state.paused_at || '—')}</dd>
+        <dt>Resume deadline</dt><dd>${esc(node.state.resume_deadline || '—')}</dd>
+      </dl>` : (node.state.last_handoff ? `<strong>Latest handoff</strong><p>${esc(node.state.last_handoff.id || '—')} · resumed by ${esc(node.state.last_handoff.resumed_by || '—')}</p>` : '');
     const assuranceDetail = assurance ? `
       <strong>Assurance status</strong><p>${esc(assurance.status)}</p>
       <strong>Affected assets</strong>${list(assurance.asset_ids, item => `<code>${esc(item)}</code>`)}
@@ -388,6 +403,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <strong>Blocked by</strong>${list(node.blocked_by, item => esc(item))}
       <strong>Audit gates</strong>${list(node.audit_gates, item => esc(item))}
       <strong>Acceptance</strong>${list(node.acceptance_criteria, item => `<code>${esc(item.id)}</code> — ${esc(item.description)}`)}
+      ${pause}
       ${assuranceDetail}
       ${source}`;
   }

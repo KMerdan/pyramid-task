@@ -1,0 +1,44 @@
+{
+  "schema": "pyramid-handoff-draft-v1",
+  "summary": "Implemented the request validation seam and paused before wiring the adapter.",
+  "progress": [
+    "Validated the existing boundary contract.",
+    "Added the isolated validation seam; adapter wiring remains."
+  ],
+  "changed_files": [
+    "src/validation/request.ts"
+  ],
+  "changed_assets": [],
+  "checks": [
+    {
+      "command": "npm test -- request-validation",
+      "result": "passed",
+      "notes": "Focused unit tests pass."
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Keep adapter wiring out of the validation change.",
+      "rationale": "The task's allowed write scope separates the adapter.",
+      "reference": "docs/tasks/01-api/TASK-VALIDATE.md"
+    }
+  ],
+  "assumptions": [
+    "The adapter continues to normalize its input before calling the validator."
+  ],
+  "blockers": [],
+  "risks": [
+    "Full integration coverage has not run yet."
+  ],
+  "next_steps": [
+    "Wire the adapter to the validated request contract.",
+    "Run the targeted integration test suite."
+  ],
+  "recommended_first_action": "Read src/validation/request.ts and run the focused test before changing the adapter.",
+  "context_references": [
+    "docs/tasks/01-api/TASK-VALIDATE.md",
+    "src/validation/request.ts"
+  ],
+  "external_session_refs": [],
+  "running_resources": []
+}

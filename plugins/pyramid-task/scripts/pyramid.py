@@ -22,8 +22,10 @@ from pyramid_core import (
     impact_project,
     intent_transition_route,
     new_intent_project,
+    pause_task,
     replan_project,
     reopen_node,
+    resume_task,
     reset_project,
     restore_project,
     take_task,
@@ -154,6 +156,7 @@ def build_parser() -> argparse.ArgumentParser:
     group.add_argument("--ready", action="store_true")
     group.add_argument("--blocked", action="store_true")
     group.add_argument("--pending-audits", action="store_true")
+    group.add_argument("--paused", action="store_true")
     group.add_argument("--assurance", action="store_true")
     group.add_argument("--node")
     add_json(inspect)
@@ -167,6 +170,28 @@ def build_parser() -> argparse.ArgumentParser:
     take.add_argument("--lease-minutes", type=int, default=120)
     add_version(take)
     add_json(take)
+
+    pause = sub.add_parser("pause", help="Pause an owned task with an immutable handoff record")
+    add_project(pause)
+    pause.add_argument("--node", required=True)
+    pause.add_argument("--actor", required=True)
+    pause.add_argument("--reason", required=True)
+    pause.add_argument("--handoff", required=True, help="pyramid-handoff-draft-v1 JSON")
+    pause.add_argument("--mode", choices=["hold", "handoff"], default="hold")
+    pause.add_argument("--resume-minutes", type=int, default=60, help="Owner hold duration; ignored for handoff mode")
+    add_version(pause)
+    add_json(pause)
+
+    resume = sub.add_parser("resume", help="Resume a paused task from its validated handoff record")
+    add_project(resume)
+    resume.add_argument("--node", required=True)
+    resume.add_argument("--actor", required=True)
+    resume.add_argument("--handoff", help="Optional active handoff ID assertion")
+    resume.add_argument("--lease-minutes", type=int, default=120)
+    resume.add_argument("--accept-stale", action="store_true", help="Explicitly accept graph, assurance, or worktree drift")
+    resume.add_argument("--takeover", action="store_true", help="Take an expired hold owned by another actor")
+    add_version(resume)
+    add_json(resume)
 
     update = sub.add_parser("update", help="Record a worker transition")
     add_project(update)
@@ -355,6 +380,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             ready=args.ready,
             blocked=args.blocked,
             pending_audits=args.pending_audits,
+            paused=args.paused,
             assurance_view=args.assurance,
             nid=args.node,
         ), 0
@@ -367,6 +393,28 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             nid=args.node,
             take_next=args.next,
             lease_minutes=args.lease_minutes,
+            expected_version=args.expected_version,
+        ), 0
+    if args.command == "pause":
+        return pause_task(
+            args.project,
+            args.node,
+            args.actor,
+            args.reason,
+            args.handoff,
+            mode=args.mode,
+            resume_minutes=args.resume_minutes,
+            expected_version=args.expected_version,
+        ), 0
+    if args.command == "resume":
+        return resume_task(
+            args.project,
+            args.node,
+            args.actor,
+            handoff_id=args.handoff,
+            lease_minutes=args.lease_minutes,
+            accept_stale=args.accept_stale,
+            takeover=args.takeover,
             expected_version=args.expected_version,
         ), 0
     if args.command == "update":

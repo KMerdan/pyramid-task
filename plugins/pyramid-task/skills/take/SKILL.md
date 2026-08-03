@@ -28,5 +28,6 @@ python3 ../../scripts/pyramid.py take --project <project-root> --next --actor <a
 - Never claim work for a read-only status request.
 - Never bypass a locked dependency.
 - Never work from a stale packet after a graph-version conflict; inspect and take again.
+- Never take a paused task. Use `pyramid-task:resume` so the canonical handoff is checked and returned.
 - Release the claim if the task will not be attempted.
 - Never take work from a completed or archived plan. Reopen or restore it through lifecycle first.

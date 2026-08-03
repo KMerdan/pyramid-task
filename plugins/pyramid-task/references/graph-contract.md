@@ -61,7 +61,7 @@ For dependency edges, `from` is the dependent and `to` is the prerequisite. For 
 
 ## State semantics
 
-Execution is `planned`, `working`, `implemented`, `needs-rework`, or `superseded`. Verification is `unverified`, `pending`, `passed`, or `failed`. Health is `clear`, `at-risk`, or `blocked`. Availability is derived as `not-executable`, `not-selected`, `locked`, `ready`, `needs-rework`, `working`, `implemented`, or `verified`.
+Execution is `planned`, `working`, `paused`, `implemented`, `needs-rework`, or `superseded`. Verification is `unverified`, `pending`, `passed`, or `failed`. Health is `clear`, `at-risk`, or `blocked`. Availability is derived as `not-executable`, `not-selected`, `locked`, `ready`, `needs-rework`, `working`, `paused`, `implemented`, or `verified`.
 
 Do not place execution state in `plan.json`. Use runtime transitions so history and concurrency checks remain intact.
 
@@ -70,3 +70,5 @@ Plan lifecycle is `active`, `completed`, or `archived`. It does not replace node
 Read `expansion-contract.md` before converting an executable node into a work-package.
 
 Read `brownfield-assurance.md` before creating or auditing changes in an existing system. Read `upgrade-contract.md` before adding V3 companions to a legacy plan.
+
+Read `handoff-contract.md` before pausing, transferring, or resuming claimed work.

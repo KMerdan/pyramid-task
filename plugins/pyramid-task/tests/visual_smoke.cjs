@@ -26,6 +26,7 @@ async function main() {
   const detail = await page.locator('#detail').innerText();
   const meta = await page.locator('#page-meta').innerText();
   const reworkFilter = await page.locator('[data-filter="needs-rework"]').count();
+  const pausedFilter = await page.locator('[data-filter="paused"]').count();
   const workPackageFilter = await page.locator('[data-filter="work-package"]').count();
   const assuranceFilter = await page.locator('[data-filter="assurance-blocked"]').count();
   const assurancePanel = await page.locator('#assurance-panel.visible').count();
@@ -36,6 +37,7 @@ async function main() {
   if (!detail.includes('Plan lifecycle')) throw new Error('Lifecycle detail is missing');
   if (!meta.includes('active')) throw new Error('Lifecycle summary is missing');
   if (reworkFilter !== 1) throw new Error('Rework filter is missing');
+  if (pausedFilter !== 1) throw new Error('Paused filter is missing');
   if (workPackageFilter !== 1) throw new Error('Work-package filter is missing');
   if (assuranceFilter !== 1) throw new Error('Assurance filter is missing');
   if (assurancePanel && !detail.includes('Assurance status')) throw new Error('Assurance detail is missing');

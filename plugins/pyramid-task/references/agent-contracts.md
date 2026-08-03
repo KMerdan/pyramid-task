@@ -67,6 +67,9 @@ A passing audit requires a non-empty check list and no failed check. In brownfie
 
 - `take` changes a ready executable node to working and assigns an expiring lease.
 - Only the owner may update or release an active claim.
+- `pause` changes an owned working node to paused, stores an immutable handoff, and either retains the owner through a hold deadline or releases ownership for transfer.
+- `resume` follows the active handoff pointer, detects stale graph/assurance/worktree context, acquires a fresh lease, and returns the task to working with an enriched continuation packet.
+- Paused nodes remain active work and cannot be claimed through `take`, closed, archived, reset, or silently replaced.
 - `implemented` clears ownership and sets verification pending.
 - `audit pass` sets verification passed only after structural prerequisites are satisfied.
 - `audit fail` sets an executable node to needs-rework, verification failed, and health at-risk, then invalidates stale dependent proofs.
@@ -78,7 +81,7 @@ A passing audit requires a non-empty check list and no failed check. In brownfie
 - In-place upgrade preserves legacy node state and active ownership while introducing conservative future assurance enforcement.
 - New-intent preview separates installed runtime, project format, and lifecycle state, then binds any upgrade/archive/reset sequence to one user-approved hash.
 
-A completed plan rejects take, update, audit, expand, and replan. An archived plan rejects every canonical mutation. Use the lifecycle interface for close, archive, reset, restore, clean, and manual reopen semantics.
+A completed plan rejects take, pause, resume, update, audit, expand, and replan. An archived plan rejects every canonical mutation. Use the lifecycle interface for close, archive, reset, restore, clean, and manual reopen semantics.
 
 Every mutation supplies an actor, expected graph version when available, reason or result, timestamp, and unique event ID. Events are immutable. Generated graph and Markdown files are projections, not mutation interfaces.
 

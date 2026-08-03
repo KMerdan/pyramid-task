@@ -28,6 +28,7 @@ Pyramid Task treats planning as a claim-and-evidence problem:
 - inventory affected assets, dependencies, owners, history, and unknowns;
 - compare predicted impact with actual changed files and assets;
 - require inspection sufficiency, rollback, monitoring, and accountable finding disposition;
+- preserve exact task context across breaks and agent transfers through durable checked handoffs;
 - emit a close-out change dossier and advance the system baseline.
 
 ## Included skills
@@ -41,6 +42,8 @@ Pyramid Task treats planning as a claim-and-evidence problem:
 | `pyramid-task:upgrade` | Migrate a running V2/V2.1 plan in place without rebuilding it. |
 | `pyramid-task:inspect` | Query status, readiness, blockers, audits, and goal traces. |
 | `pyramid-task:take` | Claim one safe ready or rework task and receive an agent packet. |
+| `pyramid-task:pause` | Pause owned work with a complete immutable handoff and optional owner hold. |
+| `pyramid-task:resume` | Validate and resume a handoff with a fresh lease and enriched continuation packet. |
 | `pyramid-task:update` | Record implementation results, evidence, blockers, and risk. |
 | `pyramid-task:audit` | Verify tasks, branch joints, outcomes, and the final intent. |
 | `pyramid-task:expand` | Propose a deeper subtree and apply it only after explicit user approval. |
@@ -58,6 +61,8 @@ flowchart TD
     B --> X["Impact, inspections, findings, controls"]
     X --> T["Assurance-enriched agent task packets"]
     G --> T
+    T -->|break or transfer| S["Durable pause handoff"]
+    S -->|validated resume| T
     G --> H["Human Markdown task pyramid"]
     G --> V["Interactive star / pyramid / dependency map"]
     T --> E["Implementation results"]
@@ -116,6 +121,8 @@ Use $pyramid-task:impact to map affected assets and required inspections for thi
 Use $pyramid-task:upgrade to migrate this running V2.1 plan to V3 without rebuilding it.
 Use $pyramid-task:inspect to show what is ready, blocked, working, and still unaudited.
 Use $pyramid-task:take to claim the next safe task for this agent.
+Use $pyramid-task:pause to stop this claimed task safely for a coffee break or handoff.
+Use $pyramid-task:resume to continue the paused task from its canonical handoff.
 Use $pyramid-task:expand when this task is materially broad and needs an approved subtree.
 Use $pyramid-task:visualize to render the current task graph.
 Use $pyramid-task:lifecycle to close and archive this fully verified plan.
@@ -140,6 +147,16 @@ python3 plugins/pyramid-task/scripts/pyramid.py lifecycle --project /path/to/pro
 python3 plugins/pyramid-task/scripts/pyramid.py close --project /path/to/project --actor owner --json
 python3 plugins/pyramid-task/scripts/pyramid.py archive --project /path/to/project --actor owner --reason "Release complete" --json
 ```
+
+Pause and resume one claimed task without stopping independent graph work:
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py pause --project /path/to/project --node TASK-203 --actor worker --reason "Coffee break" --handoff handoff-draft.json --mode hold --resume-minutes 60 --json
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --paused --json
+python3 plugins/pyramid-task/scripts/pyramid.py resume --project /path/to/project --node TASK-203 --actor worker --lease-minutes 120 --json
+```
+
+Use `hold` for a short owner-retained break and `handoff` for immediate transfer. Resume refuses stale context when the graph, baseline, assurance, or source worktree changed; review the reported drift before explicitly accepting it.
 
 Start a distinct intent through one previewed transition. The runtime, not the agent, chooses whether this means `create`, `upgrade → archive → reset`, or `archive → reset`:
 
@@ -189,7 +206,7 @@ The agent recommends expansion only from concrete scope evidence. The user appro
 
 Node state is intentionally multidimensional:
 
-- Execution: `planned`, `working`, `implemented`, `needs-rework`, `superseded`
+- Execution: `planned`, `working`, `paused`, `implemented`, `needs-rework`, `superseded`
 - Verification: `unverified`, `pending`, `passed`, `failed`
 - Health: `clear`, `at-risk`, `blocked`
 - Plan lifecycle: `active`, `completed`, `archived`
@@ -203,11 +220,11 @@ An implementation is not verified merely because an agent marked it implemented.
 .agents/plugins/marketplace.json        Public Codex marketplace
 plugins/pyramid-task/
 ├── .codex-plugin/plugin.json          Plugin manifest
-├── skills/                            Thirteen agent-facing interfaces
+├── skills/                            Fifteen agent-facing interfaces
 ├── scripts/                           Deterministic runtime and visualizer
 ├── schemas/                           Published JSON contracts
 ├── references/                        Graph, evidence, agent, and lifecycle contracts
-├── assets/                            Valid plan and expansion examples
+├── assets/                            Valid plan, expansion, and handoff examples
 └── tests/                              Runtime and visualization tests
 tools/validate_repository.py           Self-contained repository validation
 ```
@@ -226,7 +243,7 @@ Release details are recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## Project status
 
-Version 3.1.0 adds a deterministic, approval-bound `new-intent` transition and stale standalone-skill detection. A completed V2/V2.1 cluster can now become the preserved evidence and baseline for a new V3 intent without asking an agent to improvise the lifecycle route.
+Version 3.2.0 adds durable task-level pause/resume continuity. Agents can stop for a break or transfer work without losing changed scope, checks, decisions, risks, and next actions; resume validates graph, assurance, and worktree freshness before work continues.
 
 ## License
 
