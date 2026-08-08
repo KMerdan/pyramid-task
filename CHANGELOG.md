@@ -2,6 +2,26 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## Unreleased
+
+### Live, focused visualization
+
+- Add a loopback-only, Host-restricted live visualization server with no-store graph delivery and reconnecting server-sent update events.
+- Refresh only after validated atomic graph publications, preserve browser context, and retain the last valid graph when a publication is rejected.
+- Add a default Focus view, execution summary, recommended-node navigation, human-readable node labels, and changed-node highlighting.
+- Preserve the self-contained static visualization for archives, sharing, and offline inspection.
+
+## 3.2.0
+
+### Durable session continuity
+
+- Add task-level `pause` and `resume` transitions without stopping independent graph work.
+- Persist immutable JSON and Markdown handoffs containing progress, changed scope, checks, decisions, blockers, risks, next actions, context, external sessions, and running resources.
+- Add `hold` mode for short owner-retained breaks and `handoff` mode for deliberate ownership transfer.
+- Detect stale handoffs from graph, plan, baseline, assurance, and source-worktree fingerprints before resuming.
+- Add `pyramid-task:pause` and `pyramid-task:resume` agent skills plus published draft and canonical handoff schemas.
+- Surface paused tasks and handoff identity in inspect, lifecycle, graph, Markdown, archive/clean preservation, and the interactive browser.
+
 ## 3.1.0
 
 ### Safe intent transitions

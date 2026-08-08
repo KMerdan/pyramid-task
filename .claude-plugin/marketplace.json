@@ -4,11 +4,12 @@
     "name": "Dr. Merdan Bay",
     "url": "https://github.com/KMerdan"
   },
+  "description": "Pyramid Task plugins for evidence-backed software planning, execution continuity, and change assurance.",
   "plugins": [
     {
       "name": "pyramid-task",
       "source": "./plugins/pyramid-task",
-      "description": "Evidence-backed pathfinder planning, task pyramids, audit gates, lifecycle management, and interactive visualization for AI agents.",
+      "description": "Evidence-backed task pyramids, brownfield assurance, durable handoffs, lifecycle management, and focused live visualization for AI agents.",
       "category": "productivity"
     }
   ]

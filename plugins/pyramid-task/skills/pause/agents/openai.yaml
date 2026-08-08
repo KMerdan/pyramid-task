@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pause Pyramid Task"
+  short_description: "Pause a task with a durable handoff"
+  default_prompt: "Use $pause to pause this claimed Pyramid Task and record a complete handoff."

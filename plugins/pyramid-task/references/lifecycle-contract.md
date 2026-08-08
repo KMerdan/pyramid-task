@@ -16,6 +16,10 @@ Manual `reopen` applies the same repair state to a primary executable node. It i
 
 Use local repair when the claim and graph contract remain valid. Use approved `expand` when the contract remains valid but the work needs a deeper internal subtree. Use `replan` when evidence invalidates topology, a contract, an assumption, or the selected path.
 
+## Session continuity
+
+A temporary interruption uses task-level `pause`, not plan archive or claim release. A paused task retains a canonical handoff pointer and counts as active work, while independent tasks remain available. `resume` validates that handoff against current graph, assurance, and worktree state before returning the node to `working`. See `handoff-contract.md` for ownership modes, required evidence, stale-handoff handling, and takeover rules.
+
 ## Completion lifecycle
 
 The final intent audit establishes that the intended state is verified. `close` formalizes completion and is allowed only when:
@@ -42,6 +46,7 @@ Archive refuses active claims. It records `plan.archived`, changes the current l
 │   ├── baseline.json
 │   ├── assurance.json
 │   ├── events/
+│   ├── handoffs/
 │   ├── reports/
 │   ├── dossiers/
 │   ├── graph.json
@@ -57,17 +62,19 @@ The manifest records plan and graph identity, previous lifecycle state, archive 
 
 For a distinct intent, `new-intent` is the preferred front door. Its preview chooses `create`, `upgrade → archive → reset`, `archive → reset`, or a blocked route from the actual project format and lifecycle. Existing projects require the exact transition hash and approval provenance. The new `plan.created` event records that parent approval. See `new-intent-contract.md`.
 
-`restore` resolves an archive ID or archived plan ID, validates the snapshot, archives the current plan when present, installs the selected plan and its history, clears ownership and leases, records `plan.restored`, and regenerates projections. It restores the lifecycle that existed before archiving: active plans resume active, and completed plans remain completed until reopened.
+`restore` resolves an archive ID or archived plan ID, validates the snapshot, archives the current plan when present, installs the selected plan and its history, clears ownership, leases, and active pause pointers, records `plan.restored`, and regenerates projections. Historical handoff files remain preserved as evidence. It restores the lifecycle that existed before archiving: active plans resume active, and completed plans remain completed until reopened.
 
 ## Clean
 
-`clean` removes only `.pyramid/graph.json`, `.pyramid/ready.json`, `.pyramid/pyramid.html`, and generated `docs/tasks/`, then recompiles them. It hashes plan, state, project manifest, baseline, assurance, events, reports, and dossiers before and after and fails if canonical data changed. It does not run against an archived current plan.
+`clean` removes only `.pyramid/graph.json`, `.pyramid/ready.json`, `.pyramid/pyramid.html`, and generated `docs/tasks/`, then recompiles them. It hashes plan, state, project manifest, baseline, assurance, events, handoffs, reports, and dossiers before and after and fails if canonical data changed. It does not run against an archived current plan.
 
 ## Events
 
 Lifecycle mutations use immutable events:
 
 - `task.reopened`;
+- `task.paused` with handoff identity, mode, deadline, and content hash;
+- `task.resumed` with lease, takeover, and accepted-staleness provenance;
 - `task.expanded` with proposal hash and approval provenance;
 - `plan.completed`;
 - `plan.archived`;

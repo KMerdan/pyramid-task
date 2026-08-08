@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/handoff.schema.json",
+  "title": "Pyramid Task Canonical Handoff",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "plan_id", "task", "graph_version", "actor", "pause_mode", "reason", "created_at", "resume_deadline", "summary", "progress", "changed_files", "changed_assets", "checks", "decisions", "assumptions", "blockers", "risks", "next_steps", "recommended_first_action", "context_references", "external_session_refs", "running_resources", "fingerprint"],
+  "properties": {
+    "schema": {"const": "pyramid-handoff-v1"},
+    "id": {"type": "string", "pattern": "^HANDOFF-[A-Z0-9-]+$"},
+    "plan_id": {"type": "string"},
+    "task": {"type": "string"},
+    "graph_version": {"type": "integer", "minimum": 1},
+    "actor": {"type": "string"},
+    "pause_mode": {"enum": ["hold", "handoff"]},
+    "reason": {"type": "string"},
+    "created_at": {"type": "string"},
+    "resume_deadline": {"type": ["string", "null"]},
+    "summary": {"type": "string"},
+    "progress": {"type": "array", "items": {"type": "string"}},
+    "changed_files": {"type": "array", "items": {"type": "string"}},
+    "changed_assets": {"type": "array", "items": {"type": "string"}},
+    "checks": {"type": "array", "items": {"type": "object"}},
+    "decisions": {"type": "array", "items": {"type": "object"}},
+    "assumptions": {"type": "array", "items": {"type": "string"}},
+    "blockers": {"type": "array", "items": {"type": "string"}},
+    "risks": {"type": "array", "items": {"type": "string"}},
+    "next_steps": {"type": "array", "items": {"type": "string"}},
+    "recommended_first_action": {"type": "string"},
+    "context_references": {"type": "array", "items": {"type": "string"}},
+    "external_session_refs": {"type": "array", "items": {"type": "string"}},
+    "running_resources": {"type": "array", "items": {"type": "object"}},
+    "fingerprint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plan_sha256", "baseline_sha256", "assurance_sha256", "worktree"],
+      "properties": {
+        "plan_sha256": {"type": "string"},
+        "baseline_sha256": {"type": ["string", "null"]},
+        "assurance_sha256": {"type": ["string", "null"]},
+        "worktree": {"type": "object"}
+      }
+    }
+  }
+}

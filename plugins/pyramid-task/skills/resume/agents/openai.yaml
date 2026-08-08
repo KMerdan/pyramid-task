@@ -1,0 +1,4 @@
+interface:
+  display_name: "Resume Pyramid Task"
+  short_description: "Resume a task from a validated handoff"
+  default_prompt: "Use $resume to continue this paused Pyramid Task from its recorded handoff."

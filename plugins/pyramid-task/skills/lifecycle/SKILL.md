@@ -33,7 +33,7 @@ Close only after the intent audit passes and `closure_ready` is true:
 python3 ../../scripts/pyramid.py close --project <project-root> --actor <actor> --json
 ```
 
-Closing writes a versioned JSON and Markdown final report and blocks ordinary execution mutations. In brownfield mode it also writes a change dossier and advances the baseline revision. Archive a completed or intentionally paused plan after releasing every active claim:
+Closing writes a versioned JSON and Markdown final report and blocks ordinary execution mutations. In brownfield mode it also writes a change dossier and advances the baseline revision. Archive a completed or intentionally inactive plan only after resolving every working or paused claim:
 
 ```bash
 python3 ../../scripts/pyramid.py archive --project <project-root> --actor <actor> --reason <reason> --json
@@ -64,7 +64,7 @@ python3 ../../scripts/pyramid.py restore --project <project-root> --archive <arc
 ## Boundaries
 
 - Never use `create --force`, delete `.pyramid`, or hand-edit lifecycle state to restart.
-- Never archive, reset, or restore over active claims; release them first.
+- Never archive, reset, or restore over active claims. Resume a paused task and finish or release it first; do not discard its handoff.
 - Treat final reports and archive manifests as evidence artifacts, not mutable working notes.
 - Preserve the original success criterion after failure. Repair locally or replan from evidence.
 - Use `--expected-version` on mutations when coordinating concurrent agents.

@@ -34,6 +34,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     --edge: #9aa4b5;
     --ready: #12a594;
     --working: #2878d0;
+    --paused: #d88426;
     --implemented: #8a63d2;
     --rework: #d45d18;
     --verified: #258a4b;
@@ -54,6 +55,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       --edge: #596579;
       --ready: #39c6b4;
       --working: #66a9ef;
+      --paused: #f0ae56;
       --implemented: #aa8ee8;
       --rework: #ff985f;
       --verified: #61c782;
@@ -69,7 +71,24 @@ HTML_TEMPLATE = r"""<!doctype html>
   body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 system-ui, sans-serif; }
   main { max-width: 1500px; margin: 0 auto; padding: 18px; }
   h1 { margin: 0 0 4px; font-size: 1.35rem; font-weight: 600; }
-  .meta { color: var(--muted); margin-bottom: 14px; }
+  .meta { color: var(--muted); margin-bottom: 10px; }
+  .live-status { display: inline-flex; align-items: center; gap: 7px; margin: 0 0 12px; padding: 5px 9px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: .82rem; }
+  .live-status[hidden] { display: none; }
+  .live-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--locked); }
+  .live-status.connected::before { background: var(--ready); }
+  .live-status.syncing::before { background: var(--working); }
+  .live-status.error { color: var(--blocked); border-color: var(--blocked); }
+  .live-status.error::before { background: var(--blocked); }
+  .overview { display: grid; grid-template-columns: repeat(5, minmax(92px, 1fr)) minmax(220px, 2fr); gap: 8px; margin-bottom: 12px; }
+  .metric, .recommended { min-height: 72px; text-align: left; background: var(--panel); }
+  .metric strong { display: block; font-size: 1.35rem; line-height: 1.1; }
+  .metric span, .recommended span { color: var(--muted); font-size: .78rem; }
+  .recommended strong { display: block; margin-top: 3px; font-size: .94rem; }
+  .recommended.ready { border-color: var(--ready); }
+  .recommended.working { border-color: var(--working); }
+  .recommended.paused { border-color: var(--paused); }
+  .recommended.needs-rework { border-color: var(--rework); }
+  .recommended.blocked, .recommended.locked { border-color: var(--blocked); }
   .assurance-panel { display: none; margin: 0 0 12px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 9px; }
   .assurance-panel.visible { display: block; }
   .assurance-panel strong { margin-right: 8px; }
@@ -77,6 +96,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .assurance-panel.ready { border-color: var(--assurance-covered); }
   .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; margin-bottom: 12px; }
   .group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .group[hidden] { display: none; }
   button, select { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--border); border-radius: 7px; padding: 7px 10px; }
   button { cursor: pointer; }
   button[aria-pressed="true"] { border-color: var(--focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus) 30%, transparent); }
@@ -95,9 +115,11 @@ HTML_TEMPLATE = r"""<!doctype html>
   .detail a { color: var(--focus); }
   .node { cursor: pointer; }
   .node text { fill: var(--fg); font-size: 12px; pointer-events: none; }
+  .node .node-id { fill: var(--muted); font-size: 10px; }
   .node .mark { fill: var(--locked); stroke: var(--panel); stroke-width: 2; }
   .node.ready .mark { fill: var(--ready); }
   .node.working .mark { fill: var(--working); }
+  .node.paused .mark { fill: var(--paused); }
   .node.implemented .mark { fill: var(--implemented); }
   .node.needs-rework .mark { fill: var(--rework); }
   .node.verified .mark { fill: var(--verified); }
@@ -114,6 +136,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .node.assurance-blocked .assure { stroke: var(--assurance-blocked); }
   .node.assurance-hidden .assure { stroke: transparent; }
   .node.selected .verify { stroke: var(--focus); stroke-width: 4; }
+  .node.changed .mark { animation: node-change 1.4s ease-out; }
   .edge { stroke: var(--edge); stroke-width: 1.25; fill: none; opacity: .65; }
   .edge.dependency { stroke-dasharray: 5 4; }
   .edge.highlight { stroke: var(--focus); stroke-width: 2.5; opacity: 1; }
@@ -122,20 +145,28 @@ HTML_TEMPLATE = r"""<!doctype html>
   .swatch { display: inline-flex; align-items: center; gap: 5px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--locked); }
   .dot.ready { background: var(--ready); } .dot.working { background: var(--working); }
+  .dot.paused { background: var(--paused); }
   .dot.verified { background: var(--verified); } .dot.blocked { background: var(--blocked); }
   .dot.rework { background: var(--rework); }
+  @keyframes node-change { 0%, 30% { filter: drop-shadow(0 0 9px var(--focus)); transform: scale(1.28); transform-origin: center; } 100% { filter: none; transform: scale(1); } }
+  @media (max-width: 1080px) { .overview { grid-template-columns: repeat(3, minmax(92px, 1fr)); } }
   @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } .detail { position: static; } }
+  @media (max-width: 620px) { .overview { grid-template-columns: repeat(2, minmax(92px, 1fr)); } .recommended { grid-column: 1 / -1; } }
   @media (prefers-reduced-motion: no-preference) { .node, .edge { transition: opacity .18s, transform .18s; } }
+  @media (prefers-reduced-motion: reduce) { .node.changed .mark { animation: none; } }
 </style>
 </head>
 <body>
 <main>
   <h1 id="page-title"></h1>
   <div class="meta" id="page-meta"></div>
+  <div class="live-status" id="live-status" role="status" aria-live="polite" hidden>Connecting…</div>
+  <section class="overview" id="overview" aria-label="Execution summary"></section>
   <div class="assurance-panel" id="assurance-panel"></div>
   <div class="toolbar">
     <div class="group" aria-label="Graph view">
-      <button type="button" data-view="star" aria-pressed="true">Star</button>
+      <button type="button" data-view="focus" aria-pressed="true">Focus</button>
+      <button type="button" data-view="star" aria-pressed="false">Star</button>
       <button type="button" data-view="pyramid" aria-pressed="false">Pyramid</button>
       <button type="button" data-view="dependency" aria-pressed="false">Dependencies</button>
     </div>
@@ -143,14 +174,15 @@ HTML_TEMPLATE = r"""<!doctype html>
       <button type="button" data-filter="all" aria-pressed="true">All</button>
       <button type="button" data-filter="ready" aria-pressed="false">Ready</button>
       <button type="button" data-filter="working" aria-pressed="false">Working</button>
+      <button type="button" data-filter="paused" aria-pressed="false">Paused</button>
       <button type="button" data-filter="needs-rework" aria-pressed="false">Rework</button>
       <button type="button" data-filter="blocked" aria-pressed="false">Blocked</button>
       <button type="button" data-filter="audit" aria-pressed="false">Audit</button>
       <button type="button" data-filter="work-package" aria-pressed="false">Work packages</button>
       <button type="button" data-filter="verified" aria-pressed="false">Verified</button>
-      <button type="button" data-filter="assurance-blocked" aria-pressed="false">Assurance blocked</button>
+      <button type="button" id="assurance-filter" data-filter="assurance-blocked" aria-pressed="false">Assurance blocked</button>
     </div>
-    <div class="group" aria-label="Assurance overlay">
+    <div class="group" id="assurance-controls" aria-label="Assurance overlay">
       <button type="button" data-overlay="none" aria-pressed="false">No assurance</button>
       <button type="button" data-overlay="status" aria-pressed="true">Assurance status</button>
       <button type="button" data-overlay="impact" aria-pressed="false">Impact</button>
@@ -170,6 +202,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       <div class="legend" aria-label="Status legend">
         <span class="swatch"><span class="dot ready"></span>Ready</span>
         <span class="swatch"><span class="dot working"></span>Working</span>
+        <span class="swatch"><span class="dot paused"></span>Paused / handoff</span>
         <span class="swatch"><span class="dot rework"></span>Needs rework</span>
         <span class="swatch"><span class="dot verified"></span>Verified</span>
         <span class="swatch"><span class="dot blocked"></span>Blocked</span>
@@ -183,7 +216,8 @@ HTML_TEMPLATE = r"""<!doctype html>
 <script id="pyramid-data" type="application/json">__GRAPH_DATA__</script>
 <script>
 (() => {
-  const data = JSON.parse(document.getElementById('pyramid-data').textContent);
+  let data = JSON.parse(document.getElementById('pyramid-data').textContent);
+  const liveMode = __LIVE_MODE__;
   const svg = document.getElementById('graph');
   const nodeLayer = document.getElementById('node-layer');
   const edgeLayer = document.getElementById('edge-layer');
@@ -191,32 +225,96 @@ HTML_TEMPLATE = r"""<!doctype html>
   const detail = document.getElementById('detail');
   const select = document.getElementById('node-select');
   const assurancePanel = document.getElementById('assurance-panel');
-  const nodeById = new Map(data.nodes.map(node => [node.id, node]));
-  let view = 'star';
+  const assuranceControls = document.getElementById('assurance-controls');
+  const assuranceFilterButton = document.getElementById('assurance-filter');
+  const overview = document.getElementById('overview');
+  let nodeById = new Map(data.nodes.map(node => [node.id, node]));
+  let view = 'focus';
   let filter = 'all';
   let overlay = data.assurance ? 'status' : 'none';
-  let selected = data.intent.id;
+  let selected = preferredNode(data).id;
   let positions = new Map();
   let canvas = {width: 1000, height: 720};
-
-  document.getElementById('page-title').textContent = data.title;
-  const projectMode = data.project?.mode || 'legacy';
-  document.getElementById('page-meta').textContent = `${projectMode} · ${data.lifecycle.status} · revision ${data.revision} · graph ${data.graph_version} · ${data.summary.verified_primary_nodes}/${data.summary.primary_nodes} primary nodes verified`;
-  if (data.assurance) {
-    const summary = data.assurance.summary;
-    assurancePanel.classList.add('visible', summary.status);
-    assurancePanel.innerHTML = `<strong>Change assurance: ${esc(summary.status)}</strong> baseline r${summary.baseline_revision} (${esc(summary.baseline_status)}) · ${summary.sufficiently_inspected_assets}/${summary.impacted_assets} impacted assets sufficiently inspected · ${summary.open_scope_drift} open drift · ${summary.open_material_findings} material findings`;
-  }
-  data.nodes.forEach(node => {
-    const option = document.createElement('option');
-    option.value = node.id;
-    option.textContent = `${node.id} — ${node.title}`;
-    select.appendChild(option);
-  });
-  select.value = selected;
+  let changedNodeIds = new Set();
 
   function esc(value) {
     return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  }
+  function preferredNode(graph) {
+    const priorities = ['working', 'needs-rework', 'ready', 'paused', 'blocked', 'locked'];
+    for (const availability of priorities) {
+      const match = graph.nodes.find(node => node.availability === availability && node.selection === 'primary');
+      if (match) return match;
+    }
+    return graph.nodes.find(node => node.id === graph.intent.id) || graph.nodes[0];
+  }
+  function renderOverview() {
+    const count = status => data.nodes.filter(node => {
+      if (status === 'blocked') return node.availability === 'blocked' || node.availability === 'locked';
+      return node.availability === status;
+    }).length;
+    const recommended = preferredNode(data);
+    const metrics = [
+      ['working', 'Working'], ['ready', 'Ready'], ['paused', 'Paused'],
+      ['needs-rework', 'Rework'], ['blocked', 'Blocked / locked']
+    ];
+    overview.innerHTML = metrics.map(([status, label]) => `
+      <button type="button" class="metric" data-summary-filter="${status}">
+        <strong>${count(status)}</strong><span>${label}</span>
+      </button>`).join('') + `
+      <button type="button" class="recommended ${esc(recommended.availability)}" data-recommended="${esc(recommended.id)}">
+        <span>Recommended focus · ${esc(recommended.availability)}</span>
+        <strong>${esc(recommended.title)}</strong>
+        <span>${esc(recommended.id)}</span>
+      </button>`;
+    overview.querySelectorAll('[data-summary-filter]').forEach(button => {
+      button.addEventListener('click', () => setFilter(button.dataset.summaryFilter));
+    });
+    overview.querySelector('[data-recommended]')?.addEventListener('click', event => {
+      setFilter('all', false);
+      choose(event.currentTarget.dataset.recommended);
+    });
+  }
+  function syncChrome() {
+    document.getElementById('page-title').textContent = data.title;
+    const projectMode = data.project?.mode || 'legacy';
+    document.getElementById('page-meta').textContent = `${projectMode} · ${data.lifecycle.status} · revision ${data.revision} · graph ${data.graph_version} · ${data.summary.verified_primary_nodes}/${data.summary.primary_nodes} primary nodes verified`;
+    assurancePanel.className = 'assurance-panel';
+    assurancePanel.replaceChildren();
+    assuranceControls.hidden = !data.assurance;
+    assuranceFilterButton.hidden = !data.assurance;
+    if (data.assurance) {
+      const summary = data.assurance.summary;
+      assurancePanel.classList.add('visible', summary.status);
+      assurancePanel.innerHTML = `<strong>Change assurance: ${esc(summary.status)}</strong> baseline r${summary.baseline_revision} (${esc(summary.baseline_status)}) · ${summary.sufficiently_inspected_assets}/${summary.impacted_assets} impacted assets sufficiently inspected · ${summary.open_scope_drift} open drift · ${summary.open_material_findings} material findings`;
+    }
+    select.replaceChildren();
+    data.nodes.forEach(node => {
+      const option = document.createElement('option');
+      option.value = node.id;
+      option.textContent = `${node.title} — ${node.id}`;
+      select.appendChild(option);
+    });
+    select.value = selected;
+    document.querySelectorAll('[data-overlay]').forEach(button => {
+      button.disabled = !data.assurance;
+      button.setAttribute('aria-pressed', String(button.dataset.overlay === overlay));
+    });
+    renderOverview();
+  }
+  function applyData(nextData) {
+    const previous = nodeById;
+    changedNodeIds = new Set(nextData.nodes.filter(node => {
+      const before = previous.get(node.id);
+      return !before || JSON.stringify(before) !== JSON.stringify(node);
+    }).map(node => node.id));
+    data = nextData;
+    nodeById = new Map(data.nodes.map(node => [node.id, node]));
+    if (!nodeById.has(selected)) selected = preferredNode(data).id;
+    if (!data.assurance) overlay = 'none';
+    syncChrome();
+    render();
+    window.setTimeout(() => changedNodeIds.clear(), 1600);
   }
   function starPoints(cx, cy, outer, inner) {
     const points = [];
@@ -237,7 +335,40 @@ HTML_TEMPLATE = r"""<!doctype html>
   }
   function computePositions() {
     const map = new Map();
-    if (view === 'star') {
+    if (view === 'focus') {
+      const focus = nodeById.get(selected) || preferredNode(data);
+      const relatedIds = new Set([
+        focus.id,
+        ...(focus.goal_trace || []),
+        ...(focus.parents || []),
+        ...(focus.children || []),
+        ...(focus.blocked_by || []),
+        ...(focus.audit_gates || []),
+        ...(focus.dependencies || []).map(item => item.id)
+      ]);
+      data.edges.forEach(edge => {
+        if (edge.from === focus.id || edge.to === focus.id) {
+          relatedIds.add(edge.from); relatedIds.add(edge.to);
+        }
+      });
+      const related = data.nodes
+        .filter(node => relatedIds.has(node.id) && node.id !== focus.id)
+        .sort((a,b) => a.level-b.level || a.wave-b.wave || a.id.localeCompare(b.id));
+      const rings = Math.max(1, Math.ceil(related.length / 10));
+      const width = Math.max(1000, 720 + rings * 180);
+      const height = Math.max(620, 480 + rings * 130);
+      const cx = width / 2, cy = height / 2;
+      map.set(focus.id, {x: cx, y: cy});
+      related.forEach((node, index) => {
+        const ring = Math.floor(index / 10);
+        const members = Math.min(10, related.length - ring * 10);
+        const offset = index % 10;
+        const radius = 175 + ring * 120;
+        const angle = -Math.PI / 2 + offset * Math.PI * 2 / members;
+        map.set(node.id, {x: cx + Math.cos(angle) * radius, y: cy + Math.sin(angle) * radius});
+      });
+      return {map, width, height};
+    } else if (view === 'star') {
       const groups = new Map();
       data.nodes.forEach(node => {
         if (!groups.has(node.level)) groups.set(node.level, []);
@@ -325,8 +456,9 @@ HTML_TEMPLATE = r"""<!doctype html>
     });
     data.nodes.forEach(node => {
       const p = positions.get(node.id);
+      if (!p) return;
       const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      const classes = ['node', node.availability, node.kind === 'audit' ? 'audit' : '', node.kind === 'work-package' ? 'work-package' : '', `verification-${node.state.verification}`, node.selection !== 'primary' ? 'not-selected' : '', node.id === selected ? 'selected' : ''].filter(Boolean);
+      const classes = ['node', node.availability, node.kind === 'audit' ? 'audit' : '', node.kind === 'work-package' ? 'work-package' : '', `verification-${node.state.verification}`, node.selection !== 'primary' ? 'not-selected' : '', node.id === selected ? 'selected' : '', changedNodeIds.has(node.id) ? 'changed' : ''].filter(Boolean);
       const assuranceStatus = node.assurance?.status;
       if (assuranceStatus) classes.push(`assurance-${assuranceStatus}`);
       const overlayRecords = overlay === 'impact' ? node.assurance?.impact_ids : overlay === 'inspection' ? node.assurance?.inspection_ids : overlay === 'finding' ? node.assurance?.finding_ids : overlay === 'drift' ? node.assurance?.scope_drift_ids : null;
@@ -348,8 +480,12 @@ HTML_TEMPLATE = r"""<!doctype html>
       group.appendChild(mark);
       const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
       label.setAttribute('x', p.x); label.setAttribute('y', p.y + 34); label.setAttribute('text-anchor', 'middle');
-      label.textContent = node.id.length > 18 ? node.id.slice(0, 17) + '…' : node.id;
+      label.textContent = node.title.length > 28 ? node.title.slice(0, 27) + '…' : node.title;
       group.appendChild(label);
+      const idLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      idLabel.setAttribute('class', 'node-id'); idLabel.setAttribute('x', p.x); idLabel.setAttribute('y', p.y + 49); idLabel.setAttribute('text-anchor', 'middle');
+      idLabel.textContent = node.id.length > 22 ? node.id.slice(0, 21) + '…' : node.id;
+      group.appendChild(idLabel);
       group.addEventListener('click', () => choose(node.id));
       nodeLayer.appendChild(group);
     });
@@ -361,8 +497,20 @@ HTML_TEMPLATE = r"""<!doctype html>
   function renderDetail() {
     const node = nodeById.get(selected);
     if (!node) return;
-    const source = node.source_path ? `<a href="../${esc(node.source_path)}">Open generated task</a>` : '';
+    const sourceHref = node.source_path && liveMode
+      ? `/project/${node.source_path.split('/').map(encodeURIComponent).join('/')}`
+      : node.source_path ? `../${node.source_path}` : '';
+    const source = sourceHref ? `<a href="${esc(sourceHref)}">Open generated task</a>` : '';
     const assurance = node.assurance;
+    const pause = node.state.execution === 'paused' ? `
+      <strong>Pause handoff</strong>
+      <dl>
+        <dt>Handoff</dt><dd>${esc(node.state.active_handoff_id || '—')}</dd>
+        <dt>Mode</dt><dd>${esc(node.state.pause_mode || '—')}</dd>
+        <dt>Paused by</dt><dd>${esc(node.state.paused_by || '—')}</dd>
+        <dt>Paused at</dt><dd>${esc(node.state.paused_at || '—')}</dd>
+        <dt>Resume deadline</dt><dd>${esc(node.state.resume_deadline || '—')}</dd>
+      </dl>` : (node.state.last_handoff ? `<strong>Latest handoff</strong><p>${esc(node.state.last_handoff.id || '—')} · resumed by ${esc(node.state.last_handoff.resumed_by || '—')}</p>` : '');
     const assuranceDetail = assurance ? `
       <strong>Assurance status</strong><p>${esc(assurance.status)}</p>
       <strong>Affected assets</strong>${list(assurance.asset_ids, item => `<code>${esc(item)}</code>`)}
@@ -388,10 +536,16 @@ HTML_TEMPLATE = r"""<!doctype html>
       <strong>Blocked by</strong>${list(node.blocked_by, item => esc(item))}
       <strong>Audit gates</strong>${list(node.audit_gates, item => esc(item))}
       <strong>Acceptance</strong>${list(node.acceptance_criteria, item => `<code>${esc(item.id)}</code> — ${esc(item.description)}`)}
+      ${pause}
       ${assuranceDetail}
       ${source}`;
   }
   function choose(id) { selected = id; select.value = id; render(); }
+  function setFilter(nextFilter, rerender = true) {
+    filter = nextFilter;
+    document.querySelectorAll('[data-filter]').forEach(item => item.setAttribute('aria-pressed', String(item.dataset.filter === filter)));
+    if (rerender) render();
+  }
   select.addEventListener('change', event => choose(event.target.value));
   document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
     view = button.dataset.view;
@@ -399,9 +553,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     render();
   }));
   document.querySelectorAll('[data-filter]').forEach(button => button.addEventListener('click', () => {
-    filter = button.dataset.filter;
-    document.querySelectorAll('[data-filter]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-    render();
+    setFilter(button.dataset.filter);
   }));
   document.querySelectorAll('[data-overlay]').forEach(button => {
     if (!data.assurance) button.disabled = true;
@@ -412,11 +564,59 @@ HTML_TEMPLATE = r"""<!doctype html>
       render();
     });
   });
+__LIVE_SCRIPT__
+  syncChrome();
   render();
 })();
 </script>
 </body>
 </html>
+"""
+
+
+LIVE_SCRIPT = r"""
+  const liveStatus = document.getElementById('live-status');
+  liveStatus.hidden = false;
+  let liveEtag = null;
+  function setLiveStatus(mode, message, detail = '') {
+    liveStatus.className = `live-status ${mode}`;
+    liveStatus.textContent = message;
+    liveStatus.title = detail;
+  }
+  async function refreshLiveGraph() {
+    setLiveStatus('syncing', 'Live · syncing…');
+    const headers = liveEtag ? {'If-None-Match': liveEtag} : {};
+    try {
+      const response = await fetch('/api/graph', {cache: 'no-store', headers});
+      if (response.status === 304) {
+        setLiveStatus('connected', `Live · graph ${data.graph_version} · up to date`);
+        return;
+      }
+      if (!response.ok) throw new Error(`Graph request failed (${response.status})`);
+      const nextData = await response.json();
+      liveEtag = response.headers.get('ETag');
+      applyData(nextData);
+      setLiveStatus('connected', `Live · graph ${data.graph_version} · updated just now`);
+    } catch (error) {
+      setLiveStatus('error', 'Live · refresh failed; showing last valid graph', error.message);
+    }
+  }
+  const events = new EventSource('/events');
+  events.addEventListener('ready', event => {
+    const publication = JSON.parse(event.data);
+    if (publication.graph_version !== data.graph_version) {
+      refreshLiveGraph();
+      return;
+    }
+    liveEtag = `"${publication.etag}"`;
+    setLiveStatus('connected', `Live · graph ${data.graph_version} · connected`);
+  });
+  events.addEventListener('graph', () => refreshLiveGraph());
+  events.addEventListener('graph-error', event => {
+    const publication = JSON.parse(event.data);
+    setLiveStatus('error', 'Live · publication rejected; showing last valid graph', publication.message);
+  });
+  events.onerror = () => setLiveStatus('error', 'Live · reconnecting…', 'The event stream was interrupted.');
 """
 
 
@@ -435,7 +635,7 @@ def write_text_atomic(path: Path, text: str) -> None:
         raise
 
 
-def render_visualization(project: str | Path, output: str | Path | None = None) -> dict[str, Any]:
+def load_visualization_graph(project: str | Path) -> dict[str, Any]:
     paths = project_paths(project)
     _, plan, state = load_project(project)
     manifest, baseline, assurance = load_assurance_bundle(paths, plan)
@@ -448,8 +648,22 @@ def render_visualization(project: str | Path, output: str | Path | None = None) 
     else:
         compile_project(project)
         graph = load_json(paths["graph"])
+    return graph
+
+
+def build_visualization_html(graph: dict[str, Any], *, live: bool = False) -> str:
     graph_json = json.dumps(graph, ensure_ascii=False).replace("</", "<\\/")
-    html = HTML_TEMPLATE.replace("__GRAPH_DATA__", graph_json)
+    return (
+        HTML_TEMPLATE.replace("__LIVE_MODE__", "true" if live else "false")
+        .replace("__LIVE_SCRIPT__", LIVE_SCRIPT if live else "")
+        .replace("__GRAPH_DATA__", graph_json)
+    )
+
+
+def render_visualization(project: str | Path, output: str | Path | None = None) -> dict[str, Any]:
+    paths = project_paths(project)
+    graph = load_visualization_graph(project)
+    html = build_visualization_html(graph)
     destination = Path(output).expanduser().resolve() if output else paths["html"]
     write_text_atomic(destination, html)
     return {
@@ -457,6 +671,6 @@ def render_visualization(project: str | Path, output: str | Path | None = None) 
         "output": str(destination),
         "graph_version": graph["graph_version"],
         "nodes": len(graph["nodes"]),
-        "views": ["star", "pyramid", "dependency"],
+        "views": ["focus", "star", "pyramid", "dependency"],
         "overlays": ["assurance-status", "impact", "inspection", "finding", "scope-drift"],
     }

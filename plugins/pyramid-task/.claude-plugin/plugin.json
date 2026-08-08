@@ -1,7 +1,7 @@
 {
   "name": "pyramid-task",
-  "version": "3.1.0",
-  "description": "Plan and assure brownfield software changes with evidence-backed task pyramids, safe new-intent transitions, impact analysis, inspections, audit gates, migration, dossiers, and interactive overlays.",
+  "version": "3.2.0",
+  "description": "Plan and assure brownfield software changes with evidence-backed task pyramids, durable pause/resume handoffs, safe intent transitions, inspections, audit gates, dossiers, and focused live visualization.",
   "author": {
     "name": "Dr. Merdan Bay",
     "url": "https://github.com/KMerdan"

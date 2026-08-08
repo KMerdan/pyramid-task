@@ -6,6 +6,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import tempfile
 import uuid
 from collections import defaultdict, deque
@@ -78,7 +79,7 @@ AUDIT_BLOCKING = {
     "integration-requires",
     "validation-requires",
 }
-EXECUTION_STATES = {"planned", "working", "implemented", "needs-rework", "superseded"}
+EXECUTION_STATES = {"planned", "working", "paused", "implemented", "needs-rework", "superseded"}
 VERIFICATION_STATES = {"unverified", "pending", "passed", "failed"}
 HEALTH_STATES = {"clear", "at-risk", "blocked"}
 PLAN_LIFECYCLE_STATES = {"active", "completed", "archived"}
@@ -144,6 +145,7 @@ def project_paths(project: str | Path) -> dict[str, Path]:
         "graph": meta / "graph.json",
         "ready": meta / "ready.json",
         "events": meta / "events",
+        "handoffs": meta / "handoffs",
         "reports": meta / "reports",
         "dossiers": meta / "dossiers",
         "archives": meta / "archives",
@@ -243,7 +245,7 @@ def active_claims(state: dict[str, Any]) -> list[str]:
     return sorted(
         nid
         for nid, item in state.get("nodes", {}).items()
-        if item.get("execution") == "working" or item.get("owner")
+        if item.get("execution") in {"working", "paused"} or item.get("owner")
     )
 
 
@@ -318,7 +320,7 @@ def intent_transition_route(project: str | Path) -> dict[str, Any]:
     can_start = False
 
     if claims:
-        blockers.append("Release active claims before changing intents: " + ", ".join(claims))
+        blockers.append("Resolve active claims (working or paused) before changing intents: " + ", ".join(claims))
     elif status == "completed":
         can_start = True
         recommended_action = "preview-new-intent"
@@ -383,6 +385,369 @@ def _is_string_list(value: Any) -> bool:
 def canonical_sha256(value: Any) -> str:
     payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _git_output(root: Path, *args: str) -> str | None:
+    """Return a bounded git query without making the runtime depend on Git."""
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(root), *args],
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=8,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if completed.returncode != 0:
+        return None
+    return completed.stdout.strip()
+
+
+def worktree_fingerprint(root: Path) -> dict[str, Any]:
+    """Hash source-tree state while deliberately excluding Pyramid's own metadata."""
+    inside = _git_output(root, "rev-parse", "--is-inside-work-tree")
+    if inside != "true":
+        return {"kind": "not-git"}
+    head = _git_output(root, "rev-parse", "HEAD")
+    branch = _git_output(root, "branch", "--show-current")
+    diff_args = ("diff", "--binary", "--", ".", ":(exclude).pyramid/**")
+    staged_args = ("diff", "--cached", "--binary", "--", ".", ":(exclude).pyramid/**")
+    untracked = _git_output(
+        root,
+        "ls-files",
+        "--others",
+        "--exclude-standard",
+        "--",
+        ".",
+        ":(exclude).pyramid/**",
+    )
+    return {
+        "kind": "git",
+        "head": head,
+        "branch": branch or None,
+        "unstaged_sha256": hashlib.sha256((_git_output(root, *diff_args) or "").encode("utf-8")).hexdigest(),
+        "staged_sha256": hashlib.sha256((_git_output(root, *staged_args) or "").encode("utf-8")).hexdigest(),
+        "untracked_sha256": hashlib.sha256((untracked or "").encode("utf-8")).hexdigest(),
+    }
+
+
+HANDOFF_DRAFT_FIELDS = (
+    "progress",
+    "changed_files",
+    "changed_assets",
+    "checks",
+    "decisions",
+    "assumptions",
+    "blockers",
+    "risks",
+    "next_steps",
+    "context_references",
+    "external_session_refs",
+    "running_resources",
+)
+
+
+def _validate_handoff_draft(draft: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    allowed_fields = {"schema", "summary", "recommended_first_action", *HANDOFF_DRAFT_FIELDS}
+    unsupported = sorted(set(draft) - allowed_fields)
+    if unsupported:
+        errors.append("handoff contains unsupported fields: " + ", ".join(unsupported))
+    if draft.get("schema") != "pyramid-handoff-draft-v1":
+        errors.append("handoff.schema must be pyramid-handoff-draft-v1")
+    for field in ("summary", "recommended_first_action"):
+        if not isinstance(draft.get(field), str) or not draft[field].strip():
+            errors.append(f"handoff.{field} must be a non-empty string")
+    for field in HANDOFF_DRAFT_FIELDS:
+        if not isinstance(draft.get(field), list):
+            errors.append(f"handoff.{field} must be an array")
+    if isinstance(draft.get("changed_files"), list) and not _is_string_list(draft["changed_files"]):
+        errors.append("handoff.changed_files must contain strings")
+    if isinstance(draft.get("changed_assets"), list) and not _is_string_list(draft["changed_assets"]):
+        errors.append("handoff.changed_assets must contain strings")
+    if isinstance(draft.get("progress"), list) and not _is_string_list(draft["progress"]):
+        errors.append("handoff.progress must contain strings")
+    if isinstance(draft.get("assumptions"), list) and not _is_string_list(draft["assumptions"]):
+        errors.append("handoff.assumptions must contain strings")
+    if isinstance(draft.get("blockers"), list) and not _is_string_list(draft["blockers"]):
+        errors.append("handoff.blockers must contain strings")
+    if isinstance(draft.get("risks"), list) and not _is_string_list(draft["risks"]):
+        errors.append("handoff.risks must contain strings")
+    if isinstance(draft.get("next_steps"), list) and not _is_string_list(draft["next_steps"]):
+        errors.append("handoff.next_steps must contain strings")
+    elif isinstance(draft.get("next_steps"), list) and not draft["next_steps"]:
+        errors.append("handoff.next_steps must contain at least one next step")
+    if isinstance(draft.get("context_references"), list) and not _is_string_list(draft["context_references"]):
+        errors.append("handoff.context_references must contain strings")
+    if isinstance(draft.get("external_session_refs"), list) and not _is_string_list(draft["external_session_refs"]):
+        errors.append("handoff.external_session_refs must contain strings")
+    for field in ("checks", "decisions", "running_resources"):
+        if isinstance(draft.get(field), list) and not all(isinstance(item, dict) for item in draft[field]):
+            errors.append(f"handoff.{field} must contain objects")
+    for index, check in enumerate(draft.get("checks", [])):
+        if not isinstance(check, dict):
+            continue
+        if set(check) != {"command", "result", "notes"}:
+            errors.append(f"handoff.checks[{index}] has unsupported or missing fields")
+        if not all(isinstance(check.get(field), str) for field in ("command", "result", "notes")):
+            errors.append(f"handoff.checks[{index}] needs string command, result, and notes")
+        elif check["result"] not in {"passed", "failed", "not-run", "partial"}:
+            errors.append(f"handoff.checks[{index}].result is invalid")
+    for index, decision in enumerate(draft.get("decisions", [])):
+        if not isinstance(decision, dict):
+            continue
+        if set(decision) != {"decision", "rationale", "reference"}:
+            errors.append(f"handoff.decisions[{index}] has unsupported or missing fields")
+        if not all(isinstance(decision.get(field), str) for field in ("decision", "rationale", "reference")):
+            errors.append(f"handoff.decisions[{index}] needs string decision, rationale, and reference")
+    for index, resource in enumerate(draft.get("running_resources", [])):
+        if not isinstance(resource, dict):
+            continue
+        if set(resource) != {"description", "status", "resume_command"}:
+            errors.append(f"handoff.running_resources[{index}] has unsupported or missing fields")
+        if not all(isinstance(resource.get(field), str) for field in ("description", "status", "resume_command")):
+            errors.append(f"handoff.running_resources[{index}] needs string description, status, and resume_command")
+    return errors
+
+
+def _handoff_identifier(nid: str) -> str:
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    return f"HANDOFF-{nid}-{stamp}-{uuid.uuid4().hex[:8].upper()}"
+
+
+def _handoff_path(paths: dict[str, Path], handoff_id: str) -> Path:
+    if not re.fullmatch(r"HANDOFF-[A-Z0-9-]+", handoff_id):
+        raise PyramidError(f"Invalid handoff identifier: {handoff_id}")
+    return paths["handoffs"] / f"{handoff_id}.json"
+
+
+def _handoff_markdown(handoff: dict[str, Any]) -> str:
+    def lines(values: list[Any]) -> str:
+        if not values:
+            return "- None"
+        rendered = []
+        for value in values:
+            if isinstance(value, str):
+                rendered.append(f"- {value}")
+            else:
+                rendered.append(f"- `{json.dumps(value, ensure_ascii=False, sort_keys=True)}`")
+        return "\n".join(rendered)
+
+    return f"""<!-- Generated by Pyramid Task V3.2. The JSON record is canonical. -->
+# Handoff: {handoff['task']}
+
+## Resume Contract
+
+- Handoff: `{handoff['id']}`
+- Plan: `{handoff['plan_id']}` at graph version `{handoff['graph_version']}`
+- Paused by: `{handoff['actor']}` at `{handoff['created_at']}`
+- Mode: `{handoff['pause_mode']}`
+- Resume deadline: `{handoff['resume_deadline'] or 'None'}`
+- Reason: {handoff['reason']}
+
+## Summary
+
+{handoff['summary']}
+
+## Recommended First Action
+
+{handoff['recommended_first_action']}
+
+## Progress
+
+{lines(handoff['progress'])}
+
+## Changed Files and Assets
+
+### Files
+
+{lines(handoff['changed_files'])}
+
+### Assets
+
+{lines(handoff['changed_assets'])}
+
+## Checks, Decisions, and Risks
+
+### Checks
+
+{lines(handoff['checks'])}
+
+### Decisions
+
+{lines(handoff['decisions'])}
+
+### Assumptions
+
+{lines(handoff['assumptions'])}
+
+### Blockers
+
+{lines(handoff['blockers'])}
+
+### Risks
+
+{lines(handoff['risks'])}
+
+## Next Steps
+
+{lines(handoff['next_steps'])}
+
+## Context References
+
+{lines(handoff['context_references'])}
+
+## External Sessions and Running Resources
+
+### External Sessions
+
+{lines(handoff['external_session_refs'])}
+
+### Running Resources
+
+{lines(handoff['running_resources'])}
+"""
+
+
+def _handoff_record_errors(
+    handoff: dict[str, Any],
+    *,
+    plan_id: str | None = None,
+    nid: str | None = None,
+) -> list[str]:
+    errors: list[str] = []
+    if handoff.get("schema") != "pyramid-handoff-v1":
+        errors.append("handoff schema must be pyramid-handoff-v1")
+    for field in ("id", "plan_id", "task", "actor", "pause_mode", "reason", "created_at", "summary", "recommended_first_action"):
+        if not isinstance(handoff.get(field), str) or not handoff[field].strip():
+            errors.append(f"handoff.{field} must be a non-empty string")
+    if handoff.get("pause_mode") not in {"hold", "handoff"}:
+        errors.append("handoff.pause_mode must be hold or handoff")
+    if handoff.get("resume_deadline") is not None and not isinstance(handoff.get("resume_deadline"), str):
+        errors.append("handoff.resume_deadline must be a string or null")
+    if not isinstance(handoff.get("graph_version"), int) or handoff.get("graph_version", 0) < 1:
+        errors.append("handoff.graph_version must be a positive integer")
+    for field in HANDOFF_DRAFT_FIELDS:
+        if not isinstance(handoff.get(field), list):
+            errors.append(f"handoff.{field} must be an array")
+    if not isinstance(handoff.get("fingerprint"), dict):
+        errors.append("handoff.fingerprint must be an object")
+    else:
+        fingerprint = handoff["fingerprint"]
+        if not isinstance(fingerprint.get("plan_sha256"), str):
+            errors.append("handoff.fingerprint.plan_sha256 must be a string")
+        for field in ("baseline_sha256", "assurance_sha256"):
+            if fingerprint.get(field) is not None and not isinstance(fingerprint.get(field), str):
+                errors.append(f"handoff.fingerprint.{field} must be a string or null")
+        if not isinstance(fingerprint.get("worktree"), dict):
+            errors.append("handoff.fingerprint.worktree must be an object")
+    draft_view = {"schema": "pyramid-handoff-draft-v1"}
+    for field in ("summary", "recommended_first_action", *HANDOFF_DRAFT_FIELDS):
+        draft_view[field] = handoff.get(field)
+    errors.extend(_validate_handoff_draft(draft_view))
+    if handoff.get("pause_mode") == "hold" and not handoff.get("resume_deadline"):
+        errors.append("hold handoff requires resume_deadline")
+    if handoff.get("pause_mode") == "handoff" and handoff.get("resume_deadline") is not None:
+        errors.append("transfer handoff must not retain a resume_deadline")
+    if plan_id is not None and handoff.get("plan_id") != plan_id:
+        errors.append("handoff plan_id does not match the current plan")
+    if nid is not None and handoff.get("task") != nid:
+        errors.append("handoff task does not match the paused node")
+    return errors
+
+
+def handoff_validation_errors(
+    paths: dict[str, Path], plan: dict[str, Any], state: dict[str, Any]
+) -> list[str]:
+    errors: list[str] = []
+    records: dict[str, dict[str, Any]] = {}
+    event_hashes: dict[str, tuple[str | None, str | None]] = {}
+    if paths["events"].exists():
+        for event_path in sorted(paths["events"].glob("*.json")):
+            try:
+                event = load_json(event_path)
+            except PyramidError as exc:
+                errors.append(str(exc))
+                continue
+            if event.get("type") != "task.paused":
+                continue
+            payload = event.get("payload", {})
+            if isinstance(payload, dict) and isinstance(payload.get("handoff_id"), str):
+                event_hashes[payload["handoff_id"]] = (
+                    payload.get("handoff_sha256"),
+                    event.get("node"),
+                )
+    if paths["handoffs"].exists():
+        for path in sorted(paths["handoffs"].glob("*.json")):
+            try:
+                handoff = load_json(path)
+            except PyramidError as exc:
+                errors.append(str(exc))
+                continue
+            handoff_id = handoff.get("id")
+            if handoff_id != path.stem:
+                errors.append(f"{path.name}: handoff.id must match its filename")
+            errors.extend(
+                f"{path.name}: {error}"
+                for error in _handoff_record_errors(handoff, plan_id=plan["plan_id"])
+            )
+            if isinstance(handoff_id, str):
+                records[handoff_id] = handoff
+                event_hash = event_hashes.get(handoff_id)
+                if event_hash is None:
+                    errors.append(f"{path.name}: canonical handoff has no task.paused event")
+                else:
+                    expected_hash, event_node = event_hash
+                    if expected_hash != canonical_sha256(handoff):
+                        errors.append(f"{path.name}: content hash no longer matches task.paused")
+                    if event_node != handoff.get("task"):
+                        errors.append(f"{path.name}: task.paused node does not match handoff.task")
+    for handoff_id in sorted(set(event_hashes) - set(records)):
+        errors.append(f"task.paused event references missing handoff {handoff_id}")
+    for nid, item in state.get("nodes", {}).items():
+        handoff_id = item.get("active_handoff_id")
+        if item.get("execution") != "paused":
+            continue
+        if not isinstance(handoff_id, str):
+            continue
+        handoff = records.get(handoff_id)
+        if handoff is None:
+            errors.append(f"{nid}: missing active handoff file for {handoff_id}")
+            continue
+        errors.extend(f"{nid}: {error}" for error in _handoff_record_errors(handoff, plan_id=plan["plan_id"], nid=nid))
+        for state_field, handoff_field in (
+            ("paused_at", "created_at"),
+            ("paused_by", "actor"),
+            ("pause_mode", "pause_mode"),
+            ("resume_deadline", "resume_deadline"),
+        ):
+            if item.get(state_field) != handoff.get(handoff_field):
+                errors.append(f"{nid}: state.{state_field} does not match the active handoff")
+    return errors
+
+
+def _handoff_fingerprint(paths: dict[str, Path]) -> dict[str, Any]:
+    return {
+        "plan_sha256": _file_sha256(paths["plan"]),
+        "baseline_sha256": _file_sha256(paths["baseline"]) if paths["baseline"].exists() else None,
+        "assurance_sha256": _file_sha256(paths["assurance"]) if paths["assurance"].exists() else None,
+        "worktree": worktree_fingerprint(paths["root"]),
+    }
+
+
+def _handoff_drift(paths: dict[str, Path], state: dict[str, Any], handoff: dict[str, Any]) -> list[str]:
+    drift: list[str] = []
+    if handoff.get("graph_version") != state.get("graph_version"):
+        drift.append(
+            f"graph version changed from {handoff.get('graph_version')} to {state.get('graph_version')}"
+        )
+    current = _handoff_fingerprint(paths)
+    expected = handoff.get("fingerprint", {})
+    for key in ("plan_sha256", "baseline_sha256", "assurance_sha256", "worktree"):
+        if expected.get(key) != current.get(key):
+            drift.append(f"{key} changed since the handoff")
+    return drift
 
 
 def _cycle(nodes: Iterable[str], adjacency: dict[str, list[str]]) -> list[str] | None:
@@ -764,12 +1129,26 @@ def initial_node_state(node: dict[str, Any], now: str | None = None) -> dict[str
         "owner": None,
         "lease_expires_at": None,
         "work_origin": None,
+        "active_handoff_id": None,
+        "paused_at": None,
+        "paused_by": None,
+        "pause_mode": None,
+        "resume_deadline": None,
+        "last_handoff": None,
         "blocker": None,
         "updated_at": timestamp,
         "last_result": None,
         "last_audit": None,
         "last_reopen": None,
     }
+
+
+def clear_active_pause(item: dict[str, Any]) -> None:
+    item["active_handoff_id"] = None
+    item["paused_at"] = None
+    item["paused_by"] = None
+    item["pause_mode"] = None
+    item["resume_deadline"] = None
 
 
 def validate_state(plan: dict[str, Any], state: dict[str, Any]) -> list[str]:
@@ -810,10 +1189,33 @@ def validate_state(plan: dict[str, Any], state: dict[str, Any]) -> list[str]:
             errors.append(f"{nid}: invalid verification state")
         if item.get("health") not in HEALTH_STATES:
             errors.append(f"{nid}: invalid health state")
-        if item.get("execution") == "working" and not item.get("owner"):
+        execution = item.get("execution")
+        if execution == "working" and not item.get("owner"):
             errors.append(f"{nid}: working node needs an owner")
-        if item.get("execution") != "working" and item.get("owner"):
-            errors.append(f"{nid}: only working nodes may have an owner")
+        if execution == "paused":
+            if not item.get("active_handoff_id"):
+                errors.append(f"{nid}: paused node needs an active_handoff_id")
+            if not item.get("paused_at") or not item.get("paused_by"):
+                errors.append(f"{nid}: paused node needs pause provenance")
+            mode = item.get("pause_mode")
+            if mode not in {"hold", "handoff"}:
+                errors.append(f"{nid}: paused node needs pause_mode hold or handoff")
+            if mode == "hold":
+                if not item.get("owner"):
+                    errors.append(f"{nid}: hold pause must retain its owner")
+                elif item.get("owner") != item.get("paused_by"):
+                    errors.append(f"{nid}: hold pause owner must match paused_by")
+                if not item.get("resume_deadline"):
+                    errors.append(f"{nid}: hold pause needs a resume deadline")
+                elif item.get("lease_expires_at") != item.get("resume_deadline"):
+                    errors.append(f"{nid}: hold lease must expire at its resume deadline")
+            elif item.get("owner"):
+                errors.append(f"{nid}: handoff pause must not retain an owner")
+        elif execution != "working":
+            if item.get("owner"):
+                errors.append(f"{nid}: only working or hold-paused nodes may have an owner")
+            if item.get("active_handoff_id"):
+                errors.append(f"{nid}: only paused nodes may have an active_handoff_id")
     if lifecycle_status(state) in {"completed", "archived"} and active_claims(state):
         errors.append(f"{lifecycle_status(state)} plans cannot contain active claims")
     return errors
@@ -824,7 +1226,12 @@ def load_project(project: str | Path, check: bool = True) -> tuple[dict[str, Pat
     plan = load_json(paths["plan"])
     state = load_json(paths["state"])
     if check:
-        errors = validate_plan(plan) + validate_state(plan, state) + assurance_validation_errors(paths, plan)
+        errors = (
+            validate_plan(plan)
+            + validate_state(plan, state)
+            + assurance_validation_errors(paths, plan)
+            + handoff_validation_errors(paths, plan, state)
+        )
         if errors:
             raise PyramidError("Project validation failed:\n- " + "\n- ".join(errors))
     return paths, plan, state
@@ -863,6 +1270,8 @@ def availability(plan: dict[str, Any], state: dict[str, Any], node: dict[str, An
         return "not-selected"
     if item["health"] == "blocked":
         return "blocked"
+    if item["execution"] == "paused":
+        return "paused"
     if item["execution"] == "working":
         return "working"
     if item["execution"] == "implemented":
@@ -954,6 +1363,13 @@ def task_packet(
         "audit_gates": gates,
         "owner": item["owner"],
         "lease_expires_at": item["lease_expires_at"],
+        "pause": {
+            "active_handoff_id": item.get("active_handoff_id"),
+            "paused_at": item.get("paused_at"),
+            "paused_by": item.get("paused_by"),
+            "mode": item.get("pause_mode"),
+            "resume_deadline": item.get("resume_deadline"),
+        },
         "completion_report_schema": "agent-result-v1",
     }
     if baseline is not None and assurance is not None:
@@ -1185,7 +1601,6 @@ def compile_project(project: str | Path, *, allow_archived: bool = False) -> dic
     by_id = node_map(plan)
     for item in snapshot["nodes"]:
         item["source_path"] = str(node_doc_path(paths, by_id[item["id"]]).relative_to(paths["root"]))
-    write_json(paths["graph"], snapshot)
     ready_packets = [
         task_packet(plan, state, node["id"], baseline, assurance)
         for node in plan["nodes"]
@@ -1287,6 +1702,9 @@ def compile_project(project: str | Path, *, allow_archived: bool = False) -> dic
         ]
     )
     (paths["docs"] / "README.md").write_text("\n".join(readme_lines), encoding="utf-8")
+    # Publish the graph last. Live readers treat its atomic replacement as proof that
+    # every other generated projection for this canonical version is complete.
+    write_json(paths["graph"], snapshot)
     return {
         "graph": str(paths["graph"]),
         "ready": str(paths["ready"]),
@@ -1829,6 +2247,259 @@ def take_task(
     }
 
 
+def pause_task(
+    project: str | Path,
+    nid: str,
+    actor: str,
+    reason: str,
+    handoff_path: str | Path,
+    *,
+    mode: str = "hold",
+    resume_minutes: int = 60,
+    expected_version: int | None = None,
+) -> dict[str, Any]:
+    """Pause an owned task and persist a complete, immutable continuation record."""
+    if mode not in {"hold", "handoff"}:
+        raise PyramidError("pause mode must be hold or handoff")
+    if not reason.strip():
+        raise PyramidError("pause requires a non-empty reason")
+    if mode == "hold" and resume_minutes < 1:
+        raise PyramidError("resume-minutes must be positive for a hold pause")
+    draft = load_json(Path(handoff_path).expanduser().resolve())
+    draft_errors = _validate_handoff_draft(draft)
+    if draft_errors:
+        raise PyramidError("Invalid handoff draft:\n- " + "\n- ".join(draft_errors))
+    paths = project_paths(project)
+    with project_lock(paths):
+        paths, plan, state = load_project(project)
+        check_expected_version(state, expected_version)
+        require_active(state, "pause work")
+        nodes = node_map(plan)
+        if nid not in nodes:
+            raise PyramidError(f"Unknown node: {nid}")
+        node = nodes[nid]
+        item = state["nodes"][nid]
+        if node["kind"] not in EXECUTABLE_KINDS:
+            raise PyramidError(f"{nid} is not an executable task")
+        if item.get("execution") != "working" or item.get("owner") != actor:
+            raise PyramidError(f"{actor} must hold an active lease for {nid} before pausing it")
+        expires_at = parse_time(item.get("lease_expires_at"))
+        if expires_at is not None and expires_at <= datetime.now(timezone.utc):
+            raise PyramidError(f"{nid} has an expired lease and cannot be paused by its former owner")
+
+        pause_time = utc_now()
+        deadline = (
+            (datetime.now(timezone.utc) + timedelta(minutes=resume_minutes)).isoformat().replace("+00:00", "Z")
+            if mode == "hold"
+            else None
+        )
+        handoff_id = _handoff_identifier(nid)
+        handoff = {
+            "schema": "pyramid-handoff-v1",
+            "id": handoff_id,
+            "plan_id": plan["plan_id"],
+            "task": nid,
+            "graph_version": state["graph_version"] + 1,
+            "actor": actor,
+            "pause_mode": mode,
+            "reason": reason,
+            "created_at": pause_time,
+            "resume_deadline": deadline,
+            "summary": draft["summary"].strip(),
+            "progress": copy.deepcopy(draft["progress"]),
+            "changed_files": copy.deepcopy(draft["changed_files"]),
+            "changed_assets": copy.deepcopy(draft["changed_assets"]),
+            "checks": copy.deepcopy(draft["checks"]),
+            "decisions": copy.deepcopy(draft["decisions"]),
+            "assumptions": copy.deepcopy(draft["assumptions"]),
+            "blockers": copy.deepcopy(draft["blockers"]),
+            "risks": copy.deepcopy(draft["risks"]),
+            "next_steps": copy.deepcopy(draft["next_steps"]),
+            "recommended_first_action": draft["recommended_first_action"].strip(),
+            "context_references": copy.deepcopy(draft["context_references"]),
+            "external_session_refs": copy.deepcopy(draft["external_session_refs"]),
+            "running_resources": copy.deepcopy(draft["running_resources"]),
+            "fingerprint": _handoff_fingerprint(paths),
+        }
+        handoff_errors = _handoff_record_errors(handoff, plan_id=plan["plan_id"], nid=nid)
+        if handoff_errors:
+            raise PyramidError("Generated handoff is invalid:\n- " + "\n- ".join(handoff_errors))
+        handoff_json = _handoff_path(paths, handoff_id)
+        handoff_markdown = handoff_json.with_suffix(".md")
+        write_json(handoff_json, handoff)
+        handoff_markdown.write_text(_handoff_markdown(handoff), encoding="utf-8")
+
+        before = copy.deepcopy(item)
+        item["execution"] = "paused"
+        item["owner"] = actor if mode == "hold" else None
+        item["lease_expires_at"] = deadline if mode == "hold" else None
+        item["active_handoff_id"] = handoff_id
+        item["paused_at"] = pause_time
+        item["paused_by"] = actor
+        item["pause_mode"] = mode
+        item["resume_deadline"] = deadline
+        item["last_handoff"] = {
+            "id": handoff_id,
+            "paused_at": pause_time,
+            "paused_by": actor,
+            "mode": mode,
+            "resumed_at": None,
+            "resumed_by": None,
+        }
+        item["updated_at"] = pause_time
+        event = commit_event(
+            paths,
+            state,
+            actor=actor,
+            event_type="task.paused",
+            node=nid,
+            before=before,
+            after=copy.deepcopy(item),
+            payload={
+                "reason": reason,
+                "mode": mode,
+                "resume_deadline": deadline,
+                "handoff_id": handoff_id,
+                "handoff_path": str(handoff_json.relative_to(paths["root"])),
+                "handoff_sha256": canonical_sha256(handoff),
+            },
+        )
+    compiled = compile_project(project)
+    paths, plan, state = load_project(project)
+    _, baseline, assurance = load_assurance_bundle(paths, plan)
+    return {
+        "status": "paused",
+        "event": event,
+        "packet": task_packet(plan, state, nid, baseline, assurance),
+        "handoff": {
+            "id": handoff_id,
+            "json": str(handoff_json),
+            "markdown": str(handoff_markdown),
+            "resume_deadline": deadline,
+        },
+        **compiled,
+    }
+
+
+def resume_task(
+    project: str | Path,
+    nid: str,
+    actor: str,
+    *,
+    handoff_id: str | None = None,
+    lease_minutes: int = 120,
+    accept_stale: bool = False,
+    takeover: bool = False,
+    expected_version: int | None = None,
+) -> dict[str, Any]:
+    """Resume a paused task only after its recorded continuation context is checked."""
+    if lease_minutes < 1:
+        raise PyramidError("lease-minutes must be positive")
+    paths = project_paths(project)
+    with project_lock(paths):
+        paths, plan, state = load_project(project)
+        check_expected_version(state, expected_version)
+        require_active(state, "resume work")
+        nodes = node_map(plan)
+        if nid not in nodes:
+            raise PyramidError(f"Unknown node: {nid}")
+        item = state["nodes"][nid]
+        if item.get("execution") != "paused":
+            raise PyramidError(f"{nid} is not paused")
+        active_handoff_id = item.get("active_handoff_id")
+        if not isinstance(active_handoff_id, str):
+            raise PyramidError(f"{nid} has no active handoff record")
+        if handoff_id and handoff_id != active_handoff_id:
+            raise PyramidError(f"{handoff_id} is not the active handoff for {nid}")
+        handoff = load_json(_handoff_path(paths, active_handoff_id))
+        errors = _handoff_record_errors(handoff, plan_id=plan["plan_id"], nid=nid)
+        if errors:
+            raise PyramidError("Invalid active handoff:\n- " + "\n- ".join(errors))
+
+        mode = handoff.get("pause_mode")
+        deadline = parse_time(handoff.get("resume_deadline"))
+        if mode == "hold" and actor != item.get("paused_by"):
+            if deadline is None or deadline > datetime.now(timezone.utc) or not takeover:
+                raise PyramidError(
+                    f"{nid} is held by {item.get('paused_by')}; only that actor may resume it before its deadline"
+                )
+        if item.get("health") == "blocked":
+            raise PyramidError(f"{nid} is blocked; resolve or clear the blocker before resuming")
+        blocked_by = start_blockers(plan, state, nodes[nid])
+        if blocked_by:
+            raise PyramidError(f"{nid} cannot resume because dependencies are not verified: {', '.join(blocked_by)}")
+        drift = _handoff_drift(paths, state, handoff)
+        if drift and not accept_stale:
+            return {
+                "status": "stale-handoff",
+                "task": nid,
+                "handoff_id": active_handoff_id,
+                "drift": drift,
+                "next_action": "Review the changed graph or worktree, then resume with --accept-stale if the handoff remains safe.",
+            }
+
+        before = copy.deepcopy(item)
+        resumed_at = utc_now()
+        item["execution"] = "working"
+        item["owner"] = actor
+        item["lease_expires_at"] = (
+            datetime.now(timezone.utc) + timedelta(minutes=lease_minutes)
+        ).isoformat().replace("+00:00", "Z")
+        item["active_handoff_id"] = None
+        item["paused_at"] = None
+        item["paused_by"] = None
+        item["pause_mode"] = None
+        item["resume_deadline"] = None
+        item["last_handoff"] = {
+            "id": active_handoff_id,
+            "paused_at": handoff["created_at"],
+            "paused_by": handoff["actor"],
+            "mode": handoff["pause_mode"],
+            "resumed_at": resumed_at,
+            "resumed_by": actor,
+            "accepted_stale_drift": drift,
+        }
+        item["updated_at"] = resumed_at
+        event = commit_event(
+            paths,
+            state,
+            actor=actor,
+            event_type="task.resumed",
+            node=nid,
+            before=before,
+            after=copy.deepcopy(item),
+            payload={
+                "handoff_id": active_handoff_id,
+                "handoff_sha256": canonical_sha256(handoff),
+                "lease_minutes": lease_minutes,
+                "takeover": takeover,
+                "accepted_stale_drift": drift,
+            },
+        )
+    compile_project(project)
+    paths, plan, state = load_project(project)
+    _, baseline, assurance = load_assurance_bundle(paths, plan)
+    packet = task_packet(plan, state, nid, baseline, assurance)
+    packet["handoff"] = {
+        "id": active_handoff_id,
+        "path": str(_handoff_path(paths, active_handoff_id)),
+        "summary": handoff["summary"],
+        "progress": handoff["progress"],
+        "changed_files": handoff["changed_files"],
+        "checks": handoff["checks"],
+        "decisions": handoff["decisions"],
+        "blockers": handoff["blockers"],
+        "risks": handoff["risks"],
+        "next_steps": handoff["next_steps"],
+        "recommended_first_action": handoff["recommended_first_action"],
+        "context_references": handoff["context_references"],
+        "external_session_refs": handoff["external_session_refs"],
+        "running_resources": handoff["running_resources"],
+        "accepted_stale_drift": drift,
+    }
+    return {"status": "resumed", "event": event, "packet": packet}
+
+
 def _validate_agent_result(result: dict[str, Any], node: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if result.get("schema") != "agent-result-v1":
@@ -2024,6 +2695,8 @@ def update_task(
         if nid not in nodes:
             raise PyramidError(f"Unknown node: {nid}")
         item = state["nodes"][nid]
+        if item.get("execution") == "paused":
+            raise PyramidError(f"{nid} is paused; resume it before recording an update")
         if item.get("owner") != actor:
             raise PyramidError(f"{actor} does not own {nid}")
         before = copy.deepcopy(item)
@@ -2383,6 +3056,8 @@ def audit_node(
             if prerequisite_errors:
                 raise PyramidError("Audit prerequisites are not satisfied:\n- " + "\n- ".join(prerequisite_errors))
         item = state["nodes"][nid]
+        if item.get("execution") == "paused":
+            raise PyramidError(f"{nid} is paused; resume it before recording an audit")
         before = copy.deepcopy(item)
         invalidated: list[str] = []
         stale_inspections: list[str] = []
@@ -2531,8 +3206,8 @@ def _expansion_errors(
     if edges_to(plan, target, {"contributes-to"}):
         errors.append(f"{target}: task already has contributing children; use replan for an existing subtree")
     item = state["nodes"][target]
-    if item.get("owner") or item.get("execution") == "working":
-        errors.append(f"{target}: release the active claim before expansion")
+    if item.get("owner") or item.get("execution") in {"working", "paused"}:
+        errors.append(f"{target}: release the active claim, or resume the paused handoff, before expansion")
     if item.get("execution") not in {"planned", "needs-rework"}:
         errors.append(f"{target}: reopen implemented or verified work before expansion")
     if proposal.get("base_graph_version") != state.get("graph_version"):
@@ -2919,6 +3594,8 @@ def replan_project(
                 item["execution"] = "superseded"
                 item["owner"] = None
                 item["lease_expires_at"] = None
+                item["work_origin"] = None
+                clear_active_pause(item)
                 item["health"] = "clear"
             elif nid in current_nodes and (
                 _semantic_node(current_nodes[nid]) != _semantic_node(node)
@@ -2999,8 +3676,8 @@ def reopen_node(
         if node["selection"] != "primary":
             raise PyramidError(f"{nid} is not on the primary path")
         item = state["nodes"][nid]
-        if item["execution"] == "working":
-            raise PyramidError(f"{nid} is actively owned by {item.get('owner')}; release it before reopening")
+        if item["execution"] in {"working", "paused"}:
+            raise PyramidError(f"{nid} has active working or paused context; resolve it before reopening")
         lifecycle = lifecycle_state(state)
         before = {"node": copy.deepcopy(item), "lifecycle": copy.deepcopy(lifecycle)}
         reactivated = status == "completed"
@@ -3423,7 +4100,7 @@ def _copy_current_snapshot(paths: dict[str, Path], destination: Path, manifest: 
         source = paths[key]
         if source.exists():
             shutil.copy2(source, archive_meta / source.name)
-    for key in ("events", "reports", "dossiers"):
+    for key in ("events", "handoffs", "reports", "dossiers"):
         source = paths[key]
         if source.exists():
             shutil.copytree(source, archive_meta / source.name)
@@ -3502,7 +4179,7 @@ def archive_project(
         check_expected_version(state, expected_version)
         claims = active_claims(state)
         if claims:
-            raise PyramidError("Release active claims before archiving: " + ", ".join(claims))
+            raise PyramidError("Resolve active claims (working or paused) before archiving: " + ", ".join(claims))
         lifecycle = lifecycle_state(state)
         if lifecycle["status"] == "archived":
             archive_id = lifecycle.get("archive_id")
@@ -3571,7 +4248,7 @@ def _purge_current(
     preserve_baseline: bool = False,
     preserve_dossiers: bool = False,
 ) -> None:
-    directory_keys = ["events", "reports", "docs"]
+    directory_keys = ["events", "handoffs", "reports", "docs"]
     if not preserve_dossiers:
         directory_keys.append("dossiers")
     for key in directory_keys:
@@ -3923,13 +4600,21 @@ def restore_project(
         for item in restored_state["nodes"].values():
             item["owner"] = None
             item["lease_expires_at"] = None
+            if item["execution"] in {"working", "paused"}:
+                item["execution"] = item.get("work_origin") or "planned"
             item["work_origin"] = None
-            if item["execution"] == "working":
-                item["execution"] = "planned"
+            item["active_handoff_id"] = None
+            item["paused_at"] = None
+            item["paused_by"] = None
+            item["pause_mode"] = None
+            item["resume_deadline"] = None
         write_json(paths["state"], restored_state)
         source_events = source / ".pyramid" / "events"
         if source_events.exists():
             shutil.copytree(source_events, paths["events"])
+        source_handoffs = source / ".pyramid" / "handoffs"
+        if source_handoffs.exists():
+            shutil.copytree(source_handoffs, paths["handoffs"])
         source_reports = source / ".pyramid" / "reports"
         if source_reports.exists():
             shutil.copytree(source_reports, paths["reports"])
@@ -3967,6 +4652,7 @@ def clean_project(project: str | Path) -> dict[str, Any]:
         "baseline": _file_sha256(paths["baseline"]) if paths["baseline"].exists() else None,
         "assurance": _file_sha256(paths["assurance"]) if paths["assurance"].exists() else None,
         "events": sorted((path.name, _file_sha256(path)) for path in paths["events"].glob("*.json")),
+        "handoffs": sorted((path.name, _file_sha256(path)) for path in paths["handoffs"].glob("*")) if paths["handoffs"].exists() else [],
         "reports": sorted((path.name, _file_sha256(path)) for path in paths["reports"].glob("*")) if paths["reports"].exists() else [],
         "dossiers": sorted((path.name, _file_sha256(path)) for path in paths["dossiers"].glob("*")) if paths["dossiers"].exists() else [],
     }
@@ -3987,6 +4673,7 @@ def clean_project(project: str | Path) -> dict[str, Any]:
         and canonical["baseline"] == (_file_sha256(paths["baseline"]) if paths["baseline"].exists() else None)
         and canonical["assurance"] == (_file_sha256(paths["assurance"]) if paths["assurance"].exists() else None)
         and canonical["events"] == sorted((path.name, _file_sha256(path)) for path in paths["events"].glob("*.json"))
+        and canonical["handoffs"] == (sorted((path.name, _file_sha256(path)) for path in paths["handoffs"].glob("*")) if paths["handoffs"].exists() else [])
         and canonical["reports"] == (sorted((path.name, _file_sha256(path)) for path in paths["reports"].glob("*")) if paths["reports"].exists() else [])
         and canonical["dossiers"] == (sorted((path.name, _file_sha256(path)) for path in paths["dossiers"].glob("*")) if paths["dossiers"].exists() else [])
     )
@@ -4015,6 +4702,18 @@ def inspect_lifecycle(project: str | Path) -> dict[str, Any]:
         "closure_ready": lifecycle_status(state) == "active" and not errors,
         "closure_blockers": errors,
         "active_claims": active_claims(state),
+        "paused": [
+            {
+                "task": nid,
+                "handoff_id": item.get("active_handoff_id"),
+                "mode": item.get("pause_mode"),
+                "paused_by": item.get("paused_by"),
+                "paused_at": item.get("paused_at"),
+                "resume_deadline": item.get("resume_deadline"),
+            }
+            for nid, item in sorted(state["nodes"].items())
+            if item.get("execution") == "paused"
+        ],
         "project": copy.deepcopy(manifest) if manifest else {
             "format_version": "legacy-v2",
             "mode": "legacy",
@@ -4033,6 +4732,7 @@ def inspect_project(
     ready: bool = False,
     blocked: bool = False,
     pending_audits: bool = False,
+    paused: bool = False,
     assurance_view: bool = False,
     nid: str | None = None,
 ) -> dict[str, Any]:
@@ -4065,6 +4765,9 @@ def inspect_project(
         ]
         tasks.sort(key=lambda item: (item["wave"], item["level"], item["task"]))
         return {"schema": "pyramid-query-v1", "query": "ready", "graph_version": state["graph_version"], "tasks": tasks}
+    if paused:
+        nodes = [node for node in snapshot["nodes"] if node["availability"] == "paused"]
+        return {"schema": "pyramid-query-v1", "query": "paused", "graph_version": state["graph_version"], "nodes": nodes}
     if blocked:
         nodes = [node for node in snapshot["nodes"] if node["availability"] in {"blocked", "locked"}]
         return {"schema": "pyramid-query-v1", "query": "blocked", "graph_version": state["graph_version"], "nodes": nodes}
@@ -4091,6 +4794,7 @@ def inspect_project(
         "summary": snapshot["summary"],
         "ready": [node["id"] for node in snapshot["nodes"] if node["availability"] in {"ready", "needs-rework"}],
         "working": [node["id"] for node in snapshot["nodes"] if node["availability"] == "working"],
+        "paused": [node["id"] for node in snapshot["nodes"] if node["availability"] == "paused"],
         "blocked": [node["id"] for node in snapshot["nodes"] if node["availability"] in {"blocked", "locked"}],
         "pending_audits": [node["id"] for node in snapshot["nodes"] if node["kind"] == "audit" and node["state"]["verification"] != "passed" and node["selection"] == "primary"],
     }
@@ -4100,7 +4804,12 @@ def validate_project(project: str | Path) -> dict[str, Any]:
     paths = project_paths(project)
     plan = load_json(paths["plan"])
     state = load_json(paths["state"])
-    errors = validate_plan(plan) + validate_state(plan, state) + assurance_validation_errors(paths, plan)
+    errors = (
+        validate_plan(plan)
+        + validate_state(plan, state)
+        + assurance_validation_errors(paths, plan)
+        + handoff_validation_errors(paths, plan, state)
+    )
     manifest = load_json(paths["project"]) if paths["project"].exists() else None
     return {
         "valid": not errors,
