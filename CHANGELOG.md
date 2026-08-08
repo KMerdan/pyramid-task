@@ -4,10 +4,21 @@ All notable changes follow semantic versioning. Serialized task graph and state 
 
 ## Unreleased
 
+## 3.3.0
+
+### Exact context at mutation time
+
+- Add a composite context identity that binds plan ID, plan revision, graph version, and complete runtime state; mutation commands can reject both stale versions and wrong plan generations.
+- Publish canonical file hashes and the latest event through atomic `.pyramid/head.json`, and hash-link new events while preserving legacy event readability.
+- Add compact frontier, blocker, pause, audit, assurance-summary, and bounded event-diff queries; retain full node, assurance, and event detail only on explicit request.
+- Serialize projection compilation and cleanup under the project lock so concurrent agents cannot publish mixed generated views.
+- Route skill prompts through progressive disclosure and carry the exact context guard from query or task packet into mutations.
+
 ### Live, focused visualization
 
 - Add a loopback-only, Host-restricted live visualization server with no-store graph delivery and reconnecting server-sent update events.
-- Refresh only after validated atomic graph publications, preserve browser context, and retain the last valid graph when a publication is rejected.
+- Refresh only after canonical head and graph contexts agree, preserve browser context, and retain the last valid graph when a publication is rejected or delayed.
+- Exclude agent-only contracts and full assurance records from browser payloads, and rerender only for semantic visualization changes.
 - Add a default Focus view, execution summary, recommended-node navigation, human-readable node labels, and changed-node highlighting.
 - Preserve the self-contained static visualization for archives, sharing, and offline inspection.
 

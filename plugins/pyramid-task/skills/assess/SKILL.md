@@ -5,7 +5,7 @@ description: Build or refresh the evidence-backed baseline of an existing softwa
 
 # Assess a Brownfield System
 
-Read `../../references/brownfield-assurance.md`, `../../references/pathfinder-workflow.md`, and `../../references/graph-contract.md` completely before assessment. Follow `../../schemas/baseline.schema.json`; use `../../assets/example-baseline.json` only as a structural example.
+Read `../../references/brownfield-assurance.md` for baseline rules. Read `../../references/pathfinder-workflow.md` only when evidence changes the selected path, and `../../references/graph-contract.md` only when asset relations must be traced to graph dependencies. Follow `../../schemas/baseline.schema.json`; use `../../assets/example-baseline.json` only as structure.
 
 ## Workflow
 
@@ -17,7 +17,7 @@ Read `../../references/brownfield-assurance.md`, `../../references/pathfinder-wo
 
 ```bash
 python3 ../../scripts/pyramid.py assess --project <project-root> --baseline <baseline.json> --actor <actor> --preview --json
-python3 ../../scripts/pyramid.py assess --project <project-root> --baseline <baseline.json> --actor <actor> --apply --expected-version <graph-version> --json
+python3 ../../scripts/pyramid.py assess --project <project-root> --baseline <baseline.json> --actor <actor> --apply --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 6. Report revision, assets, relations, history, unknowns, and inspections made stale by the new baseline. Continue with `pyramid-task:impact`.

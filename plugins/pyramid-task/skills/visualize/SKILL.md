@@ -5,7 +5,7 @@ description: Render an existing Pyramid Task V3 project as a self-contained snap
 
 # Visualize a Pyramid Task Plan
 
-Read `../../references/visualization-contract.md`, `../../references/handoff-contract.md`, `../../references/brownfield-assurance.md`, and `../../references/lifecycle-contract.md` completely before rendering.
+Render first. Read `../../references/visualization-contract.md` only when explaining view semantics, `../../references/handoff-contract.md` only for paused-node details, `../../references/brownfield-assurance.md` only when assurance overlays exist, and `../../references/lifecycle-contract.md` only for lifecycle interpretation.
 
 ## Workflow
 

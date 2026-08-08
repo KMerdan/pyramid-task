@@ -7,7 +7,7 @@ description: Upgrade an active Pyramid Task V2 or V2.1 project to V3 in place wi
 
 Use this skill to continue the current legacy intent. When a completed legacy cluster is followed by a distinct new intent, use `pyramid-task:new-intent`; it composes upgrade, archive, and reset under one approval hash.
 
-Read `../../references/upgrade-contract.md`, `../../references/brownfield-assurance.md`, and `../../references/lifecycle-contract.md` completely before upgrading.
+Read `../../references/upgrade-contract.md`. Load `../../references/brownfield-assurance.md` only when the preview selects brownfield mode, and `../../references/lifecycle-contract.md` only when the current plan is completed or archived.
 
 ## Workflow
 
@@ -22,7 +22,7 @@ python3 ../../scripts/pyramid.py upgrade --project <project-root> --actor <actor
 4. Apply only with explicit approval:
 
 ```bash
-python3 ../../scripts/pyramid.py upgrade --project <project-root> --actor <actor> --from-version 2.1 --mode auto --approved-by <user> --approval-reference <reference> --approved-upgrade-sha256 <preview-hash> --apply --expected-version <graph-version> --json
+python3 ../../scripts/pyramid.py upgrade --project <project-root> --actor <actor> --from-version 2.1 --mode auto --approved-by <user> --approval-reference <reference> --approved-upgrade-sha256 <preview-hash> --apply --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 5. Validate again. Confirm the plan, node states, ownership, prior events, and verified work were preserved. Report the snapshot ID and remaining assurance bridge work.

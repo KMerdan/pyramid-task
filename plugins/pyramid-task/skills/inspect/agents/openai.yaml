@@ -1,4 +1,4 @@
 interface:
   display_name: "Inspect Pyramid Plan"
-  short_description: "Query task paths, readiness, and blockers"
-  default_prompt: "Use $inspect to show what is ready, active, blocked, and left."
+  short_description: "Query exact task context without graph overload"
+  default_prompt: "Use $inspect to answer this question with the smallest exact runtime query, expanding only the relevant node or assurance detail."

@@ -7,14 +7,9 @@ description: Safely start a fresh Pyramid Task intent when no plan exists or aft
 
 Use the runtime's hash-bound transition instead of choosing `create`, `upgrade`, and `reset` by inference.
 
-## Required reading
+## Context routing
 
-Read these files completely:
-
-- `../../references/new-intent-contract.md`
-- `../../references/lifecycle-contract.md`
-- `../../references/upgrade-contract.md`
-- `../create/SKILL.md`
+Read `../../references/new-intent-contract.md`. Load `../../references/lifecycle-contract.md` only when a current plan exists, `../../references/upgrade-contract.md` only for a legacy project, and `../create/SKILL.md` only while drafting the new candidate plan.
 
 ## Workflow
 
@@ -31,7 +26,7 @@ python3 ../../scripts/pyramid.py new-intent --project <project-root> --plan <can
 6. Apply only with the approved hash and provenance:
 
 ```bash
-python3 ../../scripts/pyramid.py new-intent --project <project-root> --plan <candidate-plan.json> --actor <actor> --reason <reason> --from-version 2.1 --mode auto --apply --approved-by <user> --approval-reference <reference> --approved-new-intent-sha256 <preview-hash> --expected-version <graph-version> --json
+python3 ../../scripts/pyramid.py new-intent --project <project-root> --plan <candidate-plan.json> --actor <actor> --reason <reason> --from-version 2.1 --mode auto --apply --approved-by <user> --approval-reference <reference> --approved-new-intent-sha256 <preview-hash> --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 7. Run `validate`, `doctor`, and `inspect --summary`. Report the previous archive, any pre-upgrade snapshot, carried baseline, new plan ID, ready frontier, and remaining assurance gaps.

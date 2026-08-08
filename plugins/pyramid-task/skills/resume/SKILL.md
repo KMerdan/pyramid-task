@@ -5,11 +5,11 @@ description: Resume a paused Pyramid Task V3 executable node from its canonical 
 
 # Resume a Pyramid Task
 
-Read `../../references/agent-contracts.md`, `../../references/handoff-contract.md`, `../../references/brownfield-assurance.md`, and `../../references/lifecycle-contract.md` completely before resuming work.
+Read `../../references/handoff-contract.md`. Load `../../references/agent-contracts.md` only for ownership edge cases, `../../references/brownfield-assurance.md` only when drift includes assurance, and `../../references/lifecycle-contract.md` only if the plan is inactive.
 
 ## Workflow
 
-1. Inspect paused work when the task is not explicit:
+1. Inspect the compact paused frontier when the task is not explicit. Reuse its graph version and context ID for the resume guard:
 
 ```bash
 python3 ../../scripts/pyramid.py inspect --project <project-root> --paused --json
@@ -21,7 +21,8 @@ python3 ../../scripts/pyramid.py lifecycle --project <project-root> --json
 ```bash
 python3 ../../scripts/pyramid.py resume \
   --project <project-root> --node TASK-203 --actor <actor> \
-  --lease-minutes 120 --json
+  --lease-minutes 120 \
+  --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 3. Read the returned handoff-enriched task packet before changing files. Start with `recommended_first_action`, then reconcile changed files, checks, decisions, blockers, risks, and required context.

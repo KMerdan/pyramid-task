@@ -5,19 +5,19 @@ description: Record progress, blockers, risk, release, or implementation complet
 
 # Update a Pyramid Task
 
-Read `../../references/agent-contracts.md`, `../../references/brownfield-assurance.md`, and `../../references/lifecycle-contract.md` completely before preparing a result.
+Read `../../references/agent-contracts.md` before creating a result. Load `../../references/brownfield-assurance.md` only when reporting changed assets or drift, and `../../references/lifecycle-contract.md` only if the plan is inactive.
 
 ## Workflow
 
 1. Confirm the actor owns the active claim and the task packet is current.
 2. Run the task's required checks. Record actual commands, outcomes, every changed file, known `changed_assets`, acceptance evidence, risks, and proposed graph changes in `agent-result-v1` JSON.
-3. Apply exactly one transition:
+3. Apply exactly one transition using the graph version and context ID from the claimed task packet:
 
 ```bash
-python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status implemented --result <result.json> --json
-python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status blocked --reason <reason> --result <result.json> --json
-python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status at-risk --reason <reason> --json
-python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status release --json
+python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status implemented --result <result.json> --expected-version <graph-version> --expected-context <context-id> --json
+python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status blocked --reason <reason> --result <result.json> --expected-version <graph-version> --expected-context <context-id> --json
+python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status at-risk --reason <reason> --expected-version <graph-version> --expected-context <context-id> --json
+python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status release --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 4. Report execution, verification, health, availability, detected scope drift, invalidated assurance, and remaining rework separately.

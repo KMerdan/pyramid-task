@@ -18,6 +18,7 @@ from pyramid_core import (
     create_project,
     expand_project,
     inspect_lifecycle,
+    inspect_changes,
     inspect_project,
     impact_project,
     intent_transition_route,
@@ -43,10 +44,19 @@ def add_project(parser: argparse.ArgumentParser) -> None:
 
 def add_version(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--expected-version", type=int, help="Reject a stale mutation")
+    parser.add_argument("--expected-context", help="Reject a mutation from another plan generation or state")
 
 
 def add_json(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+
+
+def expected_guard(args: argparse.Namespace) -> int | dict[str, Any] | None:
+    context_id = getattr(args, "expected_context", None)
+    graph_version = getattr(args, "expected_version", None)
+    if context_id:
+        return {"graph_version": graph_version, "context_id": context_id}
+    return graph_version
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -159,8 +169,17 @@ def build_parser() -> argparse.ArgumentParser:
     group.add_argument("--pending-audits", action="store_true")
     group.add_argument("--paused", action="store_true")
     group.add_argument("--assurance", action="store_true")
+    group.add_argument("--assurance-summary", action="store_true")
+    group.add_argument("--assurance-detail", action="store_true")
     group.add_argument("--node")
     add_json(inspect)
+
+    diff = sub.add_parser("diff", help="Show compact event changes between graph versions")
+    add_project(diff)
+    diff.add_argument("--from-version", type=int, required=True)
+    diff.add_argument("--to-version", type=int)
+    diff.add_argument("--detail", action="store_true", help="Include complete before, after, and payload values")
+    add_json(diff)
 
     take = sub.add_parser("take", help="Claim a ready task")
     add_project(take)
@@ -322,7 +341,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             approved_by=args.approved_by,
             approval_reference=args.approval_reference,
             approved_new_intent_sha256=args.approved_new_intent_sha256,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "upgrade":
         return upgrade_project(
@@ -334,7 +353,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             approved_by=args.approved_by,
             approval_reference=args.approval_reference,
             approved_upgrade_sha256=args.approved_upgrade_sha256,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "assess":
         return assess_project(
@@ -342,7 +361,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             args.baseline,
             args.actor,
             apply=args.apply,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "impact":
         return impact_project(
@@ -350,7 +369,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             args.assurance,
             args.actor,
             apply=args.apply,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "validate":
         result = validate_project(args.project)
@@ -387,7 +406,16 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             pending_audits=args.pending_audits,
             paused=args.paused,
             assurance_view=args.assurance,
+            assurance_summary_view=args.assurance_summary,
+            assurance_detail=args.assurance_detail,
             nid=args.node,
+        ), 0
+    if args.command == "diff":
+        return inspect_changes(
+            args.project,
+            args.from_version,
+            args.to_version,
+            detail=args.detail,
         ), 0
     if args.command == "take":
         if args.lease_minutes < 1:
@@ -398,7 +426,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             nid=args.node,
             take_next=args.next,
             lease_minutes=args.lease_minutes,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "pause":
         return pause_task(
@@ -409,7 +437,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             args.handoff,
             mode=args.mode,
             resume_minutes=args.resume_minutes,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "resume":
         return resume_task(
@@ -420,7 +448,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             lease_minutes=args.lease_minutes,
             accept_stale=args.accept_stale,
             takeover=args.takeover,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "update":
         return update_task(
@@ -430,7 +458,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             args.status,
             reason=args.reason,
             result_path=args.result,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "audit":
         return audit_node(
@@ -439,7 +467,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             args.actor,
             args.result,
             args.evidence,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "replan":
         return replan_project(
@@ -449,7 +477,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             args.reason,
             apply=args.apply,
             allow_intent_change=args.allow_intent_change,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "expand":
         return expand_project(
@@ -460,7 +488,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             approved_by=args.approved_by,
             approval_reference=args.approval_reference,
             approved_proposal_sha256=args.approved_proposal_sha256,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "reopen":
         return reopen_node(
@@ -469,16 +497,16 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             args.actor,
             args.reason,
             evidence_path=args.evidence,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "close":
-        return close_project(args.project, args.actor, expected_version=args.expected_version), 0
+        return close_project(args.project, args.actor, expected_version=expected_guard(args)), 0
     if args.command == "archive":
         return archive_project(
             args.project,
             args.actor,
             args.reason,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "reset":
         return reset_project(
@@ -486,7 +514,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             args.plan,
             args.actor,
             args.reason,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "restore":
         return restore_project(
@@ -494,7 +522,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             args.archive,
             args.actor,
             args.reason,
-            expected_version=args.expected_version,
+            expected_version=expected_guard(args),
         ), 0
     if args.command == "clean":
         return clean_project(args.project), 0

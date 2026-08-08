@@ -5,15 +5,17 @@ description: Map Pyramid Task V3 graph work to affected brownfield assets, plan 
 
 # Analyze and Reconcile Change Impact
 
-Read `../../references/brownfield-assurance.md`, `../../references/graph-contract.md`, and `../../references/agent-contracts.md` completely before impact analysis. Follow `../../schemas/assurance.schema.json`; use `../../assets/example-assurance.json` only as a structural example.
+Read `../../references/brownfield-assurance.md`. Load `../../references/graph-contract.md` only when tracing transitive graph impact and `../../references/agent-contracts.md` only when reconciling worker results. Follow `../../schemas/assurance.schema.json`; use `../../assets/example-assurance.json` only as structure.
 
 ## Workflow
 
 1. Inspect the current baseline, graph, relevant history, and existing assurance:
 
 ```bash
-python3 ../../scripts/pyramid.py inspect --project <project-root> --assurance --json
+python3 ../../scripts/pyramid.py inspect --project <project-root> --assurance-summary --json
 ```
+
+Request `--assurance-detail` only when you must edit or audit individual baseline and assurance records. `--assurance` remains the backward-compatible full query.
 
 2. Map each executable change and joint gate to directly or transitively affected assets. Record the dependency path, confidence, status, and evidence. Preserve hypotheses until evidence confirms or dismisses them.
 3. Define risk-sensitive inspections for every impacted asset. Record method, required flag, performed result, sufficiency, evidence, and limitations. Add findings and give material findings an explicit resolved or accountable accepted disposition.
@@ -23,7 +25,7 @@ python3 ../../scripts/pyramid.py inspect --project <project-root> --assurance --
 
 ```bash
 python3 ../../scripts/pyramid.py impact --project <project-root> --assurance <assurance.json> --actor <actor> --preview --json
-python3 ../../scripts/pyramid.py impact --project <project-root> --assurance <assurance.json> --actor <actor> --apply --expected-version <graph-version> --json
+python3 ../../scripts/pyramid.py impact --project <project-root> --assurance <assurance.json> --actor <actor> --apply --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 7. Report canonical blockers, ready status, unresolved uncertainty, drift, material findings, and which audits the bundle covers.

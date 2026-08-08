@@ -5,7 +5,7 @@ description: Propose and apply a deeper subtree for a broad executable Pyramid T
 
 # Expand a Pyramid Task
 
-Read `../../references/expansion-contract.md`, `../../references/graph-contract.md`, `../../references/agent-contracts.md`, `../../references/brownfield-assurance.md`, and `../../references/lifecycle-contract.md` completely before proposing expansion. Use `../../assets/example-expansion.json` as a structural example only.
+Read `../../references/expansion-contract.md` and `../../references/graph-contract.md`. Load `../../references/agent-contracts.md` only for changed child contracts, `../../references/brownfield-assurance.md` only when assurance is present, and `../../references/lifecycle-contract.md` only when the plan is not active. Use `../../assets/example-expansion.json` only as structure.
 
 ## Decide whether to propose
 
@@ -40,7 +40,7 @@ python3 ../../scripts/pyramid.py expand --project <project-root> --proposal <exp
 Record the approving user and a durable conversation or task reference:
 
 ```bash
-python3 ../../scripts/pyramid.py expand --project <project-root> --proposal <expansion.json> --actor <actor> --approved-by <user> --approval-reference <reference> --approved-proposal-sha256 <preview-hash> --apply --json
+python3 ../../scripts/pyramid.py expand --project <project-root> --proposal <expansion.json> --actor <actor> --approved-by <user> --approval-reference <reference> --approved-proposal-sha256 <preview-hash> --apply --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 Report the new ready frontier, invalidated proofs and inspections, assurance gaps for new child tasks, and audit path. A child may later be expanded through the same workflow, creating arbitrary depth one reviewed level at a time. Re-run `pyramid-task:impact` before brownfield child audits.
