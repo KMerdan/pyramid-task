@@ -32,6 +32,7 @@ from pyramid_core import (  # noqa: E402
     create_project,
     expand_project,
     expansion_parent_snapshot,
+    inspect_changes,
     inspect_lifecycle,
     inspect_project,
     impact_project,
@@ -237,6 +238,105 @@ class PyramidRuntimeTests(unittest.TestCase):
         with self.assertRaises(PyramidError):
             update_task(self.root, "RESEARCH-101", "worker", "release", expected_version=1)
 
+    def test_composite_context_guard_rejects_another_state_generation(self) -> None:
+        current = inspect_project(self.root, summary=True)["context"]
+        with self.assertRaisesRegex(PyramidError, "Stale context"):
+            take_task(
+                self.root,
+                "worker",
+                nid="RESEARCH-101",
+                expected_version={
+                    "graph_version": current["graph_version"],
+                    "context_id": "CTX-00000000000000000000000000000000",
+                },
+            )
+        taken = take_task(
+            self.root,
+            "worker",
+            nid="RESEARCH-101",
+            expected_version={
+                "graph_version": current["graph_version"],
+                "context_id": current["id"],
+            },
+        )
+        self.assertNotEqual(current["id"], taken["packet"]["context"]["id"])
+
+    def test_head_and_hash_linked_events_detect_out_of_band_changes(self) -> None:
+        take_task(self.root, "worker", nid="RESEARCH-101")
+        head = load_json(self.root / ".pyramid" / "head.json")
+        state = load_json(self.root / ".pyramid" / "state.json")
+        self.assertEqual(head["context"]["id"], state["context_id"])
+        event_paths = sorted((self.root / ".pyramid" / "events").glob("*.json"))
+        self.assertGreaterEqual(len(event_paths), 2)
+        first = load_json(event_paths[0])
+        first["actor"] = "out-of-band-editor"
+        event_paths[0].write_text(json.dumps(first), encoding="utf-8")
+        validation = validate_project(self.root)
+        self.assertFalse(validation["valid"])
+        self.assertTrue(
+            any("event hash" in error or "event chain" in error for error in validation["errors"]),
+            validation["errors"],
+        )
+
+    def test_head_rejects_unpublished_canonical_state(self) -> None:
+        state_path = self.root / ".pyramid" / "state.json"
+        state = load_json(state_path)
+        state["updated_at"] = "2099-01-01T00:00:00Z"
+        state_path.write_text(json.dumps(state), encoding="utf-8")
+        validation = validate_project(self.root)
+        self.assertFalse(validation["valid"])
+        self.assertIn(
+            "canonical files do not match the atomically published head",
+            validation["errors"],
+        )
+        with self.assertRaisesRegex(PyramidError, "atomically published head"):
+            inspect_project(self.root, summary=True)
+
+    def test_context_bound_project_rejects_a_removed_head(self) -> None:
+        (self.root / ".pyramid" / "head.json").unlink()
+        validation = validate_project(self.root)
+        self.assertFalse(validation["valid"])
+        self.assertIn(
+            "context-bound state is missing .pyramid/head.json",
+            validation["errors"],
+        )
+
+    def test_inspection_is_compact_until_detail_is_requested(self) -> None:
+        ready = inspect_project(self.root, ready=True)
+        self.assertNotIn("required_context", ready["tasks"][0])
+        self.assertNotIn("acceptance_criteria", ready["tasks"][0])
+        node = inspect_project(self.root, nid="RESEARCH-101")
+        self.assertIn("required_context", node)
+        self.assertIn("acceptance_criteria", node)
+
+        root = Path(self.temp.name) / "compact-assurance"
+        create_project(
+            root,
+            self.example,
+            "planner",
+            mode="brownfield",
+            baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+            assurance_path=PLUGIN_ROOT / "assets" / "example-assurance.json",
+        )
+        summary = inspect_project(root, assurance_summary_view=True)
+        detail = inspect_project(root, assurance_detail=True)
+        self.assertNotIn("baseline", summary)
+        self.assertNotIn("assurance", summary)
+        self.assertIn("baseline", detail)
+        self.assertIn("assurance", detail)
+
+    def test_change_query_is_compact_by_default_and_detailed_on_demand(self) -> None:
+        take_task(self.root, "worker", nid="RESEARCH-101")
+        update_task(self.root, "RESEARCH-101", "worker", "at-risk", reason="Needs review")
+        compact = inspect_changes(self.root, 1)
+        self.assertEqual([2, 3], [item["graph_version"] for item in compact["changes"]])
+        self.assertNotIn("before", compact["changes"][0])
+        self.assertIn("changed_fields", compact["changes"][0])
+        detailed = inspect_changes(self.root, 1, detail=True)
+        self.assertIn("before", detailed["changes"][0])
+        self.assertIn("after", detailed["changes"][0])
+        self.assertIn("payload", detailed["changes"][0])
+
     def test_pause_resume_persists_handoff_and_blocks_lifecycle_mutation(self) -> None:
         taken = take_task(self.root, "worker", nid="RESEARCH-101")
         draft_path = self.handoff_for()
@@ -312,13 +412,9 @@ class PyramidRuntimeTests(unittest.TestCase):
             self.handoff_for("transfer-handoff.json"),
             mode="handoff",
         )
-        plan = load_json(self.root / ".pyramid" / "plan.json")
-        plan["title"] = "Changed after pause"
-        (self.root / ".pyramid" / "plan.json").write_text(json.dumps(plan), encoding="utf-8")
         source.write_text("value = 2\n", encoding="utf-8")
         stale = resume_task(self.root, "RESEARCH-101", "next-worker")
         self.assertEqual("stale-handoff", stale["status"])
-        self.assertIn("plan_sha256 changed", " ".join(stale["drift"]))
         self.assertIn("worktree changed", " ".join(stale["drift"]))
         resumed = resume_task(
             self.root,
@@ -350,6 +446,7 @@ class PyramidRuntimeTests(unittest.TestCase):
             resume_task(self.root, "RESEARCH-101", "worker")
 
     def test_replan_preview_and_apply(self) -> None:
+        original_context = inspect_project(self.root, summary=True)["context"]["id"]
         candidate = load_json(self.example)
         candidate["nodes"][2]["title"] = "Revalidate operation schema stability"
         path = self.write_json("replan.json", candidate)
@@ -357,6 +454,7 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertIn("RESEARCH-101", preview["diff"]["changed_nodes"])
         applied = replan_project(self.root, path, "planner", "New repository evidence", apply=True)
         self.assertEqual(2, applied["diff"]["to_revision"])
+        self.assertNotEqual(original_context, applied["context"]["id"])
         self.assertTrue(validate_project(self.root)["valid"])
 
     def test_expand_preview_requires_explicit_approval_and_does_not_mutate(self) -> None:
@@ -493,6 +591,7 @@ class PyramidRuntimeTests(unittest.TestCase):
     def test_visualization_is_self_contained(self) -> None:
         output = Path(self.temp.name) / "map.html"
         rendered = render_visualization(self.root, output)
+        graph = load_visualization_graph(self.root)
         text = output.read_text(encoding="utf-8")
         self.assertEqual(6, rendered["nodes"])
         self.assertIn("pyramid-data", text)
@@ -500,6 +599,8 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertIn("Star", text)
         self.assertIn("Needs rework", text)
         self.assertNotIn("fetch(", text)
+        self.assertNotIn("agent", graph["nodes"][0])
+        self.assertNotIn("required_evidence", graph["nodes"][0])
 
     def test_live_graph_follows_complete_publications_and_keeps_last_valid_snapshot(self) -> None:
         graph = load_visualization_graph(self.root)
@@ -531,7 +632,7 @@ class PyramidRuntimeTests(unittest.TestCase):
             compile_project(self.root)
             recovered = live.wait_for_event(rejected["sequence"], timeout=2.0)
             self.assertIsNotNone(recovered)
-            self.assertEqual("graph", recovered["type"])
+            self.assertEqual("ready", recovered["type"])
             self.assertEqual(2, recovered["graph_version"])
         finally:
             live.stop()
@@ -565,6 +666,31 @@ class PyramidRuntimeTests(unittest.TestCase):
         finally:
             server.shutdown()
             thread.join(timeout=2.0)
+
+    def test_live_graph_ignores_metadata_only_recompiles(self) -> None:
+        graph = load_visualization_graph(self.root)
+        live = LiveGraphState(self.root, graph, poll_interval=0.02)
+        initial = live.event()
+        compile_project(self.root)
+        self.assertFalse(live.refresh())
+        self.assertEqual(initial, live.event())
+
+    def test_live_graph_reports_a_context_waiting_for_projection(self) -> None:
+        graph = load_visualization_graph(self.root)
+        live = LiveGraphState(self.root, graph, poll_interval=0.02)
+        with mock.patch("pyramid_core.compile_project", side_effect=OSError("projection failed")):
+            with self.assertRaisesRegex(OSError, "projection failed"):
+                take_task(self.root, "worker", nid="RESEARCH-101")
+        self.assertEqual(2, load_json(self.root / ".pyramid" / "head.json")["context"]["graph_version"])
+        self.assertEqual(1, load_json(self.root / ".pyramid" / "graph.json")["graph_version"])
+        self.assertFalse(live.refresh())
+        self.assertFalse(live.refresh())
+        self.assertEqual("graph-error", live.event()["type"])
+        self.assertIn("does not match canonical runtime state", live.event()["message"])
+        compile_project(self.root)
+        self.assertTrue(live.refresh())
+        self.assertEqual("graph", live.event()["type"])
+        self.assertEqual(2, live.event()["graph_version"])
 
     def test_failed_audit_enters_rework_and_can_recover(self) -> None:
         take_task(self.root, "worker", nid="RESEARCH-101")
@@ -684,6 +810,7 @@ class PyramidRuntimeTests(unittest.TestCase):
         artifacts = [
             (schema_dir / "plan.schema.json", self.root / ".pyramid" / "plan.json"),
             (schema_dir / "state.schema.json", self.root / ".pyramid" / "state.json"),
+            (schema_dir / "head.schema.json", self.root / ".pyramid" / "head.json"),
             (schema_dir / "project.schema.json", self.root / ".pyramid" / "project.json"),
             (schema_dir / "final-report.schema.json", Path(closed["report"])),
             (schema_dir / "archive-manifest.schema.json", Path(archived["archive"]) / "manifest.json"),
@@ -869,12 +996,25 @@ class PyramidRuntimeTests(unittest.TestCase):
         (root / "src").mkdir(parents=True)
         (root / "src" / "legacy.py").write_text("value = 1\n", encoding="utf-8")
         (root / ".pyramid" / "project.json").unlink()
+        (root / ".pyramid" / "head.json").unlink()
         legacy_state = load_json(root / ".pyramid" / "state.json")
+        legacy_state.pop("context_id", None)
         legacy_state["lifecycle"].pop("change_dossier", None)
         (root / ".pyramid" / "state.json").write_text(
             json.dumps(legacy_state, indent=2) + "\n",
             encoding="utf-8",
         )
+        for event_path in (root / ".pyramid" / "events").glob("*.json"):
+            event = load_json(event_path)
+            for field in (
+                "plan_id",
+                "plan_revision",
+                "context_id",
+                "previous_event_id",
+                "previous_event_sha256",
+            ):
+                event.pop(field, None)
+            event_path.write_text(json.dumps(event, indent=2) + "\n", encoding="utf-8")
         before_plan = (root / ".pyramid" / "plan.json").read_bytes()
         before_state = load_json(root / ".pyramid" / "state.json")
         before_events = sorted((root / ".pyramid" / "events").glob("*.json"))
@@ -1004,6 +1144,24 @@ class PyramidRuntimeTests(unittest.TestCase):
         (self.root / "src").mkdir()
         (self.root / "src" / "legacy.py").write_text("value = 1\n", encoding="utf-8")
         (self.root / ".pyramid" / "project.json").unlink()
+        (self.root / ".pyramid" / "head.json").unlink()
+        legacy_state = load_json(self.root / ".pyramid" / "state.json")
+        legacy_state.pop("context_id", None)
+        (self.root / ".pyramid" / "state.json").write_text(
+            json.dumps(legacy_state, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        for event_path in (self.root / ".pyramid" / "events").glob("*.json"):
+            event = load_json(event_path)
+            for field in (
+                "plan_id",
+                "plan_revision",
+                "context_id",
+                "previous_event_id",
+                "previous_event_sha256",
+            ):
+                event.pop(field, None)
+            event_path.write_text(json.dumps(event, indent=2) + "\n", encoding="utf-8")
         candidate = load_json(self.example)
         candidate["plan_id"] = "PLAN-AFTER-V2"
         candidate["title"] = "Intent after completed V2"
@@ -1094,8 +1252,22 @@ class PyramidRuntimeTests(unittest.TestCase):
             capture_output=True,
             text=True,
         )
-        for command in ("new-intent", "upgrade", "assess", "impact"):
+        for command in ("new-intent", "upgrade", "assess", "impact", "diff"):
             self.assertIn(command, completed.stdout)
+        inspect = subprocess.run(
+            [sys.executable, str(PLUGIN_ROOT / "scripts" / "pyramid.py"), "inspect", "--help"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.assertIn("--assurance-summary", inspect.stdout)
+        take = subprocess.run(
+            [sys.executable, str(PLUGIN_ROOT / "scripts" / "pyramid.py"), "take", "--help"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        self.assertIn("--expected-context", take.stdout)
         visualize = subprocess.run(
             [sys.executable, str(PLUGIN_ROOT / "scripts" / "pyramid.py"), "visualize", "--help"],
             check=True,

@@ -5,17 +5,17 @@ description: Claim a ready executable node from a Pyramid Task V3 project and re
 
 # Take a Pyramid Task
 
-Read `../../references/agent-contracts.md`, `../../references/brownfield-assurance.md`, and `../../references/lifecycle-contract.md` completely before claiming work.
+Use the compact ready frontier first. Load `../../references/agent-contracts.md` only for ownership or packet-contract questions, `../../references/brownfield-assurance.md` only when the selected packet contains assurance, and `../../references/lifecycle-contract.md` only if the plan is inactive.
 
 ## Workflow
 
 1. Identify the project root and stable actor name.
-2. Inspect ready tasks if the user did not specify a node. The frontier includes `needs-rework` nodes and prioritizes them before new work.
+2. Inspect the compact ready frontier if the user did not specify a node. Reuse its `context.graph_version` and `context.id`; do not load full packets for every candidate. The frontier includes `needs-rework` nodes and prioritizes them before new work.
 3. Claim exactly one task:
 
 ```bash
-python3 ../../scripts/pyramid.py take --project <project-root> --node TASK-203 --actor <actor> --json
-python3 ../../scripts/pyramid.py take --project <project-root> --next --actor <actor> --json
+python3 ../../scripts/pyramid.py take --project <project-root> --node TASK-203 --actor <actor> --expected-version <graph-version> --expected-context <context-id> --json
+python3 ../../scripts/pyramid.py take --project <project-root> --next --actor <actor> --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 4. Read only the packet's required context plus files needed to perform the task.
@@ -27,7 +27,7 @@ python3 ../../scripts/pyramid.py take --project <project-root> --next --actor <a
 
 - Never claim work for a read-only status request.
 - Never bypass a locked dependency.
-- Never work from a stale packet after a graph-version conflict; inspect and take again.
+- Never work from a stale packet after a graph-version or context conflict; inspect and take again.
 - Never take a paused task. Use `pyramid-task:resume` so the canonical handoff is checked and returned.
 - Release the claim if the task will not be attempted.
 - Never take work from a completed or archived plan. Reopen or restore it through lifecycle first.

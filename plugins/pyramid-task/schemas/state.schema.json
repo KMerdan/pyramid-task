@@ -8,6 +8,7 @@
   "properties": {
     "schema_version": {"const": 1},
     "graph_version": {"type": "integer", "minimum": 1},
+    "context_id": {"type": "string", "pattern": "^CTX-[A-F0-9]{32}$"},
     "created_at": {"type": "string"},
     "updated_at": {"type": "string"},
     "lifecycle": {

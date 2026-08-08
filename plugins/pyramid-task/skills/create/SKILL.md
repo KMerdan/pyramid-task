@@ -7,15 +7,9 @@ description: Create the first Pyramid Task V3 project from an intent, idea, feat
 
 Create a plan only after the intended final state is clear enough to test. Treat the plan as a claim-and-evidence graph, then project the selected path into a task pyramid.
 
-## Required references
+## Context routing
 
-Read these files completely before planning:
-
-- `../../references/pathfinder-workflow.md`
-- `../../references/graph-contract.md`
-- `../../references/agent-contracts.md`
-- `../../references/lifecycle-contract.md`
-- `../../references/brownfield-assurance.md`
+Read `../../references/pathfinder-workflow.md` and `../../references/graph-contract.md` for graph construction. Read `../../references/agent-contracts.md` when defining executable packets. Read `../../references/brownfield-assurance.md` only for an existing system. Read `../../references/lifecycle-contract.md` only when an existing plan requires routing to another skill.
 
 Use `../../assets/example-plan.json` as a structural example, never as product evidence.
 

@@ -150,7 +150,17 @@ python3 plugins/pyramid-task/scripts/pyramid.py visualize \
   --json
 ```
 
-The command prints the selected local URL and stays running until interrupted. After a canonical graph publication, the default watcher detects it within 250 milliseconds; the browser then fetches and renders that validated snapshot. Static `visualize` output remains self-contained for archives and sharing.
+The command prints the selected local URL and stays running until interrupted. After an atomic canonical head and matching graph publication, the default watcher detects it within 250 milliseconds; the browser fetches the slim validated view and rerenders only when its task semantics changed. If projection compilation lags or fails, the browser keeps the last valid graph and reports publication health. Static `visualize` output remains self-contained for archives and sharing.
+
+Agent queries are compact by default. Expand only the selected context:
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --ready --json
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --node TASK-203 --json
+python3 plugins/pyramid-task/scripts/pyramid.py diff --project /path/to/project --from-version 12 --json
+```
+
+Pass both `context.graph_version` and `context.id` back as `--expected-version` and `--expected-context` on mutations. This prevents an agent from applying work to a different reset, restore, or concurrently changed state that happens to reuse a numeric version.
 
 Common lifecycle commands:
 
@@ -255,7 +265,7 @@ Release details are recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## Project status
 
-Version 3.2.0 adds durable task-level pause/resume continuity. Agents can stop for a break or transfer work without losing changed scope, checks, decisions, risks, and next actions; resume validates graph, assurance, and worktree freshness before work continues.
+Version 3.3.0 gives agents the smallest exact context at the right mutation boundary. It adds composite context guards, an atomic canonical head, hash-linked event history, compact diff and inspection queries, serialized projections, and semantic live visualization updates while retaining durable pause/resume continuity.
 
 ## License
 

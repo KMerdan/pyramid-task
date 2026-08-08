@@ -4,9 +4,9 @@ The runtime produces compact packets so a worker does not need the entire graph.
 
 ## Agent task packet
 
-`take` returns `agent-task-v1` with:
+`take` returns `agent-task-v1` for one claimed node with:
 
-- task and graph version;
+- task, graph version, and composite context identity;
 - title, purpose, kind, level, wave, and workstream;
 - execution, verification, health, blocker, and derived availability;
 - goal trace to the intent plus direct parents and children;
@@ -17,7 +17,9 @@ The runtime produces compact packets so a worker does not need the entire graph.
 - audit gates and lease expiry.
 - brownfield impact IDs, affected asset IDs, inspections, findings, and canonical assurance blockers when applicable.
 
-Treat a packet as stale after a graph-version conflict. Refresh instead of guessing how the plan changed.
+Start from compact `inspect --ready`, `--blocked`, `--paused`, or `--pending-audits` output. Load a full node packet only for the selected work. Use `diff` for bounded history summaries and request `--detail` only when before/after values are necessary.
+
+Treat a packet as stale after a graph-version or context conflict. Every mutation should pass both `--expected-version` and `--expected-context` from the packet or preview. Refresh instead of guessing how the plan changed.
 
 ## Agent result
 
@@ -83,6 +85,6 @@ A passing audit requires a non-empty check list and no failed check. In brownfie
 
 A completed plan rejects take, pause, resume, update, audit, expand, and replan. An archived plan rejects every canonical mutation. Use the lifecycle interface for close, archive, reset, restore, clean, and manual reopen semantics.
 
-Every mutation supplies an actor, expected graph version when available, reason or result, timestamp, and unique event ID. Events are immutable. Generated graph and Markdown files are projections, not mutation interfaces.
+Every mutation supplies an actor, expected graph version and context ID when available, reason or result, timestamp, and unique event ID. Events are immutable and hash-linked after this contract is introduced. Generated graph and Markdown files are projections, not mutation interfaces.
 
 When an older standalone `pyramid-task-planner` is also discoverable, the V3 plugin remains authoritative for `.pyramid` and `docs/tasks/`. `doctor` reports the conflict; the compatibility shim delegates rather than writing files.

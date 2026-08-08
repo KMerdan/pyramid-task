@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/head.schema.json",
+  "title": "Pyramid Task Atomic Commit Head",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "committed_at", "context", "files", "event"],
+  "properties": {
+    "schema": {"const": "pyramid-head-v1"},
+    "committed_at": {"type": "string"},
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "plan_id", "plan_revision", "graph_version"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^CTX-[A-F0-9]{32}$"},
+        "plan_id": {"type": "string", "minLength": 1},
+        "plan_revision": {"type": "integer", "minimum": 1},
+        "graph_version": {"type": "integer", "minimum": 1}
+      }
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plan", "state", "project", "baseline", "assurance", "events", "handoffs", "reports", "dossiers"],
+      "properties": {
+        "plan": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "state": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "project": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "baseline": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "assurance": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"},
+        "events": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "handoffs": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "reports": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "dossiers": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sha256", "previous_sha256"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "previous_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}
+      }
+    }
+  }
+}

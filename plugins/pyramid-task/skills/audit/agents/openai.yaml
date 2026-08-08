@@ -1,4 +1,4 @@
 interface:
   display_name: "Audit Pyramid Task"
   short_description: "Verify tasks, joints, levels, and intent"
-  default_prompt: "Use $audit to verify this task or composition gate."
+  default_prompt: "Use $audit to verify this task or composition gate from its exact packet, loading related context only for claims under review."

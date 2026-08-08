@@ -5,19 +5,19 @@ description: Audit a Pyramid Task V3 implementation node, joint gate, level outc
 
 # Audit a Pyramid Task
 
-Read `../../references/agent-contracts.md`, `../../references/graph-contract.md`, `../../references/brownfield-assurance.md`, and `../../references/lifecycle-contract.md` completely before auditing.
+Read `../../references/agent-contracts.md` for audit-result rules. Load `../../references/graph-contract.md` only for composition or parent claims, `../../references/brownfield-assurance.md` only when the packet has assurance context, and `../../references/lifecycle-contract.md` only when auditing closure or inactive work.
 
 ## Workflow
 
-1. Inspect the target node, its acceptance criteria, required evidence, dependencies, children, and validation gate.
+1. Inspect only the target node first. Use its exact task packet and composite context for the audit mutation; load related nodes only when a dependency or composition claim requires them.
 2. In brownfield mode, inspect canonical impact, inspection, finding, drift, rollback, monitoring, and legacy-bridge records. Compare predicted scope with the worker's actual changed files and assets.
 3. Execute or inspect every required check. Seek disconfirming evidence for load-bearing claims, composition edges, compatibility, recovery, and operational behavior.
 4. Create an `audit-result-v1` JSON file with per-check results and evidence references. For brownfield pass, add an `assurance` assertion naming every reviewed impact, inspection, and finding ID, a complete scope review, and limitations.
 5. Submit the result:
 
 ```bash
-python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 --actor <actor> --result pass --evidence <audit-result.json> --json
-python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 --actor <actor> --result fail --evidence <audit-result.json> --json
+python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 --actor <actor> --result pass --evidence <audit-result.json> --expected-version <graph-version> --expected-context <context-id> --json
+python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 --actor <actor> --result fail --evidence <audit-result.json> --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 6. On failure, identify affected claims and recommend repair, impact reconciliation, approved expansion, or replan. The runtime moves executable failure to `needs-rework` and stales dependent task and inspection evidence.

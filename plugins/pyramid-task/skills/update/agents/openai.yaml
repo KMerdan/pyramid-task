@@ -1,4 +1,4 @@
 interface:
   display_name: "Update Pyramid Task"
   short_description: "Record task progress, evidence, and blockers"
-  default_prompt: "Use $update to record this task result and its evidence."
+  default_prompt: "Use $update to record this task's exact result and evidence against the context in its claimed packet."

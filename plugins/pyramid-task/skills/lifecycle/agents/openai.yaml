@@ -1,4 +1,4 @@
 interface:
   display_name: "Manage Pyramid Lifecycle"
   short_description: "Close, repair, archive, reset, and restore plans"
-  default_prompt: "Use $lifecycle to safely manage this Pyramid Task plan lifecycle."
+  default_prompt: "Use $lifecycle to inspect the current lifecycle context, then apply one guarded lifecycle transition."

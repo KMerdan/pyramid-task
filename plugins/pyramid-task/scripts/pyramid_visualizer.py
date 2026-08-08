@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from pyramid_core import (
-    compile_project,
+    compile_and_load_graph,
     graph_snapshot,
     lifecycle_status,
     load_assurance_bundle,
@@ -635,6 +635,69 @@ def write_text_atomic(path: Path, text: str) -> None:
         raise
 
 
+def visualization_snapshot(graph: dict[str, Any]) -> dict[str, Any]:
+    node_fields = (
+        "id",
+        "title",
+        "summary",
+        "kind",
+        "selection",
+        "level",
+        "wave",
+        "workstream",
+        "availability",
+        "blocked_by",
+        "goal_trace",
+        "parents",
+        "children",
+        "dependencies",
+        "audit_gates",
+        "acceptance_criteria",
+        "assurance",
+        "source_path",
+    )
+    state_fields = (
+        "execution",
+        "verification",
+        "health",
+        "owner",
+        "active_handoff_id",
+        "paused_at",
+        "paused_by",
+        "pause_mode",
+        "resume_deadline",
+        "last_handoff",
+    )
+    nodes = []
+    for node in graph["nodes"]:
+        item = {field: node.get(field) for field in node_fields if field in node}
+        item["state"] = {
+            field: node.get("state", {}).get(field)
+            for field in state_fields
+            if field in node.get("state", {})
+        }
+        nodes.append(item)
+    assurance = graph.get("assurance")
+    return {
+        "schema": "pyramid-visualization-v1",
+        "graph_version": graph["graph_version"],
+        "context": graph.get("context"),
+        "plan_id": graph.get("plan_id"),
+        "title": graph["title"],
+        "revision": graph["revision"],
+        "intent": {"id": graph["intent"]["id"]},
+        "lifecycle": graph["lifecycle"],
+        "summary": graph["summary"],
+        "nodes": nodes,
+        "edges": graph["edges"],
+        "project": {
+            "format_version": graph.get("project", {}).get("format_version"),
+            "mode": graph.get("project", {}).get("mode", "legacy"),
+        },
+        "assurance": {"summary": assurance["summary"]} if assurance else None,
+    }
+
+
 def load_visualization_graph(project: str | Path) -> dict[str, Any]:
     paths = project_paths(project)
     _, plan, state = load_project(project)
@@ -646,9 +709,8 @@ def load_visualization_graph(project: str | Path) -> dict[str, Any]:
             else graph_snapshot(plan, state, baseline, assurance, manifest)
         )
     else:
-        compile_project(project)
-        graph = load_json(paths["graph"])
-    return graph
+        graph = compile_and_load_graph(project)
+    return visualization_snapshot(graph)
 
 
 def build_visualization_html(graph: dict[str, Any], *, live: bool = False) -> str:

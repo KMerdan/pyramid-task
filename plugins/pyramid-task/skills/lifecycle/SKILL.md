@@ -5,7 +5,7 @@ description: Manage the full lifecycle of a Pyramid Task V3 plan. Use when the a
 
 # Manage a Pyramid Task Lifecycle
 
-Read `../../references/lifecycle-contract.md`, `../../references/graph-contract.md`, `../../references/agent-contracts.md`, and `../../references/brownfield-assurance.md` completely before changing lifecycle state.
+Read `../../references/lifecycle-contract.md`. Load `../../references/graph-contract.md` only to explain structural closure blockers, `../../references/agent-contracts.md` only for active claim repair, and `../../references/brownfield-assurance.md` only in brownfield mode.
 
 ## Start with status
 
@@ -20,7 +20,7 @@ Use its lifecycle status, closure blockers, active claims, graph version, and ar
 An audit failure automatically moves an executable node to `needs-rework` and invalidates dependent proofs. Reopen a passed or completed claim when newer evidence makes it stale:
 
 ```bash
-python3 ../../scripts/pyramid.py reopen --project <project-root> --node TASK-203 --actor <actor> --reason <reason> --evidence <evidence.json> --json
+python3 ../../scripts/pyramid.py reopen --project <project-root> --node TASK-203 --actor <actor> --reason <reason> --evidence <evidence.json> --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 Omit `--evidence` only when no structured file exists. Reopening a completed plan reactivates it. Use `take`, `update`, and `audit` to repair and reverify the invalidated path; use `replan` when the topology or selected mechanism is wrong.
@@ -30,13 +30,13 @@ Omit `--evidence` only when no structured file exists. Reopening a completed pla
 Close only after the intent audit passes and `closure_ready` is true:
 
 ```bash
-python3 ../../scripts/pyramid.py close --project <project-root> --actor <actor> --json
+python3 ../../scripts/pyramid.py close --project <project-root> --actor <actor> --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 Closing writes a versioned JSON and Markdown final report and blocks ordinary execution mutations. In brownfield mode it also writes a change dossier and advances the baseline revision. Archive a completed or intentionally inactive plan only after resolving every working or paused claim:
 
 ```bash
-python3 ../../scripts/pyramid.py archive --project <project-root> --actor <actor> --reason <reason> --json
+python3 ../../scripts/pyramid.py archive --project <project-root> --actor <actor> --reason <reason> --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 ## Reset, clean, and restore
@@ -44,7 +44,7 @@ python3 ../../scripts/pyramid.py archive --project <project-root> --actor <actor
 Reset requires a fully validated candidate plan with a new `plan_id`. It archives the current plan before replacement; brownfield mode carries the current baseline and prior dossiers into a fresh assurance cycle:
 
 ```bash
-python3 ../../scripts/pyramid.py reset --project <project-root> --plan <new-plan.json> --actor <actor> --reason <reason> --json
+python3 ../../scripts/pyramid.py reset --project <project-root> --plan <new-plan.json> --actor <actor> --reason <reason> --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 When the user is starting a distinct intent, prefer `pyramid-task:new-intent`. Its preview chooses create, upgrade/archive/reset, or archive/reset from the actual format and lifecycle and binds user approval to the complete transition.
@@ -58,7 +58,7 @@ python3 ../../scripts/pyramid.py clean --project <project-root> --json
 Restore by archive ID or archived plan ID. The runtime first archives any current plan:
 
 ```bash
-python3 ../../scripts/pyramid.py restore --project <project-root> --archive <archive-or-plan-id> --actor <actor> --reason <reason> --json
+python3 ../../scripts/pyramid.py restore --project <project-root> --archive <archive-or-plan-id> --actor <actor> --reason <reason> --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 ## Boundaries
@@ -67,4 +67,4 @@ python3 ../../scripts/pyramid.py restore --project <project-root> --archive <arc
 - Never archive, reset, or restore over active claims. Resume a paused task and finish or release it first; do not discard its handoff.
 - Treat final reports and archive manifests as evidence artifacts, not mutable working notes.
 - Preserve the original success criterion after failure. Repair locally or replan from evidence.
-- Use `--expected-version` on mutations when coordinating concurrent agents.
+- Use both `--expected-version` and `--expected-context` from the lifecycle query on every mutation.

@@ -1,4 +1,4 @@
 interface:
   display_name: "Visualize Pyramid Plan"
-  short_description: "Explore the task pyramid as an interactive graph"
-  default_prompt: "Use $visualize to render the current pyramid task graph."
+  short_description: "Explore a focused live task execution graph"
+  default_prompt: "Use $visualize to open a focused live graph that updates only after validated semantic changes."

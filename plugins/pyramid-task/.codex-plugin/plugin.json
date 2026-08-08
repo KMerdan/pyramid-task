@@ -1,7 +1,7 @@
 {
   "name": "pyramid-task",
-  "version": "3.2.0",
-  "description": "Plan and assure brownfield software changes with evidence-backed task pyramids, durable pause/resume handoffs, safe intent transitions, inspections, audit gates, dossiers, and interactive overlays.",
+  "version": "3.3.0",
+  "description": "Plan and assure brownfield software changes with exact composite context, compact agent packets, hash-linked history, durable handoffs, audit gates, and live semantic visualization.",
   "author": {
     "name": "Dr. Merdan Bay",
     "url": "https://github.com/KMerdan"
@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "Pyramid Task V3",
     "shortDescription": "Brownfield change assurance for agents and humans.",
-    "longDescription": "Turn an intent into a validated pathfinder graph, baseline an existing system, map change impact, enforce inspection-aware audit gates, pause and resume agent work through durable checked handoffs, migrate active V2 plans without rebuilding, safely transition completed clusters into a new intent, carry the verified baseline through the full lifecycle, and follow focused task and assurance views live as validated graph publications arrive.",
+    "longDescription": "Turn an intent into a validated pathfinder graph, baseline an existing system, map change impact, enforce inspection-aware audit gates, give each agent the smallest exact context at mutation time, preserve hash-linked history and durable checked handoffs, migrate active V2 plans without rebuilding, safely transition completed clusters into a new intent, and follow focused task and assurance views live as validated semantic publications arrive.",
     "developerName": "Dr. Merdan Bay",
     "category": "Productivity",
     "capabilities": [

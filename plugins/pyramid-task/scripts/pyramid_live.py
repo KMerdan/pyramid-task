@@ -19,19 +19,23 @@ from pyramid_core import (
     node_map,
     project_paths,
 )
-from pyramid_visualizer import build_visualization_html, load_visualization_graph
+from pyramid_visualizer import build_visualization_html, load_visualization_graph, visualization_snapshot
 
 
 def _json_bytes(value: dict[str, Any]) -> bytes:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
 
 
+def _semantic_etag(value: dict[str, Any]) -> str:
+    return hashlib.sha256(_json_bytes(value)).hexdigest()
+
+
 class LiveGraphState:
     """Track only complete, validated graph publications.
 
-    Runtime mutations publish `.pyramid/graph.json` with an atomic replace. Watching that
-    projection keeps the browser behind the runtime commit boundary, so a failed or
-    partially completed mutation is never rendered.
+    Runtime mutations publish a canonical head before compiling `.pyramid/graph.json`.
+    Watching both boundaries lets the browser keep its last valid projection while also
+    reporting a committed context whose presentation is delayed or invalid.
     """
 
     def __init__(self, project: str | Path, graph: dict[str, Any], poll_interval: float = 0.25) -> None:
@@ -43,23 +47,27 @@ class LiveGraphState:
         self._watcher: threading.Thread | None = None
         self._graph = graph
         self._body = _json_bytes(graph)
-        self._etag = hashlib.sha256(self._body).hexdigest()
+        self._etag = _semantic_etag(graph)
         self._observed_signature = self._published_signature()
-        self._pending_failure: tuple[tuple[int | None, int | None], str] | None = None
+        self._pending_failure: tuple[tuple[tuple[int | None, int | None], ...], str] | None = None
         self._sequence = 0
         self._event: dict[str, Any] = {
             "type": "ready",
             "sequence": self._sequence,
             "graph_version": graph["graph_version"],
+            "context_id": graph.get("context", {}).get("id"),
             "etag": self._etag,
         }
 
-    def _published_signature(self) -> tuple[int | None, int | None]:
-        try:
-            stat = self.paths["graph"].stat()
-            return stat.st_mtime_ns, stat.st_size
-        except FileNotFoundError:
-            return None, None
+    def _published_signature(self) -> tuple[tuple[int | None, int | None], ...]:
+        signatures = []
+        for key in ("graph", "head", "state"):
+            try:
+                stat = self.paths[key].stat()
+                signatures.append((stat.st_mtime_ns, stat.st_size))
+            except FileNotFoundError:
+                signatures.append((None, None))
+        return tuple(signatures)
 
     def start(self) -> None:
         if self._watcher and self._watcher.is_alive():
@@ -150,21 +158,33 @@ class LiveGraphState:
                 self._pending_failure = (signature, message)
             return False
 
-        body = _json_bytes(candidate)
-        etag = hashlib.sha256(body).hexdigest()
+        presentation = visualization_snapshot(candidate)
+        body = _json_bytes(presentation)
+        etag = _semantic_etag(presentation)
         with self._condition:
             self._observed_signature = signature
             self._pending_failure = None
             if etag == self._etag:
+                if self._event.get("type") == "graph-error":
+                    self._sequence += 1
+                    self._event = {
+                        "type": "ready",
+                        "sequence": self._sequence,
+                        "graph_version": presentation["graph_version"],
+                        "context_id": presentation.get("context", {}).get("id"),
+                        "etag": etag,
+                    }
+                    self._condition.notify_all()
                 return False
-            self._graph = candidate
+            self._graph = presentation
             self._body = body
             self._etag = etag
             self._sequence += 1
             self._event = {
                 "type": "graph",
                 "sequence": self._sequence,
-                "graph_version": candidate["graph_version"],
+                "graph_version": presentation["graph_version"],
+                "context_id": presentation.get("context", {}).get("id"),
                 "etag": etag,
                 "generated_at": candidate.get("generated_at"),
             }
@@ -180,6 +200,7 @@ class LiveGraphState:
                 "type": "graph-error",
                 "sequence": self._sequence,
                 "graph_version": self._graph["graph_version"],
+                "context_id": self._graph.get("context", {}).get("id"),
                 "etag": self._etag,
                 "message": message,
             }
@@ -340,9 +361,11 @@ class LiveVisualizationServer:
             "url": self.url,
             "project": str(self.state.project),
             "graph_version": graph["graph_version"],
+            "context": graph.get("context"),
             "nodes": len(graph["nodes"]),
             "etag": etag,
             "poll_interval": self.state.poll_interval,
+            "canonical_commit": ".pyramid/head.json",
             "publication": ".pyramid/graph.json",
         }
 

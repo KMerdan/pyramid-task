@@ -1,6 +1,8 @@
 # Graph Contract
 
-The canonical task source is `.pyramid/plan.json`. Runtime state, lifecycle, reports, archives, and immutable events live beside it. V3 project mode is in `project.json`; brownfield baseline and assurance are separate canonical companions so old plan graphs remain compatible. Markdown task files, ready indexes, browser views, and `.pyramid/graph.json` are generated projections.
+The canonical task source is `.pyramid/plan.json`. Runtime state, lifecycle, reports, archives, and immutable events live beside it. V3 project mode is in `project.json`; brownfield baseline and assurance are separate canonical companions so old plan graphs remain compatible. `.pyramid/head.json` atomically publishes the hashes and composite identity of one committed canonical context. Markdown task files, ready indexes, browser views, and `.pyramid/graph.json` are generated projections.
+
+The composite context is `(plan_id, plan_revision, graph_version, context_id)`. `graph_version` orders mutations within one plan generation; `context_id` binds the complete plan and state so equal numeric versions from resets or restores cannot be confused. Modern events record that identity and the previous event hash. Use the runtime `diff` query for bounded change summaries instead of placing the full event history in agent context.
 
 Use `schema_version: 1`. Use stable IDs such as `INTENT-001`, `OUTCOME-010`, `CAP-020`, `TASK-101`, `RESEARCH-110`, `CONTRACT-120`, and `GATE-190`.
 
@@ -63,7 +65,7 @@ For dependency edges, `from` is the dependent and `to` is the prerequisite. For 
 
 Execution is `planned`, `working`, `paused`, `implemented`, `needs-rework`, or `superseded`. Verification is `unverified`, `pending`, `passed`, or `failed`. Health is `clear`, `at-risk`, or `blocked`. Availability is derived as `not-executable`, `not-selected`, `locked`, `ready`, `needs-rework`, `working`, `paused`, `implemented`, or `verified`.
 
-Do not place execution state in `plan.json`. Use runtime transitions so history and concurrency checks remain intact.
+Do not place execution state in `plan.json` or hand-edit canonical companions. Use runtime transitions so the commit head, event chain, history, and composite concurrency checks remain intact.
 
 Plan lifecycle is `active`, `completed`, or `archived`. It does not replace node state. Read `lifecycle-contract.md` before closing, reopening, archiving, resetting, cleaning, or restoring a plan.
 

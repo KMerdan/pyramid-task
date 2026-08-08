@@ -1,6 +1,6 @@
 # Visualization Contract
 
-Render `.pyramid/graph.json`, which combines the canonical plan with validated runtime state. Never parse generated Markdown to rediscover topology or calculate status independently.
+Render the visualization projection derived from `.pyramid/graph.json`, which combines the canonical plan with validated runtime state. Exclude agent-only context, evidence payloads, and full assurance records from the browser payload. Never parse generated Markdown to rediscover topology or calculate status independently.
 
 ## Required views
 
@@ -33,10 +33,10 @@ The browser is read-only. Actions that claim, pause, resume, update, audit, expa
 
 ## Live runtime
 
-- Treat the final atomic replacement of `.pyramid/graph.json`, after the other generated projections are materialized, as the publication boundary. Do not broadcast raw `plan.json`, `state.json`, event, or assurance writes.
-- Validate the canonical project and require the published graph version to match canonical runtime state before notifying browsers.
+- Treat `.pyramid/head.json` as the canonical commit boundary and the final atomic replacement of `.pyramid/graph.json` as its presentation boundary. Do not broadcast raw `plan.json`, `state.json`, event, or assurance writes.
+- Validate the canonical head and require the published graph's composite context to match canonical runtime state before notifying browsers. If the head advances while projection compilation is stalled, retain the last graph and report publication health.
 - Use a loopback-only server and reject non-local HTTP Host headers. Expose the current graph through a no-store JSON endpoint and notify clients through a reconnecting event stream.
-- After the atomic graph publication, detect a change within the configured polling interval (250 milliseconds by default), then notify the browser; actual paint time also includes the local request and render round trip.
+- After an atomic publication, detect a change within the configured polling interval (250 milliseconds by default). Notify the browser of graph data only when the slim visualization payload changes semantically; generated timestamps and agent-only fields must not cause a rerender. Actual paint time also includes the local request and render round trip.
 - Preserve view, filter, overlay, selection, and zoom-compatible browser state across ordinary updates. If a selected node disappears after expansion, replan, reset, or restore, select the recommended current node.
 - Retain the last valid graph when publication validation fails and show the failure as connection health, not as task health.
 - Coalesce rapid publications when necessary, but never replace a newer graph with an older graph version.

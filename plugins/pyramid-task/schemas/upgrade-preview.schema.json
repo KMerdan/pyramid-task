@@ -4,11 +4,20 @@
   "title": "Pyramid Task Upgrade Preview",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "status", "plan_id", "from", "to", "graph_version", "preserved", "generated", "assurance_gaps", "upgrade_sha256", "approval_required"],
+  "required": ["schema", "status", "plan_id", "from", "to", "graph_version", "context", "preserved", "generated", "assurance_gaps", "upgrade_sha256", "approval_required"],
   "properties": {
     "schema": {"const": "pyramid-upgrade-preview-v1"}, "status": {"const": "preview"},
     "plan_id": {"type": "string"}, "from": {"type": "string"}, "to": {"const": 3},
     "graph_version": {"type": "integer", "minimum": 1},
+    "context": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "plan_id", "plan_revision", "graph_version"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^CTX-[A-F0-9]{32}$"},
+        "plan_id": {"type": "string"}, "plan_revision": {"type": "integer", "minimum": 1},
+        "graph_version": {"type": "integer", "minimum": 1}
+      }
+    },
     "preserved": {
       "type": "object", "additionalProperties": false,
       "required": ["plan_revision", "nodes", "node_states", "verified_nodes", "active_claims", "immutable_events"],

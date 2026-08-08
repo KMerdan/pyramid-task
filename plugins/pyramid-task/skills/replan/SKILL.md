@@ -5,7 +5,7 @@ description: Replan an existing Pyramid Task V3 graph from new evidence, audit f
 
 # Replan a Pyramid Task Path
 
-Read `../../references/pathfinder-workflow.md`, `../../references/graph-contract.md`, `../../references/agent-contracts.md`, `../../references/brownfield-assurance.md`, and `../../references/lifecycle-contract.md` completely before changing topology.
+Read `../../references/pathfinder-workflow.md` and `../../references/graph-contract.md`. Load `../../references/agent-contracts.md` only for changed executable contracts, `../../references/brownfield-assurance.md` only in brownfield mode, and `../../references/lifecycle-contract.md` only when the plan is not active.
 
 Use `pyramid-task:expand` instead when a single executable task keeps the same purpose, contract, selected path, and external relations and only needs a deeper approved subtree.
 
@@ -27,7 +27,7 @@ python3 ../../scripts/pyramid.py replan --project <project-root> --plan <candida
 9. Apply the approved revision. Brownfield replan stales affected inspections and assurance; run `pyramid-task:impact` to map new and changed tasks before their audits:
 
 ```bash
-python3 ../../scripts/pyramid.py replan --project <project-root> --plan <candidate-plan.json> --actor <actor> --reason <reason> --apply --json
+python3 ../../scripts/pyramid.py replan --project <project-root> --plan <candidate-plan.json> --actor <actor> --reason <reason> --apply --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
 Use `--allow-intent-change` only when the user explicitly approved changing the final intent identifier.

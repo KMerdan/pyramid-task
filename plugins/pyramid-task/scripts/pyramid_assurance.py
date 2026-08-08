@@ -8,7 +8,7 @@ from typing import Any
 
 
 PROJECT_FORMAT_VERSION = 3
-RUNTIME_VERSION = "3.2.0"
+RUNTIME_VERSION = "3.3.0"
 ID_PATTERN = re.compile(r"^[A-Z][A-Z0-9-]*$")
 ASSET_KINDS = {
     "repository",
