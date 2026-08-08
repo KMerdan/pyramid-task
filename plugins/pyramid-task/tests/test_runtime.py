@@ -5,10 +5,15 @@ import json
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import unittest
 from datetime import datetime, timezone
+from http import HTTPStatus
 from pathlib import Path
 from unittest import mock
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 import jsonschema
 
@@ -23,6 +28,7 @@ from pyramid_core import (  # noqa: E402
     audit_node,
     clean_project,
     close_project,
+    compile_project,
     create_project,
     expand_project,
     expansion_parent_snapshot,
@@ -44,7 +50,8 @@ from pyramid_core import (  # noqa: E402
     validate_plan,
     validate_project,
 )
-from pyramid_visualizer import render_visualization  # noqa: E402
+from pyramid_live import LiveGraphState, LiveVisualizationServer  # noqa: E402
+from pyramid_visualizer import load_visualization_graph, render_visualization  # noqa: E402
 
 
 class PyramidRuntimeTests(unittest.TestCase):
@@ -489,9 +496,75 @@ class PyramidRuntimeTests(unittest.TestCase):
         text = output.read_text(encoding="utf-8")
         self.assertEqual(6, rendered["nodes"])
         self.assertIn("pyramid-data", text)
+        self.assertIn("Focus", text)
         self.assertIn("Star", text)
         self.assertIn("Needs rework", text)
         self.assertNotIn("fetch(", text)
+
+    def test_live_graph_follows_complete_publications_and_keeps_last_valid_snapshot(self) -> None:
+        graph = load_visualization_graph(self.root)
+        live = LiveGraphState(self.root, graph, poll_interval=0.02)
+        initial_sequence = live.event()["sequence"]
+        live.start()
+        try:
+            take_task(self.root, "worker", nid="RESEARCH-101")
+            published = live.wait_for_event(initial_sequence, timeout=2.0)
+            self.assertIsNotNone(published)
+            self.assertEqual("graph", published["type"])
+            self.assertEqual(2, published["graph_version"])
+            body, _, current = live.snapshot()
+            self.assertEqual(2, current["graph_version"])
+            self.assertEqual("working", next(node for node in current["nodes"] if node["id"] == "RESEARCH-101")["availability"])
+            self.assertEqual(2, json.loads(body)["graph_version"])
+
+            graph_path = self.root / ".pyramid" / "graph.json"
+            tampered = json.loads(graph_path.read_text(encoding="utf-8"))
+            tampered["nodes"][0]["title"] = "Tampered outside the canonical runtime"
+            graph_path.write_text(json.dumps(tampered), encoding="utf-8")
+            rejected = live.wait_for_event(published["sequence"], timeout=2.0)
+            self.assertIsNotNone(rejected)
+            self.assertEqual("graph-error", rejected["type"])
+            self.assertIn("canonical runtime projection", rejected["message"])
+            _, _, last_valid = live.snapshot()
+            self.assertEqual(2, last_valid["graph_version"])
+
+            compile_project(self.root)
+            recovered = live.wait_for_event(rejected["sequence"], timeout=2.0)
+            self.assertIsNotNone(recovered)
+            self.assertEqual("graph", recovered["type"])
+            self.assertEqual(2, recovered["graph_version"])
+        finally:
+            live.stop()
+
+    def test_live_server_serves_focus_view_graph_api_and_generated_task(self) -> None:
+        server = LiveVisualizationServer(self.root, port=0, poll_interval=0.05)
+        self.assertEqual("127.0.0.1", server.httpd.server_address[0])
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            deadline = time.monotonic() + 2.0
+            while not server._serving.is_set() and time.monotonic() < deadline:
+                time.sleep(0.01)
+            with urlopen(server.url, timeout=2.0) as response:
+                html = response.read().decode("utf-8")
+                self.assertEqual("DENY", response.headers["X-Frame-Options"])
+            self.assertIn("new EventSource('/events')", html)
+            self.assertIn("Focus", html)
+            rebinding_request = Request(server.url, headers={"Host": "project-data.example"})
+            with self.assertRaises(HTTPError) as rejected:
+                urlopen(rebinding_request, timeout=2.0)
+            self.assertEqual(HTTPStatus.MISDIRECTED_REQUEST, rejected.exception.code)
+            with urlopen(server.url + "api/graph", timeout=2.0) as response:
+                graph = json.loads(response.read())
+                self.assertTrue(response.headers["ETag"])
+            self.assertEqual(1, graph["graph_version"])
+            source_path = next(node["source_path"] for node in graph["nodes"] if node["id"] == "RESEARCH-101")
+            with urlopen(server.url + "project/" + source_path, timeout=2.0) as response:
+                source = response.read().decode("utf-8")
+            self.assertIn("RESEARCH-101", source)
+        finally:
+            server.shutdown()
+            thread.join(timeout=2.0)
 
     def test_failed_audit_enters_rework_and_can_recover(self) -> None:
         take_task(self.root, "worker", nid="RESEARCH-101")
@@ -576,6 +649,21 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertEqual(plan_before, (self.root / ".pyramid" / "plan.json").read_bytes())
         self.assertEqual(state_before, (self.root / ".pyramid" / "state.json").read_bytes())
         self.assertEqual(events_before, sorted(path.read_bytes() for path in (self.root / ".pyramid" / "events").glob("*.json")))
+
+    def test_graph_is_published_only_after_other_projections_complete(self) -> None:
+        graph_path = self.root / ".pyramid" / "graph.json"
+        graph_before = graph_path.read_bytes()
+        original_write_text = Path.write_text
+
+        def fail_final_readme(path: Path, data: str, *args: object, **kwargs: object) -> int:
+            if path.name == "README.md" and "tasks" in path.parts:
+                raise OSError("simulated projection failure")
+            return original_write_text(path, data, *args, **kwargs)
+
+        with mock.patch.object(Path, "write_text", new=fail_final_readme):
+            with self.assertRaisesRegex(OSError, "simulated projection failure"):
+                compile_project(self.root)
+        self.assertEqual(graph_before, graph_path.read_bytes())
 
     def test_restore_auto_archives_current_and_restores_selected_plan(self) -> None:
         candidate = load_json(self.example)
@@ -1008,6 +1096,15 @@ class PyramidRuntimeTests(unittest.TestCase):
         )
         for command in ("new-intent", "upgrade", "assess", "impact"):
             self.assertIn(command, completed.stdout)
+        visualize = subprocess.run(
+            [sys.executable, str(PLUGIN_ROOT / "scripts" / "pyramid.py"), "visualize", "--help"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        for option in ("--live", "--port", "--poll-interval", "--open"):
+            self.assertIn(option, visualize.stdout)
+        self.assertNotIn("--host", visualize.stdout)
 
 
 if __name__ == "__main__":

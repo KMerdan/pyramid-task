@@ -1601,7 +1601,6 @@ def compile_project(project: str | Path, *, allow_archived: bool = False) -> dic
     by_id = node_map(plan)
     for item in snapshot["nodes"]:
         item["source_path"] = str(node_doc_path(paths, by_id[item["id"]]).relative_to(paths["root"]))
-    write_json(paths["graph"], snapshot)
     ready_packets = [
         task_packet(plan, state, node["id"], baseline, assurance)
         for node in plan["nodes"]
@@ -1703,6 +1702,9 @@ def compile_project(project: str | Path, *, allow_archived: bool = False) -> dic
         ]
     )
     (paths["docs"] / "README.md").write_text("\n".join(readme_lines), encoding="utf-8")
+    # Publish the graph last. Live readers treat its atomic replacement as proof that
+    # every other generated projection for this canonical version is complete.
+    write_json(paths["graph"], snapshot)
     return {
         "graph": str(paths["graph"]),
         "ready": str(paths["ready"]),

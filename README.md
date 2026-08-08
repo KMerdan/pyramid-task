@@ -49,7 +49,7 @@ Pyramid Task treats planning as a claim-and-evidence problem:
 | `pyramid-task:expand` | Propose a deeper subtree and apply it only after explicit user approval. |
 | `pyramid-task:replan` | Revise invalid topology while preserving valid work and history. |
 | `pyramid-task:lifecycle` | Reopen, close, archive, reset, clean, and restore plans safely. |
-| `pyramid-task:visualize` | Render a self-contained interactive browser graph. |
+| `pyramid-task:visualize` | Render a focused snapshot or live-updating interactive browser graph. |
 
 ## How it fits together
 
@@ -124,7 +124,7 @@ Use $pyramid-task:take to claim the next safe task for this agent.
 Use $pyramid-task:pause to stop this claimed task safely for a coffee break or handoff.
 Use $pyramid-task:resume to continue the paused task from its canonical handoff.
 Use $pyramid-task:expand when this task is materially broad and needs an approved subtree.
-Use $pyramid-task:visualize to render the current task graph.
+Use $pyramid-task:visualize to render the current task graph or follow it live while agents work.
 Use $pyramid-task:lifecycle to close and archive this fully verified plan.
 ```
 
@@ -139,6 +139,18 @@ python3 plugins/pyramid-task/scripts/pyramid.py create \
   --mode auto \
   --json
 ```
+
+Start a live, loopback-only visualization that refreshes after validated graph publications:
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py visualize \
+  --project /path/to/project \
+  --live \
+  --open \
+  --json
+```
+
+The command prints the selected local URL and stays running until interrupted. After a canonical graph publication, the default watcher detects it within 250 milliseconds; the browser then fetches and renders that validated snapshot. Static `visualize` output remains self-contained for archives and sharing.
 
 Common lifecycle commands:
 

@@ -16,12 +16,14 @@ async function main() {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(`file://${path.resolve(input)}`);
-  await page.locator('[data-view="pyramid"]').click();
+  const focusPressed = await page.locator('[data-view="focus"]').getAttribute('aria-pressed');
+  const focusNodeCount = await page.locator('#node-layer .node').count();
   await page.locator('[data-filter="all"]').click();
   const assuranceOverlay = page.locator('[data-overlay="impact"]');
   if (await assuranceOverlay.isEnabled()) await assuranceOverlay.click();
   await page.locator('#node-select').selectOption('TASK-201');
   await page.screenshot({ path: screenshot, fullPage: true });
+  await page.locator('[data-view="pyramid"]').click();
   const nodeCount = await page.locator('#node-layer .node').count();
   const detail = await page.locator('#detail').innerText();
   const meta = await page.locator('#page-meta').innerText();
@@ -32,6 +34,8 @@ async function main() {
   const assurancePanel = await page.locator('#assurance-panel.visible').count();
   await browser.close();
   if (errors.length) throw new Error(`Page errors: ${errors.join('; ')}`);
+  if (focusPressed !== 'true') throw new Error('Focus view is not the default');
+  if (focusNodeCount < 1) throw new Error('Focus view rendered no nodes');
   if (nodeCount < 1) throw new Error('No graph nodes rendered');
   if (!detail.includes('TASK-201')) throw new Error('Selected-node detail did not update');
   if (!detail.includes('Plan lifecycle')) throw new Error('Lifecycle detail is missing');

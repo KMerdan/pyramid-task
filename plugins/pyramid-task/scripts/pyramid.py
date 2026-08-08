@@ -33,6 +33,7 @@ from pyramid_core import (
     upgrade_project,
     validate_project,
 )
+from pyramid_live import LiveVisualizationServer
 from pyramid_visualizer import render_visualization
 
 
@@ -286,12 +287,16 @@ def build_parser() -> argparse.ArgumentParser:
     visualize = sub.add_parser("visualize", help="Render an interactive browser graph")
     add_project(visualize)
     visualize.add_argument("--output")
+    visualize.add_argument("--live", action="store_true", help="Serve a live view that follows validated graph publications")
+    visualize.add_argument("--port", type=int, default=0, help="Live server port; 0 selects an available port")
+    visualize.add_argument("--poll-interval", type=float, default=0.25, help="Seconds between publication checks")
+    visualize.add_argument("--open", dest="open_browser", action="store_true", help="Open the live URL in the default browser")
     add_json(visualize)
     return parser
 
 
 def emit(data: dict[str, Any], _: bool = False) -> None:
-    print(json.dumps(data, indent=2, ensure_ascii=False))
+    print(json.dumps(data, indent=2, ensure_ascii=False), flush=True)
 
 
 def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
@@ -496,6 +501,8 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     if args.command == "lifecycle":
         return inspect_lifecycle(args.project), 0
     if args.command == "visualize":
+        if args.live:
+            raise PyramidError("Live visualization is a long-running command and must be started from the CLI")
         return render_visualization(args.project, args.output), 0
     raise PyramidError(f"Unsupported command: {args.command}")
 
@@ -504,6 +511,24 @@ def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
     try:
+        if args.command == "visualize" and args.live:
+            if args.output:
+                raise PyramidError("--output cannot be combined with --live")
+            server = LiveVisualizationServer(
+                args.project,
+                port=args.port,
+                poll_interval=args.poll_interval,
+            )
+            emit(server.describe(), args.json)
+            if args.open_browser:
+                server.open_browser()
+            try:
+                server.serve_forever()
+            except KeyboardInterrupt:
+                return 0
+            return 0
+        if args.command == "visualize" and args.open_browser:
+            raise PyramidError("--open requires --live")
         data, code = run(args)
         emit(data, getattr(args, "json", False))
         return code

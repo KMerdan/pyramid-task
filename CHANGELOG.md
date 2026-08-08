@@ -2,6 +2,15 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## Unreleased
+
+### Live, focused visualization
+
+- Add a loopback-only, Host-restricted live visualization server with no-store graph delivery and reconnecting server-sent update events.
+- Refresh only after validated atomic graph publications, preserve browser context, and retain the last valid graph when a publication is rejected.
+- Add a default Focus view, execution summary, recommended-node navigation, human-readable node labels, and changed-node highlighting.
+- Preserve the self-contained static visualization for archives, sharing, and offline inspection.
+
 ## 3.2.0
 
 ### Durable session continuity
