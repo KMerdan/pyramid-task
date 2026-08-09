@@ -14,12 +14,23 @@ The runtime produces compact packets so a worker does not need the entire graph.
 - required context and allowed write scope;
 - commands, deliverables, and non-goals;
 - acceptance criteria and required evidence;
-- audit gates and lease expiry.
+- audit gates and lease expiry;
 - brownfield impact IDs, affected asset IDs, inspections, findings, and canonical assurance blockers when applicable.
 
 Start from compact `inspect --ready`, `--blocked`, `--paused`, or `--pending-audits` output. Load a full node packet only for the selected work. Use `diff` for bounded history summaries and request `--detail` only when before/after values are necessary.
 
 Use `mutation_guards.task` for take, update, and pause, and `mutation_guards.audit` for audit. These guards bind only the task contract, relevant state, baseline, impact map, implementation frontier, and applicable assurance. An unrelated inspection refresh may advance global history without invalidating a worker guard. Continue using graph version plus context ID for topology, lifecycle, full assurance, reset, and restore mutations. Refresh the smallest relevant packet after a scoped conflict.
+
+| Need | Smallest context source |
+| --- | --- |
+| Choose work | `inspect --ready` |
+| Continue one task | `inspect --node <id>` or the packet returned by `take`/`update` |
+| Decide whether an audit can run | `inspect --audit-readiness <id>` |
+| Explain recent history | `diff --from-version <n>` |
+| Inspect one history payload | `diff --from-version <n> --detail` |
+| Reconcile assurance records | `inspect --assurance-detail` |
+
+Canonical history is stored as one hash-linked file per mutation under `.pyramid/events/`; it is not appended to the task packet or stored as a version array in the current graph JSON. Do not read the event directory directly for normal work.
 
 ## Agent result
 
@@ -42,6 +53,8 @@ Submit `agent-result-v1` as JSON:
 ```
 
 Use `blocked` when the task cannot continue inside its existing contract. Report every changed file and known asset. Classify files as `source`, `generated`, `runtime`, `configuration`, `evidence`, or `unknown` when the distinction affects invalidation. Evidence-only output must stay inside declared evidence scope. Generated output requires a plan-time glob and asset mapping: this prevents false drift but still invalidates behavior inspections covering the generated asset. The runtime compares actual scope with predicted impact and opens drift when they differ. Use `suggested_graph_changes` for evidence that may require expansion or replanning; do not mutate topology through a result.
+
+`agent.effect` declares whether a task is expected to produce source changes, evidence only, or a mixture. It is a validation boundary, not an instruction to hide incidental product changes. Generated-output asset IDs must exist in the current baseline, and evidence-only results may not classify product files as evidence.
 
 ## Audit result
 

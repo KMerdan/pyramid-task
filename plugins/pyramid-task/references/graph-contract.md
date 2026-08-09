@@ -4,6 +4,8 @@ The canonical task source is `.pyramid/plan.json`. Runtime state, lifecycle, rep
 
 The composite context is `(plan_id, plan_revision, graph_version, context_id)`. `graph_version` orders mutations within one plan generation; `context_id` binds the complete plan and state so equal numeric versions from resets or restores cannot be confused. Modern events record that identity and the previous event hash. Task and audit packets additionally carry scoped mutation guards. Use those for task-local work so an unrelated evidence refresh does not create a false conflict; use composite context for topology, lifecycle, and full assurance mutations. Use the runtime `diff` query for bounded change summaries instead of placing the full event history in agent context.
 
+Each mutation writes a separate immutable event record under `.pyramid/events/`. The event chain is snapshot-style evidence, not Git-style content-addressed deltas, but it also is not accumulated inside `plan.json`, `state.json`, or `graph.json`. Current-state queries therefore remain bounded. `diff` reads the selected version interval and returns event identity, type, actor, node, changed field names, and payload field names; full before/after/payload values require explicit `--detail`.
+
 Use `schema_version: 1`. Use stable IDs such as `INTENT-001`, `OUTCOME-010`, `CAP-020`, `TASK-101`, `RESEARCH-110`, `CONTRACT-120`, and `GATE-190`.
 
 ## Required plan fields

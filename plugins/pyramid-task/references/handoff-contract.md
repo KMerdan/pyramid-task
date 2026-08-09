@@ -1,6 +1,6 @@
 # Pause, Handoff, and Resume Contract
 
-Pyramid Task V3.2 treats an interruption as a first-class task transition. It is neither an implementation result nor a plan lifecycle change.
+Pyramid Task treats an interruption as a first-class task transition. It is neither an implementation result nor a plan lifecycle change.
 
 ## Scope and state
 

@@ -32,6 +32,8 @@
       "sufficiency": "sufficient",
       "evidence": ["tests/contracts", "tests/executor", "tests/integration"],
       "limitations": [],
+      "invalidated_by": ["source", "generated", "runtime", "configuration", "unknown"],
+      "refresh_policy": "pre-audit",
       "performed_at": "2026-08-02T00:00:00Z",
       "performed_by": "auditor"
     }

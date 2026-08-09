@@ -42,6 +42,8 @@ The browser is read-only. Actions that claim, pause, resume, update, audit, expa
 - Coalesce rapid publications when necessary, but never replace a newer graph with an older graph version.
 - Keep self-contained snapshot rendering available for archives, sharing, and environments where a local server cannot run.
 
+Live mode is near-real-time publication following, not a transactional subscription to every canonical write. A successful mutation compiles and atomically publishes the projection; the watcher then observes that publication. This boundary prevents the UI from briefly showing mixed plan, state, or assurance data.
+
 ## Progress
 
 Show project mode, plan lifecycle, verified nodes, ready frontier, rework, active and paused work, blockers, pending audits, baseline revision, impacted versus sufficiently inspected assets, open scope drift, and material findings. Do not invent a completion percentage unless the plan explicitly contains reviewed weights. A labeled coverage count is acceptable.

@@ -4,6 +4,13 @@ All notable changes follow semantic versioning. Serialized task graph and state 
 
 ## Unreleased
 
+### Documentation
+
+- Reorganize the README around the current 3.4.0 architecture, scoped context model, assurance timing, live publication behavior, and single-branch Codex/Claude installation.
+- Document immutable event storage versus compact agent context, the mutation-to-guard routing table, inspection refresh-policy semantics, fanout warnings, and generated-output asset validation.
+- Update published examples and contributor invariants to demonstrate the current typed change and inspection contracts.
+- Align expansion proposal agent fields with the 3.4.0 plan contract so typed tasks can be preserved and expanded without schema rejection.
+
 ## 3.4.0
 
 ### Conflict-isolated assurance

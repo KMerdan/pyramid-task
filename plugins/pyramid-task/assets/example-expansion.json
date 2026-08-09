@@ -33,6 +33,7 @@
     "agent": {
       "required_context": ["src/contracts", "src/operation-plan"],
       "allowed_write_scope": ["src/executor/**", "tests/executor/**"],
+      "effect": "source-change",
       "commands": ["python3 -m unittest"],
       "deliverables": ["Executor implementation", "Executor tests"],
       "non_goals": ["User interface"]

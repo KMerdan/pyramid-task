@@ -5,83 +5,123 @@
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg)](https://www.python.org/)
 [![Codex plugin](https://img.shields.io/badge/Codex-plugin-111827.svg)](https://developers.openai.com/codex/)
 
-Pyramid Task V3 turns a software intent into an evidence-backed pathfinder graph and, for an existing system, an evidence-backed change-assurance case. It baselines what exists, maps predicted impact to tasks, requires sufficient inspections, detects actual scope drift, and carries the verified changed baseline into the next planning cycle.
+Pyramid Task turns a software intent into an evidence-backed execution graph. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish the intended outcome.
 
-It is designed for AI agents without sacrificing human legibility: agents receive compact structured task packets, while people get generated Markdown and an interactive star, pyramid, and dependency map.
+Version 3.4.0 is the conflict-isolation release. Workers receive task-scoped context, auditors receive audit-scoped context, and the global graph version remains an ordering mechanism instead of becoming a false dependency between unrelated work. The same `main` branch supports Codex and Claude Code.
 
 ![Pyramid Task interactive map](docs/images/pyramid-task-map.png)
 
-## Why this exists
+## What it solves
 
-A flat task list says what to do. It usually does not prove that the work composes into the intended outcome—or that an existing system was inspected deeply enough to change safely.
+A flat task list can say what to do without proving that:
 
-Pyramid Task treats planning as a claim-and-evidence problem:
+- the proposed work connects to an observable final outcome;
+- parallel branches compose safely;
+- a brownfield system was inspected at the right boundary;
+- an inspection still covers the implementation that now exists;
+- generated files and evidence reports are distinguished from product changes;
+- a worker resumes with the exact task context it previously held;
+- concurrent activity is relevant before it is treated as a conflict.
 
-- clarify the final intent into observable success evidence;
-- research the current system and record facts, assumptions, and contradictions;
-- backward-chain from the outcome and forward-chain from the repository;
-- compare feasible paths before selecting one;
-- separate hierarchy (`level`) from safe execution order (`wave`);
-- require joint audits where parallel branches compose;
-- keep execution, verification, health, availability, and plan lifecycle distinct;
-- preserve immutable events, failed evidence, superseded paths, and archives;
-- inventory affected assets, dependencies, owners, history, and unknowns;
-- compare predicted impact with actual changed files and assets;
-- require inspection sufficiency, rollback, monitoring, and accountable finding disposition;
-- preserve exact task context across breaks and agent transfers through durable checked handoffs;
-- emit a close-out change dossier and advance the system baseline.
+Pyramid Task models these concerns explicitly. It keeps execution, verification, health, availability, lifecycle, and assurance separate, then derives the next safe action from their combination.
 
-## Included skills
+## Current architecture
 
-| Skill | Purpose |
-| --- | --- |
-| `pyramid-task:create` | Clarify intent, gather evidence, compare paths, and create the graph. |
-| `pyramid-task:new-intent` | Safely create, upgrade/archive/reset, or archive/reset when starting another intent. |
-| `pyramid-task:assess` | Establish or refresh the existing-system baseline. |
-| `pyramid-task:impact` | Map affected assets, inspections, findings, drift, and controls. |
-| `pyramid-task:upgrade` | Migrate a running V2/V2.1 plan in place without rebuilding it. |
-| `pyramid-task:inspect` | Query status, readiness, blockers, audits, and goal traces. |
-| `pyramid-task:take` | Claim one safe ready or rework task and receive an agent packet. |
-| `pyramid-task:pause` | Pause owned work with a complete immutable handoff and optional owner hold. |
-| `pyramid-task:resume` | Validate and resume a handoff with a fresh lease and enriched continuation packet. |
-| `pyramid-task:update` | Record implementation results, evidence, blockers, and risk. |
-| `pyramid-task:audit` | Verify tasks, branch joints, outcomes, and the final intent. |
-| `pyramid-task:expand` | Propose a deeper subtree and apply it only after explicit user approval. |
-| `pyramid-task:replan` | Revise invalid topology while preserving valid work and history. |
-| `pyramid-task:lifecycle` | Reopen, close, archive, reset, clean, and restore plans safely. |
-| `pyramid-task:visualize` | Render a focused snapshot or live-updating interactive browser graph. |
+| Layer | Canonical purpose | Agent-loading behavior |
+| --- | --- | --- |
+| `.pyramid/plan.json` | Current intent, graph topology, contracts, and evidence ledger | Selected node and goal trace only |
+| `.pyramid/state.json` | Current execution, verification, health, ownership, and lifecycle | Selected state and direct dependencies only |
+| `.pyramid/project.json` | Project format and greenfield/brownfield mode | Loaded when mode or migration matters |
+| `.pyramid/baseline.json` | Current system assets, relations, history, and unknowns | Relevant baseline and impact slice only |
+| `.pyramid/assurance.json` | Impacts, inspections, findings, drift, and controls | Relevant task or audit slice only |
+| `.pyramid/events/*.json` | One immutable, hash-linked event per mutation | Not injected into normal prompts; query a bounded `diff` |
+| `.pyramid/handoffs/` | Durable pause and resume evidence | Loaded only for the active handoff |
+| `.pyramid/head.json` | Atomic identity of the committed canonical state | Used to validate publication and context |
+| Graph, ready, Markdown, and HTML files | Human and machine-readable projections | Regenerated; never mutation inputs |
 
-## How it fits together
+The event history is not a Git object database or a growing version array inside one JSON document. Events may contain before/after evidence, but each mutation is a separate immutable file. Normal agent packets do not include that history. `diff` returns compact changed-field summaries by default and includes full values only with `--detail`.
 
-```mermaid
-flowchart TD
-    I["Intent and success evidence"] --> P["Evidence-based pathfinder"]
-    P --> G["Typed claim and dependency graph"]
-    G --> B["Existing-system baseline"]
-    B --> X["Impact, inspections, findings, controls"]
-    X --> T["Assurance-enriched agent task packets"]
-    G --> T
-    T -->|break or transfer| S["Durable pause handoff"]
-    S -->|validated resume| T
-    G --> H["Human Markdown task pyramid"]
-    G --> V["Interactive star / pyramid / dependency map"]
-    T --> E["Implementation results"]
-    E --> A["Independent audits and joint gates"]
-    A -->|pass| C["Verified intent, final report, change dossier"]
-    A -->|fail| R["Needs rework or replan"]
-    R --> T
-    T -->|task is materially broad| Q["Preview and approve expansion"]
-    Q --> G
-    C --> L["Archive / reset / restore lifecycle"]
-    L -->|new intent| N["Hash-bound create / upgrade / archive / reset transition"]
-    N --> G
+## Exact context at the mutation boundary
+
+Pyramid Task uses two concurrency scopes:
+
+| Mutation | Context to use | Why |
+| --- | --- | --- |
+| `take`, `update`, `pause` for a selected task | `mutation_guards.task` | Binds the task contract, its state and dependencies, baseline, and relevant impacts |
+| `audit` | `mutation_guards.audit` from `inspect --audit-readiness` | Binds covered claims, implementation frontier, and relevant assurance |
+| `resume` | Canonical handoff hashes and reported drift | Protects paused graph, assurance, and worktree context |
+| `impact`, `assess`, topology, lifecycle, reset, and restore | `context.graph_version` plus `context.id` | These operations intentionally affect shared canonical state |
+
+An unrelated inspection refresh may advance the global event sequence without invalidating a worker packet. A relevant task, dependency, baseline, impact, implementation, or inspection change still invalidates the corresponding scoped guard. On conflict, refresh only that task or audit packet.
+
+```bash
+# Find work without loading every task in full.
+python3 plugins/pyramid-task/scripts/pyramid.py inspect \
+  --project /path/to/project --ready --json
+
+# Claim the selected task using its task guard.
+python3 plugins/pyramid-task/scripts/pyramid.py take \
+  --project /path/to/project --node TASK-203 --actor worker \
+  --expected-guard <task-guard> --json
+
+# Submit implementation with the refreshed task guard returned by take.
+python3 plugins/pyramid-task/scripts/pyramid.py update \
+  --project /path/to/project --node TASK-203 --actor worker \
+  --status implemented --result result.json \
+  --expected-guard <task-guard> --json
+
+# Load the exact audit blockers and audit guard immediately before audit.
+python3 plugins/pyramid-task/scripts/pyramid.py inspect \
+  --project /path/to/project --audit-readiness GATE-205 --json
 ```
 
-The canonical plan lives in `.pyramid/plan.json`. V3 adds a project manifest and, in brownfield mode, separate baseline and assurance companions. Keeping these contracts separate lets an active V2 plan upgrade without graph reconstruction. Graph snapshots, ready indexes, Markdown, and HTML remain generated projections—not mutation interfaces.
+## Assurance at the right time
+
+For brownfield work, each performed inspection can record the exact latest `task.implemented` event it validated. Readiness and audit use the same freshness engine, so the summary cannot say “ready” while the audit would reject older inspection evidence.
+
+`inspect --audit-readiness` returns:
+
+- structural and assurance blockers for that target;
+- the covered task IDs;
+- the audit-scoped mutation guard;
+- the minimal `refresh_inspection_ids` set.
+
+Refresh only those inspections at their planned wave, pre-audit, or release boundary. `refresh_policy` documents the intended batching boundary; it does not waive freshness at audit time.
+
+Implementation results distinguish these change classes:
+
+- `source`, `runtime`, and `configuration` for authored product behavior;
+- `generated` for declared build output mapped to real baseline assets;
+- `evidence` for artifacts inside an explicit evidence-output scope;
+- `unknown` for changes that need conservative review.
+
+Evidence-only artifacts do not create product scope drift or stale product inspections by default. Generated output avoids false drift only when its path pattern and existing asset IDs were declared in the task contract; it still invalidates inspections covering the generated behavior. Baseline `exclude_locators` and inspection `invalidated_by` rules provide narrower control without weakening unknown-scope handling.
+
+Impact preview hashes exclude publication metadata, so previewing unchanged semantic content returns the same candidate hash. Apply recomputes the candidate under the project lock.
+
+Read the [brownfield assurance contract](plugins/pyramid-task/references/brownfield-assurance.md) for the complete evidence and invalidation rules.
+
+## Live visualization
+
+The browser graph provides focus, star, pyramid, and dependency views with task state, handoffs, assurance, assets, inspections, findings, drift, blockers, and publication health.
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py visualize \
+  --project /path/to/project --live --open --json
+```
+
+Live mode serves only on loopback. The default watcher checks for a validated atomic graph publication every 250 milliseconds and rerenders only when the slim visualization payload changes semantically. Raw canonical writes are never broadcast. If compilation lags or a publication fails validation, the browser retains the last valid graph and reports publication health rather than presenting partial state.
+
+Static visualization remains self-contained for archives and sharing:
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py visualize \
+  --project /path/to/project --output /path/to/pyramid.html --json
+```
 
 ## Install
 
-Requirements: an agent runtime with plugin support (Codex or Claude Code) and Python 3.10 or newer.
+Requirements: Codex or Claude Code with plugin support, plus Python 3.10 or newer.
 
 ### Codex
 
@@ -90,7 +130,7 @@ codex plugin marketplace add KMerdan/pyramid-task
 codex plugin add pyramid-task@kmerdan-skills
 ```
 
-To update later:
+Update an existing installation:
 
 ```bash
 codex plugin marketplace upgrade kmerdan-skills
@@ -99,7 +139,7 @@ codex plugin add pyramid-task@kmerdan-skills
 
 ### Claude Code
 
-The same `main` branch contains both the Codex and Claude Code manifests:
+The same `main` branch contains both runtime manifests:
 
 ```bash
 git clone https://github.com/KMerdan/pyramid-task
@@ -107,127 +147,95 @@ claude plugin marketplace add ./pyramid-task
 claude plugin install pyramid-task@kmerdan-skills
 ```
 
-Start a new agent session after installation so the skills are discovered.
+Start a new agent session after installation or update so the runtime discovers the current skills.
 
-## Use
+## Recommended workflow
 
-Natural-language examples:
+1. Create the intent graph. Existing repositories default to brownfield mode.
+2. Assess the system baseline and map change impact before relying on brownfield audits.
+3. Inspect the compact ready frontier and claim one task with its scoped guard.
+4. Report implementation with actual files, assets, checks, evidence, and typed change effects.
+5. Refresh only the inspections identified by audit readiness at the planned boundary.
+6. Audit implementation nodes and composition gates independently.
+7. Close only after the intent and assurance case pass, then archive or start a new intent.
+
+Natural-language entry points:
 
 ```text
 Use $pyramid-task:create to turn this feature request into an evidence-backed implementation plan.
-Use $pyramid-task:new-intent to start another intent after this completed V2 or V3 task cluster.
-Use $pyramid-task:assess to baseline this existing software system before planning the change.
-Use $pyramid-task:impact to map affected assets and required inspections for this plan.
-Use $pyramid-task:upgrade to migrate this running V2.1 plan to V3 without rebuilding it.
-Use $pyramid-task:inspect to show what is ready, blocked, working, and still unaudited.
-Use $pyramid-task:take to claim the next safe task for this agent.
-Use $pyramid-task:pause to stop this claimed task safely for a coffee break or handoff.
-Use $pyramid-task:resume to continue the paused task from its canonical handoff.
-Use $pyramid-task:expand when this task is materially broad and needs an approved subtree.
-Use $pyramid-task:visualize to render the current task graph or follow it live while agents work.
-Use $pyramid-task:lifecycle to close and archive this fully verified plan.
+Use $pyramid-task:assess to baseline this existing system.
+Use $pyramid-task:impact to map affected assets and required inspections.
+Use $pyramid-task:inspect to show the ready frontier or audit readiness.
+Use $pyramid-task:take to claim the next safe task.
+Use $pyramid-task:update to record implementation and actual change scope.
+Use $pyramid-task:audit to verify a task, composition gate, outcome, or intent.
+Use $pyramid-task:pause and $pyramid-task:resume for a durable handoff.
+Use $pyramid-task:visualize to open the live execution and assurance graph.
+Use $pyramid-task:lifecycle to close, archive, reset, or restore a plan.
 ```
 
-The deterministic runtime is also available directly:
+Create directly through the deterministic runtime:
 
 ```bash
-python3 plugins/pyramid-task/scripts/pyramid.py --help
 python3 plugins/pyramid-task/scripts/pyramid.py create \
   --project /path/to/project \
   --plan plugins/pyramid-task/assets/example-plan.json \
-  --actor planner \
-  --mode auto \
-  --json
+  --actor planner --mode auto --json
 ```
 
-Start a live, loopback-only visualization that refreshes after validated graph publications:
+For a reviewed brownfield plan, include the baseline and assurance candidates:
 
 ```bash
-python3 plugins/pyramid-task/scripts/pyramid.py visualize \
-  --project /path/to/project \
-  --live \
-  --open \
-  --json
+python3 plugins/pyramid-task/scripts/pyramid.py create \
+  --project /path/to/project --plan plan.json --actor planner --mode auto \
+  --baseline baseline.json --assurance assurance.json --json
 ```
 
-The command prints the selected local URL and stays running until interrupted. After an atomic canonical head and matching graph publication, the default watcher detects it within 250 milliseconds; the browser fetches the slim validated view and rerenders only when its task semantics changed. If projection compilation lags or fails, the browser keeps the last valid graph and reports publication health. Static `visualize` output remains self-contained for archives and sharing.
+If the baseline is not known, creation writes a deliberately incomplete placeholder. Bounded discovery can begin, but brownfield audits cannot pass until `assess` and `impact` establish sufficient evidence.
 
-Agent queries are compact by default. Expand only the selected context:
+## Included skills
 
-```bash
-python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --ready --json
-python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --node TASK-203 --json
-python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --audit-readiness GATE-205 --json
-python3 plugins/pyramid-task/scripts/pyramid.py diff --project /path/to/project --from-version 12 --json
-```
+| Skill | Purpose |
+| --- | --- |
+| `pyramid-task:create` | Clarify intent, gather evidence, compare paths, and create the first graph. |
+| `pyramid-task:new-intent` | Safely route a distinct intent through create, upgrade, archive, and reset. |
+| `pyramid-task:assess` | Establish or refresh the existing-system baseline. |
+| `pyramid-task:impact` | Map affected assets, inspections, findings, drift, and controls. |
+| `pyramid-task:upgrade` | Upgrade an active V2/V2.1 project in place without rebuilding its graph. |
+| `pyramid-task:inspect` | Query compact status, readiness, blockers, audit freshness, and traces. |
+| `pyramid-task:take` | Claim one ready or rework task and receive its scoped packet. |
+| `pyramid-task:pause` | Pause owned work with an immutable evidence-aware handoff. |
+| `pyramid-task:resume` | Validate and resume the canonical handoff with a fresh lease. |
+| `pyramid-task:update` | Record implementation, evidence, actual scope, blockers, and risk. |
+| `pyramid-task:audit` | Verify tasks, branch composition, outcomes, and the final intent. |
+| `pyramid-task:expand` | Add an approved subtree while preserving the parent contract. |
+| `pyramid-task:replan` | Revise invalid topology while preserving valid work and history. |
+| `pyramid-task:lifecycle` | Reopen, close, archive, reset, clean, and restore plans. |
+| `pyramid-task:visualize` | Render a snapshot or live interactive execution graph. |
 
-Use a packet's task guard for take, update, and pause, and its audit guard for audit. Scoped guards bind the exact task or assurance inputs without treating an unrelated inspection refresh as a worker conflict. Continue passing `context.graph_version` and `context.id` on topology, lifecycle, reset, restore, and full assurance mutations.
+## Lifecycle, expansion, and compatibility
 
-Common lifecycle commands:
+Implementation is not verification. A brownfield intent is complete only after primary claims pass independent audits, assurance has no blockers, and `close` writes the final report and change dossier. The verified changed baseline is then carried into the next planning cycle.
 
-```bash
-python3 plugins/pyramid-task/scripts/pyramid.py lifecycle --project /path/to/project --json
-python3 plugins/pyramid-task/scripts/pyramid.py close --project /path/to/project --actor owner --json
-python3 plugins/pyramid-task/scripts/pyramid.py archive --project /path/to/project --actor owner --reason "Release complete" --json
-```
+Use `pause` for an interruption, `expand` when a valid task contract needs multiple internal work units, and `replan` when evidence changes the contract or selected path. All topology and lifecycle changes preserve history and use explicit preview or evidence boundaries.
 
-Pause and resume one claimed task without stopping independent graph work:
+Use `new-intent` for the next distinct outcome. It chooses the safe create, upgrade/archive/reset, archive/reset, or blocked route from actual project state and binds an existing-project transition to one approval hash.
 
-```bash
-python3 plugins/pyramid-task/scripts/pyramid.py pause --project /path/to/project --node TASK-203 --actor worker --reason "Coffee break" --handoff handoff-draft.json --mode hold --resume-minutes 60 --json
-python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --paused --json
-python3 plugins/pyramid-task/scripts/pyramid.py resume --project /path/to/project --node TASK-203 --actor worker --lease-minutes 120 --json
-```
+Legacy projects without `.pyramid/project.json` remain readable and can upgrade in place. Older standalone `pyramid-task-planner` installations should be replaced by the compatibility router in `compat/pyramid-task-planner`; `doctor --json` reports the conflict.
 
-Use `hold` for a short owner-retained break and `handoff` for immediate transfer. Resume refuses stale context when the graph, baseline, assurance, or source worktree changed; review the reported drift before explicitly accepting it.
+Detailed contracts:
 
-Start a distinct intent through one previewed transition. The runtime, not the agent, chooses whether this means `create`, `upgrade → archive → reset`, or `archive → reset`:
-
-```bash
-python3 plugins/pyramid-task/scripts/pyramid.py new-intent --project /path/to/project --plan next-plan.json --actor planner --reason "Start the next intent" --from-version 2.1 --mode auto --preview --json
-python3 plugins/pyramid-task/scripts/pyramid.py new-intent --project /path/to/project --plan next-plan.json --actor planner --reason "Start the next intent" --from-version 2.1 --mode auto --apply --approved-by owner --approval-reference task-message --approved-new-intent-sha256 <preview-hash> --expected-version <graph-version> --json
-```
-
-Existing plans require approval of the exact transition hash. Active plans and active claims are preserved and reported as blockers. A completed legacy plan is upgraded first so its state can seed the next brownfield baseline.
-
-Run `--help` on any command for the complete interface.
-
-Brownfield creation is the default for a non-empty repository. Supply reviewed candidates when available:
-
-```bash
-python3 plugins/pyramid-task/scripts/pyramid.py create --project /path/to/project --plan plan.json --actor planner --mode auto --baseline baseline.json --assurance assurance.json --json
-python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --assurance --json
-```
-
-If the baseline is not yet known, creation writes a deliberately incomplete placeholder. Agents can start bounded discovery, but brownfield audits cannot pass until `assess` and `impact` establish sufficient evidence.
-
-## Upgrade a running V2.1 plan
-
-Upgrade is explicit, previewed, approval-bound, and idempotent. It preserves `plan.json` byte-for-byte, every node state, active ownership and lease, results, audits, lifecycle data, and prior events. It creates a validated pre-upgrade snapshot before adding V3 companions.
-
-```bash
-python3 plugins/pyramid-task/scripts/pyramid.py upgrade --project /path/to/project --actor migrator --from-version 2.1 --mode auto --preview --json
-python3 plugins/pyramid-task/scripts/pyramid.py upgrade --project /path/to/project --actor migrator --from-version 2.1 --mode auto --approved-by owner --approval-reference task-message --approved-upgrade-sha256 <preview-hash> --apply --expected-version <graph-version> --json
-```
-
-Previously verified nodes stay verified; no work is replayed. Derived legacy inspections remain partial, so future audits and final closure must address the reported bridge gaps.
-
-### Upgrading from the standalone planner skill
-
-Older Codex installations may still discover `~/.codex/skills/pyramid-task-planner`, whose original workflow wrote `docs/tasks/` directly. Run `doctor --json`; V3 reports this as `standalone-v2-planner`. Replace it with the compatibility shim in `compat/pyramid-task-planner` or remove it from skill discovery, then start a new Codex task. The shim delegates planning to the plugin and never mutates canonical or generated files itself.
-
-Expansion is deliberately two-phase:
-
-```bash
-python3 plugins/pyramid-task/scripts/pyramid.py expand --project /path/to/project --proposal expansion.json --actor planner --preview --json
-python3 plugins/pyramid-task/scripts/pyramid.py expand --project /path/to/project --proposal expansion.json --actor planner --approved-by user --approval-reference task-message --approved-proposal-sha256 <preview-hash> --apply --json
-```
-
-The agent recommends expansion only from concrete scope evidence. The user approves the exact previewed topology. The stable parent ID becomes a non-executable work-package, and a mandatory joint audit covers every new branch.
+- [Graph and state](plugins/pyramid-task/references/graph-contract.md)
+- [Agent and audit packets](plugins/pyramid-task/references/agent-contracts.md)
+- [Brownfield assurance](plugins/pyramid-task/references/brownfield-assurance.md)
+- [Visualization](plugins/pyramid-task/references/visualization-contract.md)
+- [Pause and resume](plugins/pyramid-task/references/handoff-contract.md)
+- [Lifecycle](plugins/pyramid-task/references/lifecycle-contract.md)
+- [Expansion](plugins/pyramid-task/references/expansion-contract.md)
+- [Upgrade](plugins/pyramid-task/references/upgrade-contract.md)
+- [New intent](plugins/pyramid-task/references/new-intent-contract.md)
 
 ## State model
-
-Node state is intentionally multidimensional:
 
 - Execution: `planned`, `working`, `paused`, `implemented`, `needs-rework`, `superseded`
 - Verification: `unverified`, `pending`, `passed`, `failed`
@@ -235,21 +243,22 @@ Node state is intentionally multidimensional:
 - Plan lifecycle: `active`, `completed`, `archived`
 - Assurance: `incomplete`, `ready`, `stale`, `passed`
 
-An implementation is not verified merely because an agent marked it implemented. In brownfield mode, an audit also needs canonical impact and sufficient inspection coverage. An intent is not complete until its evidence exists, required branches and gates pass, assurance has no blockers, and the plan is formally closed.
+Availability is derived from these dimensions and graph dependencies; agents do not write it directly.
 
 ## Repository layout
 
 ```text
-.agents/plugins/marketplace.json        Public Codex marketplace
+.agents/plugins/marketplace.json        Public marketplace definition
 plugins/pyramid-task/
-├── .codex-plugin/plugin.json          Plugin manifest
+├── .codex-plugin/plugin.json          Codex manifest
+├── .claude-plugin/plugin.json         Claude Code manifest
 ├── skills/                            Fifteen agent-facing interfaces
-├── scripts/                           Deterministic runtime and visualizer
+├── scripts/                           Deterministic runtime, live server, and visualizer
 ├── schemas/                           Published JSON contracts
-├── references/                        Graph, evidence, agent, and lifecycle contracts
-├── assets/                            Valid plan, expansion, and handoff examples
-└── tests/                              Runtime and visualization tests
-tools/validate_repository.py           Self-contained repository validation
+├── references/                        Graph, assurance, agent, and lifecycle contracts
+├── assets/                            Valid plan, baseline, assurance, expansion, and handoff examples
+└── tests/                              Runtime and visualization regression tests
+tools/validate_repository.py           Repository-level contract validation
 ```
 
 ## Development
@@ -261,12 +270,7 @@ python3 -m pip install -r requirements-dev.txt
 make check
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for design invariants and pull-request expectations. Security issues should follow [SECURITY.md](SECURITY.md).
-Release details are recorded in [CHANGELOG.md](CHANGELOG.md).
-
-## Project status
-
-Version 3.4.0 isolates worker and audit mutation guards, makes impact previews deterministic, exposes audit freshness before mutation, binds inspections to implementation events, and distinguishes source, generated, and evidence-only change effects. It preserves the atomic canonical head, hash-linked global history, compact context routing, live visualization, and durable pause/resume continuity.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for design invariants and review expectations. Security issues should follow [SECURITY.md](SECURITY.md). Release changes are recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

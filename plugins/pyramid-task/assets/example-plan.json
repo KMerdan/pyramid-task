@@ -93,6 +93,8 @@
       "agent": {
         "required_context": ["src/operation-plan", "tests"],
         "allowed_write_scope": ["docs/tasks/evidence/**"],
+        "effect": "mixed",
+        "evidence_outputs": ["docs/tasks/evidence/**"],
         "commands": [],
         "deliverables": ["Schema compatibility note"],
         "non_goals": ["Implementing the executor"]
@@ -117,6 +119,7 @@
       "agent": {
         "required_context": ["src/operation-plan"],
         "allowed_write_scope": ["src/contracts/**", "tests/contracts/**"],
+        "effect": "source-change",
         "commands": ["python3 -m unittest"],
         "deliverables": ["Executor protocol", "Contract tests"],
         "non_goals": ["Concrete platform execution"]
@@ -142,6 +145,7 @@
       "agent": {
         "required_context": ["src/contracts", "src/operation-plan"],
         "allowed_write_scope": ["src/executor/**", "tests/executor/**"],
+        "effect": "source-change",
         "commands": ["python3 -m unittest"],
         "deliverables": ["Executor implementation", "Executor tests"],
         "non_goals": ["User interface"]
@@ -166,6 +170,8 @@
       "agent": {
         "required_context": ["src/contracts", "src/executor", "tests"],
         "allowed_write_scope": ["tests/integration/**", "docs/tasks/evidence/**"],
+        "effect": "mixed",
+        "evidence_outputs": ["docs/tasks/evidence/**"],
         "commands": ["python3 -m unittest"],
         "deliverables": ["Composition audit result"],
         "non_goals": ["Changing acceptance criteria"]

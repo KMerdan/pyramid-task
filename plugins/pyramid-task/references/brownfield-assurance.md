@@ -47,6 +47,19 @@ Workers report both `changed_files` and, when known, `changed_assets`. Evidence-
 
 Performed inspections are bound to the latest `task.implemented` event IDs that existed at `performed_at`. Readiness and audit use the same frontier check, so a summary cannot report ready when an audit would reject older inspection evidence. Broad inspections should run at a declared wave, pre-audit, or release boundary rather than after every task.
 
+Refresh policy records scheduling intent:
+
+| Policy | Intended boundary |
+| --- | --- |
+| `per-change` | Refresh after each relevant implementation |
+| `per-wave` | Batch related task changes and refresh at the wave boundary |
+| `pre-audit` | Refresh the minimal covered set immediately before its audit |
+| `release` | Refresh broad end-to-end evidence before final intent or release audit |
+
+The policy does not prevent an overlapping change from making evidence stale. `invalidated_by` decides which change classes matter; the audit frontier decides whether the performed evidence is current. `inspect --audit-readiness` returns the exact blockers and minimal refresh IDs.
+
+The runtime warns when a non-boundary inspection spans more than eight tasks, when any inspection spans more than four assets, or when a baseline asset maps the repository root. These are design-review signals, not automatic failures; narrow the asset or split the inspection unless a deliberate boundary policy explains the fanout.
+
 ## Closure and carry-forward
 
 Closing a brownfield plan writes a JSON and Markdown change dossier containing predicted impact, actual changed files and assets, scope-drift reconciliation, inspections, findings, audits, controls, residual risk, legacy bridge, and the baseline before and after the change. It advances the baseline revision so the verified changed system becomes the starting point for the next plan.
