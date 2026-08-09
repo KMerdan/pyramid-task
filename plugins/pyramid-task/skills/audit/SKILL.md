@@ -9,15 +9,15 @@ Read `../../references/agent-contracts.md` for audit-result rules. Load `../../r
 
 ## Workflow
 
-1. Inspect only the target node first. Use its exact task packet and composite context for the audit mutation; load related nodes only when a dependency or composition claim requires them.
+1. Inspect `--audit-readiness <target>` first. It returns the same freshness blockers enforced by audit, the minimal inspection refresh set, and an `audit_guard`. Load related nodes only when a dependency or composition claim requires them.
 2. In brownfield mode, inspect canonical impact, inspection, finding, drift, rollback, monitoring, and legacy-bridge records. Compare predicted scope with the worker's actual changed files and assets.
 3. Execute or inspect every required check. Seek disconfirming evidence for load-bearing claims, composition edges, compatibility, recovery, and operational behavior.
 4. Create an `audit-result-v1` JSON file with per-check results and evidence references. For brownfield pass, add an `assurance` assertion naming every reviewed impact, inspection, and finding ID, a complete scope review, and limitations.
 5. Submit the result:
 
 ```bash
-python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 --actor <actor> --result pass --evidence <audit-result.json> --expected-version <graph-version> --expected-context <context-id> --json
-python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 --actor <actor> --result fail --evidence <audit-result.json> --expected-version <graph-version> --expected-context <context-id> --json
+python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 --actor <actor> --result pass --evidence <audit-result.json> --expected-guard <audit-guard> --json
+python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 --actor <actor> --result fail --evidence <audit-result.json> --expected-guard <audit-guard> --json
 ```
 
 6. On failure, identify affected claims and recommend repair, impact reconciliation, approved expansion, or replan. The runtime moves executable failure to `needs-rework` and stales dependent task and inspection evidence.

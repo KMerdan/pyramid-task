@@ -30,6 +30,7 @@
         "kind": {"enum": ["repository", "service", "module", "api", "data-store", "job", "deployment", "interface", "runbook", "external-system", "repository-area", "unknown"]},
         "name": {"type": "string", "minLength": 1},
         "locators": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "exclude_locators": {"type": "array", "items": {"type": "string", "minLength": 1}},
         "owner": {"type": "string"},
         "criticality": {"enum": ["unknown", "low", "medium", "high", "critical"]},
         "confidence": {"enum": ["low", "medium", "high"]},

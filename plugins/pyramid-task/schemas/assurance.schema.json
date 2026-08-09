@@ -68,7 +68,18 @@
         "result": {"enum": ["pass", "fail", "inconclusive", "not-run"]},
         "sufficiency": {"enum": ["sufficient", "partial", "insufficient", "unknown"]},
         "evidence": {"$ref": "#/$defs/strings"}, "limitations": {"$ref": "#/$defs/strings"},
-        "performed_at": {"type": ["string", "null"]}, "performed_by": {"type": ["string", "null"]}
+        "performed_at": {"type": ["string", "null"]}, "performed_by": {"type": ["string", "null"]},
+        "invalidated_by": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"enum": ["source", "generated", "runtime", "configuration", "evidence", "unknown"]}
+        },
+        "refresh_policy": {"enum": ["per-change", "per-wave", "pre-audit", "release"]},
+        "validated_through": {
+          "type": "object",
+          "propertyNames": {"$ref": "#/$defs/id"},
+          "additionalProperties": {"type": "string", "pattern": "^EVENT-"}
+        }
       }
     },
     "finding": {

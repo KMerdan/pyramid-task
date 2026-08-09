@@ -8,7 +8,7 @@ from typing import Any
 
 
 PROJECT_FORMAT_VERSION = 3
-RUNTIME_VERSION = "3.3.0"
+RUNTIME_VERSION = "3.4.0"
 ID_PATTERN = re.compile(r"^[A-Z][A-Z0-9-]*$")
 ASSET_KINDS = {
     "repository",
@@ -48,6 +48,9 @@ FINDING_STATUSES = {"open", "resolved", "accepted", "dismissed"}
 ASSURANCE_STATUSES = {"incomplete", "ready", "stale", "passed"}
 CONTROL_STATUSES = {"ready", "missing", "not-applicable"}
 HISTORY_KINDS = {"incident", "defect", "migration", "decision", "workaround", "change"}
+CHANGE_CLASSES = {"source", "generated", "runtime", "configuration", "evidence", "unknown"}
+DEFAULT_INVALIDATION_CLASSES = CHANGE_CLASSES - {"evidence"}
+REFRESH_POLICIES = {"per-change", "per-wave", "pre-audit", "release"}
 
 
 def utc_now() -> str:
@@ -62,6 +65,15 @@ def _strings(value: Any, *, nonempty: bool = False) -> bool:
 
 def _stable_id(value: Any) -> bool:
     return isinstance(value, str) and bool(ID_PATTERN.match(value))
+
+
+def _parse_time(value: Any) -> datetime | None:
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
 
 
 def detect_repository_mode(root: Path) -> str:
@@ -239,6 +251,10 @@ def validate_baseline(baseline: dict[str, Any]) -> list[str]:
             errors.append(f"{aid or path}: name must be non-empty")
         if not _strings(asset.get("locators"), nonempty=True):
             errors.append(f"{aid or path}: locators must be non-empty strings")
+        if "exclude_locators" in asset and not _strings(
+            asset.get("exclude_locators"), nonempty=True
+        ):
+            errors.append(f"{aid or path}: exclude_locators must be a string array when provided")
         if not isinstance(asset.get("owner"), str):
             errors.append(f"{aid or path}: owner must be a string")
         if asset.get("criticality") not in CRITICALITIES:
@@ -334,6 +350,20 @@ def validate_assurance(
         errors.append("assurance.enforce_from_graph_version must be a positive integer")
     asset_ids = {item["id"] for item in baseline.get("assets", []) if isinstance(item, dict) and "id" in item}
     task_ids = {item["id"] for item in plan.get("nodes", []) if isinstance(item, dict) and "id" in item}
+    for node in plan.get("nodes", []):
+        if not isinstance(node, dict):
+            continue
+        for index, output in enumerate(
+            node.get("agent", {}).get("generated_outputs", [])
+        ):
+            if not isinstance(output, dict):
+                continue
+            unknown_assets = sorted(set(output.get("asset_ids", [])) - asset_ids)
+            if unknown_assets:
+                errors.append(
+                    f"{node.get('id')}: agent.generated_outputs[{index}] references "
+                    "unknown baseline assets: " + ", ".join(unknown_assets)
+                )
 
     impact_ids: set[str] = set()
     impacts = assurance.get("impacts")
@@ -404,6 +434,30 @@ def validate_assurance(
             errors.append(f"{iid or path}: evidence must be a string array")
         if not _strings(inspection.get("limitations")):
             errors.append(f"{iid or path}: limitations must be a string array")
+        invalidated_by = inspection.get("invalidated_by")
+        if invalidated_by is not None and (
+            not _strings(invalidated_by, nonempty=True)
+            or any(item not in CHANGE_CLASSES for item in invalidated_by)
+        ):
+            errors.append(
+                f"{iid or path}: invalidated_by must contain supported change classes"
+            )
+        refresh_policy = inspection.get("refresh_policy")
+        if refresh_policy is not None and refresh_policy not in REFRESH_POLICIES:
+            errors.append(f"{iid or path}: refresh_policy is invalid")
+        validated_through = inspection.get("validated_through")
+        if validated_through is not None and (
+            not isinstance(validated_through, dict)
+            or any(
+                task not in task_ids
+                or not isinstance(event_id, str)
+                or not event_id.startswith("EVENT-")
+                for task, event_id in validated_through.items()
+            )
+        ):
+            errors.append(
+                f"{iid or path}: validated_through must map plan task IDs to event IDs"
+            )
         for field in ("performed_at", "performed_by"):
             if inspection.get(field) is not None and not isinstance(inspection.get(field), str):
                 errors.append(f"{iid or path}: {field} must be a string or null")
@@ -571,6 +625,7 @@ def assurance_blockers(
     *,
     task_ids: set[str] | None = None,
     full: bool = False,
+    implementation_frontier: dict[str, dict[str, Any]] | None = None,
 ) -> list[str]:
     blockers: list[str] = []
     if baseline.get("status") != "current":
@@ -615,6 +670,15 @@ def assurance_blockers(
             blockers.append(f"Required inspection {inspection.get('id')} is not sufficient")
         elif not inspection.get("evidence"):
             blockers.append(f"Required inspection {inspection.get('id')} has no evidence")
+
+    blockers.extend(
+        inspection_freshness_blockers(
+            assurance,
+            impacted_assets=impacted_assets,
+            task_ids=task_ids,
+            implementation_frontier=implementation_frontier,
+        )
+    )
 
     for finding in assurance.get("findings", []):
         if not impacted_assets.intersection(finding.get("asset_ids", [])):
@@ -667,6 +731,19 @@ def asset_ids_for_file(baseline: dict[str, Any], changed_file: str) -> set[str]:
     normalized = changed_file.strip().lstrip("./")
     matched: set[str] = set()
     for asset in baseline.get("assets", []):
+        excluded = False
+        for raw in asset.get("exclude_locators", []):
+            locator = raw.strip().lstrip("./")
+            prefix = locator.removesuffix("/**").removesuffix("/*").rstrip("/")
+            if (
+                fnmatch.fnmatch(normalized, locator)
+                or normalized == prefix
+                or normalized.startswith(prefix + "/")
+            ):
+                excluded = True
+                break
+        if excluded:
+            continue
         for raw in asset.get("locators", []):
             locator = raw.strip().lstrip("./")
             if raw.strip() == "." or not locator:
@@ -679,8 +756,94 @@ def asset_ids_for_file(baseline: dict[str, Any], changed_file: str) -> set[str]:
     return matched
 
 
+def inspection_freshness_blockers(
+    assurance: dict[str, Any],
+    *,
+    impacted_assets: set[str],
+    task_ids: set[str] | None,
+    implementation_frontier: dict[str, dict[str, Any]] | None,
+) -> list[str]:
+    if not implementation_frontier:
+        return []
+    blockers: list[str] = []
+    inspections = [
+        item
+        for item in assurance.get("inspections", [])
+        if impacted_assets.intersection(item.get("asset_ids", []))
+        and (
+            task_ids is None
+            or not item.get("task_ids")
+            or task_ids.intersection(item.get("task_ids", []))
+        )
+    ]
+    for inspection in inspections:
+        inspected_tasks = set(inspection.get("task_ids", []))
+        if task_ids is not None:
+            inspected_tasks.intersection_update(task_ids)
+        validated_through = inspection.get("validated_through")
+        if isinstance(validated_through, dict):
+            stale_for = sorted(
+                task
+                for task in inspected_tasks
+                if task in implementation_frontier
+                and validated_through.get(task)
+                != implementation_frontier[task].get("event_id")
+            )
+        else:
+            performed_at = _parse_time(inspection.get("performed_at"))
+            stale_for = []
+            for task in sorted(inspected_tasks):
+                if task not in implementation_frontier:
+                    continue
+                implementation_at = _parse_time(
+                    implementation_frontier[task].get("at")
+                )
+                if (
+                    performed_at is None
+                    or implementation_at is None
+                    or performed_at < implementation_at
+                ):
+                    stale_for.append(task)
+        if stale_for:
+            blockers.append(
+                f"Inspection {inspection.get('id')} predates implementation for: "
+                + ", ".join(stale_for)
+            )
+    return blockers
+
+
+def assurance_warnings(
+    baseline: dict[str, Any], assurance: dict[str, Any]
+) -> list[str]:
+    warnings: list[str] = []
+    for inspection in assurance.get("inspections", []):
+        task_count = len(inspection.get("task_ids", []))
+        asset_count = len(inspection.get("asset_ids", []))
+        if task_count > 8 and inspection.get("refresh_policy") not in {
+            "pre-audit",
+            "release",
+        }:
+            warnings.append(
+                f"Inspection {inspection.get('id')} covers {task_count} tasks; split it or declare a boundary refresh policy"
+            )
+        if asset_count > 4:
+            warnings.append(
+                f"Inspection {inspection.get('id')} covers {asset_count} assets; review its invalidation blast radius"
+            )
+    for asset in baseline.get("assets", []):
+        if any(raw.strip() in {".", "./"} for raw in asset.get("locators", [])):
+            warnings.append(
+                f"Asset {asset.get('id')} maps the repository root; prefer narrower locators"
+            )
+    return sorted(set(warnings))
+
+
 def assurance_for_tasks(
-    baseline: dict[str, Any], assurance: dict[str, Any], task_ids: set[str]
+    baseline: dict[str, Any],
+    assurance: dict[str, Any],
+    task_ids: set[str],
+    *,
+    implementation_frontier: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     impacts, asset_ids = _relevant_records(assurance, task_ids)
     inspections = [
@@ -700,19 +863,30 @@ def assurance_for_tasks(
         for item in assurance.get("scope_drift", [])
         if item.get("task") in task_ids
     ]
+    blockers = assurance_blockers(
+        baseline,
+        assurance,
+        task_ids=task_ids,
+        implementation_frontier=implementation_frontier,
+    )
     return {
-        "status": "blocked" if assurance_blockers(baseline, assurance, task_ids=task_ids) else "covered",
+        "status": "blocked" if blockers else "covered",
         "task_ids": sorted(task_ids),
         "impact_ids": [item["id"] for item in impacts],
         "asset_ids": sorted(asset_ids),
         "inspection_ids": [item["id"] for item in inspections],
         "finding_ids": [item["id"] for item in findings],
         "scope_drift_ids": [item["id"] for item in drift],
-        "blockers": assurance_blockers(baseline, assurance, task_ids=task_ids),
+        "blockers": blockers,
     }
 
 
-def assurance_summary(baseline: dict[str, Any], assurance: dict[str, Any]) -> dict[str, Any]:
+def assurance_summary(
+    baseline: dict[str, Any],
+    assurance: dict[str, Any],
+    *,
+    implementation_frontier: dict[str, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     impacted = {item["asset_id"] for item in assurance.get("impacts", []) if item.get("status") != "dismissed"}
     inspected = {
         aid
@@ -723,9 +897,15 @@ def assurance_summary(baseline: dict[str, Any], assurance: dict[str, Any]) -> di
         and item.get("evidence")
         for aid in item.get("asset_ids", [])
     }
+    blockers = assurance_blockers(
+        baseline,
+        assurance,
+        full=True,
+        implementation_frontier=implementation_frontier,
+    )
     return {
         "policy": assurance.get("policy"),
-        "status": "blocked" if assurance_blockers(baseline, assurance, full=True) else "ready",
+        "status": "blocked" if blockers else "ready",
         "baseline_status": baseline.get("status"),
         "baseline_revision": baseline.get("revision"),
         "assets": len(baseline.get("assets", [])),
@@ -736,7 +916,20 @@ def assurance_summary(baseline: dict[str, Any], assurance: dict[str, Any]) -> di
             item.get("status") == "open" and item.get("severity") in {"high", "critical"}
             for item in assurance.get("findings", [])
         ),
-        "blockers": assurance_blockers(baseline, assurance, full=True),
+        "blockers": blockers,
+        "refresh_inspection_ids": sorted(
+            inspection.get("id")
+            for inspection in assurance.get("inspections", [])
+            if inspection.get("id")
+            and (
+                inspection.get("status") == "stale"
+                or any(
+                    f"Inspection {inspection.get('id')} " in blocker
+                    for blocker in blockers
+                )
+            )
+        ),
+        "warnings": assurance_warnings(baseline, assurance),
     }
 
 

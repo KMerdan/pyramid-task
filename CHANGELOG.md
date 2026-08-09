@@ -4,6 +4,17 @@ All notable changes follow semantic versioning. Serialized task graph and state 
 
 ## Unreleased
 
+## 3.4.0
+
+### Conflict-isolated assurance
+
+- Add task- and audit-scoped mutation guards so inspection-only assurance refreshes do not invalidate unrelated worker packets while the global graph version continues to order immutable history.
+- Use one implementation-freshness engine for readiness, task packets, visualization, lifecycle closure, and audit; add `inspect --audit-readiness` with exact blockers and the minimal inspection refresh set.
+- Bind performed inspections to exact `task.implemented` event frontiers, retain timestamp fallback for existing bundles, and warn about high-fanout inspections and repository-root assets.
+- Make impact preview hashes deterministic by excluding publication metadata and derive assurance status under the project lock.
+- Add typed source, generated, runtime, configuration, evidence, and unknown changes; evidence-only artifacts avoid product drift and invalidation only within declared output scope.
+- Add generated-output patterns with asset mappings, selective inspection invalidation classes, refresh policies, and baseline exclude locators while keeping existing V3 plans and assurance bundles readable.
+
 ## 3.3.0
 
 ### Exact context at mutation time

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import fnmatch
 import hashlib
 import json
 import os
@@ -16,6 +17,8 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from pyramid_assurance import (
+    CHANGE_CLASSES,
+    DEFAULT_INVALIDATION_CLASSES,
     PROJECT_FORMAT_VERSION,
     RUNTIME_VERSION,
     asset_ids_for_file,
@@ -307,13 +310,14 @@ def intent_transition_route(project: str | Path) -> dict[str, Any]:
     paths, plan, state = load_project(project)
     manifest = load_json(paths["project"]) if paths["project"].exists() else None
     _, baseline, assurance = load_assurance_bundle(paths, plan)
+    frontier = implementation_frontier(paths)
     project_format = manifest.get("format_version") if manifest else "legacy-v2"
     status = lifecycle_status(state)
     claims = active_claims(state)
     closure_ready = (
         status == "active"
         and not claims
-        and not completion_errors(plan, state, baseline, assurance)
+        and not completion_errors(plan, state, baseline, assurance, frontier)
     )
     blockers: list[str] = []
     transition: list[str] = []
@@ -402,6 +406,141 @@ def context_identity(plan: dict[str, Any], state: dict[str, Any]) -> dict[str, A
         "plan_revision": plan["revision"],
         "graph_version": state["graph_version"],
     }
+
+
+def implementation_frontier(paths: dict[str, Path]) -> dict[str, dict[str, Any]]:
+    """Return the latest immutable implementation event for each task."""
+    frontier: dict[str, dict[str, Any]] = {}
+    if not paths["events"].exists():
+        return frontier
+    for event_path in paths["events"].glob("*.json"):
+        event = load_json(event_path)
+        task = event.get("node")
+        if event.get("type") != "task.implemented" or not isinstance(task, str):
+            continue
+        version = event.get("graph_version")
+        current = frontier.get(task)
+        if not isinstance(version, int) or (
+            current is not None and version <= current["graph_version"]
+        ):
+            continue
+        frontier[task] = {
+            "event_id": event.get("id"),
+            "graph_version": version,
+            "at": event.get("at"),
+        }
+    return frontier
+
+
+def _guard_token(kind: str, material: dict[str, Any]) -> str:
+    return f"GUARD-{kind.upper()}-" + canonical_sha256(material)[:32].upper()
+
+
+def task_mutation_guard(
+    plan: dict[str, Any],
+    state: dict[str, Any],
+    nid: str,
+    baseline: dict[str, Any] | None,
+    assurance: dict[str, Any] | None,
+) -> str:
+    nodes = node_map(plan)
+    node = nodes[nid]
+    dependency_ids = sorted(
+        edge["to"] for edge in edges_from(plan, nid, AUDIT_BLOCKING)
+    )
+    impacts = []
+    if assurance is not None:
+        impacts = [
+            item
+            for item in assurance.get("impacts", [])
+            if nid in item.get("task_ids", []) and item.get("status") != "dismissed"
+        ]
+    material = {
+        "plan_id": plan["plan_id"],
+        "plan_revision": plan["revision"],
+        "node": node,
+        "node_state": state["nodes"][nid],
+        "dependency_states": {
+            dep: state["nodes"][dep] for dep in dependency_ids
+        },
+        "lifecycle": lifecycle_state(state),
+        "baseline": baseline,
+        "impacts": impacts,
+    }
+    return _guard_token("task", material)
+
+
+def audit_mutation_guard(
+    plan: dict[str, Any],
+    state: dict[str, Any],
+    nid: str,
+    baseline: dict[str, Any] | None,
+    assurance: dict[str, Any] | None,
+    frontier: dict[str, dict[str, Any]],
+) -> str:
+    node = node_map(plan)[nid]
+    covered_tasks = _covered_assurance_tasks(plan, node)
+    relevant_assurance: dict[str, Any] | None = None
+    if assurance is not None:
+        full = nid == plan["intent"]["id"]
+        impacts = [
+            item
+            for item in assurance.get("impacts", [])
+            if item.get("status") != "dismissed"
+            and (full or covered_tasks.intersection(item.get("task_ids", [])))
+        ]
+        assets = {item.get("asset_id") for item in impacts}
+        relevant_assurance = {
+            "status": assurance.get("status") if full else None,
+            "impacts": impacts,
+            "inspections": [
+                item
+                for item in assurance.get("inspections", [])
+                if assets.intersection(item.get("asset_ids", []))
+                and (
+                    full
+                    or not item.get("task_ids")
+                    or covered_tasks.intersection(item.get("task_ids", []))
+                )
+            ],
+            "findings": [
+                item
+                for item in assurance.get("findings", [])
+                if assets.intersection(item.get("asset_ids", []))
+            ],
+            "scope_drift": [
+                item
+                for item in assurance.get("scope_drift", [])
+                if full or item.get("task") in covered_tasks
+            ],
+            "controls": assurance.get("controls") if full else None,
+            "legacy_bridge": assurance.get("legacy_bridge") if full else None,
+        }
+    material = {
+        "plan_id": plan["plan_id"],
+        "plan_revision": plan["revision"],
+        "node": node,
+        "covered_states": {
+            task: state["nodes"][task] for task in sorted(covered_tasks)
+        },
+        "lifecycle": lifecycle_state(state),
+        "baseline": baseline,
+        "assurance": relevant_assurance,
+        "implementation_frontier": {
+            task: frontier[task]
+            for task in sorted(covered_tasks)
+            if task in frontier
+        },
+    }
+    return _guard_token("audit", material)
+
+
+def check_expected_guard(actual: str, expected: str | None, label: str) -> None:
+    if expected is not None and actual != expected:
+        raise PyramidError(
+            f"Stale {label} guard: expected {expected}, current {actual}. "
+            "Refresh only this task or audit packet; unrelated global history may still be current."
+        )
 
 
 def _collection_sha256(path: Path) -> str:
@@ -1124,6 +1263,35 @@ def validate_plan(plan: dict[str, Any]) -> list[str]:
             for field in ("required_context", "allowed_write_scope", "commands", "deliverables", "non_goals"):
                 if not _is_string_list(agent.get(field)):
                     errors.append(f"{nid}: agent.{field} must be a string array")
+            if agent.get("effect", "mixed") not in {
+                "source-change",
+                "evidence-only",
+                "mixed",
+            }:
+                errors.append(f"{nid}: agent.effect is invalid")
+            if "evidence_outputs" in agent and not _is_string_list(
+                agent.get("evidence_outputs")
+            ):
+                errors.append(f"{nid}: agent.evidence_outputs must be a string array")
+            generated_outputs = agent.get("generated_outputs", [])
+            if not isinstance(generated_outputs, list):
+                errors.append(f"{nid}: agent.generated_outputs must be an array")
+            else:
+                for output_index, output in enumerate(generated_outputs):
+                    output_path = f"{nid}: agent.generated_outputs[{output_index}]"
+                    if not isinstance(output, dict):
+                        errors.append(f"{output_path} must be an object")
+                        continue
+                    if not isinstance(output.get("pattern"), str) or not output[
+                        "pattern"
+                    ].strip():
+                        errors.append(f"{output_path}.pattern must be non-empty")
+                    if not _is_string_list(output.get("asset_ids")) or not output.get(
+                        "asset_ids"
+                    ):
+                        errors.append(
+                            f"{output_path}.asset_ids must be a non-empty string array"
+                        )
             if node.get("kind") in EXECUTABLE_KINDS and not agent.get("deliverables"):
                 errors.append(f"{nid}: executable node needs at least one deliverable")
 
@@ -1529,6 +1697,7 @@ def task_packet(
     nid: str,
     baseline: dict[str, Any] | None = None,
     assurance: dict[str, Any] | None = None,
+    frontier: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     nodes = node_map(plan)
     if nid not in nodes:
@@ -1591,12 +1760,25 @@ def task_packet(
             "resume_deadline": item.get("resume_deadline"),
         },
         "completion_report_schema": "agent-result-v1",
+        "mutation_guards": {
+            "task": task_mutation_guard(plan, state, nid, baseline, assurance),
+            "audit": audit_mutation_guard(
+                plan,
+                state,
+                nid,
+                baseline,
+                assurance,
+                frontier or {},
+            ),
+        },
     }
+    packet["mutation_guard"] = packet["mutation_guards"]["task"]
     if baseline is not None and assurance is not None:
         packet["assurance"] = assurance_for_tasks(
             baseline,
             assurance,
             _covered_assurance_tasks(plan, node),
+            implementation_frontier=frontier,
         )
     return packet
 
@@ -1607,6 +1789,7 @@ def task_summary(
     nid: str,
     baseline: dict[str, Any] | None = None,
     assurance: dict[str, Any] | None = None,
+    frontier: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     node = node_map(plan)[nid]
     item = state["nodes"][nid]
@@ -1626,12 +1809,25 @@ def task_summary(
         "blocker": item.get("blocker"),
         "blocked_by": start_blockers(plan, state, node),
         "handoff_id": item.get("active_handoff_id"),
+        "mutation_guards": {
+            "task": task_mutation_guard(plan, state, nid, baseline, assurance),
+            "audit": audit_mutation_guard(
+                plan,
+                state,
+                nid,
+                baseline,
+                assurance,
+                frontier or {},
+            ),
+        },
     }
+    summary["mutation_guard"] = summary["mutation_guards"]["task"]
     if baseline is not None and assurance is not None:
         coverage = assurance_for_tasks(
             baseline,
             assurance,
             _covered_assurance_tasks(plan, node),
+            implementation_frontier=frontier,
         )
         summary["assurance"] = {
             "status": coverage["status"],
@@ -1645,6 +1841,7 @@ def completion_errors(
     state: dict[str, Any],
     baseline: dict[str, Any] | None = None,
     assurance: dict[str, Any] | None = None,
+    frontier: dict[str, dict[str, Any]] | None = None,
 ) -> list[str]:
     errors: list[str] = []
     intent_id = plan["intent"]["id"]
@@ -1668,7 +1865,14 @@ def completion_errors(
     if unhealthy:
         errors.append("Primary nodes are not clear: " + ", ".join(unhealthy))
     if baseline is not None and assurance is not None:
-        errors.extend(assurance_blockers(baseline, assurance, full=True))
+        errors.extend(
+            assurance_blockers(
+                baseline,
+                assurance,
+                full=True,
+                implementation_frontier=frontier,
+            )
+        )
     return errors
 
 
@@ -1678,6 +1882,7 @@ def graph_snapshot(
     baseline: dict[str, Any] | None = None,
     assurance: dict[str, Any] | None = None,
     manifest: dict[str, Any] | None = None,
+    frontier: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     nodes = node_map(plan)
     enriched = []
@@ -1703,6 +1908,7 @@ def graph_snapshot(
                 baseline,
                 assurance,
                 _covered_assurance_tasks(plan, node),
+                implementation_frontier=frontier,
             )
         enriched.append(item)
     primary = [node for node in enriched if node["selection"] == "primary"]
@@ -1720,7 +1926,9 @@ def graph_snapshot(
         "summary": {
             "primary_nodes": len(primary),
             "verified_primary_nodes": verified,
-            "closure_ready": not completion_errors(plan, state, baseline, assurance),
+            "closure_ready": not completion_errors(
+                plan, state, baseline, assurance, frontier
+            ),
             "availability": dict(sorted(counts.items())),
         },
         "nodes": enriched,
@@ -1734,7 +1942,11 @@ def graph_snapshot(
     }
     if baseline is not None and assurance is not None:
         snapshot["assurance"] = {
-            "summary": assurance_summary(baseline, assurance),
+            "summary": assurance_summary(
+                baseline,
+                assurance,
+                implementation_frontier=frontier,
+            ),
             "baseline": copy.deepcopy(baseline),
             "impacts": copy.deepcopy(assurance.get("impacts", [])),
             "inspections": copy.deepcopy(assurance.get("inspections", [])),
@@ -1772,8 +1984,9 @@ def render_node_markdown(
     node: dict[str, Any],
     baseline: dict[str, Any] | None = None,
     assurance: dict[str, Any] | None = None,
+    frontier: dict[str, dict[str, Any]] | None = None,
 ) -> str:
-    packet = task_packet(plan, state, node["id"], baseline, assurance)
+    packet = task_packet(plan, state, node["id"], baseline, assurance, frontier)
     dependencies = [f"`{item['id']}` ({item['type']}, {item['verification']})" for item in packet["dependencies"]]
     criteria = [f"`{item['id']}` — {item['description']}" for item in node["acceptance_criteria"]]
     evidence = [f"`{item['id']}` ({item['type']}) — {item['description']}" for item in node["required_evidence"]]
@@ -1855,14 +2068,17 @@ def render_node_markdown(
 def _compile_project_locked(project: str | Path, *, allow_archived: bool = False) -> dict[str, Any]:
     paths, plan, state = load_project(project)
     manifest, baseline, assurance = load_assurance_bundle(paths, plan)
+    frontier = implementation_frontier(paths)
     if lifecycle_status(state) == "archived" and not allow_archived:
         raise PyramidError("Archived plans are frozen; use their existing projections or restore the plan")
-    snapshot = graph_snapshot(plan, state, baseline, assurance, manifest)
+    snapshot = graph_snapshot(
+        plan, state, baseline, assurance, manifest, frontier
+    )
     by_id = node_map(plan)
     for item in snapshot["nodes"]:
         item["source_path"] = str(node_doc_path(paths, by_id[item["id"]]).relative_to(paths["root"]))
     ready_packets = [
-        task_summary(plan, state, node["id"], baseline, assurance)
+        task_summary(plan, state, node["id"], baseline, assurance, frontier)
         for node in plan["nodes"]
         if availability(plan, state, node) in {"ready", "needs-rework"}
     ]
@@ -1881,7 +2097,12 @@ def _compile_project_locked(project: str | Path, *, allow_archived: bool = False
     for node in plan["nodes"]:
         path = node_doc_path(paths, node)
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(render_node_markdown(paths, plan, state, node, baseline, assurance), encoding="utf-8")
+        path.write_text(
+            render_node_markdown(
+                paths, plan, state, node, baseline, assurance, frontier
+            ),
+            encoding="utf-8",
+        )
 
     intent = plan["intent"]
     intent_text = f"""<!-- Generated by Pyramid Task V3. -->
@@ -1938,7 +2159,11 @@ def _compile_project_locked(project: str | Path, *, allow_archived: bool = False
     ]
     readme_lines.extend([f"- `{packet['task']}` — {packet['title']}" for packet in ready_packets] or ["- None"])
     if baseline is not None and assurance is not None:
-        summary_assurance = assurance_summary(baseline, assurance)
+        summary_assurance = assurance_summary(
+            baseline,
+            assurance,
+            implementation_frontier=frontier,
+        )
         readme_lines.extend(
             [
                 "",
@@ -2349,6 +2574,12 @@ def assess_project(
         for key in ("inspections", "findings")
         for item in assurance.get(key, [])
         for asset_id in item.get("asset_ids", [])
+    } | {
+        asset_id
+        for node in plan.get("nodes", [])
+        for output in node.get("agent", {}).get("generated_outputs", [])
+        if isinstance(output, dict)
+        for asset_id in output.get("asset_ids", [])
     }
     missing_references = sorted(referenced_assets - retained_assets)
     if missing_references:
@@ -2412,6 +2643,50 @@ def assess_project(
     return {**preview, "status": "applied", "event": event, **compiled}
 
 
+def _assurance_semantic_sha256(assurance: dict[str, Any]) -> str:
+    material = copy.deepcopy(assurance)
+    material.pop("updated_at", None)
+    material.pop("updated_by", None)
+    return canonical_sha256(material)
+
+
+def _normalize_assurance_candidate(
+    candidate: dict[str, Any],
+    baseline: dict[str, Any],
+    actor: str,
+    frontier: dict[str, dict[str, Any]],
+    *,
+    stamp: bool,
+) -> tuple[dict[str, Any], list[str]]:
+    normalized = copy.deepcopy(candidate)
+    for inspection in normalized.get("inspections", []):
+        if inspection.get("status") != "performed":
+            continue
+        performed_at = parse_time(inspection.get("performed_at"))
+        inspection["validated_through"] = {
+            task: frontier[task]["event_id"]
+            for task in inspection.get("task_ids", [])
+            if task in frontier
+            and performed_at is not None
+            and parse_time(frontier[task].get("at")) is not None
+            and parse_time(frontier[task]["at"]) <= performed_at
+        }
+    normalized["status"] = "incomplete"
+    blockers = assurance_blockers(
+        baseline,
+        normalized,
+        full=True,
+        implementation_frontier=frontier,
+    )
+    normalized["status"] = "ready" if not blockers else "incomplete"
+    if normalized["status"] == "ready":
+        normalized["stale_reasons"] = []
+    if stamp:
+        normalized["updated_at"] = utc_now()
+        normalized["updated_by"] = actor
+    return normalized, blockers
+
+
 def impact_project(
     project: str | Path,
     assurance_path: str | Path,
@@ -2430,13 +2705,14 @@ def impact_project(
     errors = validate_assurance(candidate, plan=plan, baseline=baseline)
     if errors:
         raise PyramidError("Candidate assurance is invalid:\n- " + "\n- ".join(errors))
-    normalized = copy.deepcopy(candidate)
-    normalized["updated_at"] = utc_now()
-    normalized["updated_by"] = actor
-    blockers = assurance_blockers(baseline, normalized, full=True)
-    normalized["status"] = "ready" if not blockers else "incomplete"
-    if normalized["status"] == "ready":
-        normalized["stale_reasons"] = []
+    frontier = implementation_frontier(paths)
+    normalized, blockers = _normalize_assurance_candidate(
+        candidate,
+        baseline,
+        actor,
+        frontier,
+        stamp=False,
+    )
     preview = {
         "status": "preview",
         "schema": "pyramid-impact-preview-v1",
@@ -2448,7 +2724,12 @@ def impact_project(
         "open_scope_drift": sum(item.get("status") == "open" for item in normalized["scope_drift"]),
         "assurance_status": normalized["status"],
         "blockers": blockers,
-        "assurance_sha256": canonical_sha256(normalized),
+        "assurance_sha256": _assurance_semantic_sha256(normalized),
+        "warnings": assurance_summary(
+            baseline,
+            normalized,
+            implementation_frontier=frontier,
+        )["warnings"],
     }
     if not apply:
         return preview
@@ -2459,6 +2740,14 @@ def impact_project(
         _, baseline, current_assurance = load_assurance_bundle(paths, plan)
         if baseline is None or current_assurance is None:
             raise PyramidError("Baseline disappeared before impact apply")
+        frontier = implementation_frontier(paths)
+        normalized, blockers = _normalize_assurance_candidate(
+            candidate,
+            baseline,
+            actor,
+            frontier,
+            stamp=True,
+        )
         errors = validate_assurance(normalized, plan=plan, baseline=baseline)
         if errors:
             raise PyramidError("Candidate assurance became invalid:\n- " + "\n- ".join(errors))
@@ -2471,7 +2760,10 @@ def impact_project(
             node=plan["intent"]["id"],
             before={"assurance_sha256": canonical_sha256(current_assurance)},
             after={"assurance_sha256": canonical_sha256(normalized), "status": normalized["status"]},
-            payload={"blockers": blockers},
+            payload={
+                "blockers": blockers,
+                "candidate_sha256": _assurance_semantic_sha256(normalized),
+            },
         )
     compiled = compile_project(project)
     return {**preview, "status": "applied", "event": event, **compiled}
@@ -2484,11 +2776,11 @@ def take_task(
     take_next: bool = False,
     lease_minutes: int = 120,
     expected_version: int | dict[str, Any] | None = None,
+    expected_guard: str | None = None,
 ) -> dict[str, Any]:
     paths = project_paths(project)
     with project_lock(paths):
         paths, plan, state = load_project(project)
-        check_expected_version(plan, state, expected_version)
         require_active(state, "take work")
         nodes = node_map(plan)
         if take_next:
@@ -2499,6 +2791,15 @@ def take_task(
             nid = ready[0]["id"]
         if not nid or nid not in nodes:
             raise PyramidError(f"Unknown node: {nid}")
+        _, baseline, assurance = load_assurance_bundle(paths, plan)
+        if expected_guard is not None:
+            check_expected_guard(
+                task_mutation_guard(plan, state, nid, baseline, assurance),
+                expected_guard,
+                "task",
+            )
+        else:
+            check_expected_version(plan, state, expected_version)
         node = nodes[nid]
         item = state["nodes"][nid]
         expired = item["execution"] == "working" and parse_time(item.get("lease_expires_at")) and parse_time(item.get("lease_expires_at")) <= datetime.now(timezone.utc)
@@ -2530,10 +2831,11 @@ def take_task(
     compile_project(project)
     paths, plan, state = load_project(project)
     _, baseline, assurance = load_assurance_bundle(paths, plan)
+    frontier = implementation_frontier(paths)
     return {
         "status": "taken",
         "event": event,
-        "packet": task_packet(plan, state, nid, baseline, assurance),
+        "packet": task_packet(plan, state, nid, baseline, assurance, frontier),
     }
 
 
@@ -2547,6 +2849,7 @@ def pause_task(
     mode: str = "hold",
     resume_minutes: int = 60,
     expected_version: int | dict[str, Any] | None = None,
+    expected_guard: str | None = None,
 ) -> dict[str, Any]:
     """Pause an owned task and persist a complete, immutable continuation record."""
     if mode not in {"hold", "handoff"}:
@@ -2562,11 +2865,19 @@ def pause_task(
     paths = project_paths(project)
     with project_lock(paths):
         paths, plan, state = load_project(project)
-        check_expected_version(plan, state, expected_version)
         require_active(state, "pause work")
         nodes = node_map(plan)
         if nid not in nodes:
             raise PyramidError(f"Unknown node: {nid}")
+        _, baseline, assurance = load_assurance_bundle(paths, plan)
+        if expected_guard is not None:
+            check_expected_guard(
+                task_mutation_guard(plan, state, nid, baseline, assurance),
+                expected_guard,
+                "task",
+            )
+        else:
+            check_expected_version(plan, state, expected_version)
         node = nodes[nid]
         item = state["nodes"][nid]
         if node["kind"] not in EXECUTABLE_KINDS:
@@ -2657,10 +2968,11 @@ def pause_task(
     compiled = compile_project(project)
     paths, plan, state = load_project(project)
     _, baseline, assurance = load_assurance_bundle(paths, plan)
+    frontier = implementation_frontier(paths)
     return {
         "status": "paused",
         "event": event,
-        "packet": task_packet(plan, state, nid, baseline, assurance),
+        "packet": task_packet(plan, state, nid, baseline, assurance, frontier),
         "handoff": {
             "id": handoff_id,
             "json": str(handoff_json),
@@ -2769,7 +3081,8 @@ def resume_task(
     compile_project(project)
     paths, plan, state = load_project(project)
     _, baseline, assurance = load_assurance_bundle(paths, plan)
-    packet = task_packet(plan, state, nid, baseline, assurance)
+    frontier = implementation_frontier(paths)
+    packet = task_packet(plan, state, nid, baseline, assurance, frontier)
     packet["handoff"] = {
         "id": active_handoff_id,
         "path": str(_handoff_path(paths, active_handoff_id)),
@@ -2790,6 +3103,56 @@ def resume_task(
     return {"status": "resumed", "event": event, "packet": packet}
 
 
+def _path_matches(path: str, patterns: Iterable[str]) -> bool:
+    normalized = path.strip().lstrip("./")
+    for raw in patterns:
+        pattern = raw.strip().lstrip("./")
+        prefix = pattern.removesuffix("/**").removesuffix("/*").rstrip("/")
+        if (
+            fnmatch.fnmatch(normalized, pattern)
+            or normalized == prefix
+            or normalized.startswith(prefix + "/")
+        ):
+            return True
+    return False
+
+
+def _generated_assets_for_path(node: dict[str, Any], path: str) -> set[str]:
+    assets: set[str] = set()
+    for declaration in node.get("agent", {}).get("generated_outputs", []):
+        if isinstance(declaration, dict) and _path_matches(
+            path, [declaration.get("pattern", "")]
+        ):
+            assets.update(declaration.get("asset_ids", []))
+    return assets
+
+
+def _classified_changes(
+    result: dict[str, Any], node: dict[str, Any]
+) -> list[dict[str, str]]:
+    explicit = {
+        item.get("path"): item.get("class")
+        for item in result.get("changes", [])
+        if isinstance(item, dict)
+    }
+    effect = result.get("change_effect")
+    evidence_outputs = node.get("agent", {}).get("evidence_outputs", [])
+    records: list[dict[str, str]] = []
+    for path in result.get("changed_files", []):
+        if not isinstance(path, str) or not path.strip():
+            continue
+        change_class = explicit.get(path)
+        if change_class is None:
+            if effect == "evidence-only" or _path_matches(path, evidence_outputs):
+                change_class = "evidence"
+            elif _generated_assets_for_path(node, path):
+                change_class = "generated"
+            else:
+                change_class = "source"
+        records.append({"path": path, "class": change_class})
+    return records
+
+
 def _validate_agent_result(result: dict[str, Any], node: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if result.get("schema") != "agent-result-v1":
@@ -2803,6 +3166,61 @@ def _validate_agent_result(result: dict[str, Any], node: dict[str, Any]) -> list
             errors.append(f"result.{field} must be an array")
     if "changed_assets" in result and not _is_string_list(result.get("changed_assets")):
         errors.append("result.changed_assets must be a string array when provided")
+    change_effect = result.get("change_effect", "mixed")
+    if change_effect not in {"source-change", "evidence-only", "mixed"}:
+        errors.append(
+            "result.change_effect must be source-change, evidence-only, or mixed when provided"
+        )
+    changes = result.get("changes", [])
+    if not isinstance(changes, list):
+        errors.append("result.changes must be an array when provided")
+        changes = []
+    changed_files = {
+        item for item in result.get("changed_files", []) if isinstance(item, str)
+    }
+    classified_paths: set[str] = set()
+    for index, change in enumerate(changes):
+        if not isinstance(change, dict):
+            errors.append(f"result.changes[{index}] must be an object")
+            continue
+        path = change.get("path")
+        change_class = change.get("class")
+        if not isinstance(path, str) or not path.strip():
+            errors.append(f"result.changes[{index}].path must be non-empty")
+            continue
+        if path in classified_paths:
+            errors.append(f"result.changes contains duplicate path {path}")
+        classified_paths.add(path)
+        if path not in changed_files:
+            errors.append(f"result.changes path {path} is absent from changed_files")
+        if change_class not in CHANGE_CLASSES:
+            errors.append(f"result.changes[{index}].class is invalid")
+    if changes and classified_paths != changed_files:
+        errors.append("result.changes must classify every changed_files entry")
+
+    agent_contract = node.get("agent", {})
+    declared_effect = agent_contract.get("effect", "mixed")
+    records = _classified_changes(result, node)
+    for record in records:
+        path, change_class = record["path"], record["class"]
+        if change_class == "generated" and not _generated_assets_for_path(node, path):
+            errors.append(
+                f"Generated change {path} lacks an agent.generated_outputs declaration"
+            )
+        if change_class == "evidence" and not _path_matches(
+            path, agent_contract.get("evidence_outputs", [])
+        ):
+            errors.append(
+                f"Evidence change {path} is outside declared evidence output scope"
+            )
+    if change_effect == "evidence-only" and any(
+        record["class"] != "evidence" for record in records
+    ):
+        errors.append("evidence-only results may contain only evidence changes")
+    if declared_effect == "evidence-only" and change_effect != "evidence-only":
+        errors.append("this task contract requires an evidence-only result")
+    if declared_effect == "source-change" and change_effect == "evidence-only":
+        errors.append("this task contract does not permit an evidence-only result")
     evidence_by_id = {
         item.get("criterion"): item
         for item in result.get("acceptance_evidence", [])
@@ -2831,18 +3249,29 @@ def _record_scope_drift(
         for impact in assurance.get("impacts", [])
         if nid in impact.get("task_ids", []) and impact.get("status") != "dismissed"
     }
-    candidates: list[tuple[str, set[str]]] = []
-    for changed_file in result.get("changed_files", []):
-        if isinstance(changed_file, str) and changed_file.strip():
-            candidates.append((changed_file, asset_ids_for_file(baseline, changed_file)))
+    node = node_map(plan)[nid]
+    candidates: list[tuple[str, set[str], set[str]]] = []
+    for change in _classified_changes(result, node):
+        changed_file = change["path"]
+        change_class = change["class"]
+        if change_class == "evidence":
+            continue
+        matched = asset_ids_for_file(baseline, changed_file)
+        declared = (
+            _generated_assets_for_path(node, changed_file)
+            if change_class == "generated"
+            else set()
+        )
+        candidates.append((changed_file, matched | declared, expected_assets | declared))
     known_assets = {item["id"] for item in baseline.get("assets", [])}
-    for changed_asset in result.get("changed_assets", []):
-        matched = {changed_asset} if changed_asset in known_assets else set()
-        candidates.append((f"asset:{changed_asset}", matched))
+    if result.get("change_effect") != "evidence-only":
+        for changed_asset in result.get("changed_assets", []):
+            matched = {changed_asset} if changed_asset in known_assets else set()
+            candidates.append((f"asset:{changed_asset}", matched, expected_assets))
     drift_ids: list[str] = []
     affected_assets: set[str] = set()
-    for changed_file, matched_assets in candidates:
-        if matched_assets and matched_assets.issubset(expected_assets):
+    for changed_file, matched_assets, allowed_assets in candidates:
+        if matched_assets and matched_assets.issubset(allowed_assets):
             continue
         token = hashlib.sha256(
             f"{nid}\0{changed_file}\0{state['graph_version']}".encode("utf-8")
@@ -2866,7 +3295,11 @@ def _record_scope_drift(
     if not drift_ids:
         return [], []
     for inspection in assurance.get("inspections", []):
-        if affected_assets.intersection(inspection.get("asset_ids", [])):
+        if (
+            "unknown"
+            in set(inspection.get("invalidated_by", DEFAULT_INVALIDATION_CLASSES))
+            and affected_assets.intersection(inspection.get("asset_ids", []))
+        ):
             inspection["status"] = "stale"
             limitations = inspection.setdefault("limitations", [])
             message = f"Scope drift from {nid} invalidated this inspection."
@@ -2900,30 +3333,61 @@ def _invalidate_inspections_for_actual_change(
     if not manifest or manifest.get("mode") != "brownfield" or baseline is None or assurance is None:
         return []
     known_assets = {item["id"] for item in baseline.get("assets", [])}
-    changed_assets = {
+    node = node_map(plan)[nid]
+    changed_assets_by_class: dict[str, set[str]] = defaultdict(set)
+    asset_class = (
+        "evidence" if result.get("change_effect") == "evidence-only" else "source"
+    )
+    changed_assets_by_class[asset_class].update(
         asset_id
         for asset_id in result.get("changed_assets", [])
         if asset_id in known_assets
-    }
-    for changed_file in result.get("changed_files", []):
-        if isinstance(changed_file, str):
-            changed_assets.update(asset_ids_for_file(baseline, changed_file))
+    )
+    for change in _classified_changes(result, node):
+        changed_assets_by_class[change["class"]].update(
+            asset_ids_for_file(baseline, change["path"])
+        )
+        if change["class"] == "generated":
+            changed_assets_by_class["generated"].update(
+                _generated_assets_for_path(node, change["path"])
+            )
+    changed_assets = set().union(*changed_assets_by_class.values())
     if not changed_assets:
         return []
     stale: list[str] = []
+    invalidated_assets: set[str] = set()
+    touched = False
     for inspection in assurance.get("inspections", []):
-        if not changed_assets.intersection(inspection.get("asset_ids", [])):
+        invalidated_by = set(
+            inspection.get("invalidated_by", DEFAULT_INVALIDATION_CLASSES)
+        )
+        overlapping = set().union(
+            *(
+                assets.intersection(inspection.get("asset_ids", []))
+                for change_class, assets in changed_assets_by_class.items()
+                if change_class in invalidated_by
+            )
+        ) if invalidated_by else set()
+        if not overlapping:
             continue
+        touched = True
+        invalidated_assets.update(overlapping)
         if inspection.get("status") == "performed":
             inspection["status"] = "stale"
             stale.append(inspection["id"])
         limitations = inspection.setdefault("limitations", [])
-        message = f"Implementation result for {nid} changed covered assets after this inspection."
+        message = (
+            f"Implementation result for {nid} changed covered assets after this inspection: "
+            + ", ".join(sorted(overlapping))
+            + "."
+        )
         if message not in limitations:
             limitations.append(message)
+    if not touched:
+        return []
     mark_assurance_stale(
         assurance,
-        f"Implementation for {nid} changed assets {', '.join(sorted(changed_assets))}; post-change inspection is required.",
+        f"Implementation for {nid} changed assets {', '.join(sorted(invalidated_assets))}; post-change inspection is required.",
         actor,
     )
     write_json(paths["assurance"], assurance)
@@ -2972,6 +3436,7 @@ def update_task(
     reason: str | None = None,
     result_path: str | Path | None = None,
     expected_version: int | dict[str, Any] | None = None,
+    expected_guard: str | None = None,
 ) -> dict[str, Any]:
     if status not in {"implemented", "blocked", "at-risk", "clear", "release"}:
         raise PyramidError(f"Unsupported update status: {status}")
@@ -2979,11 +3444,19 @@ def update_task(
     result = load_json(Path(result_path).expanduser().resolve()) if result_path else None
     with project_lock(paths):
         paths, plan, state = load_project(project)
-        check_expected_version(plan, state, expected_version)
         require_active(state, "update work")
         nodes = node_map(plan)
         if nid not in nodes:
             raise PyramidError(f"Unknown node: {nid}")
+        _, baseline, assurance = load_assurance_bundle(paths, plan)
+        if expected_guard is not None:
+            check_expected_guard(
+                task_mutation_guard(plan, state, nid, baseline, assurance),
+                expected_guard,
+                "task",
+            )
+        else:
+            check_expected_version(plan, state, expected_version)
         item = state["nodes"][nid]
         if item.get("execution") == "paused":
             raise PyramidError(f"{nid} is paused; resume it before recording an update")
@@ -3065,10 +3538,11 @@ def update_task(
     compile_project(project)
     paths, plan, state = load_project(project)
     _, baseline, assurance = load_assurance_bundle(paths, plan)
+    frontier = implementation_frontier(paths)
     return {
         "status": status,
         "event": event,
-        "packet": task_packet(plan, state, nid, baseline, assurance),
+        "packet": task_packet(plan, state, nid, baseline, assurance, frontier),
         "scope_drift": scope_drift,
         "assurance_invalidated": assurance_invalidated,
         "stale_inspections": stale_inspections,
@@ -3167,12 +3641,14 @@ def _assurance_audit_errors(
     errors: list[str] = []
     covered_tasks = _covered_assurance_tasks(plan, node)
     full = node["id"] == plan["intent"]["id"]
+    frontier = implementation_frontier(paths)
     errors.extend(
         assurance_blockers(
             baseline,
             assurance,
             task_ids=None if full else covered_tasks,
             full=full,
+            implementation_frontier=frontier,
         )
     )
     relevant_impacts = [
@@ -3203,35 +3679,6 @@ def _assurance_audit_errors(
             and item.get("sufficiency") == "sufficient"
         )
     }
-    latest_implementation: dict[str, datetime] = {}
-    if paths["events"].exists():
-        for event_path in paths["events"].glob("*.json"):
-            event = load_json(event_path)
-            if event.get("type") != "task.implemented" or event.get("node") not in covered_tasks:
-                continue
-            timestamp = parse_time(event.get("at"))
-            if timestamp is not None and (
-                event["node"] not in latest_implementation
-                or timestamp > latest_implementation[event["node"]]
-            ):
-                latest_implementation[event["node"]] = timestamp
-    for inspection in relevant_inspections:
-        performed_at = parse_time(inspection.get("performed_at"))
-        inspected_tasks = covered_tasks.intersection(inspection.get("task_ids", []))
-        stale_for = sorted(
-            task_id
-            for task_id in inspected_tasks
-            if task_id in latest_implementation
-            and (
-                performed_at is None
-                or performed_at < latest_implementation[task_id]
-            )
-        )
-        if stale_for:
-            errors.append(
-                f"Inspection {inspection.get('id')} predates implementation for: "
-                + ", ".join(stale_for)
-            )
     expected_findings = {
         item["id"]
         for item in assurance.get("findings", [])
@@ -3323,6 +3770,7 @@ def audit_node(
     result_value: str,
     evidence_path: str | Path,
     expected_version: int | dict[str, Any] | None = None,
+    expected_guard: str | None = None,
 ) -> dict[str, Any]:
     if result_value not in {"pass", "fail"}:
         raise PyramidError("audit result must be pass or fail")
@@ -3333,11 +3781,22 @@ def audit_node(
     paths = project_paths(project)
     with project_lock(paths):
         paths, plan, state = load_project(project)
-        check_expected_version(plan, state, expected_version)
         require_active(state, "record an audit")
         nodes = node_map(plan)
         if nid not in nodes:
             raise PyramidError(f"Unknown node: {nid}")
+        _, baseline, assurance = load_assurance_bundle(paths, plan)
+        frontier = implementation_frontier(paths)
+        if expected_guard is not None:
+            check_expected_guard(
+                audit_mutation_guard(
+                    plan, state, nid, baseline, assurance, frontier
+                ),
+                expected_guard,
+                "audit",
+            )
+        else:
+            check_expected_version(plan, state, expected_version)
         if result_value == "pass":
             prerequisite_errors = _audit_prerequisite_errors(plan, state, nodes[nid])
             prerequisite_errors.extend(
@@ -3392,10 +3851,11 @@ def audit_node(
     compile_project(project)
     paths, plan, state = load_project(project)
     _, baseline, assurance = load_assurance_bundle(paths, plan)
+    frontier = implementation_frontier(paths)
     response = {
         "status": result_value,
         "event": event,
-        "packet": task_packet(plan, state, nid, baseline, assurance),
+        "packet": task_packet(plan, state, nid, baseline, assurance, frontier),
         "invalidated": invalidated,
         "stale_inspections": stale_inspections,
     }
@@ -4039,13 +4499,14 @@ def reopen_node(
     compiled = compile_project(project)
     paths, plan, state = load_project(project)
     _, baseline, assurance = load_assurance_bundle(paths, plan)
+    frontier = implementation_frontier(paths)
     return {
         "status": "reopened",
         "event": event,
         "invalidated": invalidated,
         "stale_inspections": stale_inspections,
         "plan_reactivated": reactivated,
-        "packet": task_packet(plan, state, nid, baseline, assurance),
+        "packet": task_packet(plan, state, nid, baseline, assurance, frontier),
         **compiled,
     }
 
@@ -4299,7 +4760,13 @@ def close_project(
                 "already_completed": True,
             }
         manifest, baseline, assurance = load_assurance_bundle(paths, plan)
-        errors = completion_errors(plan, state, baseline, assurance)
+        errors = completion_errors(
+            plan,
+            state,
+            baseline,
+            assurance,
+            implementation_frontier(paths),
+        )
         if errors:
             raise PyramidError("Plan cannot close:\n- " + "\n- ".join(errors))
         completed_at = utc_now()
@@ -4989,8 +5456,9 @@ def inspect_lifecycle(project: str | Path) -> dict[str, Any]:
         return {"schema": "pyramid-lifecycle-v1", "current": None, "archives": archives}
     paths, plan, state = load_project(project)
     manifest, baseline, assurance = load_assurance_bundle(paths, plan)
+    frontier = implementation_frontier(paths)
     errors = (
-        completion_errors(plan, state, baseline, assurance)
+        completion_errors(plan, state, baseline, assurance, frontier)
         if lifecycle_status(state) == "active"
         else []
     )
@@ -5019,7 +5487,11 @@ def inspect_lifecycle(project: str | Path) -> dict[str, Any]:
             "format_version": "legacy-v2",
             "mode": "legacy",
         },
-        "assurance": assurance_summary(baseline, assurance)
+        "assurance": assurance_summary(
+            baseline,
+            assurance,
+            implementation_frontier=frontier,
+        )
         if baseline is not None and assurance is not None
         else None,
         "archives": archives,
@@ -5100,11 +5572,15 @@ def inspect_project(
     assurance_view: bool = False,
     assurance_summary_view: bool = False,
     assurance_detail: bool = False,
+    audit_readiness: str | None = None,
     nid: str | None = None,
 ) -> dict[str, Any]:
     paths, plan, state = load_project(project)
     manifest, baseline, assurance = load_assurance_bundle(paths, plan)
-    snapshot = graph_snapshot(plan, state, baseline, assurance, manifest)
+    frontier = implementation_frontier(paths)
+    snapshot = graph_snapshot(
+        plan, state, baseline, assurance, manifest, frontier
+    )
     context = context_identity(plan, state)
     if assurance_view or assurance_summary_view or assurance_detail:
         if baseline is None or assurance is None:
@@ -5120,17 +5596,65 @@ def inspect_project(
             "mode": manifest.get("mode") if manifest else "brownfield",
             "graph_version": state["graph_version"],
             "context": context,
-            "summary": assurance_summary(baseline, assurance),
+            "summary": assurance_summary(
+                baseline,
+                assurance,
+                implementation_frontier=frontier,
+            ),
         }
         if assurance_view or assurance_detail:
             result["baseline"] = copy.deepcopy(baseline)
             result["assurance"] = copy.deepcopy(assurance)
         return result
+    if audit_readiness:
+        nodes = node_map(plan)
+        if audit_readiness not in nodes:
+            raise PyramidError(f"Unknown node: {audit_readiness}")
+        node = nodes[audit_readiness]
+        covered_tasks = _covered_assurance_tasks(plan, node)
+        blockers = _audit_prerequisite_errors(plan, state, node)
+        coverage = None
+        if baseline is not None and assurance is not None:
+            coverage = assurance_for_tasks(
+                baseline,
+                assurance,
+                covered_tasks,
+                implementation_frontier=frontier,
+            )
+            blockers.extend(coverage["blockers"])
+        return {
+            "schema": "pyramid-audit-readiness-v1",
+            "target": audit_readiness,
+            "graph_version": state["graph_version"],
+            "context": context,
+            "audit_guard": audit_mutation_guard(
+                plan,
+                state,
+                audit_readiness,
+                baseline,
+                assurance,
+                frontier,
+            ),
+            "covered_task_ids": sorted(covered_tasks),
+            "ready": not blockers,
+            "blockers": sorted(set(blockers)),
+            "assurance": coverage,
+            "refresh_inspection_ids": sorted(
+                inspection.get("id")
+                for inspection in (assurance or {}).get("inspections", [])
+                if inspection.get("id")
+                and any(
+                    f"Inspection {inspection.get('id')} " in blocker
+                    or f"inspection {inspection.get('id')} " in blocker
+                    for blocker in blockers
+                )
+            ),
+        }
     if nid:
-        return task_packet(plan, state, nid, baseline, assurance)
+        return task_packet(plan, state, nid, baseline, assurance, frontier)
     if ready:
         tasks = [
-            task_summary(plan, state, node["id"], baseline, assurance)
+            task_summary(plan, state, node["id"], baseline, assurance, frontier)
             for node in plan["nodes"]
             if availability(plan, state, node) in {"ready", "needs-rework"}
         ]
@@ -5144,7 +5668,7 @@ def inspect_project(
         }
     if paused:
         nodes = [
-            task_summary(plan, state, node["id"], baseline, assurance)
+            task_summary(plan, state, node["id"], baseline, assurance, frontier)
             for node in plan["nodes"]
             if availability(plan, state, node) == "paused"
         ]
@@ -5157,7 +5681,7 @@ def inspect_project(
         }
     if blocked:
         nodes = [
-            task_summary(plan, state, node["id"], baseline, assurance)
+            task_summary(plan, state, node["id"], baseline, assurance, frontier)
             for node in plan["nodes"]
             if availability(plan, state, node) in {"blocked", "locked"}
         ]
@@ -5170,7 +5694,7 @@ def inspect_project(
         }
     if pending_audits:
         nodes = [
-            task_summary(plan, state, node["id"], baseline, assurance)
+            task_summary(plan, state, node["id"], baseline, assurance, frontier)
             for node in plan["nodes"]
             if node["kind"] == "audit"
             and state["nodes"][node["id"]]["verification"] != "passed"
@@ -5195,11 +5719,15 @@ def inspect_project(
             "format_version": "legacy-v2",
             "mode": "legacy",
         },
-        "assurance": assurance_summary(baseline, assurance)
+        "assurance": assurance_summary(
+            baseline,
+            assurance,
+            implementation_frontier=frontier,
+        )
         if baseline is not None and assurance is not None
         else None,
         "closure_ready": lifecycle_status(state) == "active"
-        and not completion_errors(plan, state, baseline, assurance),
+        and not completion_errors(plan, state, baseline, assurance, frontier),
         "intent": plan["intent"],
         "summary": snapshot["summary"],
         "ready": [node["id"] for node in snapshot["nodes"] if node["availability"] in {"ready", "needs-rework"}],

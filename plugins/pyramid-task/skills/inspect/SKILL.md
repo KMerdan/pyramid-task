@@ -23,6 +23,7 @@ python3 ../../scripts/pyramid.py inspect --project <project-root> --summary --js
 python3 ../../scripts/pyramid.py inspect --project <project-root> --ready --json
 python3 ../../scripts/pyramid.py inspect --project <project-root> --blocked --json
 python3 ../../scripts/pyramid.py inspect --project <project-root> --pending-audits --json
+python3 ../../scripts/pyramid.py inspect --project <project-root> --audit-readiness GATE-205 --json
 python3 ../../scripts/pyramid.py inspect --project <project-root> --paused --json
 python3 ../../scripts/pyramid.py inspect --project <project-root> --node TASK-203 --json
 python3 ../../scripts/pyramid.py inspect --project <project-root> --assurance-summary --json
@@ -32,7 +33,7 @@ python3 ../../scripts/pyramid.py diff --project <project-root> --from-version <v
 python3 ../../scripts/pyramid.py lifecycle --project <project-root> --json
 ```
 
-Use `--assurance-detail` only for individual assurance records and `diff --detail` only when compact changed-field summaries are insufficient. Treat `context.id` plus `context.graph_version` as the exact identity for any later mutation.
+Use `--assurance-detail` only for individual assurance records and `diff --detail` only when compact changed-field summaries are insufficient. Use the returned task or audit mutation guard for scoped work; reserve the global context identity for topology, lifecycle, and full assurance mutations.
 
 4. Explain derived facts with causes: unmet dependencies for `locked`, ownership for working tasks, handoff mode and deadline for paused tasks, failed checks, assurance blockers, stale evidence, open drift, and material findings.
 5. Distinguish `implemented` from `verified`, task readiness from assurance readiness, and node completion from plan closure. Report labeled coverage counts, not an invented percentage.

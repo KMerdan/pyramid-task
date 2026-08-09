@@ -47,6 +47,13 @@ def add_version(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--expected-context", help="Reject a mutation from another plan generation or state")
 
 
+def add_scoped_guard(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--expected-guard",
+        help="Use a task- or audit-scoped mutation guard instead of global graph context",
+    )
+
+
 def add_json(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
 
@@ -171,6 +178,7 @@ def build_parser() -> argparse.ArgumentParser:
     group.add_argument("--assurance", action="store_true")
     group.add_argument("--assurance-summary", action="store_true")
     group.add_argument("--assurance-detail", action="store_true")
+    group.add_argument("--audit-readiness")
     group.add_argument("--node")
     add_json(inspect)
 
@@ -189,6 +197,7 @@ def build_parser() -> argparse.ArgumentParser:
     take.add_argument("--actor", required=True)
     take.add_argument("--lease-minutes", type=int, default=120)
     add_version(take)
+    add_scoped_guard(take)
     add_json(take)
 
     pause = sub.add_parser("pause", help="Pause an owned task with an immutable handoff record")
@@ -200,6 +209,7 @@ def build_parser() -> argparse.ArgumentParser:
     pause.add_argument("--mode", choices=["hold", "handoff"], default="hold")
     pause.add_argument("--resume-minutes", type=int, default=60, help="Owner hold duration; ignored for handoff mode")
     add_version(pause)
+    add_scoped_guard(pause)
     add_json(pause)
 
     resume = sub.add_parser("resume", help="Resume a paused task from its validated handoff record")
@@ -221,6 +231,7 @@ def build_parser() -> argparse.ArgumentParser:
     update.add_argument("--reason")
     update.add_argument("--result")
     add_version(update)
+    add_scoped_guard(update)
     add_json(update)
 
     audit = sub.add_parser("audit", help="Record an evidence-backed audit")
@@ -230,6 +241,7 @@ def build_parser() -> argparse.ArgumentParser:
     audit.add_argument("--result", required=True, choices=["pass", "fail"])
     audit.add_argument("--evidence", required=True)
     add_version(audit)
+    add_scoped_guard(audit)
     add_json(audit)
 
     replan = sub.add_parser("replan", help="Preview or apply a new topology")
@@ -408,6 +420,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             assurance_view=args.assurance,
             assurance_summary_view=args.assurance_summary,
             assurance_detail=args.assurance_detail,
+            audit_readiness=args.audit_readiness,
             nid=args.node,
         ), 0
     if args.command == "diff":
@@ -427,6 +440,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             take_next=args.next,
             lease_minutes=args.lease_minutes,
             expected_version=expected_guard(args),
+            expected_guard=args.expected_guard,
         ), 0
     if args.command == "pause":
         return pause_task(
@@ -438,6 +452,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             mode=args.mode,
             resume_minutes=args.resume_minutes,
             expected_version=expected_guard(args),
+            expected_guard=args.expected_guard,
         ), 0
     if args.command == "resume":
         return resume_task(
@@ -459,6 +474,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             reason=args.reason,
             result_path=args.result,
             expected_version=expected_guard(args),
+            expected_guard=args.expected_guard,
         ), 0
     if args.command == "audit":
         return audit_node(
@@ -468,6 +484,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             args.result,
             args.evidence,
             expected_version=expected_guard(args),
+            expected_guard=args.expected_guard,
         ), 0
     if args.command == "replan":
         return replan_project(

@@ -10,11 +10,11 @@ Use the compact ready frontier first. Load `../../references/agent-contracts.md`
 ## Workflow
 
 1. Identify the project root and stable actor name.
-2. Inspect the compact ready frontier if the user did not specify a node. Reuse its `context.graph_version` and `context.id`; do not load full packets for every candidate. The frontier includes `needs-rework` nodes and prioritizes them before new work.
+2. Inspect the compact ready frontier if the user did not specify a node. Reuse the selected task's `mutation_guard`; it excludes unrelated inspection refreshes while binding the task contract, dependency state, baseline, and impact map. Do not load full packets for every candidate. The frontier includes `needs-rework` nodes and prioritizes them before new work.
 3. Claim exactly one task:
 
 ```bash
-python3 ../../scripts/pyramid.py take --project <project-root> --node TASK-203 --actor <actor> --expected-version <graph-version> --expected-context <context-id> --json
+python3 ../../scripts/pyramid.py take --project <project-root> --node TASK-203 --actor <actor> --expected-guard <task-guard> --json
 python3 ../../scripts/pyramid.py take --project <project-root> --next --actor <actor> --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
@@ -27,7 +27,7 @@ python3 ../../scripts/pyramid.py take --project <project-root> --next --actor <a
 
 - Never claim work for a read-only status request.
 - Never bypass a locked dependency.
-- Never work from a stale packet after a graph-version or context conflict; inspect and take again.
+- Never work from a stale task guard. A global graph version may advance for unrelated evidence; refresh only the selected packet when its scoped guard conflicts.
 - Never take a paused task. Use `pyramid-task:resume` so the canonical handoff is checked and returned.
 - Release the claim if the task will not be attempted.
 - Never take work from a completed or archived plan. Reopen or restore it through lifecycle first.

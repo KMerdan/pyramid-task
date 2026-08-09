@@ -21,7 +21,7 @@ Use `../../assets/example-plan.json` as a structural example, never as product e
 4. Backward-chain from the intent to required outcomes. Forward-chain from the current state to feasible work. Reconcile both chains.
 5. Compare material alternatives by evidence strength, constraint fit, risk, reversibility, dependency burden, and testability. Preserve rejected alternatives and rationale.
 6. Create a graph in a temporary JSON file that follows `graph-contract.md`. Use outcome nodes for required states and executable nodes for work. Add a joint audit wherever multiple branches compose.
-7. Ensure each executable node has bounded scope, agent context, deliverables, acceptance criteria, and evidence requirements. For brownfield work, create `pyramid-assurance-v1` impact hypotheses, required inspections, material finding policy, rollback, and monitoring controls; use `pyramid-task:impact` for a dedicated pass.
+7. Ensure each executable node has bounded scope, agent context, deliverables, acceptance criteria, and evidence requirements. Declare `agent.effect`, evidence output globs, and generated output globs with asset IDs when applicable. For brownfield work, create narrow `pyramid-assurance-v1` impact hypotheses and inspections; give broad boundary or release inspections an explicit `pre-audit` or `release` refresh policy and declare which change classes invalidate them. Add material finding policy, rollback, and monitoring controls; use `pyramid-task:impact` for a dedicated pass.
 8. Run:
 
 ```bash

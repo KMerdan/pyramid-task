@@ -99,10 +99,10 @@ codex plugin add pyramid-task@kmerdan-skills
 
 ### Claude Code
 
-Claude Code manifests live on the [`claude_code`](https://github.com/KMerdan/pyramid-task/tree/claude_code) branch:
+The same `main` branch contains both the Codex and Claude Code manifests:
 
 ```bash
-git clone --branch claude_code https://github.com/KMerdan/pyramid-task
+git clone https://github.com/KMerdan/pyramid-task
 claude plugin marketplace add ./pyramid-task
 claude plugin install pyramid-task@kmerdan-skills
 ```
@@ -157,10 +157,11 @@ Agent queries are compact by default. Expand only the selected context:
 ```bash
 python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --ready --json
 python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --node TASK-203 --json
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --audit-readiness GATE-205 --json
 python3 plugins/pyramid-task/scripts/pyramid.py diff --project /path/to/project --from-version 12 --json
 ```
 
-Pass both `context.graph_version` and `context.id` back as `--expected-version` and `--expected-context` on mutations. This prevents an agent from applying work to a different reset, restore, or concurrently changed state that happens to reuse a numeric version.
+Use a packet's task guard for take, update, and pause, and its audit guard for audit. Scoped guards bind the exact task or assurance inputs without treating an unrelated inspection refresh as a worker conflict. Continue passing `context.graph_version` and `context.id` on topology, lifecycle, reset, restore, and full assurance mutations.
 
 Common lifecycle commands:
 
@@ -265,7 +266,7 @@ Release details are recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## Project status
 
-Version 3.3.0 gives agents the smallest exact context at the right mutation boundary. It adds composite context guards, an atomic canonical head, hash-linked event history, compact diff and inspection queries, serialized projections, and semantic live visualization updates while retaining durable pause/resume continuity.
+Version 3.4.0 isolates worker and audit mutation guards, makes impact previews deterministic, exposes audit freshness before mutation, binds inspections to implementation events, and distinguishes source, generated, and evidence-only change effects. It preserves the atomic canonical head, hash-linked global history, compact context routing, live visualization, and durable pause/resume continuity.
 
 ## License
 

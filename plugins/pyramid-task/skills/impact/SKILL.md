@@ -18,9 +18,9 @@ python3 ../../scripts/pyramid.py inspect --project <project-root> --assurance-su
 Request `--assurance-detail` only when you must edit or audit individual baseline and assurance records. `--assurance` remains the backward-compatible full query.
 
 2. Map each executable change and joint gate to directly or transitively affected assets. Record the dependency path, confidence, status, and evidence. Preserve hypotheses until evidence confirms or dismisses them.
-3. Define risk-sensitive inspections for every impacted asset. Record method, required flag, performed result, sufficiency, evidence, and limitations. Add findings and give material findings an explicit resolved or accountable accepted disposition.
+3. Define risk-sensitive inspections for every impacted asset. Keep task and asset scope narrow. Record invalidating change classes and choose `per-change`, `per-wave`, `pre-audit`, or `release` refresh timing. Record method, required flag, performed result, sufficiency, evidence, and limitations. Add findings and give material findings an explicit resolved or accountable accepted disposition.
 4. Establish evidenced rollback and monitoring controls or explain why either is not applicable.
-5. Reconcile open drift only when evidence maps the actual changed file or asset to an impact record. Repeat stale inspections whose scope premise changed. Complete a required legacy bridge with targeted sufficient inspections.
+5. Reconcile open drift only when evidence maps the actual changed file or asset to an impact record. Repeat only the `refresh_inspection_ids` needed at the next audit boundary; do not refresh broad release inspections after every task. Complete a required legacy bridge with targeted sufficient inspections.
 6. Preview and apply the complete assurance candidate:
 
 ```bash
@@ -28,7 +28,7 @@ python3 ../../scripts/pyramid.py impact --project <project-root> --assurance <as
 python3 ../../scripts/pyramid.py impact --project <project-root> --assurance <assurance.json> --actor <actor> --apply --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
-7. Report canonical blockers, ready status, unresolved uncertainty, drift, material findings, and which audits the bundle covers.
+7. Report canonical blockers, readiness, warnings about inspection fanout or root assets, unresolved uncertainty, drift, material findings, the minimal refresh set, and which audits the bundle covers. Re-previewing unchanged semantic content must retain the same candidate hash.
 
 ## Boundaries
 

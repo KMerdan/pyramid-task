@@ -10,6 +10,19 @@
     "task": {"type": "string"},
     "outcome": {"const": "implemented"},
     "changed_files": {"type": "array", "items": {"type": "string"}},
+    "change_effect": {"enum": ["source-change", "evidence-only", "mixed"]},
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "class"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "class": {"enum": ["source", "generated", "runtime", "configuration", "evidence", "unknown"]}
+        }
+      }
+    },
     "checks": {
       "type": "array",
       "items": {

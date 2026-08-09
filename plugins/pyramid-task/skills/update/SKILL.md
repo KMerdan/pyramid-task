@@ -10,14 +10,14 @@ Read `../../references/agent-contracts.md` before creating a result. Load `../..
 ## Workflow
 
 1. Confirm the actor owns the active claim and the task packet is current.
-2. Run the task's required checks. Record actual commands, outcomes, every changed file, known `changed_assets`, acceptance evidence, risks, and proposed graph changes in `agent-result-v1` JSON.
-3. Apply exactly one transition using the graph version and context ID from the claimed task packet:
+2. Run the task's required checks. Record actual commands, outcomes, every changed file, known `changed_assets`, acceptance evidence, risks, and proposed graph changes in `agent-result-v1` JSON. Classify authored, generated, runtime, configuration, evidence, and unknown changes only when classification matters. Use `change_effect: evidence-only` only for files inside the task's declared evidence output scope. Generated files require a predeclared output pattern and asset mapping.
+3. Apply exactly one transition using `mutation_guards.task` from the claimed task packet:
 
 ```bash
-python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status implemented --result <result.json> --expected-version <graph-version> --expected-context <context-id> --json
-python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status blocked --reason <reason> --result <result.json> --expected-version <graph-version> --expected-context <context-id> --json
-python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status at-risk --reason <reason> --expected-version <graph-version> --expected-context <context-id> --json
-python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status release --expected-version <graph-version> --expected-context <context-id> --json
+python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status implemented --result <result.json> --expected-guard <task-guard> --json
+python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status blocked --reason <reason> --result <result.json> --expected-guard <task-guard> --json
+python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status at-risk --reason <reason> --expected-guard <task-guard> --json
+python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203 --actor <actor> --status release --expected-guard <task-guard> --json
 ```
 
 4. Report execution, verification, health, availability, detected scope drift, invalidated assurance, and remaining rework separately.
@@ -30,3 +30,4 @@ python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203
 - Do not hand-edit state, claims, graph snapshots, or event files.
 - Do not use this interface to add, remove, or reparent nodes.
 - Never omit an out-of-scope changed file to avoid drift detection. Reconcile drift through `pyramid-task:impact`.
+- Do not label source or generated behavior as evidence-only. The runtime rejects undeclared evidence and generated scopes and treats unknown changes conservatively.

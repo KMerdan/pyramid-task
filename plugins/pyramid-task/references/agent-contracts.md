@@ -6,7 +6,7 @@ The runtime produces compact packets so a worker does not need the entire graph.
 
 `take` returns `agent-task-v1` for one claimed node with:
 
-- task, graph version, and composite context identity;
+- task, graph version, composite context identity, and task/audit mutation guards;
 - title, purpose, kind, level, wave, and workstream;
 - execution, verification, health, blocker, and derived availability;
 - goal trace to the intent plus direct parents and children;
@@ -19,7 +19,7 @@ The runtime produces compact packets so a worker does not need the entire graph.
 
 Start from compact `inspect --ready`, `--blocked`, `--paused`, or `--pending-audits` output. Load a full node packet only for the selected work. Use `diff` for bounded history summaries and request `--detail` only when before/after values are necessary.
 
-Treat a packet as stale after a graph-version or context conflict. Every mutation should pass both `--expected-version` and `--expected-context` from the packet or preview. Refresh instead of guessing how the plan changed.
+Use `mutation_guards.task` for take, update, and pause, and `mutation_guards.audit` for audit. These guards bind only the task contract, relevant state, baseline, impact map, implementation frontier, and applicable assurance. An unrelated inspection refresh may advance global history without invalidating a worker guard. Continue using graph version plus context ID for topology, lifecycle, full assurance, reset, and restore mutations. Refresh the smallest relevant packet after a scoped conflict.
 
 ## Agent result
 
@@ -32,6 +32,8 @@ Submit `agent-result-v1` as JSON:
   "outcome": "implemented",
   "changed_files": ["src/example.py"],
   "changed_assets": ["ASSET-EXAMPLE"],
+  "change_effect": "mixed",
+  "changes": [{"path": "src/example.py", "class": "source"}],
   "checks": [{"command": "python3 -m unittest", "result": "passed"}],
   "acceptance_evidence": [{"criterion": "AC-101-01", "result": "passed", "reference": "tests/test_example.py"}],
   "discovered_risks": [],
@@ -39,7 +41,7 @@ Submit `agent-result-v1` as JSON:
 }
 ```
 
-Use `blocked` when the task cannot continue inside its existing contract. Report every changed file and known asset. The runtime compares actual scope with predicted impact and opens drift when they differ. Use `suggested_graph_changes` for evidence that may require expansion or replanning; do not mutate topology through a result.
+Use `blocked` when the task cannot continue inside its existing contract. Report every changed file and known asset. Classify files as `source`, `generated`, `runtime`, `configuration`, `evidence`, or `unknown` when the distinction affects invalidation. Evidence-only output must stay inside declared evidence scope. Generated output requires a plan-time glob and asset mapping: this prevents false drift but still invalidates behavior inspections covering the generated asset. The runtime compares actual scope with predicted impact and opens drift when they differ. Use `suggested_graph_changes` for evidence that may require expansion or replanning; do not mutate topology through a result.
 
 ## Audit result
 
@@ -85,6 +87,6 @@ A passing audit requires a non-empty check list and no failed check. In brownfie
 
 A completed plan rejects take, pause, resume, update, audit, expand, and replan. An archived plan rejects every canonical mutation. Use the lifecycle interface for close, archive, reset, restore, clean, and manual reopen semantics.
 
-Every mutation supplies an actor, expected graph version and context ID when available, reason or result, timestamp, and unique event ID. Events are immutable and hash-linked after this contract is introduced. Generated graph and Markdown files are projections, not mutation interfaces.
+Every mutation supplies an actor, an appropriate scoped or global guard, reason or result, timestamp, and unique event ID. Global graph versions continue to order immutable hash-linked events; they are not used as a false dependency between unrelated worker and inspection mutations. Generated graph and Markdown files are projections, not mutation interfaces.
 
 When an older standalone `pyramid-task-planner` is also discoverable, the V3 plugin remains authoritative for `.pyramid` and `docs/tasks/`. `doctor` reports the conflict; the compatibility shim delegates rather than writing files.

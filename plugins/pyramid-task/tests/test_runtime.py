@@ -25,6 +25,7 @@ from pyramid_core import (  # noqa: E402
     PyramidError,
     archive_project,
     assess_project,
+    audit_mutation_guard,
     audit_node,
     clean_project,
     close_project,
@@ -36,8 +37,11 @@ from pyramid_core import (  # noqa: E402
     inspect_lifecycle,
     inspect_project,
     impact_project,
+    implementation_frontier,
     intent_transition_route,
+    load_assurance_bundle,
     load_json,
+    load_project,
     new_intent_project,
     pause_task,
     replan_project,
@@ -852,6 +856,199 @@ class PyramidRuntimeTests(unittest.TestCase):
         assurance = inspect_project(root, assurance_view=True)
         self.assertEqual("brownfield", assurance["mode"])
         self.assertEqual("blocked", assurance["summary"]["status"])
+
+    def test_impact_preview_hash_is_stable_for_identical_semantic_content(self) -> None:
+        root = Path(self.temp.name) / "stable-impact-project"
+        create_project(
+            root,
+            self.example,
+            "planner",
+            mode="brownfield",
+            baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+            assurance_path=PLUGIN_ROOT / "assets" / "example-assurance.json",
+        )
+        candidate = PLUGIN_ROOT / "assets" / "example-assurance.json"
+        first = impact_project(root, candidate, "auditor")
+        second = impact_project(root, candidate, "auditor")
+        self.assertEqual(first["assurance_sha256"], second["assurance_sha256"])
+
+    def test_task_guard_survives_an_inspection_only_assurance_refresh(self) -> None:
+        root = Path(self.temp.name) / "scoped-guard-project"
+        create_project(
+            root,
+            self.example,
+            "planner",
+            mode="brownfield",
+            baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+            assurance_path=PLUGIN_ROOT / "assets" / "example-assurance.json",
+        )
+        packet = take_task(root, "worker", nid="RESEARCH-101")["packet"]
+        impact_project(
+            root,
+            PLUGIN_ROOT / "assets" / "example-assurance.json",
+            "auditor",
+            apply=True,
+        )
+        updated = update_task(
+            root,
+            "RESEARCH-101",
+            "worker",
+            "clear",
+            expected_guard=packet["mutation_guard"],
+        )
+        self.assertEqual("clear", updated["status"])
+
+    def test_scoped_audit_guard_ignores_global_assurance_status(self) -> None:
+        root = Path(self.temp.name) / "scoped-audit-guard-project"
+        create_project(
+            root,
+            self.example,
+            "planner",
+            mode="brownfield",
+            baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+            assurance_path=PLUGIN_ROOT / "assets" / "example-assurance.json",
+        )
+        paths, plan, state = load_project(root)
+        _, baseline, assurance = load_assurance_bundle(paths, plan)
+        frontier = implementation_frontier(paths)
+        before = audit_mutation_guard(
+            plan, state, "RESEARCH-101", baseline, assurance, frontier
+        )
+        changed = copy.deepcopy(assurance)
+        changed["status"] = "incomplete"
+        changed["stale_reasons"] = ["Unrelated work is awaiting review."]
+        after = audit_mutation_guard(
+            plan, state, "RESEARCH-101", baseline, changed, frontier
+        )
+        self.assertEqual(before, after)
+
+    def test_readiness_exposes_the_same_freshness_failure_as_audit(self) -> None:
+        root = Path(self.temp.name) / "freshness-parity-project"
+        create_project(
+            root,
+            self.example,
+            "planner",
+            mode="brownfield",
+            baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+            assurance_path=PLUGIN_ROOT / "assets" / "example-assurance.json",
+        )
+        take_task(root, "worker", nid="RESEARCH-101")
+        result = load_json(self.result_for("RESEARCH-101", ["AC-101-01"]))
+        result["changed_files"] = []
+        result["changed_assets"] = ["ASSET-EXECUTOR"]
+        update_task(
+            root,
+            "RESEARCH-101",
+            "worker",
+            "implemented",
+            result_path=self.write_json("freshness-result.json", result),
+        )
+        impact_project(
+            root,
+            PLUGIN_ROOT / "assets" / "example-assurance.json",
+            "auditor",
+            apply=True,
+        )
+        summary = inspect_project(root, assurance_summary_view=True)["summary"]
+        blocker = "Inspection INSPECTION-001 predates implementation for: RESEARCH-101"
+        self.assertEqual("blocked", summary["status"])
+        self.assertIn(blocker, summary["blockers"])
+        readiness = inspect_project(root, audit_readiness="RESEARCH-101")
+        self.assertFalse(readiness["ready"])
+        self.assertIn(blocker, readiness["blockers"])
+        with self.assertRaisesRegex(PyramidError, "predates implementation"):
+            audit_node(
+                root,
+                "RESEARCH-101",
+                "auditor",
+                "pass",
+                self.assurance_audit_for("RESEARCH-101"),
+            )
+
+    def test_evidence_only_result_does_not_stale_product_inspections(self) -> None:
+        root = Path(self.temp.name) / "evidence-only-project"
+        plan = load_json(self.example)
+        research = next(node for node in plan["nodes"] if node["id"] == "RESEARCH-101")
+        research["agent"]["effect"] = "evidence-only"
+        research["agent"]["evidence_outputs"] = ["docs/reports/**"]
+        research["agent"]["allowed_write_scope"] = ["docs/reports/**"]
+        plan_path = self.write_json("evidence-only-plan.json", plan)
+        create_project(
+            root,
+            plan_path,
+            "planner",
+            mode="brownfield",
+            baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+            assurance_path=PLUGIN_ROOT / "assets" / "example-assurance.json",
+        )
+        take_task(root, "worker", nid="RESEARCH-101")
+        result = load_json(self.result_for("RESEARCH-101", ["AC-101-01"]))
+        result["changed_files"] = ["docs/reports/research.md"]
+        result["change_effect"] = "evidence-only"
+        result["changes"] = [
+            {"path": "docs/reports/research.md", "class": "evidence"}
+        ]
+        updated = update_task(
+            root,
+            "RESEARCH-101",
+            "worker",
+            "implemented",
+            result_path=self.write_json("evidence-only-result.json", result),
+        )
+        self.assertEqual([], updated["scope_drift"])
+        self.assertEqual([], updated["stale_inspections"])
+        assurance = load_json(root / ".pyramid" / "assurance.json")
+        self.assertEqual("performed", assurance["inspections"][0]["status"])
+
+    def test_declared_generated_output_avoids_drift_but_stales_covered_behavior(self) -> None:
+        root = Path(self.temp.name) / "generated-output-project"
+        plan = load_json(self.example)
+        research = next(node for node in plan["nodes"] if node["id"] == "RESEARCH-101")
+        research["agent"]["generated_outputs"] = [
+            {"pattern": "generated/**", "asset_ids": ["ASSET-EXECUTOR"]}
+        ]
+        plan_path = self.write_json("generated-output-plan.json", plan)
+        create_project(
+            root,
+            plan_path,
+            "planner",
+            mode="brownfield",
+            baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+            assurance_path=PLUGIN_ROOT / "assets" / "example-assurance.json",
+        )
+        take_task(root, "worker", nid="RESEARCH-101")
+        result = load_json(self.result_for("RESEARCH-101", ["AC-101-01"]))
+        result["changed_files"] = ["generated/package.js"]
+        result["change_effect"] = "mixed"
+        result["changes"] = [
+            {"path": "generated/package.js", "class": "generated"}
+        ]
+        updated = update_task(
+            root,
+            "RESEARCH-101",
+            "worker",
+            "implemented",
+            result_path=self.write_json("generated-output-result.json", result),
+        )
+        self.assertEqual([], updated["scope_drift"])
+        self.assertEqual(["INSPECTION-001"], updated["stale_inspections"])
+
+    def test_generated_output_requires_a_known_baseline_asset(self) -> None:
+        root = Path(self.temp.name) / "unknown-generated-asset-project"
+        plan = load_json(self.example)
+        research = next(node for node in plan["nodes"] if node["id"] == "RESEARCH-101")
+        research["agent"]["generated_outputs"] = [
+            {"pattern": "generated/**", "asset_ids": ["ASSET-DOES-NOT-EXIST"]}
+        ]
+        with self.assertRaisesRegex(PyramidError, "unknown baseline assets"):
+            create_project(
+                root,
+                self.write_json("unknown-generated-asset-plan.json", plan),
+                "planner",
+                mode="brownfield",
+                baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+                assurance_path=PLUGIN_ROOT / "assets" / "example-assurance.json",
+            )
 
     def test_brownfield_audits_require_inspection_coverage_and_close_with_dossier(self) -> None:
         root = Path(self.temp.name) / "assured-project"

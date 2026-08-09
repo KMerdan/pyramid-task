@@ -12,7 +12,7 @@ Legacy projects without `project.json` remain readable. Upgrade them through the
 
 `.pyramid/baseline.json` is the system's change baseline—the equivalent of a vehicle registration plus service history. It contains:
 
-- stable assets with kind, owner, criticality, locators, confidence, and evidence;
+- stable assets with kind, owner, criticality, include and optional exclude locators, confidence, and evidence;
 - typed relations between assets;
 - relevant incidents, defects, migrations, decisions, workarounds, and past changes;
 - explicit unknowns and a status of `incomplete`, `current`, or `stale`.
@@ -24,7 +24,7 @@ Model assets at the narrowest boundary useful for impact and inspection. A repos
 `.pyramid/assurance.json` contains:
 
 - impacts mapping graph task IDs to affected assets, with direct or transitive paths, confidence, status, and evidence;
-- inspections mapping assets and tasks to methods, results, sufficiency, limitations, and evidence;
+- inspections mapping assets and tasks to methods, results, sufficiency, limitations, evidence, invalidating change classes, refresh policy, and the exact implementation-event frontier inspected;
 - findings with severity and accountable disposition;
 - scope-drift records comparing declared impact with actual changed files or assets;
 - rollback and monitoring controls;
@@ -41,9 +41,11 @@ The final intent additionally requires a current baseline, confirmed impact cove
 
 ## Invalidation
 
-Evidence becomes stale when its scope premise changes. Baseline reassessment stales performed inspections. Replan, approved expansion, reopen, audit failure, and undeclared implementation scope stale affected assurance and dependent verification. Reconcile by updating the canonical baseline or assurance bundle through `assess` or `impact`, never by editing generated views or weakening an audit.
+Evidence becomes stale when its scope premise changes. Baseline reassessment stales performed inspections. Replan, approved expansion, reopen, audit failure, and undeclared implementation scope stale affected assurance and dependent verification. Implementation invalidation requires both asset overlap and a matching change class; the conservative default includes source, generated, runtime, configuration, and unknown changes but excludes declared evidence-only artifacts. Unknown scope remains conservative. Reconcile by updating the canonical baseline or assurance bundle through `assess` or `impact`, never by editing generated views or weakening an audit.
 
-Workers report both `changed_files` and, when known, `changed_assets`. The runtime compares them with confirmed or hypothesized impact records. An unmapped change creates an open drift record and blocks audit until evidence maps or dismisses it.
+Workers report both `changed_files` and, when known, `changed_assets`. Evidence-only changes require declared evidence scope. Generated changes require predeclared output globs and asset IDs. The runtime compares authored and generated scope with confirmed or hypothesized impact records; evidence artifacts do not create product scope drift. An unmapped or misclassified change creates an open drift record and blocks audit until evidence maps or dismisses it.
+
+Performed inspections are bound to the latest `task.implemented` event IDs that existed at `performed_at`. Readiness and audit use the same frontier check, so a summary cannot report ready when an audit would reject older inspection evidence. Broad inspections should run at a declared wave, pre-audit, or release boundary rather than after every task.
 
 ## Closure and carry-forward
 

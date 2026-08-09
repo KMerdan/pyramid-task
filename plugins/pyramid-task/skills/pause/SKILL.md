@@ -9,7 +9,7 @@ Read `../../references/handoff-contract.md`. Load `../../references/agent-contra
 
 ## Workflow
 
-1. Confirm the task is currently `working`, the actor owns it, and its packet is current. Reuse the packet's graph version and context ID for the pause guard. Do not pause another actor’s work.
+1. Confirm the task is currently `working`, the actor owns it, and its packet is current. Reuse `mutation_guards.task` for the pause guard. Do not pause another actor’s work.
 2. Capture the real continuation state before stopping: completed and unfinished work, every changed file and affected asset, commands and their actual results, decisions and assumptions, blockers, risks, exact next steps, required context, external session references, and any running resource that needs attention.
 3. Create `pyramid-handoff-draft-v1` JSON. Start from `../../assets/example-handoff-draft.json`; never invent a passed check or hide a changed file.
 4. Choose the pause mode deliberately:
@@ -23,7 +23,7 @@ python3 ../../scripts/pyramid.py pause \
   --reason "Coffee break after the validation seam" \
   --handoff /path/to/handoff-draft.json \
   --mode hold --resume-minutes 60 \
-  --expected-version <graph-version> --expected-context <context-id> --json
+  --expected-guard <task-guard> --json
 ```
 
 6. Report the handoff ID, pause mode, deadline (if any), and its exact resume command. The task is not released, implemented, verified, or archived by pausing it.
