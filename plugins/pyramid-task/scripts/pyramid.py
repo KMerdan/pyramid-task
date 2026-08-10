@@ -178,8 +178,19 @@ def build_parser() -> argparse.ArgumentParser:
     group.add_argument("--assurance", action="store_true")
     group.add_argument("--assurance-summary", action="store_true")
     group.add_argument("--assurance-detail", action="store_true")
+    group.add_argument(
+        "--parallel-ready",
+        action="store_true",
+        help="Derive conflict-safe same-wave task batches for sub-agent orchestration",
+    )
     group.add_argument("--audit-readiness")
     group.add_argument("--node")
+    inspect.add_argument(
+        "--max-agents",
+        type=int,
+        default=4,
+        help="Maximum coordinator plus sub-agents in one parallel batch",
+    )
     add_json(inspect)
 
     diff = sub.add_parser("diff", help="Show compact event changes between graph versions")
@@ -420,6 +431,8 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             assurance_view=args.assurance,
             assurance_summary_view=args.assurance_summary,
             assurance_detail=args.assurance_detail,
+            parallel_ready=args.parallel_ready,
+            max_agents=args.max_agents,
             audit_readiness=args.audit_readiness,
             nid=args.node,
         ), 0

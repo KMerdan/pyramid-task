@@ -1,4 +1,4 @@
 interface:
   display_name: "Inspect Pyramid Plan"
-  short_description: "Query exact task context without graph overload"
-  default_prompt: "Use $inspect to answer this question with the smallest exact runtime query, expanding only the relevant node or assurance detail."
+  short_description: "Query exact status and safe parallel groups"
+  default_prompt: "Use $inspect to answer with the smallest exact runtime query, including the derived parallel-ready frontier only when concurrent execution is relevant."

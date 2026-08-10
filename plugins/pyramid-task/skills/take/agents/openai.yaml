@@ -1,4 +1,4 @@
 interface:
   display_name: "Take Pyramid Task"
-  short_description: "Claim a ready task and receive its packet"
-  default_prompt: "Use $take to inspect the compact frontier, claim one ready task with its composite context guard, and return only its task packet."
+  short_description: "Claim one task with its scoped packet"
+  default_prompt: "Use $take to inspect the compact frontier, claim one ready task with its task-scoped guard, and return only its task packet."

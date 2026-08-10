@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/parallel-frontier.schema.json",
+  "title": "Pyramid Task Parallel Frontier",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "plan_id",
+    "graph_version",
+    "context",
+    "max_agents",
+    "candidate_count",
+    "parallel_task_count",
+    "groups",
+    "serial_tasks",
+    "conflicts"
+  ],
+  "properties": {
+    "schema": {"const": "pyramid-parallel-frontier-v1"},
+    "plan_id": {"$ref": "#/$defs/id"},
+    "graph_version": {"type": "integer", "minimum": 1},
+    "context": {"$ref": "#/$defs/context"},
+    "max_agents": {"type": "integer", "minimum": 1},
+    "candidate_count": {"type": "integer", "minimum": 0},
+    "parallel_task_count": {"type": "integer", "minimum": 0},
+    "groups": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/group"}
+    },
+    "serial_tasks": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/serialTask"}
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/conflict"}
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9-]*$"},
+    "strings": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/id"}
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "plan_id", "plan_revision", "graph_version"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^CTX-"},
+        "plan_id": {"$ref": "#/$defs/id"},
+        "plan_revision": {"type": "integer", "minimum": 1},
+        "graph_version": {"type": "integer", "minimum": 1}
+      }
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task",
+        "title",
+        "kind",
+        "level",
+        "wave",
+        "workstream",
+        "effect",
+        "claim_guard",
+        "allowed_write_scope",
+        "asset_ids",
+        "inspection_ids"
+      ],
+      "properties": {
+        "task": {"$ref": "#/$defs/id"},
+        "title": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["research", "contract", "implementation", "integration", "risk-control", "audit"]},
+        "level": {"type": "integer", "minimum": 0},
+        "wave": {"type": "integer", "minimum": 0},
+        "workstream": {"type": "string", "minLength": 1},
+        "effect": {"enum": ["source-change", "evidence-only", "mixed"]},
+        "claim_guard": {"type": "string", "pattern": "^GUARD-TASK-"},
+        "allowed_write_scope": {"$ref": "#/$defs/strings"},
+        "asset_ids": {"$ref": "#/$defs/ids"},
+        "inspection_ids": {"$ref": "#/$defs/ids"}
+      }
+    },
+    "group": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "wave",
+        "levels",
+        "task_ids",
+        "recommended_agents",
+        "recommended_subagents",
+        "isolation",
+        "join_gate",
+        "shared_asset_ids",
+        "shared_inspection_ids",
+        "shared_inspections",
+        "effective_refresh_boundary",
+        "tasks"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^PARALLEL-W[0-9]+-[A-F0-9]{10}$"},
+        "wave": {"type": "integer", "minimum": 0},
+        "levels": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "integer", "minimum": 0}
+        },
+        "task_ids": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "recommended_agents": {"type": "integer", "minimum": 2},
+        "recommended_subagents": {"type": "integer", "minimum": 1},
+        "isolation": {"enum": ["separate-worktrees", "shared-read-only"]},
+        "join_gate": {"anyOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+        "shared_asset_ids": {"$ref": "#/$defs/ids"},
+        "shared_inspection_ids": {"$ref": "#/$defs/ids"},
+        "shared_inspections": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/sharedInspection"}
+        },
+        "effective_refresh_boundary": {
+          "enum": ["per-wave", "pre-audit", null]
+        },
+        "tasks": {
+          "type": "array",
+          "minItems": 2,
+          "items": {"$ref": "#/$defs/task"}
+        }
+      }
+    },
+    "sharedInspection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "refresh_policy"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "refresh_policy": {"enum": ["per-wave", "pre-audit", "release"]}
+      }
+    },
+    "serialTask": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task", "title", "wave", "reasons"],
+      "properties": {
+        "task": {"$ref": "#/$defs/id"},
+        "title": {"type": "string", "minLength": 1},
+        "wave": {"type": "integer", "minimum": 0},
+        "reasons": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "conflict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tasks", "wave", "reasons"],
+      "properties": {
+        "tasks": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "wave": {"type": "integer", "minimum": 0},
+        "reasons": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

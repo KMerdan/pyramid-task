@@ -4,12 +4,26 @@ All notable changes follow semantic versioning. Serialized task graph and state 
 
 ## Unreleased
 
+## 3.5.0
+
+### Conflict-safe parallel execution
+
+- Add a read-only `inspect --parallel-ready --max-agents` query that derives deterministic same-wave batches from current readiness, dependency, write/evidence/generated scope, asset, inspection-policy, and scope-drift state.
+- Publish compact claim guards, isolation guidance, shared evidence refresh boundaries, common join gates, serial reasons, and pairwise conflicts without adding parallel state to the canonical graph.
+- Add the `pyramid-task:orchestrate` skill for host-neutral sub-agent coordination with exact worker packets, one canonical coordinator, isolated source worktrees, and targeted rejoin audits.
+- Preserve task-guard validity across unrelated parallel claims and validate the new output with a published schema and focused runtime tests.
+
+### Runtime architecture
+
+- Extract pure graph/readiness primitives and parallel analysis from the core transaction facade, with an incremental architecture plan for storage, projection, lifecycle, and query boundaries.
+- Document the parallel workflow with a README diagram, planning guidance, context limits, and Codex/Claude Code behavior from one branch.
+
 ### Documentation
 
-- Reorganize the README around the current 3.4.0 architecture, scoped context model, assurance timing, live publication behavior, and single-branch Codex/Claude installation.
+- Reorganize the README around the current architecture, scoped context model, assurance timing, live publication behavior, and single-branch Codex/Claude installation.
 - Document immutable event storage versus compact agent context, the mutation-to-guard routing table, inspection refresh-policy semantics, fanout warnings, and generated-output asset validation.
 - Update published examples and contributor invariants to demonstrate the current typed change and inspection contracts.
-- Align expansion proposal agent fields with the 3.4.0 plan contract so typed tasks can be preserved and expanded without schema rejection.
+- Align expansion proposal agent fields with the typed plan contract so tasks can be preserved and expanded without schema rejection.
 
 ## 3.4.0
 

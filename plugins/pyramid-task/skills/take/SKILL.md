@@ -11,6 +11,7 @@ Use the compact ready frontier first. Load `../../references/agent-contracts.md`
 
 1. Identify the project root and stable actor name.
 2. Inspect the compact ready frontier if the user did not specify a node. Reuse the selected task's `mutation_guard`; it excludes unrelated inspection refreshes while binding the task contract, dependency state, baseline, and impact map. Do not load full packets for every candidate. The frontier includes `needs-rework` nodes and prioritizes them before new work.
+   When coordinating multiple workers, use `pyramid-task:orchestrate` and claim only a task returned in the selected parallel group.
 3. Claim exactly one task:
 
 ```bash

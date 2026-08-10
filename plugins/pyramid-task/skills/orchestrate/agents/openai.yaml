@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orchestrate Pyramid Tasks"
+  short_description: "Run conflict-safe tasks with sub-agents"
+  default_prompt: "Use $orchestrate to inspect the live parallel-ready frontier and coordinate one safe task batch with exact sub-agent packets."

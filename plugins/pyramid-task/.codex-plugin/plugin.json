@@ -1,7 +1,7 @@
 {
   "name": "pyramid-task",
-  "version": "3.4.0+codex.20260809085830",
-  "description": "Plan and assure brownfield changes with scoped mutation guards, event-bound inspections, typed change effects, durable handoffs, audit gates, and live visualization.",
+  "version": "3.5.0+codex.20260810003938",
+  "description": "Plan, assure, and run brownfield changes with scoped guards, conflict-safe parallel batches, sub-agent orchestration, audit gates, and live visualization.",
   "author": {
     "name": "Dr. Merdan Bay",
     "url": "https://github.com/KMerdan"
@@ -20,12 +20,13 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Pyramid Task V3",
-    "shortDescription": "Brownfield change assurance for agents and humans.",
-    "longDescription": "Turn an intent into a validated pathfinder graph, baseline an existing system, map change impact, isolate task and audit mutation guards, bind inspections to exact implementation events, distinguish source, generated, and evidence-only changes, preserve hash-linked history and durable checked handoffs, migrate active V2 plans without rebuilding, safely transition completed clusters into a new intent, and follow focused task and assurance views live.",
+    "shortDescription": "Conflict-safe planning and assurance for agent teams.",
+    "longDescription": "Turn an intent into a validated pathfinder graph, derive conflict-safe parallel batches, coordinate exact task packets with sub-agents, baseline an existing system, map change impact, isolate task and audit mutation guards, bind inspections to exact implementation events, distinguish source, generated, and evidence-only changes, preserve hash-linked history and durable checked handoffs, migrate active V2 plans without rebuilding, safely transition completed clusters into a new intent, and follow focused task and assurance views live.",
     "developerName": "Dr. Merdan Bay",
     "category": "Productivity",
     "capabilities": [
       "Planning",
+      "Parallel Orchestration",
       "Brownfield Assurance",
       "Impact Analysis",
       "Migration",
@@ -45,6 +46,7 @@
       "Start a new intent after this completed task cluster without losing its history.",
       "Pause this claimed task with a durable handoff, then resume it safely later.",
       "Show what is ready, active, blocked, and unaudited.",
+      "Run the current conflict-safe ready batch with sub-agents.",
       "Open a live task visualization and keep it updated while agents work.",
       "Propose and preview a safe expansion for this broad task."
     ]

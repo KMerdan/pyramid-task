@@ -22,6 +22,7 @@ make check
 - `.pyramid/plan.json` is canonical topology; generated files are projections.
 - `.pyramid/state.json`, `project.json`, and brownfield companions hold only current canonical state; immutable events are separate hash-linked records.
 - `level` expresses distance from intent; `wave` expresses earliest safe execution.
+- Parallel groups are derived, read-only projections. Same-wave is required, while dependency, scope, generated output, asset, assurance, and drift checks decide actual safety.
 - A worker result cannot verify its own parent outcome.
 - Multi-branch composition requires an explicit joint audit.
 - Failed and superseded evidence remains traceable.
@@ -32,12 +33,15 @@ make check
 - Reset and restore preserve recoverable archives.
 - Agent packets never expand normal authorization to files or external systems.
 - Codex and Claude Code manifests ship from `main` and keep the same base release version; only the Codex manifest carries a cache-busting build suffix.
+- Pure domain modules do not import `pyramid_core`; the core facade owns locks, events, guarded mutations, and compatibility exports.
 
 ## Skill changes
 
 Keep `SKILL.md` files concise and imperative. Put detailed contracts in `references/`, reusable deterministic behavior in `scripts/`, and output material in `assets/`. A skill folder must include matching frontmatter and `agents/openai.yaml` metadata.
 
 Route agents to the smallest query that can answer the question. Do not instruct them to read all event files, full assurance data, or the complete graph when a frontier, selected packet, audit-readiness response, or bounded diff is sufficient.
+
+For multi-agent work, give each worker only the selected task packet. Keep topology, lifecycle, shared assurance refreshes, and join audits with one coordinator.
 
 ## Documentation changes
 

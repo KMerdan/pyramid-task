@@ -52,6 +52,8 @@ Set level as distance from the intent: the intent is level 0 and implementation 
 
 Convert shared prerequisites to foundation tasks, uncertain edges to research tasks, contracts to contract tasks, branch composition to integration and audit tasks, and final success evidence to the intent audit.
 
+Make parallelism a consequence of honest contracts, not an extra plan annotation. Put genuinely independent siblings in the same wave, give them narrow non-overlapping write and generated-output scopes, and route their composition through a shared audit gate. Keep shared setup in an earlier task. Preserve a hard dependency whenever one branch truly consumes another branch's result. The runtime derives safe groups from current state; the planner never stores a parallel batch.
+
 ## 6. Audit the plan
 
 Before creation or replan, check:
@@ -59,6 +61,7 @@ Before creation or replan, check:
 - every primary node traces to the intent;
 - every intent criterion has an implementation and evidence path;
 - every executable node is bounded and independently reviewable;
+- same-wave siblings intended for parallel work have disjoint declared outputs and no hidden ordering dependency;
 - broad executable nodes are left intact unless evidence justifies an approved expansion;
 - every multi-branch composition has an audit gate;
 - every brownfield impact has an evidenced inspection and control path proportional to risk;

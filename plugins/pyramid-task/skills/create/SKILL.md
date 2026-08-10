@@ -18,7 +18,7 @@ Use `../../assets/example-plan.json` as a structural example, never as product e
 1. Read the source request, repository shape, existing plans, tests, schemas, history, and constraints. Run `doctor --json` when `.pyramid/plan.json` exists. Use `pyramid-task:new-intent` for another intent; use `pyramid-task:upgrade` only when continuing the same legacy intent.
 2. Normalize the intent into actors, target state, success evidence, invariants, constraints, non-goals, and assumptions. Ask only about ambiguities that would materially change the path; otherwise record the assumption.
 3. Gather evidence. Separate observed facts, sourced claims, assumptions, and unknowns. For an existing system, build a `pyramid-baseline-v1` asset, relation, history, ownership, and unknown ledger; use `pyramid-task:assess` when this needs a dedicated pass.
-4. Backward-chain from the intent to required outcomes. Forward-chain from the current state to feasible work. Reconcile both chains.
+4. Backward-chain from the intent to required outcomes. Forward-chain from the current state to feasible work. Reconcile both chains. Shape sibling work as independently reviewable outcomes where the evidence supports it: minimize unnecessary hard dependencies, assign genuinely independent branches the same earliest safe wave, keep scopes disjoint, and add one joint audit for their composition. Do not persist parallel groups; the runtime derives them from live readiness.
 5. Compare material alternatives by evidence strength, constraint fit, risk, reversibility, dependency burden, and testability. Preserve rejected alternatives and rationale.
 6. Create a graph in a temporary JSON file that follows `graph-contract.md`. Use outcome nodes for required states and executable nodes for work. Add a joint audit wherever multiple branches compose.
 7. Ensure each executable node has bounded scope, agent context, deliverables, acceptance criteria, and evidence requirements. Declare `agent.effect`, evidence output globs, and generated output globs with asset IDs when applicable. For brownfield work, create narrow `pyramid-assurance-v1` impact hypotheses and inspections; give broad boundary or release inspections an explicit `pre-audit` or `release` refresh policy and declare which change classes invalidate them. Add material finding policy, rollback, and monitoring controls; use `pyramid-task:impact` for a dedicated pass.
@@ -29,7 +29,7 @@ python3 ../../scripts/pyramid.py create --project <project-root> --plan <candida
 ```
 
 9. Omit baseline and assurance inputs only when an incomplete placeholder is honest; complete assessment and impact analysis before a brownfield audit can pass.
-10. Run `validate` and inspect the ready frontier plus assurance blockers. Fix candidates and recreate only when creation failed before committing project state. Use `reset`, never `create --force`, when a project already exists.
+10. Run `validate` and inspect the ready frontier plus assurance blockers. When parallel execution is useful, also run `inspect --parallel-ready --max-agents <slots>` to confirm that intended sibling branches are actually independent. Fix candidates and recreate only when creation failed before committing project state. Use `reset`, never `create --force`, when a project already exists.
 11. Summarize the intent, selected path, levels, ready tasks, audit gates, affected assets, inspection gaps, rejected alternatives, and assumptions.
 
 ## Boundaries

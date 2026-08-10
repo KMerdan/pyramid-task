@@ -7,7 +7,7 @@
 
 Pyramid Task turns a software intent into an evidence-backed execution graph. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish the intended outcome.
 
-Version 3.4.0 is the conflict-isolation release. Workers receive task-scoped context, auditors receive audit-scoped context, and the global graph version remains an ordering mechanism instead of becoming a false dependency between unrelated work. The same `main` branch supports Codex and Claude Code.
+Version 3.5.0 adds derived conflict-safe parallel batches and a host-neutral orchestration skill. Workers receive task-scoped context, auditors receive audit-scoped context, and the global graph version remains an ordering mechanism instead of becoming a false dependency between unrelated work. The same `main` branch supports Codex and Claude Code.
 
 ![Pyramid Task interactive map](docs/images/pyramid-task-map.png)
 
@@ -74,6 +74,45 @@ python3 plugins/pyramid-task/scripts/pyramid.py update \
 python3 plugins/pyramid-task/scripts/pyramid.py inspect \
   --project /path/to/project --audit-readiness GATE-205 --json
 ```
+
+## Parallel execution with sub-agents
+
+Pyramid now derives parallel groups from the live ready frontier. It does not add another mutable scheduler file or store group snapshots in the graph. A task can join a group only when it is in the same execution wave and the runtime finds no dependency, write/evidence/generated-output, asset, inspection-policy, broad-scope, or open-drift conflict.
+
+`level` is distance from the intent. `wave` is earliest safe execution time. Tasks at the same level are not automatically independent, and same-wave tasks still need conflict analysis.
+
+```mermaid
+flowchart TD
+    P["Create evidence-backed plan"] --> F["Derive current ready frontier"]
+    F --> C["Check dependencies, scopes, assets, assurance, and drift"]
+    C -->|"Safe same-wave tasks"| G["Return a parallel execution group"]
+    C -->|"Conflict or uncertainty"| S["Keep affected tasks serial"]
+    G --> K["Coordinator claims tasks in one canonical root"]
+    K --> A1["Executor 1: exact packet and isolated code worktree"]
+    K --> A2["Executor 2: exact packet and isolated code worktree"]
+    K --> A3["Executor 3: exact packet and isolated code worktree"]
+    A1 --> I["Coordinator checks and integrates scoped patches"]
+    A2 --> I
+    A3 --> I
+    I --> U["Coordinator records task results with refreshed guards"]
+    U --> R["Refresh shared inspections at the effective audit boundary"]
+    R --> T["Run independent task audits"]
+    T --> J["Run the saved common join audit"]
+    J -->|"Pass"| N["Advance to the next wave"]
+    J -->|"Fail"| X["Repair only affected claims"]
+    S --> U
+```
+
+The deterministic runtime recommends the group; the host agent owns sub-agent creation. One coordinator owns the authoritative `.pyramid`, claims tasks, integrates patches, records updates, refreshes assurance, and runs audits. Source-writing executors use separate code worktrees and never mutate worktree-local Pyramid state. Their prompts contain only the exact claimed packet—not the full graph or event history. If isolated workspaces or safe integration are unavailable, source work stays serial.
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py inspect \
+  --project /path/to/project --parallel-ready --max-agents 4 --json
+```
+
+The response identifies safe groups, claim guards, isolation mode, per-inspection planned refresh policies, the effective boundary required by audit freshness, a common join gate, and reasons each remaining task must stay serial. Groups are ordered by earliest wave, highest slot use, then stable ID. Save the selected join metadata, because implemented tasks leave the ready frontier; re-run the query after the batch audits finish.
+
+Read the [parallel execution contract](plugins/pyramid-task/references/parallel-execution.md) for worker prompt and safety rules.
 
 ## Assurance at the right time
 
@@ -153,11 +192,12 @@ Start a new agent session after installation or update so the runtime discovers 
 
 1. Create the intent graph. Existing repositories default to brownfield mode.
 2. Assess the system baseline and map change impact before relying on brownfield audits.
-3. Inspect the compact ready frontier and claim one task with its scoped guard.
-4. Report implementation with actual files, assets, checks, evidence, and typed change effects.
-5. Refresh only the inspections identified by audit readiness at the planned boundary.
-6. Audit implementation nodes and composition gates independently.
-7. Close only after the intent and assurance case pass, then archive or start a new intent.
+3. Inspect the compact ready frontier; derive one conflict-safe parallel group when multiple agent slots are available.
+4. Claim each selected task with its scoped guard and give every worker only its exact packet.
+5. Report implementation with actual files, assets, checks, evidence, and typed change effects.
+6. Refresh shared inspections once at the returned batch boundary.
+7. Audit implementation nodes and the common composition gate independently.
+8. Close only after the intent and assurance case pass, then archive or start a new intent.
 
 Natural-language entry points:
 
@@ -166,6 +206,7 @@ Use $pyramid-task:create to turn this feature request into an evidence-backed im
 Use $pyramid-task:assess to baseline this existing system.
 Use $pyramid-task:impact to map affected assets and required inspections.
 Use $pyramid-task:inspect to show the ready frontier or audit readiness.
+Use $pyramid-task:orchestrate to run one conflict-safe ready batch with sub-agents.
 Use $pyramid-task:take to claim the next safe task.
 Use $pyramid-task:update to record implementation and actual change scope.
 Use $pyramid-task:audit to verify a task, composition gate, outcome, or intent.
@@ -203,6 +244,7 @@ If the baseline is not known, creation writes a deliberately incomplete placehol
 | `pyramid-task:impact` | Map affected assets, inspections, findings, drift, and controls. |
 | `pyramid-task:upgrade` | Upgrade an active V2/V2.1 project in place without rebuilding its graph. |
 | `pyramid-task:inspect` | Query compact status, readiness, blockers, audit freshness, and traces. |
+| `pyramid-task:orchestrate` | Derive and coordinate one conflict-safe task batch with sub-agents. |
 | `pyramid-task:take` | Claim one ready or rework task and receive its scoped packet. |
 | `pyramid-task:pause` | Pause owned work with an immutable evidence-aware handoff. |
 | `pyramid-task:resume` | Validate and resume the canonical handoff with a fresh lease. |
@@ -227,6 +269,7 @@ Detailed contracts:
 
 - [Graph and state](plugins/pyramid-task/references/graph-contract.md)
 - [Agent and audit packets](plugins/pyramid-task/references/agent-contracts.md)
+- [Parallel execution](plugins/pyramid-task/references/parallel-execution.md)
 - [Brownfield assurance](plugins/pyramid-task/references/brownfield-assurance.md)
 - [Visualization](plugins/pyramid-task/references/visualization-contract.md)
 - [Pause and resume](plugins/pyramid-task/references/handoff-contract.md)
@@ -252,8 +295,15 @@ Availability is derived from these dimensions and graph dependencies; agents do 
 plugins/pyramid-task/
 ├── .codex-plugin/plugin.json          Codex manifest
 ├── .claude-plugin/plugin.json         Claude Code manifest
-├── skills/                            Fifteen agent-facing interfaces
-├── scripts/                           Deterministic runtime, live server, and visualizer
+├── skills/                            Sixteen agent-facing interfaces
+├── scripts/
+│   ├── pyramid.py                     Thin command-line adapter
+│   ├── pyramid_core.py                Transaction and compatibility facade
+│   ├── pyramid_graph.py               Pure graph and readiness primitives
+│   ├── pyramid_parallel.py            Pure parallel-frontier analysis
+│   ├── pyramid_assurance.py           Assurance domain rules
+│   ├── pyramid_live.py                Validated loopback live server
+│   └── pyramid_visualizer.py          Static interactive renderer
 ├── schemas/                           Published JSON contracts
 ├── references/                        Graph, assurance, agent, and lifecycle contracts
 ├── assets/                            Valid plan, baseline, assurance, expansion, and handoff examples
@@ -271,6 +321,8 @@ make check
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for design invariants and review expectations. Security issues should follow [SECURITY.md](SECURITY.md). Release changes are recorded in [CHANGELOG.md](CHANGELOG.md).
+
+Maintainers can read [docs/architecture.md](docs/architecture.md) for module boundaries and the incremental plan for reducing `pyramid_core.py` without a compatibility-breaking rewrite.
 
 ## License
 
