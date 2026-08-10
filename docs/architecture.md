@@ -27,7 +27,7 @@ The dependency direction is intentional:
 - live and static visualization consume validated projections, never partial canonical writes;
 - skills may coordinate sub-agents, while the runtime only returns deterministic scheduling facts.
 
-`pyramid_parallel.py` is read-only. Its output is a disposable projection validated by `parallel-frontier.schema.json`; it is never written into canonical plan or state.
+`pyramid_parallel.py` is read-only. Its output is a disposable projection validated by `parallel-frontier.schema.json`; it is never written into canonical plan or state. A `PARALLEL-W…` ID deterministically correlates one derived plan/wave/task grouping, but it is not canonical identity, history, or a concurrency guard.
 
 ## Why not split everything at once
 

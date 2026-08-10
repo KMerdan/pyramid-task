@@ -108,7 +108,11 @@
         "tasks"
       ],
       "properties": {
-        "id": {"type": "string", "pattern": "^PARALLEL-W[0-9]+-[A-F0-9]{10}$"},
+        "id": {
+          "type": "string",
+          "pattern": "^PARALLEL-W[0-9]+-[A-F0-9]{10}$",
+          "description": "Disposable correlation ID derived from the plan ID, wave, and sorted task IDs; not canonical state or a mutation guard."
+        },
         "wave": {"type": "integer", "minimum": 0},
         "levels": {
           "type": "array",

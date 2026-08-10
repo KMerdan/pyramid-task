@@ -4,6 +4,11 @@ All notable changes follow semantic versioning. Serialized task graph and state 
 
 ## Unreleased
 
+### Documentation
+
+- Refresh the README screenshot from the current 3.5 interface and make the conceptual parallel lifecycle match the implemented orchestration boundary.
+- Specify the deterministic parallel batch-ID algorithm and clarify that batch IDs are disposable correlation handles, not canonical versions, scheduler state, or mutation guards.
+
 ## 3.5.0
 
 ### Conflict-safe parallel execution

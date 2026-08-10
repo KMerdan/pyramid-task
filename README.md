@@ -9,7 +9,7 @@ Pyramid Task turns a software intent into an evidence-backed execution graph. In
 
 Version 3.5.0 adds derived conflict-safe parallel batches and a host-neutral orchestration skill. Workers receive task-scoped context, auditors receive audit-scoped context, and the global graph version remains an ordering mechanism instead of becoming a false dependency between unrelated work. The same `main` branch supports Codex and Claude Code.
 
-![Pyramid Task interactive map](docs/images/pyramid-task-map.png)
+![Pyramid Task 3.5 live graph with assurance impact overlay](docs/images/pyramid-task-map.png)
 
 ## What it solves
 
@@ -83,34 +83,38 @@ Pyramid now derives parallel groups from the live ready frontier. It does not ad
 
 ```mermaid
 flowchart TD
-    P["Create evidence-backed plan"] --> F["Derive current ready frontier"]
-    F --> C["Check dependencies, scopes, assets, assurance, and drift"]
-    C -->|"Safe same-wave tasks"| G["Return a parallel execution group"]
-    C -->|"Conflict or uncertainty"| S["Keep affected tasks serial"]
-    G --> K["Coordinator claims tasks in one canonical root"]
-    K --> A1["Executor 1: exact packet and isolated code worktree"]
-    K --> A2["Executor 2: exact packet and isolated code worktree"]
-    K --> A3["Executor 3: exact packet and isolated code worktree"]
-    A1 --> I["Coordinator checks and integrates scoped patches"]
-    A2 --> I
-    A3 --> I
-    I --> U["Coordinator records task results with refreshed guards"]
-    U --> R["Refresh shared inspections at the effective audit boundary"]
-    R --> T["Run independent task audits"]
-    T --> J["Run the saved common join audit"]
-    J -->|"Pass"| N["Advance to the next wave"]
-    J -->|"Fail"| X["Repair only affected claims"]
-    S --> U
+    P["Create evidence-backed plan"] --> F["Derive ready frontier"]
+    F --> C["Analyze dependency, write, asset, and assurance conflicts"]
+    C -->|Safe| G["Select derived parallel execution batch"]
+    C -->|Unsafe| S["Execute serially"]
+    G --> A1["Sub-agent: TASK-A"]
+    G --> A2["Sub-agent: TASK-B"]
+    G --> A3["Coordinator: TASK-C"]
+    A1 --> R["Reconcile actual files, assets, and drift"]
+    A2 --> R
+    A3 --> R
+    S --> R
+    R --> I["Refresh minimal inspections at the effective boundary"]
+    I --> T["Audit each implemented task"]
+    T --> J["Run saved joint integration audit"]
+    J -->|Pass| N["Advance graph"]
+    J -->|Fail| W["Targeted rework or replan"]
 ```
 
-The deterministic runtime recommends the group; the host agent owns sub-agent creation. One coordinator owns the authoritative `.pyramid`, claims tasks, integrates patches, records updates, refreshes assurance, and runs audits. Source-writing executors use separate code worktrees and never mutate worktree-local Pyramid state. Their prompts contain only the exact claimed packet—not the full graph or event history. If isolated workspaces or safe integration are unavailable, source work stays serial.
+This is the canonical conceptual lifecycle. The deterministic runtime recommends the batch; the host agent owns sub-agent creation. One coordinator owns the authoritative `.pyramid`, claims tasks, integrates patches, records updates, refreshes assurance, and runs audits. Source-writing executors use separate code worktrees and never mutate worktree-local Pyramid state. Their prompts contain only the exact claimed packet—not the full graph or event history. If isolated workspaces or safe integration are unavailable, source work stays serial.
 
 ```bash
 python3 plugins/pyramid-task/scripts/pyramid.py inspect \
   --project /path/to/project --parallel-ready --max-agents 4 --json
 ```
 
-The response identifies safe groups, claim guards, isolation mode, per-inspection planned refresh policies, the effective boundary required by audit freshness, a common join gate, and reasons each remaining task must stay serial. Groups are ordered by earliest wave, highest slot use, then stable ID. Save the selected join metadata, because implemented tasks leave the ready frontier; re-run the query after the batch audits finish.
+The response identifies safe groups, claim guards, isolation mode, per-inspection planned refresh policies, the effective boundary required by audit freshness, a common join gate, and reasons each remaining task must stay serial. Groups are ordered by earliest wave, highest slot use, then deterministic group ID. Save the selected join metadata, because implemented tasks leave the ready frontier; re-run the query after the batch audits finish.
+
+### Parallel batch IDs
+
+A group ID has the form `PARALLEL-W<wave>-<10 uppercase hex>`. The suffix is the first 10 hexadecimal characters of SHA-256 over the plan ID, wave, and sorted task IDs. The same derived batch therefore receives the same ID even if candidate input order changes.
+
+The ID is a disposable correlation handle for logs, prompts, and join metadata. It is not a graph node, event/version ID, persistent scheduler record, lock, authorization token, or mutation guard. Its batch can change or disappear whenever readiness, dependencies, scopes, assets, assurance, drift, wave membership, or the agent limit changes. Re-run `inspect --parallel-ready` after any such change and use each task's current claim guard for mutations.
 
 Read the [parallel execution contract](plugins/pyramid-task/references/parallel-execution.md) for worker prompt and safety rules.
 

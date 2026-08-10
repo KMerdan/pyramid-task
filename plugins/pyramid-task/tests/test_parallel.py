@@ -126,7 +126,22 @@ class ParallelFrontierTests(unittest.TestCase):
         second = frontier(nodes, candidate_ids=["TASK-A", "TASK-B"])
         self.assertEqual(first, second)
         self.assertEqual([["TASK-A", "TASK-B"]], [group["task_ids"] for group in first["groups"]])
+        self.assertEqual("PARALLEL-W0-6DD642B133", first["groups"][0]["id"])
         self.assertEqual("separate-worktrees", first["groups"][0]["isolation"])
+
+    def test_group_id_changes_with_wave_or_membership(self) -> None:
+        wave_zero = frontier([task("TASK-A", "src/a/**"), task("TASK-B", "src/b/**")])
+        wave_one = frontier(
+            [task("TASK-A", "src/a/**", wave=1), task("TASK-B", "src/b/**", wave=1)]
+        )
+        different_member = frontier([task("TASK-A", "src/a/**"), task("TASK-C", "src/c/**")])
+
+        ids = {
+            wave_zero["groups"][0]["id"],
+            wave_one["groups"][0]["id"],
+            different_member["groups"][0]["id"],
+        }
+        self.assertEqual(3, len(ids))
 
     def test_write_and_generated_scope_overlap_conflict(self) -> None:
         exact = frontier([task("TASK-A", "src/shared/file.py"), task("TASK-B", "src/shared/file.py")])

@@ -30,6 +30,21 @@ Each group contains:
 
 `serial_tasks` explains why a candidate was not grouped. `conflicts` reports pairwise dependency, scope, or assurance conflicts. These are scheduling facts, not additional graph versions. Groups are ordered by wave ascending, agent utilization descending, then stable group ID.
 
+## Parallel batch identity
+
+Each group ID is derived as follows:
+
+1. sort the group's task IDs;
+2. encode `plan_id + NUL + decimal_wave + NUL + "|".join(task_ids)` as UTF-8;
+3. take SHA-256 and keep the first 10 hexadecimal characters in uppercase;
+4. publish `PARALLEL-W<wave>-<suffix>`.
+
+For example, a wave-zero batch may be identified as `PARALLEL-W0-6DD642B133`. The algorithm makes the same plan, wave, and task membership order-independent and deterministic. It does not make the truncated ID a globally unique or security-sensitive identifier.
+
+The ID is a disposable correlation handle for coordinator logs, worker prompts, and saved join metadata. It is not canonical plan state, a node, an event or graph version, a scheduler snapshot, a lock, an approval token, or a mutation guard. Task claim guards remain the concurrency control.
+
+The runtime may regroup candidates when `--max-agents` changes. A group may also change or disappear after any readiness, dependency, scope, asset, assurance, drift, or wave change. Never infer that an older group is still executable from a matching ID alone: re-run `inspect --parallel-ready`, verify current membership and join metadata, then claim each task with its returned guard.
+
 ## Coordinator and worker ownership
 
 One coordinator owns the authoritative project root, group selection, sub-agent lifecycle, all canonical Pyramid mutations, patch integration, shared assurance refreshes, and the join audit. Each executor owns exactly one task and uses an isolated code worktree for source-writing work. The canonical root is the only place where `.pyramid` is mutated.

@@ -1,6 +1,6 @@
 {
   "name": "pyramid-task",
-  "version": "3.5.0+codex.20260810003938",
+  "version": "3.5.0+codex.20260810040142",
   "description": "Plan, assure, and run brownfield changes with scoped guards, conflict-safe parallel batches, sub-agent orchestration, audit gates, and live visualization.",
   "author": {
     "name": "Dr. Merdan Bay",
