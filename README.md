@@ -243,6 +243,7 @@ If the baseline is not known, creation writes a deliberately incomplete placehol
 | Skill | Purpose |
 | --- | --- |
 | `pyramid-task:create` | Clarify intent, gather evidence, compare paths, and create the first graph. |
+| `pyramid-task:simplify` | Fact-check and reduce unjustified graph complexity while preserving outcome and assurance. |
 | `pyramid-task:new-intent` | Safely route a distinct intent through create, upgrade, archive, and reset. |
 | `pyramid-task:assess` | Establish or refresh the existing-system baseline. |
 | `pyramid-task:impact` | Map affected assets, inspections, findings, drift, and controls. |
@@ -271,6 +272,7 @@ Legacy projects without `.pyramid/project.json` remain readable and can upgrade 
 
 Detailed contracts:
 
+- [Evidence-based plan refinement](plugins/pyramid-task/references/plan-refinement.md)
 - [Graph and state](plugins/pyramid-task/references/graph-contract.md)
 - [Agent and audit packets](plugins/pyramid-task/references/agent-contracts.md)
 - [Parallel execution](plugins/pyramid-task/references/parallel-execution.md)
@@ -299,7 +301,7 @@ Availability is derived from these dimensions and graph dependencies; agents do 
 plugins/pyramid-task/
 ├── .codex-plugin/plugin.json          Codex manifest
 ├── .claude-plugin/plugin.json         Claude Code manifest
-├── skills/                            Sixteen agent-facing interfaces
+├── skills/                            Seventeen agent-facing interfaces
 ├── scripts/
 │   ├── pyramid.py                     Thin command-line adapter
 │   ├── pyramid_core.py                Transaction and compatibility facade
@@ -310,7 +312,7 @@ plugins/pyramid-task/
 │   └── pyramid_visualizer.py          Static interactive renderer
 ├── schemas/                           Published JSON contracts
 ├── references/                        Graph, assurance, agent, and lifecycle contracts
-├── assets/                            Valid plan, baseline, assurance, expansion, and handoff examples
+├── assets/                            Valid plan, review, baseline, assurance, expansion, and handoff examples
 └── tests/                              Runtime and visualization regression tests
 tools/validate_repository.py           Repository-level contract validation
 ```

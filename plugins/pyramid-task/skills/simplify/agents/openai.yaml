@@ -1,0 +1,4 @@
+interface:
+  display_name: "Simplify Pyramid Plan"
+  short_description: "Fact-check and reduce graph complexity"
+  default_prompt: "Use $simplify to fact-check this task graph and remove only complexity that is not required by its intent, evidence, or assurance contracts."

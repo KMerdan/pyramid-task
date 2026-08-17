@@ -5,7 +5,7 @@ description: Replan an existing Pyramid Task V3 graph from new evidence, audit f
 
 # Replan a Pyramid Task Path
 
-Read `../../references/pathfinder-workflow.md` and `../../references/graph-contract.md`. Load `../../references/agent-contracts.md` only for changed executable contracts, `../../references/brownfield-assurance.md` only in brownfield mode, and `../../references/lifecycle-contract.md` only when the plan is not active.
+Read `../../references/pathfinder-workflow.md`, `../../references/plan-refinement.md`, and `../../references/graph-contract.md`. Load `../../references/agent-contracts.md` only for changed executable contracts, `../../references/brownfield-assurance.md` only in brownfield mode, and `../../references/lifecycle-contract.md` only when the plan is not active.
 
 Use `pyramid-task:expand` instead when a single executable task keeps the same purpose, contract, selected path, and external relations and only needs a deeper approved subtree.
 
@@ -16,7 +16,7 @@ Use `pyramid-task:expand` instead when a single executable task keeps the same p
 3. Inspect affected nodes, descendants, alternatives, completed evidence, and the current graph version.
 4. Preserve nodes and evidence that remain valid. Mark replaced paths `superseded`; never erase history.
 5. Re-run backward and forward path checks across the affected region, expanding scope when a load-bearing assumption changes.
-6. Write a complete candidate plan JSON.
+6. Write a complete candidate plan JSON. Run the evidence-based refinement pass, write a `pyramid-plan-review-v1` artifact, and preserve valid completed work, evidence, assurance, and history. Use `pyramid-task:simplify` when reduction or fact-checking is the primary trigger.
 7. Preview the diff:
 
 ```bash
@@ -37,4 +37,5 @@ Use `--allow-intent-change` only when the user explicitly approved changing the 
 - Do not rewrite the plan through `update`.
 - Do not invalidate verified work without citing the evidence or contract change that invalidates it.
 - Do not delete rejected or superseded alternatives needed to explain plan history.
+- Do not treat lower node count as evidence of a better replan.
 - Always preview before applying a material replan.

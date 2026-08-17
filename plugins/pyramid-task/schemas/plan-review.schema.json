@@ -1,0 +1,152 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/plan-review.schema.json",
+  "title": "Pyramid Task Plan Review",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "review_id",
+    "stage",
+    "outcome",
+    "source_plan",
+    "revised_plan",
+    "facts",
+    "findings",
+    "coverage",
+    "invariants",
+    "metrics",
+    "summary",
+    "limitations"
+  ],
+  "properties": {
+    "schema": {"const": "pyramid-plan-review-v1"},
+    "review_id": {"$ref": "#/$defs/id"},
+    "stage": {"enum": ["candidate", "canonical"]},
+    "outcome": {"enum": ["simplified", "retained", "blocked"]},
+    "source_plan": {"$ref": "#/$defs/planRef"},
+    "revised_plan": {"$ref": "#/$defs/planRef"},
+    "facts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/fact"}
+    },
+    "findings": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/finding"}
+    },
+    "coverage": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/coverage"}
+    },
+    "invariants": {"$ref": "#/$defs/invariants"},
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["before", "after"],
+      "properties": {
+        "before": {"$ref": "#/$defs/metrics"},
+        "after": {"$ref": "#/$defs/metrics"}
+      }
+    },
+    "summary": {"type": "string", "minLength": 1},
+    "limitations": {"$ref": "#/$defs/stringArray"}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9-]*$"},
+    "stringArray": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "idArray": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true},
+    "planRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plan_id", "revision", "sha256"],
+      "properties": {
+        "plan_id": {"$ref": "#/$defs/id"},
+        "revision": {"type": "integer", "minimum": 1},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "claim", "classification", "verdict", "confidence", "references", "supports", "freshness"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "claim": {"type": "string", "minLength": 1},
+        "classification": {"enum": ["observed", "sourced", "assumption", "unknown"]},
+        "verdict": {"enum": ["confirmed", "qualified", "unsupported", "contradicted"]},
+        "confidence": {"enum": ["high", "medium", "low"]},
+        "references": {"$ref": "#/$defs/stringArray"},
+        "supports": {"$ref": "#/$defs/idArray"},
+        "freshness": {"type": "string", "minLength": 1}
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "class", "affected_nodes", "claim", "evidence", "counterevidence", "disposition", "change", "rationale"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "class": {
+          "enum": [
+            "duplicate-work",
+            "duplicate-evidence",
+            "speculative-scope",
+            "unsupported-claim",
+            "unjustified-dependency",
+            "unjustified-gate",
+            "accidental-serialization",
+            "over-decomposition",
+            "under-decomposition",
+            "ambiguous-acceptance"
+          ]
+        },
+        "affected_nodes": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/id"}, "uniqueItems": true},
+        "claim": {"type": "string", "minLength": 1},
+        "evidence": {"$ref": "#/$defs/idArray"},
+        "counterevidence": {"$ref": "#/$defs/idArray"},
+        "disposition": {"enum": ["applied", "rejected", "deferred", "blocking"]},
+        "change": {"type": "string", "minLength": 1},
+        "rationale": {"type": "string", "minLength": 1}
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirement", "before_nodes", "after_nodes", "status"],
+      "properties": {
+        "requirement": {"$ref": "#/$defs/id"},
+        "before_nodes": {"$ref": "#/$defs/idArray"},
+        "after_nodes": {"$ref": "#/$defs/idArray"},
+        "status": {"enum": ["preserved", "strengthened", "gap"]}
+      }
+    },
+    "invariants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent", "success_evidence", "constraints", "non_goals", "assurance", "audit_closure", "execution_safety"],
+      "properties": {
+        "intent": {"const": "preserved"},
+        "success_evidence": {"enum": ["preserved", "strengthened"]},
+        "constraints": {"enum": ["preserved", "strengthened"]},
+        "non_goals": {"const": "preserved"},
+        "assurance": {"enum": ["preserved", "strengthened", "not-applicable"]},
+        "audit_closure": {"enum": ["preserved", "strengthened"]},
+        "execution_safety": {"enum": ["preserved", "strengthened"]}
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nodes", "executable_nodes", "edges", "hard_dependencies", "audit_gates"],
+      "properties": {
+        "nodes": {"type": "integer", "minimum": 1},
+        "executable_nodes": {"type": "integer", "minimum": 0},
+        "edges": {"type": "integer", "minimum": 0},
+        "hard_dependencies": {"type": "integer", "minimum": 0},
+        "audit_gates": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

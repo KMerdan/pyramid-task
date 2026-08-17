@@ -1,0 +1,82 @@
+{
+  "schema": "pyramid-plan-review-v1",
+  "review_id": "REVIEW-001",
+  "stage": "candidate",
+  "outcome": "retained",
+  "source_plan": {
+    "plan_id": "PLAN-001",
+    "revision": 1,
+    "sha256": "06aa37403b7b24c86f2152196779a626681eae5661c177cd23ca6cd2bf6fadfa"
+  },
+  "revised_plan": {
+    "plan_id": "PLAN-001",
+    "revision": 1,
+    "sha256": "06aa37403b7b24c86f2152196779a626681eae5661c177cd23ca6cd2bf6fadfa"
+  },
+  "facts": [
+    {
+      "id": "FACT-001",
+      "claim": "The executor implementation consumes the separately defined executor contract.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": ["src/contracts", "src/executor"],
+      "supports": ["CONTRACT-102", "TASK-201"],
+      "freshness": "Repository observation at review time"
+    }
+  ],
+  "findings": [
+    {
+      "id": "FINDING-001",
+      "class": "over-decomposition",
+      "affected_nodes": ["CONTRACT-102", "TASK-201"],
+      "claim": "The contract and executor might appear mergeable because they serve the same outcome.",
+      "evidence": [],
+      "counterevidence": ["FACT-001"],
+      "disposition": "rejected",
+      "change": "Retain both nodes and their contract dependency.",
+      "rationale": "They have distinct effects, scopes, deliverables, and evidence boundaries, and the implementation consumes the contract."
+    }
+  ],
+  "coverage": [
+    {
+      "requirement": "REQ-001",
+      "before_nodes": ["RESEARCH-101", "CONTRACT-102", "TASK-201", "GATE-290"],
+      "after_nodes": ["RESEARCH-101", "CONTRACT-102", "TASK-201", "GATE-290"],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-002",
+      "before_nodes": ["CONTRACT-102", "TASK-201", "GATE-290"],
+      "after_nodes": ["CONTRACT-102", "TASK-201", "GATE-290"],
+      "status": "preserved"
+    }
+  ],
+  "invariants": {
+    "intent": "preserved",
+    "success_evidence": "preserved",
+    "constraints": "preserved",
+    "non_goals": "preserved",
+    "assurance": "not-applicable",
+    "audit_closure": "preserved",
+    "execution_safety": "preserved"
+  },
+  "metrics": {
+    "before": {
+      "nodes": 6,
+      "executable_nodes": 4,
+      "edges": 11,
+      "hard_dependencies": 5,
+      "audit_gates": 1
+    },
+    "after": {
+      "nodes": 6,
+      "executable_nodes": 4,
+      "edges": 11,
+      "hard_dependencies": 5,
+      "audit_gates": 1
+    }
+  },
+  "summary": "Retain the candidate: the apparent merge would weaken distinct contract and implementation boundaries.",
+  "limitations": ["This example uses illustrative repository paths and is structural guidance, not product evidence."]
+}

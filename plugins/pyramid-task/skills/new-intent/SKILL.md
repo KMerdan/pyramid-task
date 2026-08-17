@@ -14,7 +14,7 @@ Read `../../references/new-intent-contract.md`. Load `../../references/lifecycle
 ## Workflow
 
 1. Run `doctor --json`. Treat `.pyramid/project.json`, not `plan.json` or `state.json`, as the V3 project-format marker.
-2. Clarify and decompose the new intent through the create workflow, but write only a temporary candidate plan. Do not call `create` over an existing project and do not write generated `docs/tasks/` by hand.
+2. Clarify, decompose, fact-check, and refine the new intent through the complete create workflow, but write only a temporary candidate plan and its `pyramid-plan-review-v1` artifact. Do not call `create` over an existing project and do not write generated `docs/tasks/` by hand.
 3. Preview the lifecycle transition:
 
 ```bash

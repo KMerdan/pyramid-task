@@ -9,7 +9,7 @@ Create a plan only after the intended final state is clear enough to test. Treat
 
 ## Context routing
 
-Read `../../references/pathfinder-workflow.md` and `../../references/graph-contract.md` for graph construction. Read `../../references/agent-contracts.md` when defining executable packets. Read `../../references/brownfield-assurance.md` only for an existing system. Read `../../references/lifecycle-contract.md` only when an existing plan requires routing to another skill.
+Read `../../references/pathfinder-workflow.md`, `../../references/plan-refinement.md`, and `../../references/graph-contract.md` for graph construction and candidate refinement. Read `../../references/agent-contracts.md` when defining executable packets. Read `../../references/brownfield-assurance.md` only for an existing system. Read `../../references/lifecycle-contract.md` only when an existing plan requires routing to another skill.
 
 Use `../../assets/example-plan.json` as a structural example, never as product evidence.
 
@@ -22,21 +22,23 @@ Use `../../assets/example-plan.json` as a structural example, never as product e
 5. Compare material alternatives by evidence strength, constraint fit, risk, reversibility, dependency burden, and testability. Preserve rejected alternatives and rationale.
 6. Create a graph in a temporary JSON file that follows `graph-contract.md`. Use outcome nodes for required states and executable nodes for work. Add a joint audit wherever multiple branches compose.
 7. Ensure each executable node has bounded scope, agent context, deliverables, acceptance criteria, and evidence requirements. Declare `agent.effect`, evidence output globs, and generated output globs with asset IDs when applicable. For brownfield work, create narrow `pyramid-assurance-v1` impact hypotheses and inspections; give broad boundary or release inspections an explicit `pre-audit` or `release` refresh policy and declare which change classes invalidate them. Add material finding policy, rollback, and monitoring controls; use `pyramid-task:impact` for a dedicated pass.
-8. Run:
+8. Run the evidence-based refinement pass on the complete temporary candidate before making it canonical. Fact-check load-bearing claims and edges, test bidirectional requirement coverage, challenge duplicate or speculative work, and write a `pyramid-plan-review-v1` artifact against `../../schemas/plan-review.schema.json`. Revise only when intent, evidence, safety, and assurance remain preserved. Use `pyramid-task:simplify` for a dedicated pass.
+9. Run:
 
 ```bash
 python3 ../../scripts/pyramid.py create --project <project-root> --plan <candidate-plan.json> --actor <actor> --mode auto --baseline <baseline.json> --assurance <assurance.json> --json
 ```
 
-9. Omit baseline and assurance inputs only when an incomplete placeholder is honest; complete assessment and impact analysis before a brownfield audit can pass.
-10. Run `validate` and inspect the ready frontier plus assurance blockers. When parallel execution is useful, also run `inspect --parallel-ready --max-agents <slots>` to confirm that intended sibling branches are actually independent. Fix candidates and recreate only when creation failed before committing project state. Use `reset`, never `create --force`, when a project already exists.
-11. Summarize the intent, selected path, levels, ready tasks, audit gates, affected assets, inspection gaps, rejected alternatives, and assumptions.
+10. Omit baseline and assurance inputs only when an incomplete placeholder is honest; complete assessment and impact analysis before a brownfield audit can pass.
+11. Run `validate` and inspect the ready frontier plus assurance blockers. When parallel execution is useful, also run `inspect --parallel-ready --max-agents <slots>` to confirm that intended sibling branches are actually independent. Fix candidates and recreate only when creation failed before committing project state. Use `reset`, never `create --force`, when a project already exists.
+12. Summarize the intent, selected path, refinement findings and metrics, levels, ready tasks, audit gates, affected assets, inspection gaps, rejected alternatives, assumptions, and limitations.
 
 ## Boundaries
 
 - Let reasoning choose and explain the path. Let the runtime enforce schemas, cycles, references, readiness, transitions, events, and generated files.
 - Do not hand-edit `.pyramid/state.json`, `.pyramid/graph.json`, `.pyramid/ready.json`, claims, or events.
 - Do not claim that research proves a link when it only suggests one. Lower confidence or add a validation node.
+- Do not optimize task count or treat a review artifact as proof of its own factual claims.
 - Do not make an implementation task double as its independent joint audit.
 - Do not treat generated task completion as proof that the parent outcome is verified.
 - Do not delete or overwrite an existing graph to restart; archive and reset it through lifecycle.

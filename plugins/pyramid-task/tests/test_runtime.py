@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import subprocess
 import sys
@@ -824,6 +825,13 @@ class PyramidRuntimeTests(unittest.TestCase):
             jsonschema.Draft202012Validator.check_schema(schema)
             jsonschema.validate(load_json(artifact_path), schema)
         jsonschema.validate(load_json(self.expansion), load_json(schema_dir / "expansion-proposal.schema.json"))
+        review_schema = load_json(schema_dir / "plan-review.schema.json")
+        jsonschema.Draft202012Validator.check_schema(review_schema)
+        example_review = load_json(PLUGIN_ROOT / "assets" / "example-plan-review.json")
+        jsonschema.validate(example_review, review_schema)
+        example_plan_hash = hashlib.sha256((PLUGIN_ROOT / "assets" / "example-plan.json").read_bytes()).hexdigest()
+        self.assertEqual(example_plan_hash, example_review["source_plan"]["sha256"])
+        self.assertEqual(example_plan_hash, example_review["revised_plan"]["sha256"])
         event_schema = load_json(schema_dir / "event.schema.json")
         for event_path in (self.root / ".pyramid" / "events").glob("*.json"):
             jsonschema.validate(load_json(event_path), event_schema)

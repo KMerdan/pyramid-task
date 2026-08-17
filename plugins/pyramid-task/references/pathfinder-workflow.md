@@ -54,7 +54,9 @@ Convert shared prerequisites to foundation tasks, uncertain edges to research ta
 
 Make parallelism a consequence of honest contracts, not an extra plan annotation. Put genuinely independent siblings in the same wave, give them narrow non-overlapping write and generated-output scopes, and route their composition through a shared audit gate. Keep shared setup in an earlier task. Preserve a hard dependency whenever one branch truly consumes another branch's result. The runtime derives safe groups from current state; the planner never stores a parallel batch.
 
-## 6. Audit the plan
+## 6. Refine and audit the plan
+
+Run the evidence-based review in `plan-refinement.md` on the complete candidate. Fact-check load-bearing claims, trace requirements in both directions, test each node and dependency for independent justification, and record applied and rejected findings in a `pyramid-plan-review-v1` artifact. Preserve a justified no-change result. Do not optimize task count.
 
 Before creation or replan, check:
 
@@ -69,6 +71,7 @@ Before creation or replan, check:
 - dependencies are typed and minimal;
 - no hard dependency or hierarchy cycle exists;
 - alternative and rejected paths cannot enter the ready frontier.
+- the review preserves intent, success evidence, safety, and applicable assurance.
 
 ## 7. Repair failures
 

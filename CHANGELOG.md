@@ -4,6 +4,12 @@ All notable changes follow semantic versioning. Serialized task graph and state 
 
 ## Unreleased
 
+### Evidence-based plan refinement
+
+- Add the `pyramid-task:simplify` skill and require a semantic refinement pass before candidate creation, new-intent transition, or replan preview.
+- Fact-check load-bearing claims, trace intent requirements in both directions, challenge duplicate or speculative graph structure, and preserve justified no-change outcomes.
+- Publish `pyramid-plan-review-v1` for facts, counterevidence, findings, coverage, invariants, before/after metrics, and limitations without treating the review as self-proving evidence.
+
 ### Documentation
 
 - Refresh the README screenshot from the current 3.5 interface and make the conceptual parallel lifecycle match the implemented orchestration boundary.
