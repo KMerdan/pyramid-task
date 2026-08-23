@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/helper-job.schema.json",
+  "title": "Pyramid Task Intra-Task Helper Job",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "helper_id",
+    "parent_task",
+    "task_guard",
+    "kind",
+    "phase",
+    "snapshot",
+    "read_scope",
+    "purpose",
+    "questions",
+    "acceptance_criteria",
+    "execution_isolation",
+    "prohibited_actions",
+    "join_before",
+    "result_budget"
+  ],
+  "properties": {
+    "schema": {"const": "helper-job-v1"},
+    "helper_id": {"type": "string", "pattern": "^HELPER-[A-Z0-9-]+$"},
+    "parent_task": {"$ref": "#/$defs/id"},
+    "task_guard": {
+      "type": "string",
+      "pattern": "^GUARD-TASK-[A-F0-9]{32}$",
+      "description": "Correlation and freshness binding only; never grants the helper mutation authority."
+    },
+    "kind": {"enum": ["research", "reconnaissance", "review", "validation"]},
+    "phase": {"enum": ["preflight", "candidate"]},
+    "snapshot": {"$ref": "#/$defs/snapshot"},
+    "read_scope": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "purpose": {"type": "string", "minLength": 1},
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/id"}
+    },
+    "execution_isolation": {"enum": ["none", "disposable-worktree", "sandbox"]},
+    "prohibited_actions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "write-canonical-worktree",
+          "mutate-pyramid",
+          "spawn-agents",
+        "publish-or-deploy",
+        "change-git-history"
+        ]
+      },
+      "allOf": [
+        {"contains": {"const": "write-canonical-worktree"}},
+        {"contains": {"const": "mutate-pyramid"}},
+        {"contains": {"const": "spawn-agents"}},
+        {"contains": {"const": "publish-or-deploy"}},
+        {"contains": {"const": "change-git-history"}}
+      ]
+    },
+    "join_before": {"enum": ["load-bearing-decision", "candidate-acceptance"]},
+    "result_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_findings", "max_evidence_items", "max_output_chars"],
+      "properties": {
+        "max_findings": {"type": "integer", "minimum": 1, "maximum": 20},
+        "max_evidence_items": {"type": "integer", "minimum": 1, "maximum": 40},
+        "max_output_chars": {"type": "integer", "minimum": 256, "maximum": 20000}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"phase": {"const": "preflight"}}},
+      "then": {"properties": {"join_before": {"const": "load-bearing-decision"}}}
+    },
+    {
+      "if": {"properties": {"phase": {"const": "candidate"}}},
+      "then": {
+        "properties": {
+          "join_before": {"const": "candidate-acceptance"},
+          "execution_isolation": {"enum": ["disposable-worktree", "sandbox"]}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9-]*$"},
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "immutable"],
+      "properties": {
+        "kind": {"enum": ["git-commit", "content-hash", "external-source-set"]},
+        "id": {"type": "string", "minLength": 1},
+        "immutable": {"const": true}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "git-commit"}}},
+          "then": {"properties": {"id": {"pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$"}}}
+        },
+        {
+          "if": {"properties": {"kind": {"const": "content-hash"}}},
+          "then": {"properties": {"id": {"pattern": "^sha256:[a-f0-9]{64}$"}}}
+        }
+      ]
+    }
+  }
+}

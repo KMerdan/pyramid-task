@@ -45,6 +45,8 @@ The ID is a disposable correlation handle for coordinator logs, worker prompts, 
 
 The runtime may regroup candidates when `--max-agents` changes. A group may also change or disappear after any readiness, dependency, scope, asset, assurance, drift, or wave change. Never infer that an older group is still executable from a matching ID alone: re-run `inspect --parallel-ready`, verify current membership and join metadata, then claim each task with its returned guard.
 
+Task batches and intra-task helpers are different scheduling layers. The runtime derives task batches from canonical graph conflicts. After reserving those graph-task workers, the host coordinator may use otherwise idle slots for ephemeral read-only helpers inside its retained task. Follow `intra-task-helpers.md`; helper jobs never alter group membership, graph state, or join metadata.
+
 ## Coordinator and worker ownership
 
 One coordinator owns the authoritative project root, group selection, sub-agent lifecycle, all canonical Pyramid mutations, patch integration, shared assurance refreshes, and the join audit. Each executor owns exactly one task and uses an isolated code worktree for source-writing work. The canonical root is the only place where `.pyramid` is mutated.

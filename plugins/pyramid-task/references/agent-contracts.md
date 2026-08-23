@@ -32,6 +32,12 @@ Use `mutation_guards.task` for take, update, and pause, and `mutation_guards.aud
 
 Canonical history is stored as one hash-linked file per mutation under `.pyramid/events/`; it is not appended to the task packet or stored as a version array in the current graph JSON. Do not read the event directory directly for normal work.
 
+## Ephemeral intra-task helpers
+
+A task owner may use spare host slots for bounded read-only research or snapshot-isolated validation. Validate prompts and responses with `helper-job.schema.json` and `helper-result.schema.json`, and follow `intra-task-helpers.md` for eligibility, freshness, slot accounting, and reconciliation.
+
+Helper envelopes are not canonical Pyramid state and never enter normal task packets or event history. They echo the parent task guard for freshness correlation, but the coordinator keeps mutation authority and owns every mutation. Raw results start pending and ineligible. A coordinator may promote candidate validation evidence only after the job identity, task guard, immutable snapshot, budgets, and evidence references match the accepted candidate. Copy only reconciled evidence into the parent `agent-result-v1`.
+
 ## Agent result
 
 Submit `agent-result-v1` as JSON:

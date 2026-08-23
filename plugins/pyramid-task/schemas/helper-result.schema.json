@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/helper-result.schema.json",
+  "title": "Pyramid Task Intra-Task Helper Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "helper_id",
+    "parent_task",
+    "task_guard",
+    "kind",
+    "phase",
+    "snapshot",
+    "status",
+    "summary",
+    "findings",
+    "evidence",
+    "checks",
+    "stale_if",
+    "evidence_use",
+    "freshness",
+    "final_evidence_eligible",
+    "eligibility_reason",
+    "changed_files",
+    "changed_assets",
+    "risks"
+  ],
+  "properties": {
+    "schema": {"const": "helper-result-v1"},
+    "helper_id": {"type": "string", "pattern": "^HELPER-[A-Z0-9-]+$"},
+    "parent_task": {"$ref": "#/$defs/id"},
+    "task_guard": {
+      "type": "string",
+      "pattern": "^GUARD-TASK-[A-F0-9]{32}$",
+      "description": "Echo of the job guard for reconciliation; never grants mutation authority."
+    },
+    "kind": {"enum": ["research", "reconnaissance", "review", "validation"]},
+    "phase": {"enum": ["preflight", "candidate"]},
+    "snapshot": {"$ref": "#/$defs/snapshot"},
+    "status": {"enum": ["completed", "blocked", "inconclusive"]},
+    "summary": {"type": "string", "minLength": 1},
+    "findings": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["claim", "confidence", "evidence", "recommendation"],
+        "properties": {
+          "claim": {"type": "string", "minLength": 1},
+          "confidence": {"enum": ["low", "medium", "high"]},
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "recommendation": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "maxItems": 40,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "result", "isolation", "evidence"],
+        "properties": {
+          "command": {"type": "string", "minLength": 1},
+          "result": {"enum": ["passed", "failed", "not-run"]},
+          "isolation": {"enum": ["disposable-worktree", "sandbox"]},
+          "evidence": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "stale_if": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "evidence_use": {"enum": ["advisory", "candidate-bound"]},
+    "freshness": {"enum": ["pending", "current", "stale"]},
+    "final_evidence_eligible": {"type": "boolean"},
+    "eligibility_reason": {"type": "string", "minLength": 1},
+    "changed_files": {"type": "array", "maxItems": 0},
+    "changed_assets": {"type": "array", "maxItems": 0},
+    "risks": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"phase": {"const": "preflight"}}},
+      "then": {
+        "properties": {
+          "evidence_use": {"const": "advisory"},
+          "final_evidence_eligible": {"const": false}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"phase": {"const": "candidate"}}},
+      "then": {"properties": {"evidence_use": {"const": "candidate-bound"}}}
+    },
+    {
+      "if": {"properties": {"final_evidence_eligible": {"const": true}}},
+      "then": {
+        "properties": {
+          "kind": {"const": "validation"},
+          "phase": {"const": "candidate"},
+          "status": {"const": "completed"},
+          "freshness": {"const": "current"}
+        }
+      }
+    },
+    {
+      "if": {
+        "anyOf": [
+          {"properties": {"freshness": {"enum": ["pending", "stale"]}}},
+          {"properties": {"status": {"enum": ["blocked", "inconclusive"]}}}
+        ]
+      },
+      "then": {"properties": {"final_evidence_eligible": {"const": false}}}
+    }
+  ],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9-]*$"},
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "immutable"],
+      "properties": {
+        "kind": {"enum": ["git-commit", "content-hash", "external-source-set"]},
+        "id": {"type": "string", "minLength": 1},
+        "immutable": {"const": true}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "git-commit"}}},
+          "then": {"properties": {"id": {"pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$"}}}
+        },
+        {
+          "if": {"properties": {"kind": {"const": "content-hash"}}},
+          "then": {"properties": {"id": {"pattern": "^sha256:[a-f0-9]{64}$"}}}
+        }
+      ]
+    }
+  }
+}

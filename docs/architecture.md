@@ -4,6 +4,8 @@ Pyramid separates deterministic state mechanics from agent reasoning. Skills dec
 
 Plan refinement follows the same boundary. The `simplify` skill fact-checks and challenges a complete candidate, while `plan-review.schema.json` validates only the shape of its reasoning record. The review and its schema do not prove semantic claims, and candidate refinement does not mutate canonical state; changes to an existing graph still use replan preview and guarded application.
 
+Intra-task helper delegation follows that boundary too. Skills decide when spare host capacity justifies a research or validation helper. `helper-job.schema.json` and `helper-result.schema.json` validate compact envelopes, but no runtime file stores helper lifecycle and no helper owns a graph mutation.
+
 ## Current module boundaries
 
 ```mermaid
@@ -61,3 +63,14 @@ The runtime answers “which current tasks are safe together?” using only curr
 8. recomputes the next frontier.
 
 This keeps host-specific concurrency outside canonical state while retaining deterministic, testable safety decisions.
+
+## Intra-task helper boundary
+
+Task-level and intra-task parallelism are deliberately separate:
+
+| Layer | Derived by | Unit | State |
+| --- | --- | --- | --- |
+| Graph-task batch | Deterministic runtime | Independently auditable task | Disposable `parallel-frontier` projection |
+| Intra-task helper | Host coordinator reasoning | Read-only question against one snapshot | Ephemeral job/result envelope |
+
+The coordinator reserves graph workers first, then assigns remaining slots to helpers. Preflight helpers read an immutable base and rejoin before relevant design decisions. Candidate helpers run review or validation against an isolated frozen candidate. A result from any other snapshot is stale and cannot become final evidence. Helpers never edit source, mutate `.pyramid`, spawn untracked agents, or publish/deploy.

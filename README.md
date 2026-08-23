@@ -103,6 +103,29 @@ flowchart TD
 
 This is the canonical conceptual lifecycle. The deterministic runtime recommends the batch; the host agent owns sub-agent creation. One coordinator owns the authoritative `.pyramid`, claims tasks, integrates patches, records updates, refreshes assurance, and runs audits. Source-writing executors use separate code worktrees and never mutate worktree-local Pyramid state. Their prompts contain only the exact claimed packet—not the full graph or event history. If isolated workspaces or safe integration are unavailable, source work stays serial.
 
+### Two levels of useful parallelism
+
+Pyramid uses graph-task workers first because they advance independently auditable outcomes. When the ready frontier contains only one task—or a selected batch does not consume every host slot—the coordinator may use the remaining capacity for ephemeral helpers inside its retained task.
+
+```mermaid
+flowchart TD
+    T["Main agent takes one implementation task"] --> B["Bind helpers to an immutable base snapshot"]
+    B --> R["Research or repository-map helper"]
+    B --> C["Main agent implements independent work"]
+    R --> D["Reconcile before load-bearing decision"]
+    C --> S["Freeze candidate snapshot"]
+    D --> S
+    S --> V1["Isolated validation helper"]
+    S --> V2["Independent review helper"]
+    V1 --> J["Match result snapshot to accepted candidate"]
+    V2 --> J
+    J --> U["Coordinator records one canonical task result"]
+```
+
+Research, reconnaissance, test discovery, and risk review are often read-only. Validation commands are not assumed read-only: tests and builds may write caches, coverage, generated files, databases, or snapshots. Repository-bound helpers therefore read an immutable snapshot, and write-producing checks run only in a disposable worktree or sandbox. Helper jobs and results are bounded serialized envelopes, but they are not graph nodes, events, versions, claims, or mutation guards.
+
+Graph-task reservations always win. Only the coordinator owns the global slot ledger, helper jobs, canonical task guard, and evidence promotion. A helper result remains advisory until it rejoins at its declared boundary; candidate evidence is final only when its snapshot exactly matches the accepted candidate.
+
 ```bash
 python3 plugins/pyramid-task/scripts/pyramid.py inspect \
   --project /path/to/project --parallel-ready --max-agents 4 --json
@@ -117,6 +140,7 @@ A group ID has the form `PARALLEL-W<wave>-<10 uppercase hex>`. The suffix is the
 The ID is a disposable correlation handle for logs, prompts, and join metadata. It is not a graph node, event/version ID, persistent scheduler record, lock, authorization token, or mutation guard. Its batch can change or disappear whenever readiness, dependencies, scopes, assets, assurance, drift, wave membership, or the agent limit changes. Re-run `inspect --parallel-ready` after any such change and use each task's current claim guard for mutations.
 
 Read the [parallel execution contract](plugins/pyramid-task/references/parallel-execution.md) for worker prompt and safety rules.
+Read the [intra-task helper contract](plugins/pyramid-task/references/intra-task-helpers.md) for helper eligibility, snapshots, result bounds, and slot ownership.
 
 ## Assurance at the right time
 
@@ -197,7 +221,7 @@ Start a new agent session after installation or update so the runtime discovers 
 1. Create the intent graph. Existing repositories default to brownfield mode.
 2. Assess the system baseline and map change impact before relying on brownfield audits.
 3. Inspect the compact ready frontier; derive one conflict-safe parallel group when multiple agent slots are available.
-4. Claim each selected task with its scoped guard and give every worker only its exact packet.
+4. Claim each selected task with its scoped guard, give graph workers exact packets first, then use spare slots for bounded snapshot-safe helpers.
 5. Report implementation with actual files, assets, checks, evidence, and typed change effects.
 6. Refresh shared inspections once at the returned batch boundary.
 7. Audit implementation nodes and the common composition gate independently.
@@ -249,8 +273,8 @@ If the baseline is not known, creation writes a deliberately incomplete placehol
 | `pyramid-task:impact` | Map affected assets, inspections, findings, drift, and controls. |
 | `pyramid-task:upgrade` | Upgrade an active V2/V2.1 project in place without rebuilding its graph. |
 | `pyramid-task:inspect` | Query compact status, readiness, blockers, audit freshness, and traces. |
-| `pyramid-task:orchestrate` | Derive and coordinate one conflict-safe task batch with sub-agents. |
-| `pyramid-task:take` | Claim one ready or rework task and receive its scoped packet. |
+| `pyramid-task:orchestrate` | Coordinate graph-task workers first, then use spare slots for bounded helpers. |
+| `pyramid-task:take` | Claim one ready task and opportunistically delegate safe read-only helper work. |
 | `pyramid-task:pause` | Pause owned work with an immutable evidence-aware handoff. |
 | `pyramid-task:resume` | Validate and resume the canonical handoff with a fresh lease. |
 | `pyramid-task:update` | Record implementation, evidence, actual scope, blockers, and risk. |
@@ -276,6 +300,7 @@ Detailed contracts:
 - [Graph and state](plugins/pyramid-task/references/graph-contract.md)
 - [Agent and audit packets](plugins/pyramid-task/references/agent-contracts.md)
 - [Parallel execution](plugins/pyramid-task/references/parallel-execution.md)
+- [Intra-task helpers](plugins/pyramid-task/references/intra-task-helpers.md)
 - [Brownfield assurance](plugins/pyramid-task/references/brownfield-assurance.md)
 - [Visualization](plugins/pyramid-task/references/visualization-contract.md)
 - [Pause and resume](plugins/pyramid-task/references/handoff-contract.md)
