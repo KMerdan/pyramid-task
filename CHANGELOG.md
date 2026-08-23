@@ -9,6 +9,7 @@ All notable changes follow semantic versioning. Serialized task graph and state 
 - Let a claimed implementation task use spare host-agent slots for bounded research, reconnaissance, review, and validation while preserving one canonical coordinator.
 - Bind helper jobs and results to immutable snapshots, narrow read scopes, acceptance criteria, explicit join boundaries, prohibitions, and context budgets through published schemas.
 - Prioritize independently auditable graph-task workers, isolate write-producing checks, reject helper source mutations, and promote candidate evidence only when its snapshot matches the accepted result.
+- Keep evidence-only audit events in scoped mutation guards without making product inspections stale unless an inspection explicitly declares evidence changes as invalidating.
 
 ### Evidence-based plan refinement
 

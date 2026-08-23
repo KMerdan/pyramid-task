@@ -399,10 +399,17 @@ def implementation_frontier(paths: dict[str, Path]) -> dict[str, dict[str, Any]]
             current is not None and version <= current["graph_version"]
         ):
             continue
+        payload = event.get("payload")
+        result = payload.get("result") if isinstance(payload, dict) else None
+        if not isinstance(result, dict):
+            after = event.get("after")
+            result = after.get("last_result") if isinstance(after, dict) else None
+        change_effect = result.get("change_effect") if isinstance(result, dict) else None
         frontier[task] = {
             "event_id": event.get("id"),
             "graph_version": version,
             "at": event.get("at"),
+            "change_effect": change_effect if isinstance(change_effect, str) else None,
         }
     return frontier
 

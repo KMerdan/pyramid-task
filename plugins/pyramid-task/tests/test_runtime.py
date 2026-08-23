@@ -1007,6 +1007,77 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertEqual([], updated["stale_inspections"])
         assurance = load_json(root / ".pyramid" / "assurance.json")
         self.assertEqual("performed", assurance["inspections"][0]["status"])
+        paths, current_plan, current_state = load_project(root)
+        frontier = implementation_frontier(paths)
+        self.assertEqual(
+            "evidence-only", frontier["RESEARCH-101"]["change_effect"]
+        )
+        summary = inspect_project(root, assurance_summary_view=True)["summary"]
+        self.assertEqual("ready", summary["status"])
+        readiness = inspect_project(root, audit_readiness="RESEARCH-101")
+        self.assertTrue(readiness["ready"])
+        self.assertEqual([], readiness["refresh_inspection_ids"])
+        _, baseline, current_assurance = load_assurance_bundle(paths, current_plan)
+        guard = audit_mutation_guard(
+            current_plan,
+            current_state,
+            "RESEARCH-101",
+            baseline,
+            current_assurance,
+            frontier,
+        )
+        self.assertTrue(guard.startswith("GUARD-AUDIT-"))
+        audited = audit_node(
+            root,
+            "RESEARCH-101",
+            "auditor",
+            "pass",
+            self.assurance_audit_for("RESEARCH-101"),
+            expected_guard=guard,
+        )
+        self.assertEqual("pass", audited["status"])
+
+    def test_evidence_sensitive_inspection_requires_evidence_only_refresh(self) -> None:
+        root = Path(self.temp.name) / "evidence-sensitive-project"
+        plan = load_json(self.example)
+        research = next(node for node in plan["nodes"] if node["id"] == "RESEARCH-101")
+        research["agent"]["effect"] = "evidence-only"
+        research["agent"]["evidence_outputs"] = ["docs/reports/**"]
+        research["agent"]["allowed_write_scope"] = ["docs/reports/**"]
+        plan_path = self.write_json("evidence-sensitive-plan.json", plan)
+        assurance = load_json(PLUGIN_ROOT / "assets" / "example-assurance.json")
+        assurance["inspections"][0]["invalidated_by"].append("evidence")
+        assurance_path = self.write_json("evidence-sensitive-assurance.json", assurance)
+        create_project(
+            root,
+            plan_path,
+            "planner",
+            mode="brownfield",
+            baseline_path=PLUGIN_ROOT / "assets" / "example-baseline.json",
+            assurance_path=assurance_path,
+        )
+        take_task(root, "worker", nid="RESEARCH-101")
+        result = load_json(self.result_for("RESEARCH-101", ["AC-101-01"]))
+        result["changed_files"] = ["docs/reports/research.md"]
+        result["change_effect"] = "evidence-only"
+        result["changes"] = [
+            {"path": "docs/reports/research.md", "class": "evidence"}
+        ]
+        update_task(
+            root,
+            "RESEARCH-101",
+            "worker",
+            "implemented",
+            result_path=self.write_json("evidence-sensitive-result.json", result),
+        )
+        impact_project(root, assurance_path, "auditor", apply=True)
+        blocker = "Inspection INSPECTION-001 predates implementation for: RESEARCH-101"
+        summary = inspect_project(root, assurance_summary_view=True)["summary"]
+        self.assertIn(blocker, summary["blockers"])
+        readiness = inspect_project(root, audit_readiness="RESEARCH-101")
+        self.assertFalse(readiness["ready"])
+        self.assertIn(blocker, readiness["blockers"])
+        self.assertEqual(["INSPECTION-001"], readiness["refresh_inspection_ids"])
 
     def test_declared_generated_output_avoids_drift_but_stales_covered_behavior(self) -> None:
         root = Path(self.temp.name) / "generated-output-project"

@@ -777,6 +777,19 @@ def inspection_freshness_blockers(
         )
     ]
     for inspection in inspections:
+        invalidated_by = set(
+            inspection.get("invalidated_by", DEFAULT_INVALIDATION_CLASSES)
+        )
+
+        def requires_refresh(task: str) -> bool:
+            implementation = implementation_frontier.get(task)
+            if implementation is None:
+                return False
+            return not (
+                implementation.get("change_effect") == "evidence-only"
+                and "evidence" not in invalidated_by
+            )
+
         inspected_tasks = set(inspection.get("task_ids", []))
         if task_ids is not None:
             inspected_tasks.intersection_update(task_ids)
@@ -785,7 +798,7 @@ def inspection_freshness_blockers(
             stale_for = sorted(
                 task
                 for task in inspected_tasks
-                if task in implementation_frontier
+                if requires_refresh(task)
                 and validated_through.get(task)
                 != implementation_frontier[task].get("event_id")
             )
@@ -793,7 +806,7 @@ def inspection_freshness_blockers(
             performed_at = _parse_time(inspection.get("performed_at"))
             stale_for = []
             for task in sorted(inspected_tasks):
-                if task not in implementation_frontier:
+                if not requires_refresh(task):
                     continue
                 implementation_at = _parse_time(
                     implementation_frontier[task].get("at")
