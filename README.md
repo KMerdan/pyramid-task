@@ -27,6 +27,10 @@ Pyramid Task models these concerns explicitly. It keeps execution, verification,
 
 ## Current architecture
 
+Pyramid Task separates agent guidance from runtime enforcement. Specialized skills help agents choose the right workflow and produce bounded task or audit artifacts; the Python runtime validates every transition, maintains canonical `.pyramid` state, records immutable events, and regenerates disposable projections.
+
+[![Pyramid Task logical workflow architecture](docs/images/pyramid-task-logical-workflow.svg)](docs/images/pyramid-task-logical-workflow.svg)
+
 | Layer | Canonical purpose | Agent-loading behavior |
 | --- | --- | --- |
 | `.pyramid/plan.json` | Current intent, graph topology, contracts, and evidence ledger | Selected node and goal trace only |
