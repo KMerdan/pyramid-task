@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pyramid-workflow-title pyramid-workflow-desc">
+        <title id="pyramid-workflow-title">Pyramid Task V3 logical workflow architecture</title>
+        <desc id="pyramid-workflow-desc">Architecture showing an intent routed through specialized agent skills into the Pyramid runtime, which derives ready work, supplies task packets to workers, audits results, preserves canonical state and events, manages lifecycle transitions, and compiles generated views.</desc>
+        <defs>
+          <style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap');</style>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/>
+          </marker>
+          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/>
+          </marker>
+          <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/>
+          </marker>
+        </defs>
+
+        <rect width="1280" height="720" fill="#f5f5f5"/>
+
+        <!-- Zones -->
+        <rect x="40" y="120" width="1128" height="260" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <rect x="56" y="124" width="180" height="16" rx="4" fill="#f5f5f5"/>
+        <text x="146" y="136" fill="rgba(45,49,66,0.48)" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">AGENT-GUIDED EXECUTION</text>
+
+        <rect x="200" y="408" width="968" height="212" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <rect x="216" y="412" width="196" height="16" rx="4" fill="#f5f5f5"/>
+        <text x="314" y="424" fill="rgba(45,49,66,0.48)" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">CONTROL, EVIDENCE &amp; STATE</text>
+
+        <!-- Connectors: top execution path -->
+        <line x1="184" y1="268" x2="224" y2="268" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="424" y1="268" x2="464" y2="268" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="664" y1="268" x2="704" y2="268" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        <line x1="904" y1="268" x2="944" y2="268" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- Worker result enters assurance without overlapping the feedback path -->
+        <path d="M 1044 328 V 380 Q 1044 388 1036 388 H 848 Q 840 388 840 396 V 448" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="892" y="360" width="104" height="12" rx="4" fill="#f5f5f5"/>
+        <text x="944" y="368" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">RESULT + SCOPE</text>
+
+        <!-- Audit result feeds availability back into the graph -->
+        <line x1="768" y1="448" x2="768" y2="328" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        <rect x="684" y="376" width="72" height="16" rx="4" fill="#f5f5f5"/>
+        <text x="720" y="388" fill="#eb6c36" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">PASS / REWORK</text>
+
+        <!-- Runtime-controlled lifecycle and canonical commits -->
+        <path d="M 508 328 V 388 Q 508 396 500 396 H 332 Q 324 396 324 404 V 448" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <rect x="372" y="368" width="88" height="12" rx="4" fill="#f5f5f5"/>
+        <text x="416" y="376" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">TRANSITION</text>
+
+        <line x1="564" y1="328" x2="564" y2="448" stroke="#eb6c36" stroke-width="1.2" marker-end="url(#arrow-accent)"/>
+        <rect x="576" y="372" width="64" height="16" rx="4" fill="#f5f5f5"/>
+        <text x="608" y="384" fill="#eb6c36" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">COMMIT</text>
+
+        <!-- Control/evidence writes to canonical state -->
+        <line x1="424" y1="508" x2="464" y2="508" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <line x1="704" y1="508" x2="664" y2="508" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- Canonical state compiles disposable projections -->
+        <path d="M 596 568 V 604 Q 596 612 604 612 H 1036 Q 1044 612 1044 604 V 568" fill="none" stroke="#7a8399" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+        <rect x="764" y="584" width="80" height="12" rx="4" fill="#f5f5f5"/>
+        <text x="804" y="592" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">COMPILE</text>
+
+        <!-- Nodes: opaque masks, then styled boxes -->
+        <!-- Intent -->
+        <rect x="64" y="208" width="120" height="120" rx="8" fill="#f5f5f5"/>
+        <rect x="64" y="208" width="120" height="120" rx="8" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+        <rect x="76" y="220" width="44" height="16" rx="4" fill="transparent" stroke="rgba(122,131,153,0.55)" stroke-width="0.8"/>
+        <text x="98" y="232" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">INPUT</text>
+        <text x="124" y="268" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Intent</text>
+        <text x="124" y="288" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">desired state</text>
+        <text x="124" y="304" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">success evidence</text>
+
+        <!-- Skill router -->
+        <rect x="224" y="208" width="200" height="120" rx="8" fill="#f5f5f5"/>
+        <rect x="224" y="208" width="200" height="120" rx="8" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="236" y="220" width="52" height="16" rx="4" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+        <text x="262" y="232" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">SKILLS</text>
+        <text x="324" y="268" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Skill Router + Guides</text>
+        <text x="324" y="288" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">specialized SKILL.md entry points</text>
+        <text x="324" y="304" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">reasoning + command protocol</text>
+
+        <!-- Runtime core: focal -->
+        <rect x="464" y="208" width="200" height="120" rx="8" fill="#f5f5f5"/>
+        <rect x="464" y="208" width="200" height="120" rx="8" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1.2"/>
+        <rect x="476" y="220" width="44" height="16" rx="4" fill="transparent" stroke="rgba(235,108,54,0.60)" stroke-width="0.8"/>
+        <text x="498" y="232" fill="#eb6c36" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CORE</text>
+        <text x="564" y="268" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Transactional Runtime</text>
+        <text x="564" y="288" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">pyramid.py · pyramid_core.py</text>
+        <text x="564" y="304" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">validate · guard · mutate · event</text>
+
+        <!-- Pathfinder graph -->
+        <rect x="704" y="208" width="200" height="120" rx="8" fill="#f5f5f5"/>
+        <rect x="704" y="208" width="200" height="120" rx="8" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="716" y="220" width="52" height="16" rx="4" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+        <text x="742" y="232" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">GRAPH</text>
+        <text x="804" y="268" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Pathfinder + Frontier</text>
+        <text x="804" y="288" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">typed DAG · waves · availability</text>
+        <text x="804" y="304" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">dependency-aware ready work</text>
+
+        <!-- Worker agents -->
+        <rect x="944" y="208" width="200" height="120" rx="8" fill="#f5f5f5"/>
+        <rect x="944" y="208" width="200" height="120" rx="8" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
+        <rect x="956" y="220" width="52" height="16" rx="4" fill="transparent" stroke="rgba(45,49,66,0.28)" stroke-width="0.8"/>
+        <text x="982" y="232" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">AGENTS</text>
+        <text x="1044" y="268" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Worker Agents</text>
+        <text x="1044" y="288" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">agent-task-v1 packet</text>
+        <text x="1044" y="304" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">patch + agent-result-v1</text>
+
+        <!-- Lifecycle -->
+        <rect x="224" y="448" width="200" height="120" rx="8" fill="#f5f5f5"/>
+        <rect x="224" y="448" width="200" height="120" rx="8" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="236" y="460" width="44" height="16" rx="4" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+        <text x="258" y="472" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">CTRL</text>
+        <text x="324" y="508" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Lifecycle + Handoff</text>
+        <text x="324" y="528" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">pause · resume · replan</text>
+        <text x="324" y="544" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">close · archive · restore</text>
+
+        <!-- Canonical state: focal -->
+        <rect x="464" y="448" width="200" height="120" rx="8" fill="#f5f5f5"/>
+        <rect x="464" y="448" width="200" height="120" rx="8" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1.2"/>
+        <rect x="476" y="460" width="52" height="16" rx="4" fill="transparent" stroke="rgba(235,108,54,0.60)" stroke-width="0.8"/>
+        <text x="502" y="472" fill="#eb6c36" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STATE</text>
+        <text x="564" y="500" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Canonical .pyramid State</text>
+        <text x="564" y="520" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">plan · state · baseline · assurance</text>
+        <text x="564" y="536" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">head · events · handoffs · reports</text>
+
+        <!-- Assurance and audit -->
+        <rect x="704" y="448" width="200" height="120" rx="8" fill="#f5f5f5"/>
+        <rect x="704" y="448" width="200" height="120" rx="8" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="716" y="460" width="60" height="16" rx="4" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+        <text x="746" y="472" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">ASSURE</text>
+        <text x="804" y="508" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Assurance + Audit</text>
+        <text x="804" y="528" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">impact · inspection · drift</text>
+        <text x="804" y="544" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">evidence gates + invalidation</text>
+
+        <!-- Generated projections -->
+        <rect x="944" y="448" width="200" height="120" rx="8" fill="#f5f5f5"/>
+        <rect x="944" y="448" width="200" height="120" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.24)" stroke-width="1" stroke-dasharray="4,3"/>
+        <rect x="956" y="460" width="60" height="16" rx="4" fill="transparent" stroke="rgba(45,49,66,0.24)" stroke-width="0.8"/>
+        <text x="986" y="472" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">OUTPUT</text>
+        <text x="1044" y="508" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Generated Projections</text>
+        <text x="1044" y="528" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">graph.json · ready.json</text>
+        <text x="1044" y="544" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">docs/tasks · pyramid.html</text>
+
+        <!-- Legend -->
+        <line x1="40" y1="652" x2="1240" y2="652" stroke="rgba(45,49,66,0.12)" stroke-width="0.8"/>
+        <text x="40" y="676" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+
+        <rect x="136" y="664" width="24" height="16" rx="4" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1"/>
+        <text x="172" y="676" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">enforcement focal point</text>
+
+        <rect x="380" y="664" width="24" height="16" rx="4" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="416" y="676" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">guided/runtime component</text>
+
+        <rect x="664" y="664" width="24" height="16" rx="4" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="1"/>
+        <text x="700" y="676" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">human or agent boundary</text>
+
+        <rect x="940" y="664" width="24" height="16" rx="4" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.24)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="976" y="676" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">derived projection</text>
+      </svg>
