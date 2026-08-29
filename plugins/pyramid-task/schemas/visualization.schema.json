@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/visualization.schema.json",
+  "title": "Pyramid Task Visualization Projection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "graph_version", "title", "revision", "intent", "lifecycle", "summary", "nodes", "edges", "project", "assurance", "observer"],
+  "properties": {
+    "schema": {"const": "pyramid-visualization-v2"},
+    "graph_version": {"type": "integer", "minimum": 1},
+    "context": {"type": ["object", "null"]},
+    "plan_id": {"type": ["string", "null"]},
+    "title": {"type": "string", "minLength": 1},
+    "revision": {"type": "integer", "minimum": 1},
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "statement", "success_evidence"],
+      "properties": {
+        "id": {"type": "string"},
+        "statement": {"type": ["string", "null"]},
+        "success_evidence": {"type": "array"}
+      }
+    },
+    "lifecycle": {"type": "object"},
+    "summary": {"type": "object"},
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "summary", "kind", "selection", "availability", "state", "proof"],
+        "properties": {
+          "id": {"type": "string"},
+          "title": {"type": "string"},
+          "summary": {"type": "string"},
+          "kind": {"type": "string"},
+          "selection": {"type": "string"},
+          "availability": {"type": "string"},
+          "state": {"type": "object"},
+          "proof": {"$ref": "#/$defs/proof"}
+        }
+      }
+    },
+    "edges": {"type": "array"},
+    "project": {"type": "object"},
+    "assurance": {"type": ["object", "null"]},
+    "observer": {"$ref": "#/$defs/observer"}
+  },
+  "$defs": {
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "failed", "not_run", "total"],
+      "properties": {
+        "passed": {"type": "integer", "minimum": 0},
+        "failed": {"type": "integer", "minimum": 0},
+        "not_run": {"type": "integer", "minimum": 0},
+        "total": {"type": "integer", "minimum": 0}
+      }
+    },
+    "proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verification", "updated_at", "implementation_checks", "acceptance_checks", "audit_checks", "recommended_action"],
+      "properties": {
+        "verification": {"type": "string"},
+        "updated_at": {"type": ["string", "null"]},
+        "implementation_checks": {"$ref": "#/$defs/counts"},
+        "acceptance_checks": {"$ref": "#/$defs/counts"},
+        "audit_checks": {"$ref": "#/$defs/counts"},
+        "recommended_action": {"type": ["string", "null"]}
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "required": ["id", "title", "summary", "status", "verification", "updated_at", "gate", "acceptance_criteria", "required_evidence", "supporting_work", "active_work", "attention_items"],
+      "properties": {
+        "id": {"type": "string"},
+        "title": {"type": "string"},
+        "summary": {"type": "string"},
+        "status": {"enum": ["verified", "needs-attention", "in-progress", "proof-pending", "ready-for-proof", "work-ready", "planned"]},
+        "verification": {"type": "string"},
+        "updated_at": {"type": ["string", "null"]},
+        "gate": {"type": ["object", "null"]},
+        "acceptance_criteria": {"type": "array"},
+        "required_evidence": {"type": "array"},
+        "supporting_work": {"type": "integer", "minimum": 0},
+        "active_work": {"type": "integer", "minimum": 0},
+        "attention_items": {"type": "integer", "minimum": 0}
+      }
+    },
+    "observer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent", "progress", "last_verified", "next_outcome", "outcomes", "working", "attention", "recommended"],
+      "properties": {
+        "intent": {"type": "object"},
+        "progress": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["label", "verified_outcomes", "outcomes", "working", "attention", "ready"],
+          "properties": {
+            "label": {"type": "string"},
+            "verified_outcomes": {"type": "integer", "minimum": 0},
+            "outcomes": {"type": "integer", "minimum": 0},
+            "working": {"type": "integer", "minimum": 0},
+            "attention": {"type": "integer", "minimum": 0},
+            "ready": {"type": "integer", "minimum": 0}
+          }
+        },
+        "last_verified": {"oneOf": [{"$ref": "#/$defs/outcome"}, {"type": "null"}]},
+        "next_outcome": {"oneOf": [{"$ref": "#/$defs/outcome"}, {"type": "null"}]},
+        "outcomes": {"type": "array", "items": {"$ref": "#/$defs/outcome"}},
+        "working": {"type": "array"},
+        "attention": {"type": "array"},
+        "recommended": {"type": ["object", "null"]}
+      }
+    }
+  }
+}

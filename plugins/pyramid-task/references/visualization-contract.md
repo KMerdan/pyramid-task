@@ -4,15 +4,32 @@ Render the visualization projection derived from `.pyramid/graph.json`, which co
 
 ## Required views
 
-- Focus: place the selected or recommended node at the center and show only its goal trace, prerequisites, children, blockers, and audit gates.
-- Star: place the intent at the center and deeper levels on semantic rings.
-- Pyramid: place level 0 at the apex and increasing levels below it.
-- Dependencies: arrange by execution wave and workstream.
+- **Intent Observer (default):** give a human an at-a-glance narrative from intent to accepted outcomes, current work, interventions, next action, and task hierarchy. Do not require graph literacy.
+- **Technical graph:** retain Focus, Star, Pyramid, and Dependencies as drill-down layouts. Focus places the selected or recommended node at the center; Star places intent at the center; Pyramid places level 0 at the apex; Dependencies arranges by wave and workstream.
+
+The Observer and Technical graph are two presentations of one deterministic runtime projection. The Observer is not a second state model and the browser must not infer canonical status.
+
+## Observer questions
+
+The first screen must answer these questions in order:
+
+1. What is the intent and what would prove success?
+2. What actor-visible outcome was last verified?
+3. What outcome and gate must be proved next?
+4. What work is actually active, who owns it, and which outcome does it support?
+5. What failed, blocked, drifted, became stale, or paused; why does it matter; and what intervention is indicated?
+6. What is the next executable action?
+7. How is the selected-path work organized beneath the intent?
+
+Use plain human titles and causal summaries. A count is secondary context, not the story. Keep task IDs, raw enum values, graph version, plan revision, edge types, and record IDs in a technical disclosure or graph detail.
 
 ## Required interactions
 
 - Select a node and show its title, purpose, kind, path selection, execution, verification, health, availability, and active or latest handoff identity.
 - Highlight its goal trace, prerequisites, children, and audit gate.
+- When the selected node is a planned demonstrable increment, focus its outcome and `validated-by` gate and show actual verification and blockers; never infer an increment from wave membership.
+- From Observer cards, select work without leaving the semantic context. State why the selected work matters and which outcome it supports before showing machine fields.
+- Show the selected-path hierarchy with intent and outcome titles. Suppress rejected or alternative branches by default; keep them in technical exploration.
 - Filter all, ready, working, paused, needs-rework, blocked, audit, work-package, and verified nodes.
 - Provide keyboard-accessible view and filter controls plus a node-selection fallback.
 - Link to the generated Markdown source when the environment supports local links.
@@ -28,6 +45,16 @@ Render the visualization projection derived from `.pyramid/graph.json`, which co
 - Pair every color signal with text, shape, or line treatment.
 - Encode brownfield assurance with a distinct dashed ring and detailed text; never reuse task execution color as assurance state.
 - Keep inactive structure neutral and visually subordinate.
+
+Use visual hierarchy from general to specific: intent and proof, delivery path, current action and intervention, selected detail, then technical topology. Do not place a large node-link graph above the answers a human came to obtain. Pair every issue with its recorded reason and an indicated next response; do not make a viewer decode color or search the graph for causality.
+
+## Proof and test observation
+
+- Treat the outcome audit as the acceptance boundary. Passing task checks may support it but must not make an outcome appear verified.
+- For the selected work or outcome, show its acceptance criteria, required evidence, latest implementation-check counts, acceptance-check counts, audit-check counts, proof freshness, and failed or not-run evidence when available.
+- Organize evidence by the behavior or claim it proves. Test-layer balance may be a secondary diagnostic; unit, integration, and UI totals are not the primary progress story.
+- Show a runnable or demonstrable claim only when the plan defines that outcome and its gate has passed. If the plan lacks an explicit outcome ladder, say so instead of deriving increments from waves.
+- Do not reconstruct a red-green-refactor timeline unless canonical events actually record those transitions. Never infer test-driven activity from file names or a final green suite.
 
 The browser is read-only. Actions that claim, pause, resume, update, audit, expand, or replan must call their authoritative interface rather than modifying local presentation state.
 
@@ -46,7 +73,7 @@ Live mode is near-real-time publication following, not a transactional subscript
 
 ## Progress
 
-Show project mode, plan lifecycle, verified nodes, ready frontier, rework, active and paused work, blockers, pending audits, baseline revision, impacted versus sufficiently inspected assets, open scope drift, and material findings. Do not invent a completion percentage unless the plan explicitly contains reviewed weights. A labeled coverage count is acceptable.
+Lead with verified outcomes, not task completion. Show project mode, plan lifecycle, last accepted outcome, next gate, active work, interventions, recommended action, rework, pending audits, and assurance conditions. Distinguish ahead-of-gate work from accepted progress. Do not invent increment state or a completion percentage unless the plan explicitly contains reviewed weights. A labeled count such as `2 of 4 outcomes verified` is acceptable; raw primary-node coverage is secondary.
 
 ## Layout
 

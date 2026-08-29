@@ -5,7 +5,7 @@ description: Propose and apply a deeper subtree for a broad executable Pyramid T
 
 # Expand a Pyramid Task
 
-Read `../../references/expansion-contract.md` and `../../references/graph-contract.md`. Load `../../references/agent-contracts.md` only for changed child contracts, `../../references/brownfield-assurance.md` only when assurance is present, and `../../references/lifecycle-contract.md` only when the plan is not active. Use `../../assets/example-expansion.json` only as structure.
+Read `../../references/expansion-contract.md` and `../../references/graph-contract.md`. Load `../../references/demonstrable-increments.md` when the target contributes to a planned increment, `../../references/agent-contracts.md` only for changed child contracts, `../../references/brownfield-assurance.md` only when assurance is present, and `../../references/lifecycle-contract.md` only when the plan is not active. Use `../../assets/example-expansion.json` only as structure.
 
 ## Decide whether to propose
 
@@ -24,7 +24,7 @@ Continue the original task without asking about expansion when none applies. Dif
 
 1. Release an active claim before expanding. Reopen implemented or verified work first. Do not expand an audit node.
 2. Preserve the current task ID and complete contract in `preserved_parent`. Draft at least two executable child branches and exactly one audit gate at the next level.
-3. Map every current dependency to the children that consume it. Make the audit gate cover every branch. Record evidence, trigger signals, impact, and resolved user decisions in `expansion-proposal-v1` JSON.
+3. Map every current dependency to the children that consume it. Make the audit gate cover every branch and preserve the enclosing increment's acceptance and inherited proof. Record evidence, trigger signals, impact, and resolved user decisions in `expansion-proposal-v1` JSON.
 4. Lead with a concrete recommended subtree and its impact. Ask only questions that materially change scope, ownership, ordering, or acceptance evidence; ask at most three at once and include recommended defaults.
 5. If clarification changes the original purpose, acceptance contract, architecture, selected path, or surrounding topology, stop and use `replan` instead.
 6. Preview the exact graph diff:
@@ -52,3 +52,4 @@ Report the new ready frontier, invalidated proofs and inspections, assurance gap
 - Never use expansion to change the original contract or selected path.
 - Never invent approval metadata or treat silence as approval.
 - Never hand-edit plan, state, events, or generated projections.
+- Do not present an internal expansion gate as the increment gate unless it independently exercises the complete increment outcome.

@@ -1,4 +1,4 @@
 interface:
   display_name: "Inspect Pyramid Plan"
-  short_description: "Query exact status and safe parallel groups"
-  default_prompt: "Use $inspect to answer with the smallest exact runtime query, including the derived parallel-ready frontier only when concurrent execution is relevant."
+  short_description: "Query increments, status, and safe batches"
+  default_prompt: "Use $inspect to report the last verified increment, next exact blocker, or smallest requested runtime status query."

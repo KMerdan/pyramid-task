@@ -600,12 +600,39 @@ class PyramidRuntimeTests(unittest.TestCase):
         text = output.read_text(encoding="utf-8")
         self.assertEqual(6, rendered["nodes"])
         self.assertIn("pyramid-data", text)
+        self.assertIn("Intent observer", text)
+        self.assertIn("Actually working", text)
         self.assertIn("Focus", text)
         self.assertIn("Star", text)
         self.assertIn("Needs rework", text)
         self.assertNotIn("fetch(", text)
+        self.assertEqual("pyramid-visualization-v2", graph["schema"])
+        jsonschema.validate(
+            graph,
+            load_json(PLUGIN_ROOT / "schemas" / "visualization.schema.json"),
+        )
+        self.assertEqual("OUTCOME-010", graph["observer"]["next_outcome"]["id"])
+        self.assertEqual("RESEARCH-101", graph["observer"]["recommended"]["id"])
+        self.assertEqual([], graph["observer"]["working"])
+        self.assertEqual([], graph["observer"]["attention"])
         self.assertNotIn("agent", graph["nodes"][0])
-        self.assertNotIn("required_evidence", graph["nodes"][0])
+        self.assertNotIn("last_result", graph["nodes"][0]["state"])
+        self.assertNotIn("last_audit", graph["nodes"][0]["state"])
+
+    def test_visualization_observer_explains_active_work_and_issues(self) -> None:
+        take_task(self.root, "worker", nid="RESEARCH-101")
+        working = load_visualization_graph(self.root)["observer"]
+        self.assertEqual(["RESEARCH-101"], [item["id"] for item in working["working"]])
+        self.assertEqual("OUTCOME-010", working["working"][0]["target_outcome"]["id"])
+        self.assertEqual("in-progress", working["next_outcome"]["status"])
+
+        update_task(self.root, "RESEARCH-101", "worker", "blocked", reason="Repository evidence is incomplete.")
+        blocked = load_visualization_graph(self.root)["observer"]
+        self.assertEqual([], blocked["working"])
+        issue = next(item for item in blocked["attention"] if item["id"] == "RESEARCH-101")
+        self.assertEqual("Blocked", issue["type"])
+        self.assertEqual("Repository evidence is incomplete.", issue["reason"])
+        self.assertEqual("needs-attention", blocked["next_outcome"]["status"])
 
     def test_live_graph_follows_complete_publications_and_keeps_last_valid_snapshot(self) -> None:
         graph = load_visualization_graph(self.root)

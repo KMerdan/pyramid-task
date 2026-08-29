@@ -1,6 +1,6 @@
 # Evidence-Based Pathfinder Workflow
 
-Use this workflow for creation and replanning. The goal is not to maximize task count; it is to establish a defensible route from the observed current state to a testable intended state.
+Use this workflow for creation and replanning. The goal is not to maximize task count; it is to establish a defensible route from the observed current state through demonstrable increments to a testable intended state. Read `demonstrable-increments.md` before shaping a software or product-delivery path.
 
 ## 1. Normalize the intent
 
@@ -28,6 +28,8 @@ Backward-chain from the final intent by asking what must be true immediately bef
 
 Forward-chain from the repository's current state by asking what can be built and meaningfully tested now. Reject backward paths that cannot connect to the forward chain.
 
+Before decomposing activities, identify the current demonstrable baseline and the smallest honest ladder of actor-visible, testable states to the intent. For software, make each rung buildable or launchable with a meaningful scenario. Preserve one rung when no smaller honest increment exists; do not manufacture demos or treat setup as user value.
+
 Use outcome nodes for required states. Use executable nodes for actions that establish or test those states. Use joint audit nodes to test whether sibling branches compose.
 
 For brownfield paths, map proposed tasks to direct and transitive assets. Use past failures and criticality to determine required inspection, recovery, compatibility, and monitoring nodes. An impact edge without a credible inspection path remains a planning gap.
@@ -48,7 +50,9 @@ Mark one path primary. Keep alternatives when they are plausible fallbacks. Mark
 
 ## 5. Convert to a pyramid
 
-Set level as distance from the intent: the intent is level 0 and implementation detail increases downward. Set wave as the earliest safe execution sequence; do not confuse wave with level.
+Set level as distance from the intent: the intent is level 0 and implementation detail increases downward. Set wave as the earliest safe execution sequence; do not confuse wave with level or with a demonstrable increment.
+
+Represent every increment as an outcome with its own `validated-by` audit gate. Prefer a cumulative chain in which each verified increment outcome contributes to the next and the final increment contributes to the intent. Make each later gate depend on the previous verified increment outcome for acceptance order and re-establish inherited observable behavior against the current candidate. Add a separate final intent gate only for additional direct branches or distinct release-level composition evidence.
 
 Convert shared prerequisites to foundation tasks, uncertain edges to research tasks, contracts to contract tasks, branch composition to integration and audit tasks, and final success evidence to the intent audit.
 
@@ -62,6 +66,9 @@ Before creation or replan, check:
 
 - every primary node traces to the intent;
 - every intent criterion has an implementation and evidence path;
+- the current demonstrable baseline and ordered increment ladder are explicit;
+- every increment has actor-visible acceptance, reproducible evidence, and an independent gate;
+- later increment gates re-establish prior accepted behavior;
 - every executable node is bounded and independently reviewable;
 - same-wave siblings intended for parallel work have disjoint declared outputs and no hidden ordering dependency;
 - broad executable nodes are left intact unless evidence justifies an approved expansion;

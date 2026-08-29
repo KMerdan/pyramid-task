@@ -17,6 +17,290 @@ from pyramid_core import (
 )
 
 
+EXECUTABLE_NODE_KINDS = {
+    "research",
+    "contract",
+    "implementation",
+    "integration",
+    "risk-control",
+    "audit",
+}
+
+
+def _check_counts(records: Any) -> dict[str, int]:
+    checks = records if isinstance(records, list) else []
+    counts = {"passed": 0, "failed": 0, "not_run": 0, "total": 0}
+    for check in checks:
+        if not isinstance(check, dict):
+            continue
+        result = check.get("result")
+        if result == "passed":
+            counts["passed"] += 1
+        elif result == "failed":
+            counts["failed"] += 1
+        else:
+            counts["not_run"] += 1
+        counts["total"] += 1
+    return counts
+
+
+def _proof_summary(node: dict[str, Any]) -> dict[str, Any]:
+    state = node.get("state", {})
+    result = state.get("last_result") if isinstance(state.get("last_result"), dict) else {}
+    audit = state.get("last_audit") if isinstance(state.get("last_audit"), dict) else {}
+    acceptance = result.get("acceptance_evidence") if isinstance(result, dict) else []
+    return {
+        "verification": state.get("verification", "unverified"),
+        "updated_at": state.get("updated_at"),
+        "implementation_checks": _check_counts(result.get("checks")),
+        "acceptance_checks": _check_counts(acceptance),
+        "audit_checks": _check_counts(audit.get("checks")),
+        "recommended_action": audit.get("recommended_action"),
+    }
+
+
+def _outcome_status(
+    outcome: dict[str, Any],
+    gate: dict[str, Any] | None,
+    supporting: list[dict[str, Any]],
+) -> str:
+    related = [outcome, *supporting]
+    if gate is not None:
+        related.append(gate)
+    if outcome.get("state", {}).get("verification") == "passed":
+        return "verified"
+    if any(
+        item.get("state", {}).get("verification") == "failed"
+        or item.get("state", {}).get("execution") == "needs-rework"
+        or item.get("state", {}).get("health") == "blocked"
+        for item in related
+    ):
+        return "needs-attention"
+    if any(item.get("state", {}).get("execution") == "working" for item in related):
+        return "in-progress"
+    if gate is not None and (
+        gate.get("state", {}).get("verification") == "pending"
+        or gate.get("state", {}).get("execution") == "implemented"
+    ):
+        return "proof-pending"
+    if gate is not None and gate.get("availability") == "ready":
+        return "ready-for-proof"
+    if any(item.get("availability") == "ready" for item in related):
+        return "work-ready"
+    return "planned"
+
+
+def _target_outcome(node: dict[str, Any], node_by_id: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
+    for candidate_id in node.get("goal_trace", []):
+        candidate = node_by_id.get(candidate_id)
+        if candidate and candidate.get("kind") == "outcome" and candidate.get("selection") == "primary":
+            return candidate
+    return None
+
+
+def observer_projection(graph: dict[str, Any], nodes: list[dict[str, Any]]) -> dict[str, Any]:
+    """Build a deterministic, human-first read model without adding canonical state."""
+    node_by_id = {node["id"]: node for node in nodes}
+    intent = node_by_id.get(graph["intent"]["id"], {})
+    primary = [node for node in nodes if node.get("selection") == "primary"]
+    outcomes = sorted(
+        (node for node in primary if node.get("kind") == "outcome"),
+        key=lambda node: (-node.get("level", 0), node.get("wave", 0), node["id"]),
+    )
+    stages: list[dict[str, Any]] = []
+    for outcome in outcomes:
+        gate = next(
+            (node_by_id.get(gate_id) for gate_id in outcome.get("audit_gates", [])),
+            None,
+        )
+        supporting = [
+            node
+            for node in primary
+            if node["id"] != outcome["id"] and outcome["id"] in node.get("goal_trace", [])
+        ]
+        stages.append(
+            {
+                "id": outcome["id"],
+                "title": outcome["title"],
+                "summary": outcome["summary"],
+                "status": _outcome_status(outcome, gate, supporting),
+                "verification": outcome.get("state", {}).get("verification"),
+                "updated_at": outcome.get("state", {}).get("updated_at"),
+                "gate": {
+                    "id": gate["id"],
+                    "title": gate["title"],
+                    "summary": gate["summary"],
+                    "availability": gate.get("availability"),
+                    "verification": gate.get("state", {}).get("verification"),
+                    "acceptance_criteria": gate.get("acceptance_criteria", []),
+                    "required_evidence": gate.get("required_evidence", []),
+                    "proof": gate.get("proof"),
+                }
+                if gate
+                else None,
+                "acceptance_criteria": outcome.get("acceptance_criteria", []),
+                "required_evidence": outcome.get("required_evidence", []),
+                "supporting_work": len(supporting),
+                "active_work": sum(
+                    node.get("state", {}).get("execution") == "working" for node in supporting
+                ),
+                "attention_items": sum(
+                    node.get("state", {}).get("health") in {"at-risk", "blocked"}
+                    or node.get("state", {}).get("verification") == "failed"
+                    or node.get("state", {}).get("execution") == "needs-rework"
+                    for node in supporting
+                ),
+            }
+        )
+
+    verified_stages = [stage for stage in stages if stage["status"] == "verified"]
+    verified_stages.sort(
+        key=lambda stage: (stage.get("updated_at") or "", stages.index(stage))
+    )
+    last_verified = verified_stages[-1] if verified_stages else None
+    next_stage = next((stage for stage in stages if stage["status"] != "verified"), None)
+
+    work_items = []
+    attention = []
+    for node in primary:
+        state = node.get("state", {})
+        target = _target_outcome(node, node_by_id)
+        target_summary = (
+            {"id": target["id"], "title": target["title"]} if target else None
+        )
+        base = {
+            "id": node["id"],
+            "title": node["title"],
+            "summary": node["summary"],
+            "kind": node["kind"],
+            "owner": state.get("owner"),
+            "availability": node.get("availability"),
+            "updated_at": state.get("updated_at"),
+            "target_outcome": target_summary,
+        }
+        if state.get("execution") == "working" and state.get("health") != "blocked":
+            work_items.append(base)
+
+        issue_type = None
+        next_action = None
+        if state.get("verification") == "failed" or state.get("execution") == "needs-rework":
+            issue_type, next_action = "Failed proof", "Repair the evidence gap, then re-audit."
+        elif state.get("health") == "blocked":
+            issue_type, next_action = "Blocked", "Resolve the stated blocker before continuing."
+        elif state.get("health") == "at-risk":
+            issue_type, next_action = "At risk", "Investigate the risk before it affects the next outcome."
+        elif state.get("execution") == "paused":
+            issue_type, next_action = "Paused handoff", "Resume from the durable handoff or reassign it."
+        if issue_type:
+            attention.append(
+                {
+                    **base,
+                    "type": issue_type,
+                    "reason": state.get("blocker") or "No additional reason was recorded.",
+                    "next_action": next_action,
+                }
+            )
+
+    priority = {"needs-rework": 0, "working": 1, "ready": 2, "paused": 3, "blocked": 4, "locked": 5}
+    executable = [node for node in primary if node.get("kind") in EXECUTABLE_NODE_KINDS]
+    recommended = min(
+        executable or primary or nodes,
+        key=lambda node: (
+            priority.get(node.get("availability"), 9),
+            node.get("wave", 0),
+            node.get("level", 0),
+            node["id"],
+        ),
+        default=None,
+    )
+    recommended_target = _target_outcome(recommended, node_by_id) if recommended else None
+    if recommended:
+        availability = recommended.get("availability")
+        reason = {
+            "working": "Continue the active work and record its evidence.",
+            "needs-rework": "Repair the failed proof before advancing dependent outcomes.",
+            "ready": "This is the next executable task whose prerequisites are satisfied.",
+            "paused": "Resume from the handoff before starting duplicate work.",
+            "blocked": "Resolve its blocker or choose another ready task.",
+            "locked": "No executable work is ready; inspect the blockers on the next outcome.",
+        }.get(availability, "Inspect this task as the current planning focus.")
+        recommended_view = {
+            "id": recommended["id"],
+            "title": recommended["title"],
+            "summary": recommended["summary"],
+            "availability": availability,
+            "reason": reason,
+            "target_outcome": (
+                {"id": recommended_target["id"], "title": recommended_target["title"]}
+                if recommended_target
+                else None
+            ),
+        }
+    else:
+        recommended_view = None
+
+    assurance = graph.get("assurance", {}).get("summary") if graph.get("assurance") else None
+    if assurance and (
+        assurance.get("status") == "blocked"
+        or assurance.get("open_scope_drift", 0)
+        or assurance.get("open_material_findings", 0)
+    ):
+        attention.append(
+            {
+                "id": "CHANGE-ASSURANCE",
+                "title": "Change assurance needs attention",
+                "summary": "Brownfield inspection, findings, or scope drift can block acceptance.",
+                "kind": "assurance",
+                "owner": None,
+                "availability": assurance.get("status"),
+                "updated_at": None,
+                "target_outcome": None,
+                "type": "Assurance",
+                "reason": (
+                    f"{assurance.get('open_scope_drift', 0)} open scope drift; "
+                    f"{assurance.get('open_material_findings', 0)} material findings."
+                ),
+                "next_action": "Reconcile impact and inspection coverage before the affected audit.",
+            }
+        )
+
+    intent_verified = intent.get("state", {}).get("verification") == "passed"
+    return {
+        "intent": {
+            "id": graph["intent"]["id"],
+            "statement": graph["intent"].get("statement") or intent.get("summary"),
+            "success_evidence": graph["intent"].get("success_evidence", []),
+            "verified": intent_verified,
+        },
+        "progress": {
+            "label": (
+                "Intent verified"
+                if intent_verified
+                else f"{len(verified_stages)} of {len(stages)} outcomes verified"
+                if stages
+                else f"{graph['summary']['verified_primary_nodes']} of {graph['summary']['primary_nodes']} primary nodes verified"
+            ),
+            "verified_outcomes": len(verified_stages),
+            "outcomes": len(stages),
+            "working": len(work_items),
+            "attention": len(attention),
+            "ready": graph.get("summary", {}).get("availability", {}).get("ready", 0),
+        },
+        "last_verified": last_verified,
+        "next_outcome": next_stage,
+        "outcomes": stages,
+        "working": sorted(work_items, key=lambda item: (item["title"], item["id"])),
+        "attention": sorted(
+            attention,
+            key=lambda item: (
+                {"Failed proof": 0, "Blocked": 1, "Assurance": 2, "At risk": 3, "Paused handoff": 4}.get(item["type"], 9),
+                item["title"],
+            ),
+        ),
+        "recommended": recommended_view,
+    }
+
+
 HTML_TEMPLATE = r"""<!doctype html>
 <html lang="en">
 <head>
@@ -72,6 +356,55 @@ HTML_TEMPLATE = r"""<!doctype html>
   main { max-width: 1500px; margin: 0 auto; padding: 18px; }
   h1 { margin: 0 0 4px; font-size: 1.35rem; font-weight: 600; }
   .meta { color: var(--muted); margin-bottom: 10px; }
+  [hidden] { display: none !important; }
+  .intent-statement { max-width: 920px; margin: 5px 0 14px; font-size: 1.02rem; }
+  .surface-switch { display: inline-flex; gap: 4px; padding: 4px; margin: 0 0 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); }
+  .surface-switch button { border-color: transparent; background: transparent; }
+  .surface-switch button[aria-pressed="true"] { background: var(--bg); border-color: var(--border); box-shadow: none; }
+  .observer { display: grid; gap: 14px; }
+  .observer-summary { display: grid; grid-template-columns: 1.2fr 1.2fr .8fr; gap: 10px; }
+  .story-card, .observer-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 11px; }
+  .story-card { min-height: 132px; padding: 15px; }
+  .story-card .eyebrow, .observer-panel .eyebrow { color: var(--muted); font-size: .75rem; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; }
+  .story-card h2, .observer-panel h2 { margin: 5px 0 6px; font-size: 1.05rem; }
+  .story-card p, .observer-panel p { margin: 5px 0; }
+  .story-card.verified { border-color: var(--verified); }
+  .story-card.attention { border-color: var(--blocked); }
+  .observer-panel { padding: 15px; min-width: 0; }
+  .observer-panel > h2 { margin-top: 0; }
+  .outcome-path { display: flex; gap: 8px; align-items: stretch; overflow-x: auto; padding: 3px 2px 8px; }
+  .outcome-step { position: relative; flex: 1 0 210px; max-width: 340px; min-height: 122px; padding: 12px; text-align: left; border-radius: 9px; }
+  .outcome-step::after { content: '→'; position: absolute; right: -10px; top: 48%; color: var(--muted); z-index: 2; }
+  .outcome-step:last-child::after { content: ''; }
+  .outcome-step strong { display: block; margin: 5px 0; }
+  .outcome-step small { color: var(--muted); }
+  .outcome-step.verified { border-color: var(--verified); }
+  .outcome-step.in-progress, .outcome-step.proof-pending { border-color: var(--working); }
+  .outcome-step.needs-attention { border-color: var(--blocked); }
+  .outcome-step.ready, .outcome-step.work-ready, .outcome-step.ready-for-proof { border-color: var(--ready); }
+  .observer-columns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .semantic-list { display: grid; gap: 8px; }
+  .semantic-item { width: 100%; padding: 10px; text-align: left; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+  .semantic-item strong { display: block; }
+  .semantic-item span, .empty-state { color: var(--muted); font-size: .84rem; }
+  .semantic-item.issue { border-left: 4px solid var(--blocked); }
+  .semantic-item.work { border-left: 4px solid var(--working); }
+  .recommended-action { border-left: 4px solid var(--ready); padding: 10px 12px; background: var(--bg); border-radius: 8px; }
+  .recommended-action strong { display: block; margin: 3px 0; }
+  .observer-lower { display: grid; grid-template-columns: minmax(300px, .9fr) minmax(380px, 1.1fr); gap: 10px; align-items: start; }
+  .structure-tree, .structure-tree ul { list-style: none; margin: 0; padding-left: 16px; }
+  .structure-tree { padding-left: 0; }
+  .structure-tree li { margin: 5px 0; }
+  .tree-node { width: 100%; padding: 7px 9px; text-align: left; border-color: transparent; background: transparent; }
+  .tree-node:hover, .tree-node.selected { border-color: var(--focus); background: var(--bg); }
+  .tree-node .tree-status { float: right; color: var(--muted); font-size: .78rem; }
+  .proof-status { display: inline-flex; padding: 3px 7px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: .78rem; }
+  .proof-grid { display: grid; grid-template-columns: repeat(3, minmax(90px, 1fr)); gap: 7px; margin: 10px 0; }
+  .proof-metric { padding: 8px; background: var(--bg); border-radius: 7px; }
+  .proof-metric strong { display: block; font-size: 1rem; }
+  .proof-metric span { color: var(--muted); font-size: .76rem; }
+  .technical-details { margin-top: 12px; color: var(--muted); }
+  .technical-details summary { cursor: pointer; }
   .live-status { display: inline-flex; align-items: center; gap: 7px; margin: 0 0 12px; padding: 5px 9px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: .82rem; }
   .live-status[hidden] { display: none; }
   .live-status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--locked); }
@@ -150,8 +483,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   .dot.rework { background: var(--rework); }
   @keyframes node-change { 0%, 30% { filter: drop-shadow(0 0 9px var(--focus)); transform: scale(1.28); transform-origin: center; } 100% { filter: none; transform: scale(1); } }
   @media (max-width: 1080px) { .overview { grid-template-columns: repeat(3, minmax(92px, 1fr)); } }
-  @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } .detail { position: static; } }
-  @media (max-width: 620px) { .overview { grid-template-columns: repeat(2, minmax(92px, 1fr)); } .recommended { grid-column: 1 / -1; } }
+  @media (max-width: 920px) { .layout, .observer-summary, .observer-columns, .observer-lower { grid-template-columns: 1fr; } .detail { position: static; } }
+  @media (max-width: 620px) { .overview { grid-template-columns: repeat(2, minmax(92px, 1fr)); } .recommended { grid-column: 1 / -1; } .surface-switch { display: flex; } .surface-switch button { flex: 1; } }
   @media (prefers-reduced-motion: no-preference) { .node, .edge { transition: opacity .18s, transform .18s; } }
   @media (prefers-reduced-motion: reduce) { .node.changed .mark { animation: none; } }
 </style>
@@ -159,8 +492,43 @@ HTML_TEMPLATE = r"""<!doctype html>
 <body>
 <main>
   <h1 id="page-title"></h1>
+  <p class="intent-statement" id="intent-statement"></p>
   <div class="meta" id="page-meta"></div>
   <div class="live-status" id="live-status" role="status" aria-live="polite" hidden>Connecting…</div>
+  <nav class="surface-switch" aria-label="Dashboard view">
+    <button type="button" data-surface="observer" aria-pressed="true">Intent observer</button>
+    <button type="button" data-surface="graph" aria-pressed="false">Technical graph</button>
+  </nav>
+  <section class="observer" id="observer-view" aria-label="Intent observer dashboard">
+    <section class="observer-summary" id="observer-summary" aria-label="Intent progress summary"></section>
+    <section class="observer-panel" aria-labelledby="outcome-path-title">
+      <div class="eyebrow">Delivery path</div>
+      <h2 id="outcome-path-title">Verified outcomes toward the intent</h2>
+      <div class="outcome-path" id="outcome-path"></div>
+    </section>
+    <section class="observer-columns" aria-label="Current execution picture">
+      <article class="observer-panel">
+        <div class="eyebrow">Now</div><h2>Actually working</h2>
+        <div class="semantic-list" id="working-list"></div>
+      </article>
+      <article class="observer-panel">
+        <div class="eyebrow">Attention</div><h2>What needs intervention</h2>
+        <div class="semantic-list" id="attention-list"></div>
+      </article>
+      <article class="observer-panel">
+        <div class="eyebrow">Next</div><h2>Recommended action</h2>
+        <div id="recommended-action"></div>
+      </article>
+    </section>
+    <section class="observer-lower">
+      <article class="observer-panel">
+        <div class="eyebrow">Structure</div><h2>How the intent is organized</h2>
+        <ul class="structure-tree" id="structure-tree"></ul>
+      </article>
+      <article class="observer-panel" id="observer-detail" aria-live="polite"></article>
+    </section>
+  </section>
+  <section id="graph-view" hidden>
   <section class="overview" id="overview" aria-label="Execution summary"></section>
   <div class="assurance-panel" id="assurance-panel"></div>
   <div class="toolbar">
@@ -212,6 +580,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     </section>
     <aside class="detail" id="detail" aria-live="polite"></aside>
   </div>
+  </section>
 </main>
 <script id="pyramid-data" type="application/json">__GRAPH_DATA__</script>
 <script>
@@ -228,7 +597,17 @@ HTML_TEMPLATE = r"""<!doctype html>
   const assuranceControls = document.getElementById('assurance-controls');
   const assuranceFilterButton = document.getElementById('assurance-filter');
   const overview = document.getElementById('overview');
+  const observerView = document.getElementById('observer-view');
+  const graphView = document.getElementById('graph-view');
+  const observerSummary = document.getElementById('observer-summary');
+  const outcomePath = document.getElementById('outcome-path');
+  const workingList = document.getElementById('working-list');
+  const attentionList = document.getElementById('attention-list');
+  const recommendedAction = document.getElementById('recommended-action');
+  const structureTree = document.getElementById('structure-tree');
+  const observerDetail = document.getElementById('observer-detail');
   let nodeById = new Map(data.nodes.map(node => [node.id, node]));
+  let surface = 'observer';
   let view = 'focus';
   let filter = 'all';
   let overlay = data.assurance ? 'status' : 'none';
@@ -241,12 +620,160 @@ HTML_TEMPLATE = r"""<!doctype html>
     return String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   }
   function preferredNode(graph) {
+    const recommendedId = graph.observer?.recommended?.id;
+    if (recommendedId && graph.nodes.some(node => node.id === recommendedId)) {
+      return graph.nodes.find(node => node.id === recommendedId);
+    }
     const priorities = ['working', 'needs-rework', 'ready', 'paused', 'blocked', 'locked'];
     for (const availability of priorities) {
       const match = graph.nodes.find(node => node.availability === availability && node.selection === 'primary');
       if (match) return match;
     }
     return graph.nodes.find(node => node.id === graph.intent.id) || graph.nodes[0];
+  }
+  function statusLabel(status) {
+    return ({
+      'verified': 'Verified', 'in-progress': 'In progress', 'proof-pending': 'Proof pending',
+      'ready-for-proof': 'Ready for proof', 'work-ready': 'Work ready', 'ready': 'Ready', 'needs-attention': 'Needs attention',
+      'working': 'Working', 'paused': 'Paused', 'needs-rework': 'Needs rework',
+      'blocked': 'Blocked', 'locked': 'Waiting', 'implemented': 'Awaiting audit',
+      'planned': 'Planned', 'pending': 'Pending', 'passed': 'Passed', 'failed': 'Failed',
+      'unverified': 'Not yet verified'
+    })[status] || String(status || 'Unknown').replaceAll('-', ' ');
+  }
+  function targetText(item) {
+    return item?.target_outcome ? `Supports ${esc(item.target_outcome.title)}` : 'Supports the final intent';
+  }
+  function renderObserver() {
+    const observer = data.observer;
+    if (!observer) return;
+    const last = observer.last_verified;
+    const next = observer.next_outcome;
+    observerSummary.innerHTML = `
+      <article class="story-card ${last ? 'verified' : ''}">
+        <div class="eyebrow">Last proven</div>
+        <h2>${last ? esc(last.title) : 'No outcome has passed its audit yet'}</h2>
+        <p>${last ? esc(last.summary) : 'Progress is visible, but no usable outcome is claimed without passing proof.'}</p>
+        ${last ? `<button type="button" data-node-id="${esc(last.id)}">Inspect accepted proof</button>` : ''}
+      </article>
+      <article class="story-card ${next?.status === 'needs-attention' ? 'attention' : ''}">
+        <div class="eyebrow">Next proof</div>
+        <h2>${next ? esc(next.title) : observer.intent.verified ? 'Intent is verified' : 'No outcome milestone is declared'}</h2>
+        <p>${next ? esc(next.gate?.summary || 'This outcome has no explicit audit gate.') : observer.intent.verified ? 'The final intent and its required evidence have passed.' : 'Inspect the plan structure and add outcome gates when a runnable ladder is intended.'}</p>
+        ${next ? `<span class="proof-status">${esc(statusLabel(next.status))}</span>` : ''}
+      </article>
+      <article class="story-card ${observer.progress.attention ? 'attention' : ''}">
+        <div class="eyebrow">Current picture</div>
+        <h2>${esc(observer.progress.label)}</h2>
+        <p>${observer.progress.working} actively working · ${observer.progress.ready} ready · ${observer.progress.attention} need attention</p>
+        <small>Evidence-backed counts; no estimated completion percentage.</small>
+      </article>`;
+
+    const stages = observer.outcomes || [];
+    outcomePath.innerHTML = stages.length ? stages.map((stage, index) => `
+      <button type="button" class="outcome-step ${esc(stage.status)}" data-node-id="${esc(stage.id)}">
+        <small>Outcome ${index + 1} · ${esc(statusLabel(stage.status))}</small>
+        <strong>${esc(stage.title)}</strong>
+        <span>${stage.gate ? `Proof: ${esc(statusLabel(stage.gate.verification || stage.gate.availability))}` : 'Proof gate missing'}</span>
+      </button>`).join('') + `
+      <button type="button" class="outcome-step ${observer.intent.verified ? 'verified' : 'planned'}" data-node-id="${esc(observer.intent.id)}">
+        <small>Final intent · ${observer.intent.verified ? 'Verified' : 'Not yet verified'}</small>
+        <strong>${esc(data.title)}</strong>
+        <span>${observer.intent.verified ? 'Success evidence accepted' : 'Requires the complete outcome path'}</span>
+      </button>` : `
+      <div class="empty-state">No explicit outcome milestones are present. The task tree remains available below, but the dashboard will not invent a runnable increment from waves or status counts.</div>`;
+
+    workingList.innerHTML = observer.working.length ? observer.working.map(item => `
+      <button type="button" class="semantic-item work" data-node-id="${esc(item.id)}">
+        <strong>${esc(item.title)}</strong>
+        <span>${esc(item.owner || 'Unassigned')} · ${targetText(item)}</span>
+      </button>`).join('') : '<p class="empty-state">No task is currently claimed as working.</p>';
+
+    attentionList.innerHTML = observer.attention.length ? observer.attention.map(item => `
+      ${item.id === 'CHANGE-ASSURANCE' ? '<div' : `<button type="button" data-node-id="${esc(item.id)}"`} class="semantic-item issue">
+        <strong>${esc(item.type)} · ${esc(item.title)}</strong>
+        <span>${esc(item.reason)}</span>
+      ${item.id === 'CHANGE-ASSURANCE' ? '</div>' : '</button>'}`).join('') : '<p class="empty-state">No failed proof, blocker, risk, or paused handoff is recorded.</p>';
+
+    const recommended = observer.recommended;
+    recommendedAction.innerHTML = recommended ? `
+      <div class="recommended-action">
+        <span class="proof-status">${esc(statusLabel(recommended.availability))}</span>
+        <strong>${esc(recommended.title)}</strong>
+        <p>${esc(recommended.reason)}</p>
+        <span>${targetText(recommended)}</span>
+        <p><button type="button" data-node-id="${esc(recommended.id)}">Inspect task</button></p>
+      </div>` : '<p class="empty-state">No next action is available from the current graph.</p>';
+
+    renderStructure();
+    renderObserverDetail();
+    document.querySelectorAll('#observer-view [data-node-id]').forEach(button => {
+      button.addEventListener('click', () => choose(button.dataset.nodeId));
+    });
+  }
+  function renderStructure() {
+    const primaryIds = new Set(data.nodes.filter(node => node.selection === 'primary').map(node => node.id));
+    const visited = new Set();
+    function structureStatus(node) {
+      if (node.kind === 'intent') return data.observer?.intent?.verified ? 'Verified' : 'Final intent';
+      if (node.kind === 'outcome') {
+        const stage = data.observer?.outcomes?.find(item => item.id === node.id);
+        return statusLabel(stage?.status || 'planned');
+      }
+      return statusLabel(node.availability);
+    }
+    function branch(id) {
+      const node = nodeById.get(id);
+      if (!node || !primaryIds.has(id)) return '';
+      if (visited.has(id)) return `<li><button type="button" class="tree-node" data-node-id="${esc(id)}">↳ ${esc(node.title)} <span class="tree-status">shared</span></button></li>`;
+      visited.add(id);
+      const children = (node.children || []).filter(child => primaryIds.has(child)).sort((a, b) => {
+        const left = nodeById.get(a), right = nodeById.get(b);
+        return (left?.wave || 0) - (right?.wave || 0) || (left?.title || '').localeCompare(right?.title || '');
+      });
+      return `<li><button type="button" class="tree-node ${id === selected ? 'selected' : ''}" data-node-id="${esc(id)}">
+        ${esc(node.title)} <span class="tree-status">${esc(structureStatus(node))}</span></button>
+        ${children.length ? `<ul>${children.map(branch).join('')}</ul>` : ''}</li>`;
+    }
+    structureTree.innerHTML = branch(data.intent.id) || '<li class="empty-state">The intent structure is unavailable.</li>';
+  }
+  function renderObserverDetail() {
+    const node = nodeById.get(selected);
+    if (!node) return;
+    const target = (node.goal_trace || []).map(id => nodeById.get(id)).find(item => item?.kind === 'outcome' && item.id !== node.id);
+    const stage = data.observer?.outcomes?.find(item => item.id === node.id);
+    const proof = node.proof || {};
+    const implementation = proof.implementation_checks || {passed: 0, failed: 0, total: 0};
+    const acceptance = proof.acceptance_checks || {passed: 0, failed: 0, total: 0};
+    const audit = proof.audit_checks || {passed: 0, failed: 0, total: 0};
+    const sourceHref = node.source_path && liveMode
+      ? `/project/${node.source_path.split('/').map(encodeURIComponent).join('/')}`
+      : node.source_path ? `../${node.source_path}` : '';
+    const stageGate = stage?.gate;
+    observerDetail.innerHTML = `
+      <div class="eyebrow">Selected work</div>
+      <h2>${esc(node.title)}</h2>
+      <span class="proof-status">${esc(statusLabel(stage?.status || node.availability))}</span>
+      <p>${esc(node.summary)}</p>
+      <p><strong>Why it matters:</strong> ${target ? `supports ${esc(target.title)}` : node.id === data.intent.id ? 'this is the final intent' : 'supports the intent path'}</p>
+      ${node.state.blocker ? `<p><strong>Issue:</strong> ${esc(node.state.blocker)}</p>` : ''}
+      <div class="proof-grid">
+        <div class="proof-metric"><strong>${implementation.passed}/${implementation.total}</strong><span>implementation checks</span></div>
+        <div class="proof-metric"><strong>${acceptance.passed}/${acceptance.total}</strong><span>acceptance checks</span></div>
+        <div class="proof-metric"><strong>${audit.passed}/${audit.total}</strong><span>audit checks</span></div>
+      </div>
+      <strong>Definition of done for this work</strong>
+      ${list(node.acceptance_criteria, item => esc(item.description))}
+      <strong>Required proof</strong>
+      ${list(node.required_evidence, item => `${esc(item.type)} — ${esc(item.description)}`)}
+      ${stageGate ? `<strong>Outcome gate · ${esc(stageGate.title)}</strong><p>${esc(stageGate.summary)}</p>${list(stageGate.required_evidence, item => `${esc(item.type)} — ${esc(item.description)}`)}` : ''}
+      ${sourceHref ? `<p><a href="${esc(sourceHref)}">Open generated task</a></p>` : ''}
+      <details class="technical-details"><summary>Technical details</summary>
+        <dl><dt>ID</dt><dd>${esc(node.id)}</dd><dt>Kind</dt><dd>${esc(node.kind)}</dd>
+        <dt>Level / wave</dt><dd>${node.level} / ${node.wave}</dd><dt>Workstream</dt><dd>${esc(node.workstream)}</dd>
+        <dt>Execution</dt><dd>${esc(node.state.execution)}</dd><dt>Verification</dt><dd>${esc(node.state.verification)}</dd>
+        <dt>Graph</dt><dd>revision ${data.revision} · version ${data.graph_version}</dd></dl>
+      </details>`;
   }
   function renderOverview() {
     const count = status => data.nodes.filter(node => {
@@ -277,8 +804,9 @@ HTML_TEMPLATE = r"""<!doctype html>
   }
   function syncChrome() {
     document.getElementById('page-title').textContent = data.title;
+    document.getElementById('intent-statement').textContent = data.observer?.intent?.statement || '';
     const projectMode = data.project?.mode || 'legacy';
-    document.getElementById('page-meta').textContent = `${projectMode} · ${data.lifecycle.status} · revision ${data.revision} · graph ${data.graph_version} · ${data.summary.verified_primary_nodes}/${data.summary.primary_nodes} primary nodes verified`;
+    document.getElementById('page-meta').textContent = `${projectMode} project · ${data.lifecycle.status} · ${data.observer?.progress?.label || 'progress unavailable'}`;
     assurancePanel.className = 'assurance-panel';
     assurancePanel.replaceChildren();
     assuranceControls.hidden = !data.assurance;
@@ -301,6 +829,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       button.setAttribute('aria-pressed', String(button.dataset.overlay === overlay));
     });
     renderOverview();
+    renderObserver();
   }
   function applyData(nextData) {
     const previous = nodeById;
@@ -540,13 +1069,29 @@ HTML_TEMPLATE = r"""<!doctype html>
       ${assuranceDetail}
       ${source}`;
   }
-  function choose(id) { selected = id; select.value = id; render(); }
+  function choose(id) {
+    selected = id;
+    select.value = id;
+    render();
+    renderStructure();
+    renderObserverDetail();
+    document.querySelectorAll('#structure-tree [data-node-id]').forEach(button => {
+      button.addEventListener('click', () => choose(button.dataset.nodeId));
+    });
+  }
   function setFilter(nextFilter, rerender = true) {
     filter = nextFilter;
     document.querySelectorAll('[data-filter]').forEach(item => item.setAttribute('aria-pressed', String(item.dataset.filter === filter)));
     if (rerender) render();
   }
   select.addEventListener('change', event => choose(event.target.value));
+  document.querySelectorAll('[data-surface]').forEach(button => button.addEventListener('click', () => {
+    surface = button.dataset.surface;
+    observerView.hidden = surface !== 'observer';
+    graphView.hidden = surface !== 'graph';
+    document.querySelectorAll('[data-surface]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+    if (surface === 'graph') render();
+  }));
   document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
     view = button.dataset.view;
     document.querySelectorAll('[data-view]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
@@ -653,6 +1198,7 @@ def visualization_snapshot(graph: dict[str, Any]) -> dict[str, Any]:
         "dependencies",
         "audit_gates",
         "acceptance_criteria",
+        "required_evidence",
         "assurance",
         "source_path",
     )
@@ -661,6 +1207,8 @@ def visualization_snapshot(graph: dict[str, Any]) -> dict[str, Any]:
         "verification",
         "health",
         "owner",
+        "blocker",
+        "updated_at",
         "active_handoff_id",
         "paused_at",
         "paused_by",
@@ -676,16 +1224,21 @@ def visualization_snapshot(graph: dict[str, Any]) -> dict[str, Any]:
             for field in state_fields
             if field in node.get("state", {})
         }
+        item["proof"] = _proof_summary(node)
         nodes.append(item)
     assurance = graph.get("assurance")
-    return {
-        "schema": "pyramid-visualization-v1",
+    snapshot = {
+        "schema": "pyramid-visualization-v2",
         "graph_version": graph["graph_version"],
         "context": graph.get("context"),
         "plan_id": graph.get("plan_id"),
         "title": graph["title"],
         "revision": graph["revision"],
-        "intent": {"id": graph["intent"]["id"]},
+        "intent": {
+            "id": graph["intent"]["id"],
+            "statement": graph["intent"].get("statement"),
+            "success_evidence": graph["intent"].get("success_evidence", []),
+        },
         "lifecycle": graph["lifecycle"],
         "summary": graph["summary"],
         "nodes": nodes,
@@ -696,6 +1249,8 @@ def visualization_snapshot(graph: dict[str, Any]) -> dict[str, Any]:
         },
         "assurance": {"summary": assurance["summary"]} if assurance else None,
     }
+    snapshot["observer"] = observer_projection(graph, nodes)
+    return snapshot
 
 
 def load_visualization_graph(project: str | Path) -> dict[str, Any]:
@@ -733,6 +1288,6 @@ def render_visualization(project: str | Path, output: str | Path | None = None) 
         "output": str(destination),
         "graph_version": graph["graph_version"],
         "nodes": len(graph["nodes"]),
-        "views": ["focus", "star", "pyramid", "dependency"],
+        "views": ["observer", "focus", "star", "pyramid", "dependency"],
         "overlays": ["assurance-status", "impact", "inspection", "finding", "scope-drift"],
     }

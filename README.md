@@ -5,17 +5,18 @@
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-3776AB.svg)](https://www.python.org/)
 [![Codex plugin](https://img.shields.io/badge/Codex-plugin-111827.svg)](https://developers.openai.com/codex/)
 
-Pyramid Task turns a software intent into an evidence-backed execution graph. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish the intended outcome.
+Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
-Version 3.5.0 adds derived conflict-safe parallel batches and a host-neutral orchestration skill. Workers receive task-scoped context, auditors receive audit-scoped context, and the global graph version remains an ordering mechanism instead of becoming a false dependency between unrelated work. The same `main` branch supports Codex and Claude Code.
+Version 3.6.0 plans from demonstrable increments and opens visualization on a human-first Intent Observer. Each accepted increment is runnable or otherwise usable, while the technical graph remains available for dependency, execution, and assurance drill-down. The same branch supports Codex and Claude Code.
 
-![Pyramid Task 3.5 live graph with assurance impact overlay](docs/images/pyramid-task-map.png)
+![Pyramid Task Intent Observer showing outcome progress, an active blocker, recommended action, and intent structure](docs/images/pyramid-task-map.png)
 
 ## What it solves
 
 A flat task list can say what to do without proving that:
 
 - the proposed work connects to an observable final outcome;
+- each delivery cycle ends at a runnable or otherwise demonstrable state instead of an arbitrary activity boundary;
 - parallel branches compose safely;
 - a brownfield system was inspected at the right boundary;
 - an inspection still covers the implementation that now exists;
@@ -24,6 +25,28 @@ A flat task list can say what to do without proving that:
 - concurrent activity is relevant before it is treated as a conflict.
 
 Pyramid Task models these concerns explicitly. It keeps execution, verification, health, availability, lifecycle, and assurance separate, then derives the next safe action from their combination.
+
+## Plan from demonstrable increments
+
+Pyramid begins with the current demonstrable baseline and the smallest honest ladder of usable states to the intent. For software, an increment should build or launch and complete a meaningful actor-visible scenario. For infrastructure, data, research, or documentation, the proof changes, but the boundary remains observable and reproducible.
+
+Each increment is represented with existing graph primitives: a primary outcome, its contributing work, and a `validated-by` audit gate. The outcomes normally form a cumulative ladder ending at the intent, while later gates re-establish earlier observable behavior against the current candidate. Multiple waves may serve one increment, and safe work for future increments may run ahead, but neither a wave nor a parallel batch is delivery evidence.
+
+```mermaid
+flowchart LR
+    B["Current demonstrable baseline"] --> I1["Increment 1 outcome"]
+    I1 --> G1["Gate: build, enter, scenario, evidence"]
+    G1 --> I2["Increment 2 outcome"]
+    I2 --> G2["Gate: new scenario + inherited proof"]
+    G2 --> IN["Final intended state"]
+
+    W1["Execution waves"] -. establish .-> I1
+    W2["Execution waves"] -. establish .-> I2
+```
+
+The general term is **demonstrable increment**. A game launches into a playable slice; an API starts and serves a real request; a library installs and runs an example; infrastructure applies in a bounded environment and proves health and rollback; research resolves a stated decision with inspectable evidence. If only one honest increment exists, Pyramid keeps one instead of manufacturing ceremonial milestones.
+
+Read the [demonstrable increment contract](plugins/pyramid-task/references/demonstrable-increments.md) for creation, graph representation, inherited proof, replanning, and progress reporting.
 
 ## Current architecture
 
@@ -83,7 +106,7 @@ python3 plugins/pyramid-task/scripts/pyramid.py inspect \
 
 Pyramid now derives parallel groups from the live ready frontier. It does not add another mutable scheduler file or store group snapshots in the graph. A task can join a group only when it is in the same execution wave and the runtime finds no dependency, write/evidence/generated-output, asset, inspection-policy, broad-scope, or open-drift conflict.
 
-`level` is distance from the intent. `wave` is earliest safe execution time. Tasks at the same level are not automatically independent, and same-wave tasks still need conflict analysis.
+`level` is distance from the intent. `wave` is earliest safe execution time. A demonstrable increment is an accepted usable state. These are separate dimensions: tasks at the same level are not automatically independent, same-wave tasks still need conflict analysis, and a completed wave is not a runnable release.
 
 ```mermaid
 flowchart TD
@@ -174,7 +197,9 @@ Read the [brownfield assurance contract](plugins/pyramid-task/references/brownfi
 
 ## Live visualization
 
-The browser graph provides focus, star, pyramid, and dependency views with task state, handoffs, assurance, assets, inspections, findings, drift, blockers, and publication health.
+The browser opens on a human-first **Intent Observer**. It answers what the intent is, what outcome was last proven, what proof comes next, what work is actually active, what needs intervention and why, what action is recommended, and how the selected path is organized. It reports verified outcomes rather than inventing a completion percentage from task counts.
+
+The **Technical graph** remains available as a drill-down with focus, star, pyramid, and dependency layouts plus task state, handoffs, assurance, assets, inspections, findings, drift, blockers, and publication health. Machine IDs, graph revisions, raw enums, and overlays no longer dominate the landing view.
 
 ```bash
 python3 plugins/pyramid-task/scripts/pyramid.py visualize \
@@ -222,7 +247,7 @@ Start a new agent session after installation or update so the runtime discovers 
 
 ## Recommended workflow
 
-1. Create the intent graph. Existing repositories default to brownfield mode.
+1. Establish the current demonstrable baseline, define the smallest honest increment ladder, and create the intent graph. Existing repositories default to brownfield mode.
 2. Assess the system baseline and map change impact before relying on brownfield audits.
 3. Inspect the compact ready frontier; derive one conflict-safe parallel group when multiple agent slots are available.
 4. Claim each selected task with its scoped guard, give graph workers exact packets first, then use spare slots for bounded snapshot-safe helpers.
@@ -243,7 +268,7 @@ Use $pyramid-task:take to claim the next safe task.
 Use $pyramid-task:update to record implementation and actual change scope.
 Use $pyramid-task:audit to verify a task, composition gate, outcome, or intent.
 Use $pyramid-task:pause and $pyramid-task:resume for a durable handoff.
-Use $pyramid-task:visualize to open the live execution and assurance graph.
+Use $pyramid-task:visualize to open the live intent observer and technical graph.
 Use $pyramid-task:lifecycle to close, archive, reset, or restore a plan.
 ```
 
@@ -270,23 +295,23 @@ If the baseline is not known, creation writes a deliberately incomplete placehol
 
 | Skill | Purpose |
 | --- | --- |
-| `pyramid-task:create` | Clarify intent, gather evidence, compare paths, and create the first graph. |
-| `pyramid-task:simplify` | Fact-check and reduce unjustified graph complexity while preserving outcome and assurance. |
+| `pyramid-task:create` | Clarify intent, define demonstrable increments, compare paths, and create the first graph. |
+| `pyramid-task:simplify` | Fact-check and reduce unjustified graph complexity while preserving real increment, outcome, and assurance boundaries. |
 | `pyramid-task:new-intent` | Safely route a distinct intent through create, upgrade, archive, and reset. |
 | `pyramid-task:assess` | Establish or refresh the existing-system baseline. |
 | `pyramid-task:impact` | Map affected assets, inspections, findings, drift, and controls. |
 | `pyramid-task:upgrade` | Upgrade an active V2/V2.1 project in place without rebuilding its graph. |
-| `pyramid-task:inspect` | Query compact status, readiness, blockers, audit freshness, and traces. |
+| `pyramid-task:inspect` | Query increment progress, compact status, readiness, blockers, audit freshness, and traces. |
 | `pyramid-task:orchestrate` | Coordinate graph-task workers first, then use spare slots for bounded helpers. |
 | `pyramid-task:take` | Claim one ready task and opportunistically delegate safe read-only helper work. |
 | `pyramid-task:pause` | Pause owned work with an immutable evidence-aware handoff. |
 | `pyramid-task:resume` | Validate and resume the canonical handoff with a fresh lease. |
 | `pyramid-task:update` | Record implementation, evidence, actual scope, blockers, and risk. |
-| `pyramid-task:audit` | Verify tasks, branch composition, outcomes, and the final intent. |
+| `pyramid-task:audit` | Verify tasks, branch composition, demonstrable increments, outcomes, and the final intent. |
 | `pyramid-task:expand` | Add an approved subtree while preserving the parent contract. |
-| `pyramid-task:replan` | Revise invalid topology while preserving valid work and history. |
+| `pyramid-task:replan` | Revise invalid topology or increment boundaries while preserving valid work and history. |
 | `pyramid-task:lifecycle` | Reopen, close, archive, reset, clean, and restore plans. |
-| `pyramid-task:visualize` | Render a snapshot or live interactive execution graph. |
+| `pyramid-task:visualize` | Render a human-first intent observer with a technical execution-graph drill-down. |
 
 ## Lifecycle, expansion, and compatibility
 
@@ -301,6 +326,7 @@ Legacy projects without `.pyramid/project.json` remain readable and can upgrade 
 Detailed contracts:
 
 - [Evidence-based plan refinement](plugins/pyramid-task/references/plan-refinement.md)
+- [Demonstrable increments](plugins/pyramid-task/references/demonstrable-increments.md)
 - [Graph and state](plugins/pyramid-task/references/graph-contract.md)
 - [Agent and audit packets](plugins/pyramid-task/references/agent-contracts.md)
 - [Parallel execution](plugins/pyramid-task/references/parallel-execution.md)

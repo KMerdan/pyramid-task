@@ -13,7 +13,7 @@ Tasks may share a group only when all of these are true:
 - neither task has a broad write scope, a missing scope for a writing effect, or open scope drift;
 - affected assets do not overlap, unless every common inspection has a batchable `per-wave`, `pre-audit`, or `release` refresh policy.
 
-`level` describes distance from the intent. `wave` describes earliest safe execution time. Neither field alone proves conflict freedom, so the runtime also evaluates dependencies, scopes, generated outputs, assets, inspections, and drift.
+`level` describes distance from the intent. `wave` describes earliest safe execution time. Neither field alone proves conflict freedom, so the runtime also evaluates dependencies, scopes, generated outputs, assets, inspections, and drift. A demonstrable increment is an outcome accepted after its gate and outcome audit pass, not a wave or parallel group.
 
 The analysis is conservative. Missing asset coverage, missing refresh policy, `per-change` inspection policy, broad scope, or unknown overlap keeps work serial.
 
@@ -58,6 +58,8 @@ The coordinator sends the claimed packet to the executor. The executor reads and
 Unexpected paths, generated files, assets, dependencies, or merge conflicts stop the affected batch. Preserve partial work and transition the canonical claim to paused, blocked, or released before interrupting its worker. Do not hide drift by broadening the result after implementation.
 
 Save the selected group's join metadata before execution. After all patches are integrated and every task is `implemented`, refresh shared inspections at `effective_refresh_boundary`: `per-wave` when any inspection requires it, otherwise before the covered task audits. The individual `refresh_policy` remains planning intent; it never waives the runtime's freshness rule. Always use fresh audit readiness and refresh any minimal blocker it names, including a release-planned inspection when an earlier covered audit requires it. Audit each task independently, then run the saved common join gate after its prerequisites pass. Recompute the parallel frontier only after this boundary. A task failure invalidates only the smallest affected claims; unrelated completed work remains reusable.
+
+When the common join is also a demonstrable-increment gate, its audit must exercise the meaningful scenario and inherited observable proofs defined by the increment contract. A successfully integrated batch is still only implemented work until that gate and outcome pass.
 
 ## Planning for useful parallelism
 

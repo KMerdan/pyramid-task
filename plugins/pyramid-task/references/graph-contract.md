@@ -37,6 +37,12 @@ Executable kinds are `research`, `contract`, `implementation`, `integration`, `r
 
 A `work-package` is a stable non-executable task contract created by approved expansion. It has at least two primary work branches and a primary audit gate that covers every branch.
 
+## Demonstrable increment convention
+
+Read `demonstrable-increments.md` when creating, refining, replanning, auditing, or reporting a delivery path. The convention uses the existing schema: an ordered selected-path decision, a cumulative chain of primary outcomes, one `validated-by` audit gate per increment, typed dependencies from each gate to its proof, and acceptance ordering from each later gate to the previous increment outcome. It adds no node kind, state value, or coordinate.
+
+For software, make the gate prove that the current candidate builds or launches and completes a meaningful scenario. Every later gate re-establishes inherited observable behavior. Keep waves as scheduling facts; never use a wave or parallel group as increment evidence. Prefer each earlier increment outcome contributing to the next and the final increment contributing to the intent. Add a separate final gate only for additional direct intent branches or distinct release-level composition evidence. Treat these as semantic planning checks; the unchanged V3 schema and runtime validate their ordinary outcome, edge, and audit primitives rather than a separate increment type.
+
 ## Edge contract
 
 Each edge has `from`, `to`, and `type`.

@@ -1,17 +1,17 @@
 ---
 name: audit
-description: Audit a Pyramid Task V3 implementation node, joint gate, level outcome, or final intent against explicit evidence and brownfield inspection coverage. Use when the agent must determine whether completed work is correct, whether branches compose, whether predicted impact matches actual scope, or whether a parent claim may become verified.
+description: Audit a Pyramid Task V3 implementation node, joint or demonstrable-increment gate, level outcome, or final intent against explicit evidence and brownfield inspection coverage. Use when the agent must determine whether completed work is correct, whether branches compose, whether the current candidate remains runnable or otherwise demonstrable, whether predicted impact matches actual scope, or whether a parent claim may become verified.
 ---
 
 # Audit a Pyramid Task
 
-Read `../../references/agent-contracts.md` for audit-result rules. Load `../../references/graph-contract.md` only for composition or parent claims, `../../references/brownfield-assurance.md` only when the packet has assurance context, and `../../references/lifecycle-contract.md` only when auditing closure or inactive work.
+Read `../../references/agent-contracts.md` for audit-result rules. Load `../../references/demonstrable-increments.md` for an increment outcome or gate, `../../references/graph-contract.md` only for composition or parent claims, `../../references/brownfield-assurance.md` only when the packet has assurance context, and `../../references/lifecycle-contract.md` only when auditing closure or inactive work.
 
 ## Workflow
 
-1. Inspect `--audit-readiness <target>` first. It returns the same freshness blockers enforced by audit, the minimal inspection refresh set, and an `audit_guard`. Load related nodes only when a dependency or composition claim requires them.
+1. Inspect `--audit-readiness <target>` first. It returns the same freshness blockers enforced by audit, the minimal inspection refresh set, and an `audit_guard`. Determine whether the target is an implementation, internal joint gate, demonstrable-increment gate, outcome, or intent; load related nodes only when that claim requires them.
 2. In brownfield mode, inspect canonical impact, inspection, finding, drift, rollback, monitoring, and legacy-bridge records. Compare predicted scope with the worker's actual changed files and assets.
-3. Execute or inspect every required check. Seek disconfirming evidence for load-bearing claims, composition edges, compatibility, recovery, and operational behavior.
+3. Execute or inspect every required check. For an increment gate, establish constructability, entry, the promised meaningful scenario, inherited prior scenarios against the current candidate, applicable safety and recovery, and reproduction details. Seek disconfirming evidence for load-bearing claims, composition edges, compatibility, recovery, and operational behavior.
 4. Create an `audit-result-v1` JSON file with per-check results and evidence references. For brownfield pass, add an `assurance` assertion naming every reviewed impact, inspection, and finding ID, a complete scope review, and limitations.
 5. Submit the result:
 
@@ -27,6 +27,7 @@ python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 
 ## Boundaries
 
 - Never pass an audit from task status alone.
+- Never pass an increment from a historical gate, successful process start, or attractive demo alone when the current contract promises more.
 - Never use missing evidence as positive evidence.
 - Prefer an independent auditor for critical joint and intent gates.
 - A failed audit must remain visible in state and history until repaired or superseded.

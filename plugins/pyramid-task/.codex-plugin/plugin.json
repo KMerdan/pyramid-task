@@ -1,7 +1,7 @@
 {
   "name": "pyramid-task",
-  "version": "3.5.0+codex.20260823224551",
-  "description": "Plan, assure, and run brownfield changes with scoped guards, conflict-safe parallel batches, sub-agent orchestration, audit gates, and live visualization.",
+  "version": "3.6.0+codex.20260829141129",
+  "description": "Plan and run demonstrable increments with evidence-backed task graphs, conflict-safe parallel execution, audit gates, brownfield assurance, and a human-first Intent Observer.",
   "author": {
     "name": "Dr. Merdan Bay",
     "url": "https://github.com/KMerdan"
@@ -20,12 +20,13 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Pyramid Task V3",
-    "shortDescription": "Conflict-safe planning and assurance for agent teams.",
-    "longDescription": "Turn an intent into a validated pathfinder graph, fact-check and simplify candidate plans without weakening outcome evidence, derive conflict-safe parallel batches, coordinate exact task packets with sub-agents, use spare slots for snapshot-safe read-only helpers inside claimed work, baseline an existing system, map change impact, isolate task and audit mutation guards, bind inspections to exact implementation events, distinguish source, generated, and evidence-only changes, preserve hash-linked history and durable checked handoffs, migrate active V2 plans without rebuilding, safely transition completed clusters into a new intent, and follow focused task and assurance views live.",
+    "shortDescription": "Demonstrable delivery with evidence-backed task graphs.",
+    "longDescription": "Turn an intent into the smallest honest ladder of runnable or otherwise demonstrable increments, establish each increment through explicit audit proof, and observe human-readable progress from the current intent to the next required evidence. Fact-check and simplify candidate plans, derive conflict-safe parallel batches, coordinate exact task packets with sub-agents, use snapshot-safe helpers, baseline existing systems, map change impact, isolate task and audit mutation guards, preserve hash-linked history and durable handoffs, migrate active V2 plans without rebuilding, and drill into the technical execution and assurance graph when needed.",
     "developerName": "Dr. Merdan Bay",
     "category": "Productivity",
     "capabilities": [
       "Planning",
+      "Demonstrable Increments",
       "Plan Refinement",
       "Parallel Orchestration",
       "Brownfield Assurance",
@@ -36,12 +37,14 @@
       "Expansion",
       "Lifecycle",
       "Live Visualization",
+      "Intent Observation",
       "Interactive",
       "Write"
     ],
     "websiteURL": "https://github.com/KMerdan/pyramid-task",
     "defaultPrompt": [
       "Turn this feature into an evidence-backed task pyramid.",
+      "Plan this intent as the smallest honest ladder of demonstrable increments.",
       "Fact-check and simplify this task graph without weakening its intent or assurance.",
       "Assess this existing system and map the change impact before implementation.",
       "Upgrade this running V2.1 plan to V3 without rebuilding it.",
@@ -49,7 +52,7 @@
       "Pause this claimed task with a durable handoff, then resume it safely later.",
       "Show what is ready, active, blocked, and unaudited.",
       "Run the current conflict-safe ready batch with sub-agents.",
-      "Open a live task visualization and keep it updated while agents work.",
+      "Open the live Intent Observer and show what is proven, active, blocked, and next.",
       "Propose and preview a safe expansion for this broad task."
     ]
   }

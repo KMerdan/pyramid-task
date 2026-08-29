@@ -13,7 +13,7 @@ An unsupported non-load-bearing detail may be removed or qualified. An unsupport
 Check both directions:
 
 1. Trace each primary node through typed edges and `source_requirements` to a stated intent requirement. Reject work that cannot justify its contribution.
-2. Trace each intent requirement through outcomes, executable work, required evidence, and audit closure. Reject a reduction that breaks this path.
+2. Trace each intent requirement through demonstrable increment outcomes, executable work, required evidence, and audit closure. Reject a reduction that breaks this path or leaves a planned delivery cycle without an honest demonstrable state.
 
 For brownfield work, also trace changed tasks through affected assets, inspections, findings, rollback, monitoring, and invalidation rules.
 
@@ -25,12 +25,17 @@ Inspect for:
 - speculative capabilities or future generality outside the intent;
 - hard dependencies with no consumed artifact, contract, state, or evidence;
 - audit gates without a real composition or independent-verification boundary;
+- ceremonial increments with no distinct actor-visible value, proof, or recovery boundary;
+- horizontal component phases that could form a smaller end-to-end demonstrable slice;
+- later increment gates that do not repeat or otherwise establish inherited observable behavior;
 - wrapper tasks that only restate another task;
 - accidental serialization between disjoint tasks;
 - over-decomposition that divides one bounded effect and evidence contract;
 - under-decomposition that hides distinct effects, owners, scopes, or failure boundaries;
 - unsupported repository or external claims;
 - ambiguous acceptance criteria that cannot establish completion.
+
+Map increment findings to the published review schema instead of inventing classes: use `unjustified-gate` for a ceremonial increment, `under-decomposition` for a horizontal phase that hides a feasible vertical slice, and `ambiguous-acceptance` for missing inherited proof. Use another existing class only when its definition fits the actual defect.
 
 Splitting an unsafe task is corrective refinement, not a complexity reduction. Retain separate nodes when they protect distinct effects, ownership, contracts, write scopes, rollback boundaries, or independent evidence.
 
@@ -57,6 +62,7 @@ A revised plan must preserve:
 - real dependency and audit closure;
 - compatibility, risk, rollback, monitoring, and inspection obligations;
 - valid completed work and evidence in a canonical replan;
+- the current demonstrable baseline, justified increment ladder, and historical gate evidence;
 - explicit uncertainty and rejected alternatives needed for future reasoning.
 
 After refinement, re-run graph validation, the pathfinder audit, parallel-readiness inspection when relevant, and brownfield assurance checks. A structurally valid graph can still fail this semantic review.

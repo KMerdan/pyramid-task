@@ -1,4 +1,4 @@
 interface:
   display_name: "Visualize Pyramid Plan"
-  short_description: "Explore a focused live task execution graph"
-  default_prompt: "Use $visualize to open a focused live graph that updates only after validated semantic changes."
+  short_description: "Observe intent progress, proof, work, and issues"
+  default_prompt: "Use $visualize to open the human-first intent observer, with the technical graph available for drill-down."

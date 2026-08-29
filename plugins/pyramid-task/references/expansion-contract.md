@@ -2,6 +2,8 @@
 
 Expansion adds internal detail without changing the task's meaning. The agent owns discovery and recommendation; the user owns the topology change.
 
+When the target contributes to a demonstrable increment, preserve that increment's actor-visible acceptance and inherited proof. The expansion's internal joint gate proves the expanded branches compose; it is not automatically the enclosing increment gate.
+
 ## Expansion versus replan
 
 Use `expand` only when the target purpose, acceptance criteria, required evidence, selected mechanism, parent relations, and external consumers remain valid. Preserve the task ID so upstream and downstream references remain stable.

@@ -2,6 +2,8 @@
 
 Pyramid separates deterministic state mechanics from agent reasoning. Skills decide how to gather evidence, choose work, and coordinate agents. Python validates contracts, derives state, and commits guarded mutations.
 
+Demonstrable increments follow the same boundary. Creation and replanning reason from the current usable baseline to an ordered ladder of actor-visible outcomes. They encode each rung with existing outcome, audit, and typed-edge primitives. The runtime enforces those graph relations and audit transitions but does not add mutable increment state or reinterpret `wave` as delivery progress.
+
 Plan refinement follows the same boundary. The `simplify` skill fact-checks and challenges a complete candidate, while `plan-review.schema.json` validates only the shape of its reasoning record. The review and its schema do not prove semantic claims, and candidate refinement does not mutate canonical state; changes to an existing graph still use replan preview and guarded application.
 
 Intra-task helper delegation follows that boundary too. Skills decide when spare host capacity justifies a research or validation helper. `helper-job.schema.json` and `helper-result.schema.json` validate compact envelopes, but no runtime file stores helper lifecycle and no helper owns a graph mutation.
@@ -30,6 +32,21 @@ The dependency direction is intentional:
 - the CLI translates arguments and errors but does not contain domain policy;
 - live and static visualization consume validated projections, never partial canonical writes;
 - skills may coordinate sub-agents, while the runtime only returns deterministic scheduling facts.
+
+The visualization runtime derives a disposable `observer` read model from the same validated graph projection. It summarizes intent, outcome gates, proof counts, active work, interventions, recommended action, and the selected-path hierarchy without adding mutable dashboard state. The browser renders those semantics as its default landing view and keeps raw graph topology as a technical drill-down.
+
+## Planning and delivery boundary
+
+Planning has four separate dimensions:
+
+| Dimension | Meaning | Canonical representation |
+| --- | --- | --- |
+| Level | Distance from the final intent | `node.level` |
+| Wave | Earliest safe execution time | `node.wave` |
+| Parallel batch | Current conflict-safe concurrency | Derived read-only projection |
+| Demonstrable increment | Accepted actor-visible project state | Outcome plus `validated-by` audit gate |
+
+The increment ladder is recorded in a selected-path decision and normally forms a cumulative outcome chain: each earlier increment contributes to the next and the final increment contributes to the intent. Each later gate depends on the previous verified increment outcome and repeats or otherwise establishes earlier observable scenarios against the current candidate. A separate final gate is needed only for additional direct intent branches or distinct release-level composition evidence. This structure keeps the plan backward-compatible while ensuring a delivery cycle ends at evidence, not at an arbitrary scheduler boundary.
 
 `pyramid_parallel.py` is read-only. Its output is a disposable projection validated by `parallel-frontier.schema.json`; it is never written into canonical plan or state. A `PARALLEL-W…` ID deterministically correlates one derived plan/wave/task grouping, but it is not canonical identity, history, or a concurrency guard.
 

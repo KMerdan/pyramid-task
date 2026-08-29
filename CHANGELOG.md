@@ -2,7 +2,20 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
-## Unreleased
+## 3.6.0
+
+### Human-first intent observation
+
+- Replace the graph-first landing page with an Intent Observer that leads with intent, last verified outcome, next proof, active work, interventions, recommended action, and selected-path structure.
+- Derive the observer as a deterministic read model from validated graph and audit state; keep canonical plan and runtime schemas unchanged.
+- Separate implementation checks, acceptance checks, and audit proof, and keep raw IDs, graph metadata, topology layouts, and assurance overlays in the Technical graph drill-down.
+
+### Demonstrable increments
+
+- Start plan creation from the current demonstrable baseline and the smallest honest ladder of usable states to the final intent.
+- Represent every increment with existing outcome and `validated-by` audit primitives, make each later gate depend on the previous verified increment outcome, and require current inherited proof instead of treating historical passes as regression evidence.
+- Teach create, simplify, replan, audit, inspect, expand, orchestrate, and visualize to preserve increment boundaries while keeping `level`, `wave`, parallel batches, and delivery acceptance distinct.
+- Keep the plan schema and runtime state backward-compatible; this is a shared planning and audit contract rather than a new node kind or mutable status.
 
 ### Snapshot-safe intra-task helpers
 
