@@ -5,7 +5,7 @@ description: Safely start a fresh Pyramid Task intent when no plan exists or aft
 
 # Start a New Pyramid Intent
 
-Use the runtime's hash-bound transition instead of choosing `create`, `upgrade`, and `reset` by inference.
+Use the runtime's hash-bound transition instead of choosing `create`, `upgrade`, and `reset` by inference. The runtime preserves the prior intent chronicle and captures the new intent's source starting point automatically.
 
 ## Context routing
 
@@ -29,7 +29,7 @@ python3 ../../scripts/pyramid.py new-intent --project <project-root> --plan <can
 python3 ../../scripts/pyramid.py new-intent --project <project-root> --plan <candidate-plan.json> --actor <actor> --reason <reason> --from-version 2.1 --mode auto --apply --approved-by <user> --approval-reference <reference> --approved-new-intent-sha256 <preview-hash> --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
-7. Run `validate`, `doctor`, and `inspect --summary`. Report the previous archive, any pre-upgrade snapshot, carried baseline, new plan ID, ready frontier, and remaining assurance gaps.
+7. Run `validate`, `doctor`, and `inspect --summary`. Report the previous archive and chronicle, any pre-upgrade snapshot, carried baseline, new plan ID, ready frontier, and remaining assurance gaps. Never reuse a historical `plan_id`; restore its archive instead.
 
 ## Authority
 

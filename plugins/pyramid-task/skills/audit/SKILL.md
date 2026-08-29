@@ -22,7 +22,7 @@ python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 
 
 6. On failure, identify affected claims and recommend repair, impact reconciliation, approved expansion, or replan. The runtime moves executable failure to `needs-rework` and stales dependent task and inspection evidence.
 7. Verify a parent only after required children, its joint gate, and applicable assurance coverage pass.
-8. After the final intent passes, inspect lifecycle. Brownfield closure also requires complete controls and writes a change dossier plus the next baseline revision.
+8. After the final intent passes, inspect lifecycle. Confirm every material implementation file is represented by task results before closure; missing bindings must remain a visible chronicle limitation. Brownfield closure also requires complete controls and writes a change dossier plus the next baseline revision.
 
 ## Boundaries
 

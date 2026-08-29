@@ -30,7 +30,7 @@ The final intent audit establishes that the intended state is verified. `close` 
 - no active ownership or lease remains.
 - for brownfield mode, the baseline and assurance have no final blockers: impact and inspections are sufficient, drift and material findings are dispositioned, controls are ready or justified, and any legacy bridge is sufficient.
 
-Closure writes immutable, versioned `pyramid-final-report-v1` JSON and Markdown reports under `.pyramid/reports/`, records `plan.completed`, and changes lifecycle to `completed`. Brownfield closure also writes `pyramid-change-dossier-v1` JSON and Markdown under `.pyramid/dossiers/`, advances the baseline revision, and marks assurance passed. The dossier reconciles predicted impact with actual changes and records inspections, findings, audits, controls, residual risk, and the baseline transition.
+Closure writes immutable, versioned `pyramid-final-report-v1` JSON and Markdown reports under `.pyramid/reports/`, records `plan.completed`, appends a `pyramid-intent-chronicle-v1`, and changes lifecycle to `completed`. Brownfield closure also writes `pyramid-change-dossier-v1` JSON and Markdown under `.pyramid/dossiers/`, advances the baseline revision, and marks assurance passed. The dossier reconciles predicted impact with actual changes and records inspections, findings, audits, controls, residual risk, and the baseline transition. The chronicle connects that evidence to the intent's starting point, demonstrated path, code declarations, and replay limitations.
 
 ## Archive lifecycle
 
@@ -49,20 +49,21 @@ Archive refuses active claims. It records `plan.archived`, changes the current l
 │   ├── handoffs/
 │   ├── reports/
 │   ├── dossiers/
+│   ├── history/
 │   ├── graph.json
 │   └── ready.json
 └── docs/tasks/
 ```
 
-The manifest records plan and graph identity, previous lifecycle state, archive reason, actor, timestamps, and plan/state hashes. An archived root remains readable by `inspect`, `lifecycle`, and `visualize`.
+The manifest records plan and graph identity, previous lifecycle state, archive reason, actor, timestamps, plan/state hashes, and the applicable chronicle. An archived root remains readable by `inspect`, `history`, `lifecycle`, and `visualize`.
 
 ## Reset and restore
 
-`reset` validates the candidate before mutation, requires a new `plan_id`, refuses active claims, creates or verifies an archive snapshot, then starts the candidate at graph version 1. The new `plan.created` event points to the previous archive. It never mixes event histories between plans. Brownfield reset carries the current baseline and prior dossiers, but starts a fresh assurance bundle for the new intent.
+`reset` validates the candidate before mutation, requires a new plan ID that has never identified another recorded intent, refuses active claims, creates or verifies an archive snapshot, then starts the candidate at graph version 1. The new `plan.created` event points to the previous archive and its intent-start record points to the prior chronicle. It never mixes event histories between plans. Brownfield reset carries the current baseline and prior dossiers, but starts a fresh assurance bundle for the new intent.
 
 For a distinct intent, `new-intent` is the preferred front door. Its preview chooses `create`, `upgrade → archive → reset`, `archive → reset`, or a blocked route from the actual project format and lifecycle. Existing projects require the exact transition hash and approval provenance. The new `plan.created` event records that parent approval. See `new-intent-contract.md`.
 
-`restore` resolves an archive ID or archived plan ID, validates the snapshot, archives the current plan when present, installs the selected plan and its history, clears ownership, leases, and active pause pointers, records `plan.restored`, and regenerates projections. Historical handoff files remain preserved as evidence. It restores the lifecycle that existed before archiving: active plans resume active, and completed plans remain completed until reopened.
+`restore` resolves an archive ID or archived plan ID, validates the snapshot, archives the current plan when present, installs the selected plan and its per-plan evidence, preserves the newer project-wide intent ledger, clears ownership, leases, and active pause pointers, records `plan.restored`, and regenerates projections. Historical handoff files remain preserved as evidence. It restores the lifecycle that existed before archiving: active plans resume active, and completed plans remain completed until reopened.
 
 ## Clean
 

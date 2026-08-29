@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import json
 import os
 import tempfile
@@ -392,6 +393,16 @@ HTML_TEMPLATE = r"""<!doctype html>
   .recommended-action { border-left: 4px solid var(--ready); padding: 10px 12px; background: var(--bg); border-radius: 8px; }
   .recommended-action strong { display: block; margin: 3px 0; }
   .observer-lower { display: grid; grid-template-columns: minmax(300px, .9fr) minmax(380px, 1.1fr); gap: 10px; align-items: start; }
+  .history-view { display: grid; gap: 12px; }
+  .history-intro { max-width: 880px; color: var(--muted); }
+  .history-timeline { display: grid; gap: 10px; }
+  .history-card { display: grid; grid-template-columns: minmax(150px, .35fr) minmax(300px, 1fr); gap: 16px; padding: 16px; background: var(--panel); border: 1px solid var(--border); border-left: 5px solid var(--verified); border-radius: 11px; }
+  .history-card.incomplete { border-left-color: var(--paused); }
+  .history-card h2 { margin: 4px 0 7px; font-size: 1.08rem; }
+  .history-card p { margin: 5px 0; }
+  .history-meta { color: var(--muted); font-size: .82rem; }
+  .history-path { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
+  .history-path span { padding: 3px 7px; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); font-size: .78rem; }
   .structure-tree, .structure-tree ul { list-style: none; margin: 0; padding-left: 16px; }
   .structure-tree { padding-left: 0; }
   .structure-tree li { margin: 5px 0; }
@@ -483,7 +494,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .dot.rework { background: var(--rework); }
   @keyframes node-change { 0%, 30% { filter: drop-shadow(0 0 9px var(--focus)); transform: scale(1.28); transform-origin: center; } 100% { filter: none; transform: scale(1); } }
   @media (max-width: 1080px) { .overview { grid-template-columns: repeat(3, minmax(92px, 1fr)); } }
-  @media (max-width: 920px) { .layout, .observer-summary, .observer-columns, .observer-lower { grid-template-columns: 1fr; } .detail { position: static; } }
+  @media (max-width: 920px) { .layout, .observer-summary, .observer-columns, .observer-lower, .history-card { grid-template-columns: 1fr; } .detail { position: static; } }
   @media (max-width: 620px) { .overview { grid-template-columns: repeat(2, minmax(92px, 1fr)); } .recommended { grid-column: 1 / -1; } .surface-switch { display: flex; } .surface-switch button { flex: 1; } }
   @media (prefers-reduced-motion: no-preference) { .node, .edge { transition: opacity .18s, transform .18s; } }
   @media (prefers-reduced-motion: reduce) { .node.changed .mark { animation: none; } }
@@ -497,6 +508,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   <div class="live-status" id="live-status" role="status" aria-live="polite" hidden>Connecting…</div>
   <nav class="surface-switch" aria-label="Dashboard view">
     <button type="button" data-surface="observer" aria-pressed="true">Intent observer</button>
+    <button type="button" data-surface="history" aria-pressed="false">History observer</button>
     <button type="button" data-surface="graph" aria-pressed="false">Technical graph</button>
   </nav>
   <section class="observer" id="observer-view" aria-label="Intent observer dashboard">
@@ -527,6 +539,14 @@ HTML_TEMPLATE = r"""<!doctype html>
       </article>
       <article class="observer-panel" id="observer-detail" aria-live="polite"></article>
     </section>
+  </section>
+  <section class="history-view" id="history-view" aria-label="Intent history observer" hidden>
+    <article class="observer-panel">
+      <div class="eyebrow">Implementation chronicle</div>
+      <h2>Why the system became what it is</h2>
+      <p class="history-intro">Each card is a closed or deliberately archived intent. It connects the original purpose, demonstrated path, turning points, implementation evidence, and replay strength without mixing old work into the active task graph.</p>
+    </article>
+    <div class="history-timeline" id="history-timeline"></div>
   </section>
   <section id="graph-view" hidden>
   <section class="overview" id="overview" aria-label="Execution summary"></section>
@@ -598,6 +618,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   const assuranceFilterButton = document.getElementById('assurance-filter');
   const overview = document.getElementById('overview');
   const observerView = document.getElementById('observer-view');
+  const historyView = document.getElementById('history-view');
+  const historyTimeline = document.getElementById('history-timeline');
   const graphView = document.getElementById('graph-view');
   const observerSummary = document.getElementById('observer-summary');
   const outcomePath = document.getElementById('outcome-path');
@@ -710,6 +732,32 @@ HTML_TEMPLATE = r"""<!doctype html>
     document.querySelectorAll('#observer-view [data-node-id]').forEach(button => {
       button.addEventListener('click', () => choose(button.dataset.nodeId));
     });
+  }
+  function renderHistory() {
+    const chronicles = data.history?.chronicles || [];
+    historyTimeline.innerHTML = chronicles.length ? chronicles.slice().reverse().map((item, reverseIndex) => {
+      const index = chronicles.length - reverseIndex;
+      const path = item.path || [];
+      const progress = item.progress || [];
+      return `<article class="history-card ${item.outcome === 'completed' ? '' : 'incomplete'}">
+        <div>
+          <div class="eyebrow">Intent ${index} · ${esc(item.outcome === 'completed' ? 'Completed' : 'Archived incomplete')}</div>
+          <h2>${esc(item.title)}</h2>
+          <div class="history-meta">${esc(item.recorded_at)} · ${esc(item.plan_id)}</div>
+          <p><span class="proof-status">${esc(item.replay_fidelity || 'partial')} replay</span></p>
+          <p class="history-meta">${item.changed_files} declared changed files · provenance ${esc(item.provenance_status || 'unavailable')}</p>
+        </div>
+        <div>
+          <p><strong>Why:</strong> ${esc(item.intent)}</p>
+          <p><strong>How it progressed:</strong> ${path.length ? esc(path.join(' → ')) : 'No explicit demonstrable outcome path was recorded.'}</p>
+          ${progress.length ? `<p><strong>Evidence trail:</strong> ${progress.length} recorded implementation and proof transitions. Latest: ${esc(progress.slice(-4).join(' '))}</p>` : ''}
+          ${item.turning_points?.length ? `<p><strong>Turning points:</strong> ${esc(item.turning_points.join('; '))}</p>` : ''}
+          <p><strong>Why it ended this way:</strong> ${esc(item.ending)} ${esc(item.why_this_result || '')}</p>
+          ${path.length ? `<div class="history-path">${path.map(step => `<span>${esc(step)}</span>`).join('')}</div>` : ''}
+          ${item.bound_commit ? `<p class="history-meta">Bound commit ${esc(item.bound_commit)}</p>` : `<p class="history-meta">No clean end commit is bound yet.</p>`}
+        </div>
+      </article>`;
+    }).join('') : '<article class="observer-panel empty-state">No intent has closed or been deliberately archived yet. The active intent remains in the Intent observer.</article>';
   }
   function renderStructure() {
     const primaryIds = new Set(data.nodes.filter(node => node.selection === 'primary').map(node => node.id));
@@ -830,6 +878,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     });
     renderOverview();
     renderObserver();
+    renderHistory();
   }
   function applyData(nextData) {
     const previous = nodeById;
@@ -1088,6 +1137,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   document.querySelectorAll('[data-surface]').forEach(button => button.addEventListener('click', () => {
     surface = button.dataset.surface;
     observerView.hidden = surface !== 'observer';
+    historyView.hidden = surface !== 'history';
     graphView.hidden = surface !== 'graph';
     document.querySelectorAll('[data-surface]').forEach(item => item.setAttribute('aria-pressed', String(item === button)));
     if (surface === 'graph') render();
@@ -1228,7 +1278,7 @@ def visualization_snapshot(graph: dict[str, Any]) -> dict[str, Any]:
         nodes.append(item)
     assurance = graph.get("assurance")
     snapshot = {
-        "schema": "pyramid-visualization-v2",
+        "schema": "pyramid-visualization-v3",
         "graph_version": graph["graph_version"],
         "context": graph.get("context"),
         "plan_id": graph.get("plan_id"),
@@ -1248,6 +1298,7 @@ def visualization_snapshot(graph: dict[str, Any]) -> dict[str, Any]:
             "mode": graph.get("project", {}).get("mode", "legacy"),
         },
         "assurance": {"summary": assurance["summary"]} if assurance else None,
+        "history": copy.deepcopy(graph.get("history", {"schema": "pyramid-history-summary-v1", "chronicles": []})),
     }
     snapshot["observer"] = observer_projection(graph, nodes)
     return snapshot
@@ -1288,6 +1339,6 @@ def render_visualization(project: str | Path, output: str | Path | None = None) 
         "output": str(destination),
         "graph_version": graph["graph_version"],
         "nodes": len(graph["nodes"]),
-        "views": ["observer", "focus", "star", "pyramid", "dependency"],
+        "views": ["observer", "history", "focus", "star", "pyramid", "dependency"],
         "overlays": ["assurance-status", "impact", "inspection", "finding", "scope-drift"],
     }

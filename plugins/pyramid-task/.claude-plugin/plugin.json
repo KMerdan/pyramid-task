@@ -1,7 +1,7 @@
 {
   "name": "pyramid-task",
-  "version": "3.6.0",
-  "description": "Plan and run demonstrable increments with evidence-backed task graphs, conflict-safe parallel execution, audit gates, brownfield assurance, and a human-first Intent Observer.",
+  "version": "3.7.0",
+  "description": "Plan demonstrable increments, assure changes, and preserve causal intent chronicles for humans and agents.",
   "author": {
     "name": "Dr. Merdan Bay",
     "url": "https://github.com/KMerdan"

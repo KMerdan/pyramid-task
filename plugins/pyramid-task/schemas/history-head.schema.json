@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/history-head.schema.json",
+  "title": "Pyramid Task Intent History Head",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "updated_at", "entries", "chain_sha256"],
+  "properties": {
+    "schema": {"const": "pyramid-history-head-v1"},
+    "updated_at": {"type": ["string", "null"]},
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["record_id", "record_type", "plan_id", "recorded_at", "path", "sha256", "previous_chain_sha256"],
+        "properties": {
+          "record_id": {"type": "string", "minLength": 1},
+          "record_type": {"enum": ["intent-start", "intent-chronicle", "code-binding"]},
+          "plan_id": {"type": "string", "minLength": 1},
+          "recorded_at": {"type": "string"},
+          "path": {"type": "string", "pattern": "^records/[^/]+\\.json$"},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "previous_chain_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    },
+    "chain_sha256": {"type": ["string", "null"], "pattern": "^[a-f0-9]{64}$"}
+  }
+}

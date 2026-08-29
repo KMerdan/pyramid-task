@@ -19,6 +19,7 @@ flowchart LR
     CORE --> PAR["pyramid_parallel.py pure batch analysis"]
     PAR --> GRAPH
     CORE --> ASSURE["pyramid_assurance.py assurance rules"]
+    CORE --> HISTORY["pyramid_history.py intent chronicle ledger"]
     CORE --> STORE["Canonical JSON and hash-linked events"]
     CORE --> VIEW["Compiled projections"]
     VIEW --> LIVE["pyramid_live.py"]
@@ -31,9 +32,27 @@ The dependency direction is intentional:
 - `pyramid_core` remains the compatibility facade for existing imports and owns locks, guarded transactions, events, and publication;
 - the CLI translates arguments and errors but does not contain domain policy;
 - live and static visualization consume validated projections, never partial canonical writes;
+- the history module owns an independent append-only hash chain so reset and restore cannot roll cross-intent evidence backward;
 - skills may coordinate sub-agents, while the runtime only returns deterministic scheduling facts.
 
-The visualization runtime derives a disposable `observer` read model from the same validated graph projection. It summarizes intent, outcome gates, proof counts, active work, interventions, recommended action, and the selected-path hierarchy without adding mutable dashboard state. The browser renders those semantics as its default landing view and keeps raw graph topology as a technical drill-down.
+The visualization runtime derives a disposable `observer` read model from the same validated graph projection. It summarizes intent, outcome gates, proof counts, active work, interventions, recommended action, and the selected-path hierarchy without adding mutable dashboard state. A separate compact history projection is derived from immutable chronicles for causal human reading. The browser renders the active semantics as its default landing view, offers the cross-intent History Observer beside it, and keeps raw graph topology as a technical drill-down.
+
+## Cross-intent history boundary
+
+Per-plan events explain mutation order inside one active or archived graph. They do not by themselves provide a stable project narrative or a Git provenance claim. `pyramid_history.py` therefore owns a separate append-only ledger:
+
+```mermaid
+flowchart LR
+    START["Intent start\nplan + source snapshot"] --> EVENTS["Plan events and task evidence"]
+    EVENTS --> CLOSE["Completed or archived chronicle"]
+    CLOSE --> HUMAN["History Observer\nwhy, path, turning points, ending"]
+    CLOSE --> REPLAY["Replay context\nplans, bindings, checks, limits"]
+    COMMIT["Clean descendant Git commit"] --> BIND["Immutable code binding"]
+    CLOSE --> BIND
+    BIND --> REPLAY
+```
+
+The chronicle copies the historical start and end contracts required for later interpretation; it does not copy historical nodes into the current graph. A later code binding appends evidence instead of mutating the closed chronicle. Generated indexes and dashboard summaries remain disposable projections.
 
 ## Planning and delivery boundary
 

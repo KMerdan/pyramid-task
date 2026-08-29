@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/code-binding.schema.json",
+  "title": "Pyramid Task Chronicle Code Binding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "record_id", "record_type", "plan_id", "chronicle_id", "recorded_at", "recorded_by", "commit", "tree", "clean", "start_commit", "material_files", "provenance_status", "replay_fidelity"],
+  "properties": {
+    "schema": {"const": "pyramid-code-binding-v1"},
+    "record_id": {"type": "string", "minLength": 1},
+    "record_type": {"const": "code-binding"},
+    "plan_id": {"type": "string", "minLength": 1},
+    "chronicle_id": {"type": "string", "minLength": 1},
+    "recorded_at": {"type": "string"},
+    "recorded_by": {"type": "string", "minLength": 1},
+    "commit": {"type": "string", "pattern": "^[a-f0-9]{40,64}$"},
+    "tree": {"type": ["string", "null"]},
+    "clean": {"const": true},
+    "start_commit": {"type": "string", "pattern": "^[a-f0-9]{40,64}$"},
+    "material_files": {"type": "array", "items": {"type": "string"}},
+    "provenance_status": {"const": "complete"},
+    "replay_fidelity": {"const": "artifact-identical"}
+  }
+}

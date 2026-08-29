@@ -5,7 +5,7 @@ description: Inspect an existing Pyramid Task V3 or compatible legacy project wi
 
 # Inspect a Pyramid Task Plan
 
-Start with the smallest runtime query. Load `../../references/demonstrable-increments.md` only for delivery or increment progress, `../../references/graph-contract.md` only for topology, `../../references/agent-contracts.md` only for one detailed node, `../../references/handoff-contract.md` only for paused work, `../../references/brownfield-assurance.md` only when assurance is present, and `../../references/lifecycle-contract.md` only for lifecycle questions.
+Start with the smallest runtime query. Route cross-intent causality, path/commit provenance, and replay questions to `pyramid-task:history`. Load `../../references/demonstrable-increments.md` only for delivery or increment progress, `../../references/graph-contract.md` only for topology, `../../references/agent-contracts.md` only for one detailed node, `../../references/handoff-contract.md` only for paused work, `../../references/brownfield-assurance.md` only when assurance is present, and `../../references/lifecycle-contract.md` only for lifecycle questions.
 
 ## Workflow
 

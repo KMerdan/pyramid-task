@@ -20,6 +20,7 @@ from pyramid_core import (
     project_paths,
 )
 from pyramid_visualizer import build_visualization_html, load_visualization_graph, visualization_snapshot
+from pyramid_history import history_summary
 
 
 def _json_bytes(value: dict[str, Any]) -> bytes:
@@ -139,6 +140,7 @@ class LiveGraphState:
                     f"({candidate['graph_version']} != {runtime_state['graph_version']})"
                 )
             expected = graph_snapshot(plan, runtime_state, baseline, assurance, manifest)
+            expected["history"] = history_summary(paths["meta"], plan["plan_id"])
             by_id = node_map(plan)
             for item in expected["nodes"]:
                 item["source_path"] = str(node_doc_path(paths, by_id[item["id"]]).relative_to(paths["root"]))

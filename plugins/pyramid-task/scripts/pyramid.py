@@ -17,7 +17,9 @@ from pyramid_core import (
     compile_project,
     create_project,
     expand_project,
+    bind_history_commit,
     inspect_lifecycle,
+    inspect_history,
     inspect_changes,
     inspect_project,
     impact_project,
@@ -326,6 +328,20 @@ def build_parser() -> argparse.ArgumentParser:
     add_project(lifecycle)
     add_json(lifecycle)
 
+    history = sub.add_parser(
+        "history",
+        help="Query immutable intent chronicles or bind one to a clean Git commit",
+    )
+    add_project(history)
+    history_query = history.add_mutually_exclusive_group()
+    history_query.add_argument("--intent", help="Show the latest chronicle for a plan or chronicle ID")
+    history_query.add_argument("--path", help="Find intents that declared or materially changed a path")
+    history_query.add_argument("--commit", help="Find intents bound to a Git commit")
+    history_query.add_argument("--replay", help="Return a read-only replay context for an intent")
+    history_query.add_argument("--bind", help="Bind an intent chronicle to the current clean Git HEAD")
+    history.add_argument("--actor", help="Required with --bind")
+    add_json(history)
+
     visualize = sub.add_parser("visualize", help="Render an interactive browser graph")
     add_project(visualize)
     visualize.add_argument("--output")
@@ -558,6 +574,18 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
         return clean_project(args.project), 0
     if args.command == "lifecycle":
         return inspect_lifecycle(args.project), 0
+    if args.command == "history":
+        if args.bind:
+            if not args.actor:
+                raise PyramidError("history --bind requires --actor")
+            return bind_history_commit(args.project, args.bind, args.actor), 0
+        return inspect_history(
+            args.project,
+            intent=args.intent,
+            path=args.path,
+            commit=args.commit,
+            replay=args.replay,
+        ), 0
     if args.command == "visualize":
         if args.live:
             raise PyramidError("Live visualization is a long-running command and must be started from the CLI")

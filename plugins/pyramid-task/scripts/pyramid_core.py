@@ -54,6 +54,18 @@ from pyramid_graph import (
     start_blockers,
 )
 from pyramid_parallel import build_parallel_frontier
+from pyramid_history import (
+    HistoryError,
+    ensure_intent_start,
+    history_chronicles,
+    history_contains_plan,
+    history_summary,
+    history_validation_errors,
+    query_history,
+    rebuild_history_index,
+    record_code_binding,
+    record_intent_chronicle,
+)
 
 try:
     import fcntl
@@ -128,6 +140,8 @@ def project_paths(project: str | Path) -> dict[str, Path]:
         "reports": meta / "reports",
         "dossiers": meta / "dossiers",
         "archives": meta / "archives",
+        "history": meta / "history",
+        "history_index": meta / "history" / "index.json",
         "lock": meta / "lock",
         "docs": root / "docs" / "tasks",
         "html": meta / "pyramid.html",
@@ -1600,6 +1614,7 @@ def load_project(project: str | Path, check: bool = True) -> tuple[dict[str, Pat
             + assurance_validation_errors(paths, plan)
             + handoff_validation_errors(paths, plan, state)
             + head_validation_errors(paths, plan, state)
+            + history_validation_errors(paths["meta"])
         )
         if errors:
             raise PyramidError("Project validation failed:\n- " + "\n- ".join(errors))
@@ -2007,9 +2022,14 @@ def _compile_project_locked(project: str | Path, *, allow_archived: bool = False
     frontier = implementation_frontier(paths)
     if lifecycle_status(state) == "archived" and not allow_archived:
         raise PyramidError("Archived plans are frozen; use their existing projections or restore the plan")
+    try:
+        rebuild_history_index(paths["meta"])
+    except HistoryError as exc:
+        raise PyramidError(str(exc)) from exc
     snapshot = graph_snapshot(
         plan, state, baseline, assurance, manifest, frontier
     )
+    snapshot["history"] = history_summary(paths["meta"], plan["plan_id"])
     by_id = node_map(plan)
     for item in snapshot["nodes"]:
         item["source_path"] = str(node_doc_path(paths, by_id[item["id"]]).relative_to(paths["root"]))
@@ -2247,6 +2267,18 @@ def create_project(
             if force:
                 raise PyramidError("Unsafe replacement is disabled; use reset so the current plan is archived first")
             raise PyramidError(f"A Pyramid Task project already exists at {paths['meta']}; use replan or reset instead")
+        history_errors = history_validation_errors(paths["meta"])
+        if history_errors:
+            raise PyramidError("History validation failed:\n- " + "\n- ".join(history_errors))
+        try:
+            recorded_plan = history_contains_plan(paths["meta"], plan["plan_id"])
+        except HistoryError as exc:
+            raise PyramidError(str(exc)) from exc
+        if recorded_plan:
+            raise PyramidError(
+                f"Plan ID {plan['plan_id']} already exists in immutable intent history; "
+                "use a new plan_id or restore its archive"
+            )
         timestamp = utc_now()
         state = {
             "schema_version": SCHEMA_VERSION,
@@ -2274,6 +2306,10 @@ def create_project(
             "payload": {"mode": manifest["mode"], "project_format_version": PROJECT_FORMAT_VERSION},
         }
         _persist_event(paths, plan, state, event)
+        try:
+            ensure_intent_start(paths["meta"], paths["root"], plan, state, actor)
+        except HistoryError as exc:
+            raise PyramidError(str(exc)) from exc
     compiled = compile_project(project)
     return {
         "status": "created",
@@ -2464,6 +2500,12 @@ def upgrade_project(
                 "assurance_gaps": preview["assurance_gaps"],
             },
         )
+        try:
+            ensure_intent_start(
+                paths["meta"], paths["root"], plan, state, actor, legacy_capture=True
+            )
+        except HistoryError as exc:
+            raise PyramidError(str(exc)) from exc
     compiled = compile_project(project)
     return {
         "status": "upgraded",
@@ -4689,11 +4731,45 @@ def close_project(
         if status == "archived":
             raise PyramidError("Cannot close an archived plan; restore it first")
         if status == "completed":
+            existing = [
+                item
+                for item in history_chronicles(paths["meta"])
+                if item.get("plan_id") == plan["plan_id"]
+                and item.get("outcome") == "completed"
+            ]
+            if existing:
+                chronicle = existing[-1]
+            else:
+                lifecycle = lifecycle_state(state)
+                report_reference = lifecycle.get("completion_report")
+                dossier_reference = lifecycle.get("change_dossier")
+                try:
+                    chronicle = record_intent_chronicle(
+                        paths["meta"],
+                        paths["root"],
+                        plan,
+                        state,
+                        actor,
+                        outcome="completed",
+                        reason="Backfilled from an existing completed lifecycle.",
+                        report_path=(paths["root"] / report_reference) if report_reference else None,
+                        dossier_path=(paths["root"] / dossier_reference) if dossier_reference else None,
+                        closing_event={
+                            "id": "HISTORY-BACKFILL",
+                            "type": "history.backfilled",
+                            "at": lifecycle.get("completed_at"),
+                        },
+                    )
+                except HistoryError as exc:
+                    raise PyramidError(str(exc)) from exc
+            compiled = _compile_project_locked(project)
             return {
                 "status": "completed",
                 "graph_version": state["graph_version"],
                 "report": lifecycle_state(state).get("completion_report"),
+                "chronicle": chronicle["chronicle_id"],
                 "already_completed": True,
+                **compiled,
             }
         manifest, baseline, assurance = load_assurance_bundle(paths, plan)
         errors = completion_errors(
@@ -4764,6 +4840,21 @@ def close_project(
                 "change_dossier_markdown": str(dossier_markdown.relative_to(paths["root"])) if dossier_markdown else None,
             },
         )
+        try:
+            chronicle = record_intent_chronicle(
+                paths["meta"],
+                paths["root"],
+                plan,
+                state,
+                actor,
+                outcome="completed",
+                reason=None,
+                report_path=report_json,
+                dossier_path=dossier_json,
+                closing_event=event,
+            )
+        except HistoryError as exc:
+            raise PyramidError(str(exc)) from exc
     compiled = compile_project(project)
     return {
         "status": "completed",
@@ -4772,6 +4863,7 @@ def close_project(
         "report_markdown": str(report_markdown),
         "change_dossier": str(dossier_json) if dossier_json else None,
         "change_dossier_markdown": str(dossier_markdown) if dossier_markdown else None,
+        "chronicle": chronicle["chronicle_id"],
         **compiled,
     }
 
@@ -4799,7 +4891,7 @@ def _copy_current_snapshot(paths: dict[str, Path], destination: Path, manifest: 
         source = paths[key]
         if source.exists():
             shutil.copy2(source, archive_meta / source.name)
-    for key in ("events", "handoffs", "reports", "dossiers"):
+    for key in ("events", "handoffs", "reports", "dossiers", "history"):
         source = paths[key]
         if source.exists():
             shutil.copytree(source, archive_meta / source.name)
@@ -4873,6 +4965,7 @@ def archive_project(
         raise PyramidError("archive requires a non-empty reason")
     paths = project_paths(project)
     event: dict[str, Any] | None = None
+    chronicle: dict[str, Any] | None = None
     with project_lock(paths):
         paths, plan, state = load_project(project)
         check_expected_version(plan, state, expected_version)
@@ -4908,6 +5001,60 @@ def archive_project(
                 after=copy.deepcopy(lifecycle),
                 payload={"reason": reason, "archive_id": archive_id},
             )
+            existing = [
+                item
+                for item in history_chronicles(paths["meta"])
+                if item.get("plan_id") == plan["plan_id"]
+            ]
+            if previous_status == "completed" and existing:
+                chronicle = existing[-1]
+            else:
+                report_reference = before.get("completion_report") if previous_status == "completed" else None
+                dossier_reference = before.get("change_dossier") if previous_status == "completed" else None
+                try:
+                    chronicle = record_intent_chronicle(
+                        paths["meta"],
+                        paths["root"],
+                        plan,
+                        state,
+                        actor,
+                        outcome="completed" if previous_status == "completed" else "archived-incomplete",
+                        reason=reason,
+                        report_path=(paths["root"] / report_reference) if report_reference else None,
+                        dossier_path=(paths["root"] / dossier_reference) if dossier_reference else None,
+                        closing_event=event,
+                    )
+                except HistoryError as exc:
+                    raise PyramidError(str(exc)) from exc
+        if chronicle is None:
+            matching = [
+                item
+                for item in history_chronicles(paths["meta"])
+                if item.get("plan_id") == plan["plan_id"]
+            ]
+            chronicle = matching[-1] if matching else None
+        if chronicle is None:
+            report_reference = lifecycle.get("completion_report") if previous_status == "completed" else None
+            dossier_reference = lifecycle.get("change_dossier") if previous_status == "completed" else None
+            try:
+                chronicle = record_intent_chronicle(
+                    paths["meta"],
+                    paths["root"],
+                    plan,
+                    state,
+                    actor,
+                    outcome="completed" if previous_status == "completed" else "archived-incomplete",
+                    reason=f"Backfilled from an existing archive: {reason}",
+                    report_path=(paths["root"] / report_reference) if report_reference else None,
+                    dossier_path=(paths["root"] / dossier_reference) if dossier_reference else None,
+                    closing_event={
+                        "id": "HISTORY-BACKFILL",
+                        "type": "history.backfilled",
+                        "at": lifecycle.get("archived_at"),
+                    },
+                )
+            except HistoryError as exc:
+                raise PyramidError(str(exc)) from exc
     if not archive_id:
         raise PyramidError("Archived lifecycle is missing archive_id")
     compile_project(project, allow_archived=True)
@@ -4927,6 +5074,7 @@ def archive_project(
             "reason": reason,
             "plan_sha256": _file_sha256(paths["plan"]),
             "state_sha256": _file_sha256(paths["state"]),
+            "chronicle_id": chronicle.get("chronicle_id") if chronicle else None,
         }
         _copy_current_snapshot(paths, destination, manifest)
         validation = validate_project(destination)
@@ -4937,6 +5085,7 @@ def archive_project(
         "archive_id": archive_id,
         "archive": str(destination),
         "event": event,
+        "chronicle": chronicle.get("chronicle_id") if chronicle else None,
         "already_archived": event is None,
     }
 
@@ -5004,6 +5153,17 @@ def _initialize_current(
         "payload": {**payload, "mode": mode, "project_format_version": PROJECT_FORMAT_VERSION},
     }
     _persist_event(paths, plan, state, event)
+    try:
+        ensure_intent_start(
+            paths["meta"],
+            paths["root"],
+            plan,
+            state,
+            actor,
+            transition=payload,
+        )
+    except HistoryError as exc:
+        raise PyramidError(str(exc)) from exc
     return state, event
 
 
@@ -5027,6 +5187,11 @@ def reset_project(
     check_expected_version(current, state, expected_version)
     if candidate["plan_id"] == current["plan_id"]:
         raise PyramidError("A reset must use a new plan_id; use replan to revise the current plan")
+    if history_contains_plan(paths["meta"], candidate["plan_id"]):
+        raise PyramidError(
+            f"Plan ID {candidate['plan_id']} already exists in immutable intent history; "
+            "use a new plan_id or restore its archive"
+        )
     archived = archive_project(project, actor, f"Reset: {reason}", expected_version=expected_version)
     with project_lock(paths):
         paths, _, archived_state = load_project(project)
@@ -5385,6 +5550,60 @@ def clean_project(project: str | Path) -> dict[str, Any]:
         return {"status": "clean", "removed": removed, "canonical_preserved": True, **compiled}
 
 
+def inspect_history(
+    project: str | Path,
+    *,
+    intent: str | None = None,
+    path: str | None = None,
+    commit: str | None = None,
+    replay: str | None = None,
+) -> dict[str, Any]:
+    paths = project_paths(project)
+    with project_lock(paths):
+        current_plan_id = (
+            load_json(paths["plan"]).get("plan_id") if paths["plan"].exists() else None
+        )
+        try:
+            return query_history(
+                paths["meta"],
+                current_plan_id=current_plan_id,
+                intent=intent,
+                path=path,
+                commit=commit,
+                replay=replay,
+            )
+        except HistoryError as exc:
+            raise PyramidError(str(exc)) from exc
+
+
+def bind_history_commit(
+    project: str | Path,
+    chronicle: str,
+    actor: str,
+) -> dict[str, Any]:
+    if not actor.strip():
+        raise PyramidError("history code binding requires a non-empty actor")
+    paths = project_paths(project)
+    with project_lock(paths):
+        load_project(project)
+        try:
+            record = record_code_binding(
+                paths["meta"], paths["root"], chronicle, actor
+            )
+        except HistoryError as exc:
+            raise PyramidError(str(exc)) from exc
+    if paths["plan"].exists() and lifecycle_status(load_json(paths["state"])) != "archived":
+        compile_project(project)
+    return {
+        "status": "bound",
+        "chronicle_id": record["chronicle_id"],
+        "commit": record["commit"],
+        "tree": record.get("tree"),
+        "replay_fidelity": record["replay_fidelity"],
+        "record_id": record["record_id"],
+    }
+
+
 def inspect_lifecycle(project: str | Path) -> dict[str, Any]:
     paths = project_paths(project)
     archives = list_archives(project)
@@ -5708,6 +5927,7 @@ def validate_project(project: str | Path) -> dict[str, Any]:
         + handoff_validation_errors(paths, plan, state)
         + head_validation_errors(paths, plan, state)
         + event_chain_validation_errors(paths)
+        + history_validation_errors(paths["meta"])
     )
     manifest = load_json(paths["project"]) if paths["project"].exists() else None
     return {

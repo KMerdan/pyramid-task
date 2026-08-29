@@ -1,11 +1,11 @@
 ---
 name: visualize
-description: Render an existing Pyramid Task V3 project as a human-first intent observer or technical graph, in a self-contained snapshot or live-updating browser view. Use when a human wants to understand intent progress, proven outcomes, active work, issues, next action, task structure, demonstrable increments, or detailed graph and brownfield assurance state.
+description: Render an existing Pyramid Task V3 project as a human-first active Intent Observer, cross-intent History Observer, or technical graph, in a self-contained snapshot or live-updating browser view. Use when a human wants to understand current intent progress, prior implementation rationale, proven outcomes, active work, issues, next action, task structure, demonstrable increments, replay strength, or detailed graph and brownfield assurance state.
 ---
 
 # Visualize a Pyramid Task Plan
 
-Render the intent observer first. Read `../../references/visualization-contract.md` only when explaining view semantics, `../../references/demonstrable-increments.md` only when explaining delivery progress, `../../references/handoff-contract.md` only for paused-node details, `../../references/brownfield-assurance.md` only when assurance overlays exist, and `../../references/lifecycle-contract.md` only for lifecycle interpretation.
+Render the active Intent Observer first. Read `../../references/visualization-contract.md` only when explaining view semantics, `../../references/history-contract.md` for the History Observer, `../../references/demonstrable-increments.md` only when explaining delivery progress, `../../references/handoff-contract.md` only for paused-node details, `../../references/brownfield-assurance.md` only when assurance overlays exist, and `../../references/lifecycle-contract.md` only for lifecycle interpretation.
 
 ## Workflow
 
@@ -38,6 +38,7 @@ Add `--open` only when the user asks to open it. Keep the process running until 
 - Calculate layout from graph semantics; do not write presentation coordinates into the canonical plan.
 - Make the Observer the default. It must answer, in plain language: what the intent is, what outcome was last proven, what proof comes next, what is actually working, what needs intervention and why, what action is recommended, and how work contributes to outcomes.
 - Show the selected-path task hierarchy and outcome path before raw topology. Keep IDs, graph revisions, enums, edge types, overlays, and mutation mechanics behind technical disclosure or the Technical graph.
+- Use the History Observer for why prior intents began, how their demonstrated paths evolved, turning points, ending rationale, provenance coverage, and replay fidelity. Keep historical nodes out of the active ready frontier.
 - Use Focus view for technical work context; retain star, pyramid, and dependency views for structural exploration and debugging.
 - For increment progress, show the outcome, its `validated-by` gate, required proof, actual checks, and blockers. Never relabel a wave, batch, implemented task set, or passing unit suite as a usable increment.
 - Present test evidence by the behavior or acceptance claim it supports. Distinguish implementation checks from accepted audit proof and show zero evidence honestly.

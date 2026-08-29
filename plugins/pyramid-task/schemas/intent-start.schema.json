@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/intent-start.schema.json",
+  "title": "Pyramid Task Intent Start Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "record_id", "record_type", "plan_id", "plan_revision", "title", "recorded_at", "recorded_by", "capture_quality", "parents", "transition", "intent", "starting_plan", "starting_state", "source_snapshot", "limitations"],
+  "properties": {
+    "schema": {"const": "pyramid-intent-start-v1"},
+    "record_id": {"type": "string", "minLength": 1},
+    "record_type": {"const": "intent-start"},
+    "plan_id": {"type": "string", "minLength": 1},
+    "plan_revision": {"type": "integer", "minimum": 1},
+    "title": {"type": "string", "minLength": 1},
+    "recorded_at": {"type": "string"},
+    "recorded_by": {"type": "string", "minLength": 1},
+    "capture_quality": {"enum": ["at-intent-start", "late-partial"]},
+    "parents": {"type": "array", "items": {"type": "object"}},
+    "transition": {"type": ["object", "null"]},
+    "intent": {"type": "object"},
+    "starting_plan": {"type": "object"},
+    "starting_state": {"type": "object"},
+    "source_snapshot": {"$ref": "#/$defs/snapshot"},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["captured_at", "git", "runtime"],
+      "properties": {
+        "captured_at": {"type": "string"},
+        "git": {"type": "object"},
+        "runtime": {"type": "object"}
+      }
+    }
+  }
+}

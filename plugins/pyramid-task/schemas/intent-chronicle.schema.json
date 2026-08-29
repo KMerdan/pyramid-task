@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/intent-chronicle.schema.json",
+  "title": "Pyramid Task Intent Chronicle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "record_id", "record_type", "chronicle_id", "plan_id", "plan_revision", "graph_version", "title", "recorded_at", "recorded_by", "outcome", "reason", "parents", "previous_chronicle", "start_record", "start_snapshot", "end_snapshot", "intent", "ending_plan", "journey", "change_bindings", "provenance_coverage", "replay", "report", "change_dossier", "closing_event", "human_story"],
+  "properties": {
+    "schema": {"const": "pyramid-intent-chronicle-v1"},
+    "record_id": {"type": "string", "minLength": 1},
+    "record_type": {"const": "intent-chronicle"},
+    "chronicle_id": {"type": "string", "minLength": 1},
+    "plan_id": {"type": "string", "minLength": 1},
+    "plan_revision": {"type": "integer", "minimum": 1},
+    "graph_version": {"type": "integer", "minimum": 1},
+    "title": {"type": "string", "minLength": 1},
+    "recorded_at": {"type": "string"},
+    "recorded_by": {"type": "string", "minLength": 1},
+    "outcome": {"enum": ["completed", "archived-incomplete"]},
+    "reason": {"type": ["string", "null"]},
+    "parents": {"type": "array", "items": {"type": "object"}},
+    "previous_chronicle": {"type": ["string", "null"]},
+    "start_record": {"type": "object"},
+    "start_snapshot": {"type": "object"},
+    "end_snapshot": {"type": "object"},
+    "intent": {"type": "object"},
+    "ending_plan": {"type": "object"},
+    "journey": {"type": "object"},
+    "change_bindings": {"type": "array", "items": {"type": "object"}},
+    "provenance_coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "material_files", "declared_files", "unbound_files", "unobserved_declared_files"],
+      "properties": {
+        "status": {"enum": ["complete", "partial", "unavailable"]},
+        "material_files": {"type": "array", "items": {"type": "string"}},
+        "declared_files": {"type": "array", "items": {"type": "string"}},
+        "unbound_files": {"type": "array", "items": {"type": "string"}},
+        "unobserved_declared_files": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "replay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fidelity", "start_commit", "end_commit", "commands", "limitations"],
+      "properties": {
+        "fidelity": {"enum": ["artifact-identical", "behaviorally-equivalent", "partial"]},
+        "start_commit": {"type": ["string", "null"]},
+        "end_commit": {"type": ["string", "null"]},
+        "commands": {"type": "array", "items": {"type": "object"}},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "report": {"type": ["object", "null"]},
+    "change_dossier": {"type": ["object", "null"]},
+    "closing_event": {"type": "object"},
+    "human_story": {"type": "object"}
+  }
+}

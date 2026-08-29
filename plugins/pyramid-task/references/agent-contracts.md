@@ -28,9 +28,11 @@ Use `mutation_guards.task` for take, update, and pause, and `mutation_guards.aud
 | Decide whether an audit can run | `inspect --audit-readiness <id>` |
 | Explain recent history | `diff --from-version <n>` |
 | Inspect one history payload | `diff --from-version <n> --detail` |
+| Explain a prior intent or code path | `history --intent <id>` or `history --path <path>` |
+| Build bounded reproduction context | `history --replay <id>` |
 | Reconcile assurance records | `inspect --assurance-detail` |
 
-Canonical history is stored as one hash-linked file per mutation under `.pyramid/events/`; it is not appended to the task packet or stored as a version array in the current graph JSON. Do not read the event directory directly for normal work.
+Current-plan mutation history is stored as one hash-linked file per mutation under `.pyramid/events/`; it is not appended to the task packet or stored as a version array in the current graph JSON. Cross-intent causal history is stored separately under `.pyramid/history/` and queried through `history`. Do not read either record directory directly for normal work.
 
 ## Ephemeral intra-task helpers
 

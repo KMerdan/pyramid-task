@@ -10,7 +10,7 @@ Read `../../references/agent-contracts.md` before creating a result. Load `../..
 ## Workflow
 
 1. Confirm the actor owns the active claim and the task packet is current.
-2. Run the task's required checks. Record actual commands, outcomes, every changed file, known `changed_assets`, acceptance evidence, risks, and proposed graph changes in `agent-result-v1` JSON. Classify authored, generated, runtime, configuration, evidence, and unknown changes only when classification matters. Use `change_effect: evidence-only` only for files inside the task's declared evidence output scope. Generated files require a predeclared output pattern and asset mapping.
+2. Run the task's required checks. Record actual commands, outcomes, every changed file, known `changed_assets`, acceptance evidence, risks, and proposed graph changes in `agent-result-v1` JSON. These exact declarations become the intent chronicle's task-to-code provenance; never omit an implementation file. Classify authored, generated, runtime, configuration, evidence, and unknown changes only when classification matters. Use `change_effect: evidence-only` only for files inside the task's declared evidence output scope. Generated files require a predeclared output pattern and asset mapping.
 3. Apply exactly one transition using `mutation_guards.task` from the claimed task packet:
 
 ```bash

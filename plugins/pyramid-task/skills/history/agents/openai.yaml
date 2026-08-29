@@ -1,0 +1,4 @@
+interface:
+  display_name: "Inspect Intent History"
+  short_description: "Trace why code changed and build replay context"
+  default_prompt: "Use $history to explain the causal intent chronicle or return the smallest evidence-backed replay context for this project."

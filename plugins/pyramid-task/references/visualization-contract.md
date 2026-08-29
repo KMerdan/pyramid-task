@@ -5,9 +5,10 @@ Render the visualization projection derived from `.pyramid/graph.json`, which co
 ## Required views
 
 - **Intent Observer (default):** give a human an at-a-glance narrative from intent to accepted outcomes, current work, interventions, next action, and task hierarchy. Do not require graph literacy.
+- **History Observer:** explain each completed or intentionally archived intent through its purpose, demonstrated path, turning points, ending rationale, changed-file provenance, and replay fidelity. Do not mix historical tasks into current readiness.
 - **Technical graph:** retain Focus, Star, Pyramid, and Dependencies as drill-down layouts. Focus places the selected or recommended node at the center; Star places intent at the center; Pyramid places level 0 at the apex; Dependencies arranges by wave and workstream.
 
-The Observer and Technical graph are two presentations of one deterministic runtime projection. The Observer is not a second state model and the browser must not infer canonical status.
+The active Observer, History Observer, and Technical graph are presentations of validated runtime projections. Neither observer is a second state model and the browser must not infer canonical status or replay strength.
 
 ## Observer questions
 

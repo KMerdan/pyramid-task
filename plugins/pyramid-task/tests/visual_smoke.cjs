@@ -16,13 +16,23 @@ async function main() {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(`file://${path.resolve(input)}`);
+  const historySurface = await page.locator('[data-surface="history"]').count();
+  if (process.env.PYRAMID_SCREENSHOT_SURFACE === 'history') {
+    await page.locator('[data-surface="history"]').click();
+    await page.screenshot({ path: screenshot, fullPage: true });
+  }
+  await page.locator('[data-surface="graph"]').click();
   const focusPressed = await page.locator('[data-view="focus"]').getAttribute('aria-pressed');
   const focusNodeCount = await page.locator('#node-layer .node').count();
   await page.locator('[data-filter="all"]').click();
   const assuranceOverlay = page.locator('[data-overlay="impact"]');
   if (await assuranceOverlay.isEnabled()) await assuranceOverlay.click();
   await page.locator('#node-select').selectOption('TASK-201');
-  await page.screenshot({ path: screenshot, fullPage: true });
+  if (process.env.PYRAMID_SCREENSHOT_SURFACE !== 'history') {
+    await page.locator('[data-surface="observer"]').click();
+    await page.screenshot({ path: screenshot, fullPage: true });
+    await page.locator('[data-surface="graph"]').click();
+  }
   await page.locator('[data-view="pyramid"]').click();
   const nodeCount = await page.locator('#node-layer .node').count();
   const detail = await page.locator('#detail').innerText();
@@ -35,11 +45,14 @@ async function main() {
   await browser.close();
   if (errors.length) throw new Error(`Page errors: ${errors.join('; ')}`);
   if (focusPressed !== 'true') throw new Error('Focus view is not the default');
+  if (historySurface !== 1) throw new Error('History Observer surface is missing');
   if (focusNodeCount < 1) throw new Error('Focus view rendered no nodes');
   if (nodeCount < 1) throw new Error('No graph nodes rendered');
   if (!detail.includes('TASK-201')) throw new Error('Selected-node detail did not update');
   if (!detail.includes('Plan lifecycle')) throw new Error('Lifecycle detail is missing');
-  if (!meta.includes('active')) throw new Error('Lifecycle summary is missing');
+  if (!['active', 'completed', 'archived'].some(status => meta.includes(status))) {
+    throw new Error('Lifecycle summary is missing');
+  }
   if (reworkFilter !== 1) throw new Error('Rework filter is missing');
   if (pausedFilter !== 1) throw new Error('Paused filter is missing');
   if (workPackageFilter !== 1) throw new Error('Work-package filter is missing');

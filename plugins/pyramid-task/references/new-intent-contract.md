@@ -25,7 +25,7 @@
 
 Preview validates the candidate plan and hashes the exact candidate file, current plan and state, actor, reason, selected mode, transition, blockers, and component upgrade hash. Existing projects require approving user identity, a durable reference, the exact `new_intent_sha256`, and an expected graph version when available. Fresh creation does not require transition approval.
 
-Apply recomputes the preview and rejects stale or changed material. A legacy completed plan first receives a validated pre-upgrade snapshot and V3 evidence bridge. Reset then creates or verifies the restorable archive, carries the brownfield baseline when present, starts a new assurance bundle and graph version, and records the parent transition approval in the new `plan.created` event.
+Apply recomputes the preview and rejects stale or changed material. A legacy completed plan first receives a validated pre-upgrade snapshot, V3 evidence bridge, and honest late-partial intent-start record. Reset then creates or verifies the restorable archive, carries the brownfield baseline and project-wide intent chronicles when present, starts a new assurance bundle and graph version, records the parent transition approval in the new `plan.created` event, and captures the new intent's source starting point. A historical `plan_id` cannot be reused; restore that archive instead.
 
 The composite operation is recoverable rather than destructive: if reset cannot proceed after upgrade, the upgraded current plan and pre-upgrade snapshot remain valid and inspectable.
 

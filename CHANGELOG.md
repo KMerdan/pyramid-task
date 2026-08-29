@@ -2,6 +2,25 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## 3.7.0
+
+### Cross-intent implementation chronicles
+
+- Add a separate append-only `.pyramid/history` ledger with immutable intent-start, completion or inactive-archive chronicle, and clean Git code-binding records.
+- Preserve the ledger across archive, reset, restore, reopen, and new-intent cycles without adding historical nodes or states to the active graph.
+- Reject historical plan-ID reuse before lifecycle mutation and validate record hashes, order, and chain identity.
+
+### Human and agent observability
+
+- Add `pyramid-task:history` and bounded CLI queries by intent, repository path, Git commit, or read-only replay context.
+- Add a History Observer beside the active Intent Observer and Technical graph, focused on purpose, demonstrated path, turning points, ending rationale, provenance coverage, and replay fidelity.
+- Keep replay calibrated as partial, behaviorally equivalent, or artifact-identical; require a clean descendant Git commit whose material range exactly matches task-declared files before exact binding.
+
+### Contracts and packaging
+
+- Publish history head, start, chronicle, binding, index, and visualization-v3 schemas with lifecycle and architecture guidance.
+- Carry exact task changed-file declarations into intent provenance and make missing evidence visible rather than inferred.
+
 ## 3.6.0
 
 ### Human-first intent observation

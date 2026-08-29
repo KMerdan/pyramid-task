@@ -17,6 +17,7 @@
     "previous_status": {"enum": ["active", "completed"]},
     "reason": {"type": "string", "minLength": 1},
     "plan_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
-    "state_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+    "state_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "chronicle_id": {"type": ["string", "null"]}
   }
 }

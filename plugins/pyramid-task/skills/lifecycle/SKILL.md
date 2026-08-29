@@ -5,7 +5,7 @@ description: Manage the full lifecycle of a Pyramid Task V3 plan. Use when the a
 
 # Manage a Pyramid Task Lifecycle
 
-Read `../../references/lifecycle-contract.md`. Load `../../references/graph-contract.md` only to explain structural closure blockers, `../../references/agent-contracts.md` only for active claim repair, and `../../references/brownfield-assurance.md` only in brownfield mode.
+Read `../../references/lifecycle-contract.md`. Load `../../references/history-contract.md` when closing, archiving, resetting, restoring, or explaining preservation; load `../../references/graph-contract.md` only to explain structural closure blockers, `../../references/agent-contracts.md` only for active claim repair, and `../../references/brownfield-assurance.md` only in brownfield mode.
 
 ## Start with status
 
@@ -33,7 +33,7 @@ Close only after the intent audit passes and `closure_ready` is true:
 python3 ../../scripts/pyramid.py close --project <project-root> --actor <actor> --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
-Closing writes a versioned JSON and Markdown final report and blocks ordinary execution mutations. In brownfield mode it also writes a change dossier and advances the baseline revision. Archive a completed or intentionally inactive plan only after resolving every working or paused claim:
+Closing writes a versioned JSON and Markdown final report, appends an immutable intent chronicle, and blocks ordinary execution mutations. In brownfield mode it also writes a change dossier and advances the baseline revision. Report the returned chronicle ID and its replay limitations. Archive a completed or intentionally inactive plan only after resolving every working or paused claim:
 
 ```bash
 python3 ../../scripts/pyramid.py archive --project <project-root> --actor <actor> --reason <reason> --expected-version <graph-version> --expected-context <context-id> --json
@@ -66,5 +66,6 @@ python3 ../../scripts/pyramid.py restore --project <project-root> --archive <arc
 - Never use `create --force`, delete `.pyramid`, or hand-edit lifecycle state to restart.
 - Never archive, reset, or restore over active claims. Resume a paused task and finish or release it first; do not discard its handoff.
 - Treat final reports and archive manifests as evidence artifacts, not mutable working notes.
+- Treat intent chronicles as append-only. After a later clean implementation commit, route commit provenance through `pyramid-task:history`; do not rewrite the closure record.
 - Preserve the original success criterion after failure. Repair locally or replan from evidence.
 - Use both `--expected-version` and `--expected-context` from the lifecycle query on every mutation.

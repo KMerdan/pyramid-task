@@ -32,7 +32,7 @@ python3 ../../scripts/pyramid.py create --project <project-root> --plan <candida
 
 11. Omit baseline and assurance inputs only when an incomplete placeholder is honest; complete assessment and impact analysis before a brownfield audit can pass.
 12. Run `validate` and inspect the ready frontier plus assurance blockers. Confirm that the increment outcomes form a justified ladder, every increment has its gate, later gates inherit prior proofs, and no wave is being reported as delivery evidence. When parallel execution is useful, also run `inspect --parallel-ready --max-agents <slots>` to confirm that intended sibling branches are actually independent. Fix candidates and recreate only when creation failed before committing project state. Use `reset`, never `create --force`, when a project already exists.
-13. Summarize the intent, current demonstrable baseline, increment ladder and gates, selected path, refinement findings and metrics, levels, ready tasks, affected assets, inspection gaps, rejected alternatives, assumptions, and limitations.
+13. Summarize the intent, captured source starting point, current demonstrable baseline, increment ladder and gates, selected path, refinement findings and metrics, levels, ready tasks, affected assets, inspection gaps, rejected alternatives, assumptions, and limitations. The runtime creates the immutable intent-start record; do not write history manually.
 
 ## Boundaries
 

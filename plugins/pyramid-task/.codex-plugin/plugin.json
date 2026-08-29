@@ -1,7 +1,7 @@
 {
   "name": "pyramid-task",
-  "version": "3.6.0+codex.20260829141129",
-  "description": "Plan and run demonstrable increments with evidence-backed task graphs, conflict-safe parallel execution, audit gates, brownfield assurance, and a human-first Intent Observer.",
+  "version": "3.7.0+codex.20260829222422",
+  "description": "Plan demonstrable increments, assure changes, and preserve causal intent chronicles for humans and agents.",
   "author": {
     "name": "Dr. Merdan Bay",
     "url": "https://github.com/KMerdan"
@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "Pyramid Task V3",
     "shortDescription": "Demonstrable delivery with evidence-backed task graphs.",
-    "longDescription": "Turn an intent into the smallest honest ladder of runnable or otherwise demonstrable increments, establish each increment through explicit audit proof, and observe human-readable progress from the current intent to the next required evidence. Fact-check and simplify candidate plans, derive conflict-safe parallel batches, coordinate exact task packets with sub-agents, use snapshot-safe helpers, baseline existing systems, map change impact, isolate task and audit mutation guards, preserve hash-linked history and durable handoffs, migrate active V2 plans without rebuilding, and drill into the technical execution and assurance graph when needed.",
+    "longDescription": "Turn an intent into the smallest honest ladder of runnable or otherwise demonstrable increments, establish each increment through explicit audit proof, and observe human-readable progress from the current intent to the next required evidence. Preserve completed work as append-only causal chronicles, trace code paths and commits to their implementation rationale, and give agents bounded replay context without mixing old work into the active graph. Fact-check plans, derive conflict-safe parallel batches, baseline existing systems, map change impact, preserve durable handoffs, and drill into technical execution and assurance when needed.",
     "developerName": "Dr. Merdan Bay",
     "category": "Productivity",
     "capabilities": [
@@ -38,22 +38,17 @@
       "Lifecycle",
       "Live Visualization",
       "Intent Observation",
+      "Intent History",
+      "Code Provenance",
+      "Replay Context",
       "Interactive",
       "Write"
     ],
     "websiteURL": "https://github.com/KMerdan/pyramid-task",
     "defaultPrompt": [
-      "Turn this feature into an evidence-backed task pyramid.",
-      "Plan this intent as the smallest honest ladder of demonstrable increments.",
-      "Fact-check and simplify this task graph without weakening its intent or assurance.",
-      "Assess this existing system and map the change impact before implementation.",
-      "Upgrade this running V2.1 plan to V3 without rebuilding it.",
-      "Start a new intent after this completed task cluster without losing its history.",
-      "Pause this claimed task with a durable handoff, then resume it safely later.",
-      "Show what is ready, active, blocked, and unaudited.",
-      "Run the current conflict-safe ready batch with sub-agents.",
-      "Open the live Intent Observer and show what is proven, active, blocked, and next.",
-      "Propose and preview a safe expansion for this broad task."
+      "Plan this intent as demonstrable increments.",
+      "Show current intent progress and next proof.",
+      "Explain why this code changed from intent history."
     ]
   }
 }

@@ -4,9 +4,9 @@
   "title": "Pyramid Task Visualization Projection",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "graph_version", "title", "revision", "intent", "lifecycle", "summary", "nodes", "edges", "project", "assurance", "observer"],
+  "required": ["schema", "graph_version", "title", "revision", "intent", "lifecycle", "summary", "nodes", "edges", "project", "assurance", "history", "observer"],
   "properties": {
-    "schema": {"const": "pyramid-visualization-v2"},
+    "schema": {"const": "pyramid-visualization-v3"},
     "graph_version": {"type": "integer", "minimum": 1},
     "context": {"type": ["object", "null"]},
     "plan_id": {"type": ["string", "null"]},
@@ -44,6 +44,21 @@
     "edges": {"type": "array"},
     "project": {"type": "object"},
     "assurance": {"type": ["object", "null"]},
+    "history": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "chronicles"],
+      "properties": {
+        "schema": {"const": "pyramid-history-summary-v1"},
+        "chronicles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["chronicle_id", "plan_id", "title", "recorded_at", "outcome", "intent", "path", "progress", "turning_points", "ending", "why_this_result", "changed_files", "provenance_status", "replay_fidelity", "bound_commit", "current_applicability"]
+          }
+        }
+      }
+    },
     "observer": {"$ref": "#/$defs/observer"}
   },
   "$defs": {

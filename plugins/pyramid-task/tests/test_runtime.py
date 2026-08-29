@@ -28,6 +28,7 @@ from pyramid_core import (  # noqa: E402
     assess_project,
     audit_mutation_guard,
     audit_node,
+    bind_history_commit,
     clean_project,
     close_project,
     compile_project,
@@ -35,6 +36,7 @@ from pyramid_core import (  # noqa: E402
     expand_project,
     expansion_parent_snapshot,
     inspect_changes,
+    inspect_history,
     inspect_lifecycle,
     inspect_project,
     impact_project,
@@ -606,7 +608,7 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertIn("Star", text)
         self.assertIn("Needs rework", text)
         self.assertNotIn("fetch(", text)
-        self.assertEqual("pyramid-visualization-v2", graph["schema"])
+        self.assertEqual("pyramid-visualization-v3", graph["schema"])
         jsonschema.validate(
             graph,
             load_json(PLUGIN_ROOT / "schemas" / "visualization.schema.json"),
@@ -767,6 +769,14 @@ class PyramidRuntimeTests(unittest.TestCase):
     def test_archive_is_valid_frozen_and_visualizable(self) -> None:
         archived = archive_project(self.root, "owner", "Pause this plan")
         archive_root = Path(archived["archive"])
+        self.assertIsNotNone(archived["chronicle"])
+        self.assertEqual(
+            "archived-incomplete",
+            inspect_history(self.root, intent=archived["chronicle"])["chronicles"][0]["outcome"],
+        )
+        self.assertEqual(
+            archived["chronicle"], load_json(archive_root / "manifest.json")["chronicle_id"]
+        )
         self.assertTrue(validate_project(archive_root)["valid"])
         self.assertEqual("archived", inspect_lifecycle(archive_root)["lifecycle"]["status"])
         with self.assertRaises(PyramidError):
@@ -774,6 +784,208 @@ class PyramidRuntimeTests(unittest.TestCase):
         output = archive_root / "archive-map.html"
         render_visualization(archive_root, output)
         self.assertTrue(output.exists())
+
+    def test_close_writes_queryable_immutable_intent_chronicle(self) -> None:
+        self.complete_graph()
+        closed = close_project(self.root, "owner")
+        chronicle_id = closed["chronicle"]
+        history_root = self.root / ".pyramid" / "history"
+        chronicle_path = history_root / "records" / f"{chronicle_id}.json"
+        chronicle = load_json(chronicle_path)
+        self.assertEqual("pyramid-intent-chronicle-v1", chronicle["schema"])
+        self.assertEqual("completed", chronicle["outcome"])
+        self.assertEqual("PLAN-001", chronicle["plan_id"])
+        self.assertEqual(
+            {"RESEARCH-101", "CONTRACT-102", "TASK-201", "GATE-290"},
+            {item["task"] for item in chronicle["change_bindings"]},
+        )
+        self.assertIn(
+            "work/TASK-201.txt", chronicle["provenance_coverage"]["declared_files"]
+        )
+        queried = inspect_history(self.root, intent="PLAN-001")
+        self.assertEqual(1, queried["count"])
+        self.assertEqual(chronicle_id, queried["chronicles"][0]["chronicle_id"])
+        by_path = inspect_history(self.root, path="work/TASK-201.txt")
+        self.assertEqual(
+            [chronicle_id], [item["chronicle_id"] for item in by_path["chronicles"]]
+        )
+        replay = inspect_history(self.root, replay=chronicle_id)
+        self.assertEqual(
+            "preview-only; execute commands only with normal task authorization in an isolated worktree",
+            replay["execution_policy"],
+        )
+        self.assertEqual("PLAN-001", replay["starting_plan"]["plan_id"])
+        self.assertEqual("PLAN-001", replay["ending_plan"]["plan_id"])
+        jsonschema.validate(
+            chronicle,
+            load_json(PLUGIN_ROOT / "schemas" / "intent-chronicle.schema.json"),
+        )
+        jsonschema.validate(
+            load_json(history_root / "head.json"),
+            load_json(PLUGIN_ROOT / "schemas" / "history-head.schema.json"),
+        )
+        start_path = next((history_root / "records").glob("START-*.json"))
+        jsonschema.validate(
+            load_json(start_path),
+            load_json(PLUGIN_ROOT / "schemas" / "intent-start.schema.json"),
+        )
+        jsonschema.validate(
+            load_json(history_root / "index.json"),
+            load_json(PLUGIN_ROOT / "schemas" / "history-index.schema.json"),
+        )
+        visual = load_visualization_graph(self.root)
+        self.assertEqual(
+            chronicle_id, visual["history"]["chronicles"][0]["chronicle_id"]
+        )
+        closed_again = close_project(self.root, "owner")
+        self.assertTrue(closed_again["already_completed"])
+        self.assertEqual(chronicle_id, closed_again["chronicle"])
+        self.assertEqual(1, inspect_history(self.root)["count"])
+
+    def test_reset_preserves_history_and_rejects_reused_plan_identity_before_mutation(self) -> None:
+        self.complete_graph()
+        closed = close_project(self.root, "owner")
+        candidate = load_json(self.example)
+        candidate["plan_id"] = "PLAN-002"
+        candidate["title"] = "Second intent"
+        reset_project(
+            self.root,
+            self.write_json("second-plan.json", candidate),
+            "owner",
+            "Continue with another intent",
+        )
+        self.assertEqual(
+            closed["chronicle"], inspect_history(self.root)["chronicles"][0]["chronicle_id"]
+        )
+        starts = [
+            load_json(path)
+            for path in (self.root / ".pyramid" / "history" / "records").glob(
+                "START-*.json"
+            )
+        ]
+        self.assertEqual({"PLAN-001", "PLAN-002"}, {item["plan_id"] for item in starts})
+        current_before = (self.root / ".pyramid" / "plan.json").read_bytes()
+        with self.assertRaisesRegex(
+            PyramidError, "already exists in immutable intent history"
+        ):
+            reset_project(
+                self.root,
+                self.example,
+                "owner",
+                "Unsafe identity reuse",
+            )
+        self.assertEqual(current_before, (self.root / ".pyramid" / "plan.json").read_bytes())
+
+    def test_history_tampering_invalidates_project(self) -> None:
+        head = load_json(self.root / ".pyramid" / "history" / "head.json")
+        start_path = self.root / ".pyramid" / "history" / head["entries"][0]["path"]
+        start = load_json(start_path)
+        start["title"] = "tampered"
+        start_path.write_text(json.dumps(start), encoding="utf-8")
+        validation = validate_project(self.root)
+        self.assertFalse(validation["valid"])
+        self.assertTrue(
+            any("history record hash mismatch" in error for error in validation["errors"])
+        )
+
+    def test_clean_git_binding_upgrades_effective_replay_fidelity(self) -> None:
+        git_root = Path(self.temp.name) / "git-project"
+        git_root.mkdir()
+        subprocess.run(["git", "init", str(git_root)], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "-C", str(git_root), "config", "user.name", "Test"], check=True
+        )
+        subprocess.run(
+            ["git", "-C", str(git_root), "config", "user.email", "test@example.com"],
+            check=True,
+        )
+        (git_root / "README.md").write_text("start\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(git_root), "add", "."], check=True)
+        subprocess.run(
+            ["git", "-C", str(git_root), "commit", "-m", "start"],
+            check=True,
+            capture_output=True,
+        )
+        create_project(git_root, self.example, "planner", mode="greenfield")
+
+        def complete(nid: str, criteria: list[str], actor: str = "worker") -> None:
+            changed = git_root / "work" / f"{nid}.txt"
+            changed.parent.mkdir(parents=True, exist_ok=True)
+            changed.write_text(f"implemented {nid}\n", encoding="utf-8")
+            take_task(git_root, actor, nid=nid)
+            update_task(
+                git_root,
+                nid,
+                actor,
+                "implemented",
+                result_path=self.result_for(nid, criteria),
+            )
+            audit_node(git_root, nid, "auditor", "pass", self.audit_for(nid))
+
+        complete("RESEARCH-101", ["AC-101-01"])
+        complete("CONTRACT-102", ["AC-102-01"])
+        complete("TASK-201", ["AC-201-01", "AC-201-02"])
+        complete("GATE-290", ["AC-290-01"], actor="audit-worker")
+        audit_node(
+            git_root, "OUTCOME-010", "auditor", "pass", self.audit_for("OUTCOME-010")
+        )
+        audit_node(
+            git_root, "INTENT-001", "owner", "pass", self.audit_for("INTENT-001")
+        )
+        closed = close_project(git_root, "owner")
+        before_binding = inspect_history(git_root, intent=closed["chronicle"])["chronicles"][0]
+        self.assertEqual("complete", before_binding["provenance_coverage"]["status"])
+        self.assertEqual("behaviorally-equivalent", before_binding["effective_replay_fidelity"])
+        subprocess.run(["git", "-C", str(git_root), "add", "."], check=True)
+        subprocess.run(
+            ["git", "-C", str(git_root), "commit", "-m", "complete intent"],
+            check=True,
+            capture_output=True,
+        )
+        bound = bind_history_commit(git_root, closed["chronicle"], "owner")
+        self.assertEqual("artifact-identical", bound["replay_fidelity"])
+        jsonschema.validate(
+            load_json(
+                git_root
+                / ".pyramid"
+                / "history"
+                / "records"
+                / f"{bound['record_id']}.json"
+            ),
+            load_json(PLUGIN_ROOT / "schemas" / "code-binding.schema.json"),
+        )
+        replay = inspect_history(git_root, replay=closed["chronicle"])
+        self.assertEqual("artifact-identical", replay["fidelity"])
+        self.assertEqual(bound["commit"], replay["bound_commit"])
+
+    def test_unchanged_dirty_start_file_is_not_attributed_to_the_intent(self) -> None:
+        git_root = Path(self.temp.name) / "dirty-start-project"
+        git_root.mkdir()
+        subprocess.run(["git", "init", str(git_root)], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "-C", str(git_root), "config", "user.name", "Test"], check=True
+        )
+        subprocess.run(
+            ["git", "-C", str(git_root), "config", "user.email", "test@example.com"],
+            check=True,
+        )
+        (git_root / "README.md").write_text("start\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(git_root), "add", "."], check=True)
+        subprocess.run(
+            ["git", "-C", str(git_root), "commit", "-m", "start"],
+            check=True,
+            capture_output=True,
+        )
+        (git_root / "preexisting.txt").write_text("unrelated dirty baseline\n", encoding="utf-8")
+        create_project(git_root, self.example, "planner", mode="greenfield")
+        archived = archive_project(git_root, "owner", "Record an inactive intent")
+        chronicle = inspect_history(git_root, intent=archived["chronicle"])["chronicles"][0]
+        self.assertNotIn(
+            "preexisting.txt", chronicle["provenance_coverage"]["material_files"]
+        )
+        self.assertTrue(
+            any("pre-existing dirty files" in item for item in chronicle["replay"]["limitations"])
+        )
 
     def test_reset_archives_current_and_starts_new_plan(self) -> None:
         candidate = load_json(self.example)

@@ -7,7 +7,7 @@
 
 Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
-Version 3.6.0 plans from demonstrable increments and opens visualization on a human-first Intent Observer. Each accepted increment is runnable or otherwise usable, while the technical graph remains available for dependency, execution, and assurance drill-down. The same branch supports Codex and Claude Code.
+Version 3.7.0 adds an append-only Intent Chronicle and History Observer to the demonstrable-increment workflow. The active Intent Observer stays focused on current delivery, while humans can understand why prior work happened and agents can retrieve bounded provenance and replay context. The same branch supports Codex and Claude Code.
 
 ![Pyramid Task Intent Observer showing outcome progress, an active blocker, recommended action, and intent structure](docs/images/pyramid-task-map.png)
 
@@ -63,10 +63,23 @@ Pyramid Task separates agent guidance from runtime enforcement. Specialized skil
 | `.pyramid/assurance.json` | Impacts, inspections, findings, drift, and controls | Relevant task or audit slice only |
 | `.pyramid/events/*.json` | One immutable, hash-linked event per mutation | Not injected into normal prompts; query a bounded `diff` |
 | `.pyramid/handoffs/` | Durable pause and resume evidence | Loaded only for the active handoff |
+| `.pyramid/history/` | Append-only intent starts, chronicles, and clean Git bindings | Queried by intent, path, commit, or bounded replay context |
 | `.pyramid/head.json` | Atomic identity of the committed canonical state | Used to validate publication and context |
 | Graph, ready, Markdown, and HTML files | Human and machine-readable projections | Regenerated; never mutation inputs |
 
 The event history is not a Git object database or a growing version array inside one JSON document. Events may contain before/after evidence, but each mutation is a separate immutable file. Normal agent packets do not include that history. `diff` returns compact changed-field summaries by default and includes full values only with `--detail`.
+
+### Intent history without an ever-growing active plan
+
+Each new intent gets an immutable start record. Closing it—or deliberately archiving it incomplete—adds one causal chronicle containing its starting and ending plans, demonstrated outcome path, decisions and turning points, task-to-file evidence, reports, provenance gaps, and replay limitations. Reset starts a fresh active graph but preserves the ledger; restore never rolls the project-wide ledger backward.
+
+The ledger separates claims that are easy to blur:
+
+- a chronicle explains why and how an intent ended;
+- task result bindings connect implementation work to declared files and checks;
+- a later clean Git binding proves that the exact committed repository range matches those declarations.
+
+This supports both observers. A human can follow purpose → progress → turning points → final rationale. An agent can query only the relevant intent, path, commit, or replay manifest instead of loading every historical graph. Replay is reported honestly as `partial`, `behaviorally-equivalent`, or `artifact-identical`; inspection never executes recorded commands automatically.
 
 ## Exact context at the mutation boundary
 
@@ -197,7 +210,11 @@ Read the [brownfield assurance contract](plugins/pyramid-task/references/brownfi
 
 ## Live visualization
 
-The browser opens on a human-first **Intent Observer**. It answers what the intent is, what outcome was last proven, what proof comes next, what work is actually active, what needs intervention and why, what action is recommended, and how the selected path is organized. It reports verified outcomes rather than inventing a completion percentage from task counts.
+The browser opens on a human-first **Intent Observer**. It answers what the current intent is, what outcome was last proven, what proof comes next, what work is actually active, what needs intervention and why, what action is recommended, and how the selected path is organized. It reports verified outcomes rather than inventing a completion percentage from task counts.
+
+The **History Observer** presents each prior intent as a semantic causal card: why it began, the demonstrated path, recorded turning points, why it ended that way, changed-file provenance, and replay strength. Historical task nodes never re-enter the active ready frontier.
+
+![Pyramid Task History Observer showing completed and deliberately archived intents with purpose, progress, ending rationale, provenance, and replay strength](docs/images/pyramid-task-history.png)
 
 The **Technical graph** remains available as a drill-down with focus, star, pyramid, and dependency layouts plus task state, handoffs, assurance, assets, inspections, findings, drift, blockers, and publication health. Machine IDs, graph revisions, raw enums, and overlays no longer dominate the landing view.
 
@@ -254,7 +271,8 @@ Start a new agent session after installation or update so the runtime discovers 
 5. Report implementation with actual files, assets, checks, evidence, and typed change effects.
 6. Refresh shared inspections once at the returned batch boundary.
 7. Audit implementation nodes and the common composition gate independently.
-8. Close only after the intent and assurance case pass, then archive or start a new intent.
+8. Close only after the intent and assurance case pass; keep the returned chronicle ID.
+9. After the implementation is committed and the worktree is clean, bind that chronicle to Git for exact repository provenance, then archive or start a new intent.
 
 Natural-language entry points:
 
@@ -268,7 +286,8 @@ Use $pyramid-task:take to claim the next safe task.
 Use $pyramid-task:update to record implementation and actual change scope.
 Use $pyramid-task:audit to verify a task, composition gate, outcome, or intent.
 Use $pyramid-task:pause and $pyramid-task:resume for a durable handoff.
-Use $pyramid-task:visualize to open the live intent observer and technical graph.
+Use $pyramid-task:history to explain why a path changed or return a bounded replay context.
+Use $pyramid-task:visualize to open the live intent, history, and technical views.
 Use $pyramid-task:lifecycle to close, archive, reset, or restore a plan.
 ```
 
@@ -302,6 +321,7 @@ If the baseline is not known, creation writes a deliberately incomplete placehol
 | `pyramid-task:impact` | Map affected assets, inspections, findings, drift, and controls. |
 | `pyramid-task:upgrade` | Upgrade an active V2/V2.1 project in place without rebuilding its graph. |
 | `pyramid-task:inspect` | Query increment progress, compact status, readiness, blockers, audit freshness, and traces. |
+| `pyramid-task:history` | Explain cross-intent causality, trace path or commit provenance, and return bounded replay context. |
 | `pyramid-task:orchestrate` | Coordinate graph-task workers first, then use spare slots for bounded helpers. |
 | `pyramid-task:take` | Claim one ready task and opportunistically delegate safe read-only helper work. |
 | `pyramid-task:pause` | Pause owned work with an immutable evidence-aware handoff. |
@@ -311,11 +331,11 @@ If the baseline is not known, creation writes a deliberately incomplete placehol
 | `pyramid-task:expand` | Add an approved subtree while preserving the parent contract. |
 | `pyramid-task:replan` | Revise invalid topology or increment boundaries while preserving valid work and history. |
 | `pyramid-task:lifecycle` | Reopen, close, archive, reset, clean, and restore plans. |
-| `pyramid-task:visualize` | Render a human-first intent observer with a technical execution-graph drill-down. |
+| `pyramid-task:visualize` | Render active Intent and cross-intent History observers with a technical graph drill-down. |
 
 ## Lifecycle, expansion, and compatibility
 
-Implementation is not verification. A brownfield intent is complete only after primary claims pass independent audits, assurance has no blockers, and `close` writes the final report and change dossier. The verified changed baseline is then carried into the next planning cycle.
+Implementation is not verification. A brownfield intent is complete only after primary claims pass independent audits, assurance has no blockers, and `close` writes the final report, change dossier, and immutable intent chronicle. The verified changed baseline and project-wide chronicle ledger are then carried into the next planning cycle.
 
 Use `pause` for an interruption, `expand` when a valid task contract needs multiple internal work units, and `replan` when evidence changes the contract or selected path. All topology and lifecycle changes preserve history and use explicit preview or evidence boundaries.
 
@@ -333,6 +353,7 @@ Detailed contracts:
 - [Intra-task helpers](plugins/pyramid-task/references/intra-task-helpers.md)
 - [Brownfield assurance](plugins/pyramid-task/references/brownfield-assurance.md)
 - [Visualization](plugins/pyramid-task/references/visualization-contract.md)
+- [Intent chronicles and replay](plugins/pyramid-task/references/history-contract.md)
 - [Pause and resume](plugins/pyramid-task/references/handoff-contract.md)
 - [Lifecycle](plugins/pyramid-task/references/lifecycle-contract.md)
 - [Expansion](plugins/pyramid-task/references/expansion-contract.md)
@@ -356,13 +377,14 @@ Availability is derived from these dimensions and graph dependencies; agents do 
 plugins/pyramid-task/
 ├── .codex-plugin/plugin.json          Codex manifest
 ├── .claude-plugin/plugin.json         Claude Code manifest
-├── skills/                            Seventeen agent-facing interfaces
+├── skills/                            Eighteen agent-facing interfaces
 ├── scripts/
 │   ├── pyramid.py                     Thin command-line adapter
 │   ├── pyramid_core.py                Transaction and compatibility facade
 │   ├── pyramid_graph.py               Pure graph and readiness primitives
 │   ├── pyramid_parallel.py            Pure parallel-frontier analysis
 │   ├── pyramid_assurance.py           Assurance domain rules
+│   ├── pyramid_history.py             Append-only intent provenance and replay rules
 │   ├── pyramid_live.py                Validated loopback live server
 │   └── pyramid_visualizer.py          Static interactive renderer
 ├── schemas/                           Published JSON contracts
