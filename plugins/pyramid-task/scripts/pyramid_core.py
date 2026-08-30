@@ -59,12 +59,14 @@ from pyramid_history import (
     ensure_intent_start,
     history_chronicles,
     history_contains_plan,
+    history_health,
     history_summary,
     history_validation_errors,
     query_history,
     rebuild_history_index,
     record_code_binding,
     record_intent_chronicle,
+    repair_history_transaction,
 )
 
 try:
@@ -293,6 +295,7 @@ def intent_transition_route(project: str | Path) -> dict[str, Any]:
             "recommended_action": "create",
             "transition": ["create"],
             "blockers": [],
+            "warnings": [],
             "legacy_skill_conflicts": conflicts,
         }
 
@@ -309,6 +312,7 @@ def intent_transition_route(project: str | Path) -> dict[str, Any]:
         and not completion_errors(plan, state, baseline, assurance, frontier)
     )
     blockers: list[str] = []
+    warnings: list[str] = []
     transition: list[str] = []
     recommended_action = "continue-current-intent"
     can_start = False
@@ -344,6 +348,17 @@ def intent_transition_route(project: str | Path) -> dict[str, Any]:
             "The current intent is active. Complete it, or explicitly archive/reset it after user approval."
         )
 
+    summaries = history_summary(paths["meta"], plan["plan_id"])["chronicles"]
+    latest = next(
+        (item for item in reversed(summaries) if item.get("plan_id") == plan["plan_id"]),
+        None,
+    )
+    if latest and latest.get("binding_status") in {"pending", "unavailable"}:
+        warnings.append(
+            f"Intent history binding is {latest['binding_status']}: "
+            f"{latest.get('binding_next_action') or 'review the chronicle before transition.'}"
+        )
+
     return {
         "runtime_version": RUNTIME_VERSION,
         "project_format_version": project_format,
@@ -355,6 +370,7 @@ def intent_transition_route(project: str | Path) -> dict[str, Any]:
         "recommended_action": recommended_action,
         "transition": transition,
         "blockers": blockers,
+        "warnings": warnings,
         "legacy_skill_conflicts": conflicts,
     }
 
@@ -5295,6 +5311,7 @@ def _new_intent_material(
         },
         "transition": route["transition"],
         "blockers": route["blockers"],
+        "warnings": route["warnings"],
         "components": components,
     }
     approval_required = current is not None
@@ -5313,6 +5330,7 @@ def _new_intent_material(
             *(["the current brownfield baseline for the next assurance cycle"] if selected_mode == "brownfield" else []),
         ],
         "blockers": copy.deepcopy(route["blockers"]),
+        "warnings": copy.deepcopy(route["warnings"]),
         "components": components,
         "approval_required": approval_required,
         "new_intent_sha256": canonical_sha256(material),
@@ -5574,6 +5592,28 @@ def inspect_history(
             )
         except HistoryError as exc:
             raise PyramidError(str(exc)) from exc
+
+
+def inspect_history_health(project: str | Path) -> dict[str, Any]:
+    paths = project_paths(project)
+    with project_lock(paths):
+        return history_health(paths["meta"])
+
+
+def repair_history(project: str | Path) -> dict[str, Any]:
+    paths = project_paths(project)
+    with project_lock(paths):
+        try:
+            result = repair_history_transaction(paths["meta"])
+        except HistoryError as exc:
+            raise PyramidError(str(exc)) from exc
+    validation = validate_project(project)
+    if not validation["valid"]:
+        raise PyramidError(
+            "History repair completed but project validation failed:\n- "
+            + "\n- ".join(validation["errors"])
+        )
+    return {**result, "project_valid": True}
 
 
 def bind_history_commit(

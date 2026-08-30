@@ -37,6 +37,7 @@ from pyramid_core import (  # noqa: E402
     expansion_parent_snapshot,
     inspect_changes,
     inspect_history,
+    inspect_history_health,
     inspect_lifecycle,
     inspect_project,
     impact_project,
@@ -48,6 +49,7 @@ from pyramid_core import (  # noqa: E402
     new_intent_project,
     pause_task,
     replan_project,
+    repair_history,
     reopen_node,
     resume_task,
     reset_project,
@@ -60,6 +62,7 @@ from pyramid_core import (  # noqa: E402
 )
 from pyramid_live import LiveGraphState, LiveVisualizationServer  # noqa: E402
 from pyramid_visualizer import load_visualization_graph, render_visualization  # noqa: E402
+import pyramid_history  # noqa: E402
 
 
 class PyramidRuntimeTests(unittest.TestCase):
@@ -888,6 +891,63 @@ class PyramidRuntimeTests(unittest.TestCase):
             any("history record hash mismatch" in error for error in validation["errors"])
         )
 
+    def test_semantically_invalid_history_fails_after_hashes_are_resealed(self) -> None:
+        history_root = self.root / ".pyramid" / "history"
+        head_path = history_root / "head.json"
+        head = load_json(head_path)
+        start_path = history_root / head["entries"][0]["path"]
+        start = load_json(start_path)
+        start["schema"] = "pyramid-intent-start-corrupted"
+        start_path.write_text(json.dumps(start, indent=2) + "\n", encoding="utf-8")
+        entry = head["entries"][0]
+        entry["sha256"] = hashlib.sha256(start_path.read_bytes()).hexdigest()
+        head["chain_sha256"] = hashlib.sha256(
+            json.dumps(
+                {"previous": None, "entry": entry},
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+        head_path.write_text(json.dumps(head, indent=2) + "\n", encoding="utf-8")
+
+        validation = validate_project(self.root)
+        self.assertFalse(validation["valid"])
+        self.assertTrue(
+            any("invalid intent-start schema" in error for error in validation["errors"])
+        )
+
+    def test_interrupted_history_append_is_diagnosable_and_repairable(self) -> None:
+        root = Path(self.temp.name) / "interrupted-project"
+        original_write = pyramid_history._write_json
+
+        def interrupt_head(path: Path, value: dict) -> None:
+            if path.name == "head.json" and path.parent.name == "history":
+                raise RuntimeError("simulated head publication failure")
+            original_write(path, value)
+
+        with mock.patch(
+            "pyramid_history._write_json",
+            side_effect=interrupt_head,
+        ):
+            with self.assertRaisesRegex(PyramidError, "history --doctor"):
+                create_project(root, self.example, "planner")
+
+        transaction_path = root / ".pyramid" / "history" / "transaction.json"
+        self.assertTrue(transaction_path.exists())
+        transaction = load_json(transaction_path)
+        jsonschema.validate(
+            transaction,
+            load_json(PLUGIN_ROOT / "schemas" / "history-transaction.schema.json"),
+        )
+        health = inspect_history_health(root)
+        self.assertEqual("repair-required", health["status"])
+        self.assertEqual(transaction["record"]["record_id"], health["pending_transaction"]["record_id"])
+        repaired = repair_history(root)
+        self.assertEqual("completed", repaired["repair"])
+        self.assertTrue(repaired["project_valid"])
+        self.assertFalse(transaction_path.exists())
+        self.assertTrue(validate_project(root)["valid"])
+
     def test_clean_git_binding_upgrades_effective_replay_fidelity(self) -> None:
         git_root = Path(self.temp.name) / "git-project"
         git_root.mkdir()
@@ -936,6 +996,7 @@ class PyramidRuntimeTests(unittest.TestCase):
         before_binding = inspect_history(git_root, intent=closed["chronicle"])["chronicles"][0]
         self.assertEqual("complete", before_binding["provenance_coverage"]["status"])
         self.assertEqual("behaviorally-equivalent", before_binding["effective_replay_fidelity"])
+        self.assertEqual("pending", before_binding["binding_status"])
         subprocess.run(["git", "-C", str(git_root), "add", "."], check=True)
         subprocess.run(
             ["git", "-C", str(git_root), "commit", "-m", "complete intent"],
@@ -957,6 +1018,58 @@ class PyramidRuntimeTests(unittest.TestCase):
         replay = inspect_history(git_root, replay=closed["chronicle"])
         self.assertEqual("artifact-identical", replay["fidelity"])
         self.assertEqual(bound["commit"], replay["bound_commit"])
+        self.assertEqual("established", replay["binding_status"])
+
+    def test_behavioral_replay_requires_passed_commands_and_acceptance_evidence(self) -> None:
+        git_root = Path(self.temp.name) / "git-incomplete-replay"
+        git_root.mkdir()
+        subprocess.run(["git", "init", str(git_root)], check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(git_root), "config", "user.name", "Test"], check=True)
+        subprocess.run(
+            ["git", "-C", str(git_root), "config", "user.email", "test@example.com"],
+            check=True,
+        )
+        (git_root / "README.md").write_text("start\n", encoding="utf-8")
+        subprocess.run(["git", "-C", str(git_root), "add", "."], check=True)
+        subprocess.run(
+            ["git", "-C", str(git_root), "commit", "-m", "start"],
+            check=True,
+            capture_output=True,
+        )
+        create_project(git_root, self.example, "planner", mode="greenfield")
+        criteria_by_task = {
+            "RESEARCH-101": ["AC-101-01"],
+            "CONTRACT-102": ["AC-102-01"],
+            "TASK-201": ["AC-201-01", "AC-201-02"],
+            "GATE-290": ["AC-290-01"],
+        }
+        for nid, criteria in criteria_by_task.items():
+            changed = git_root / "work" / f"{nid}.txt"
+            changed.parent.mkdir(parents=True, exist_ok=True)
+            changed.write_text(f"implemented {nid}\n", encoding="utf-8")
+            take_task(git_root, "worker", nid=nid)
+            result = load_json(self.result_for(nid, criteria))
+            if nid == "TASK-201":
+                result["checks"] = [{"command": "test", "result": "not-run"}]
+            result_path = self.write_json(f"{nid}-replay-result.json", result)
+            update_task(
+                git_root,
+                nid,
+                "worker",
+                "implemented",
+                result_path=result_path,
+            )
+            audit_node(git_root, nid, "auditor", "pass", self.audit_for(nid))
+        audit_node(git_root, "OUTCOME-010", "auditor", "pass", self.audit_for("OUTCOME-010"))
+        audit_node(git_root, "INTENT-001", "owner", "pass", self.audit_for("INTENT-001"))
+
+        closed = close_project(git_root, "owner")
+        chronicle = inspect_history(git_root, intent=closed["chronicle"])["chronicles"][0]
+        self.assertEqual("complete", chronicle["provenance_coverage"]["status"])
+        self.assertEqual("partial", chronicle["effective_replay_fidelity"])
+        self.assertTrue(
+            any("Replay evidence is incomplete" in item for item in chronicle["replay"]["limitations"])
+        )
 
     def test_unchanged_dirty_start_file_is_not_attributed_to_the_intent(self) -> None:
         git_root = Path(self.temp.name) / "dirty-start-project"
@@ -1618,6 +1731,7 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertEqual("preview", preview["status"])
         self.assertEqual(["archive", "reset"], preview["transition"])
         self.assertTrue(preview["approval_required"])
+        self.assertTrue(any("binding is unavailable" in item for item in preview["warnings"]))
         jsonschema.validate(
             preview,
             load_json(PLUGIN_ROOT / "schemas" / "new-intent-preview.schema.json"),
@@ -1792,6 +1906,14 @@ class PyramidRuntimeTests(unittest.TestCase):
         for option in ("--live", "--port", "--poll-interval", "--open"):
             self.assertIn(option, visualize.stdout)
         self.assertNotIn("--host", visualize.stdout)
+        history = subprocess.run(
+            [sys.executable, str(PLUGIN_ROOT / "scripts" / "pyramid.py"), "history", "--help"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        for option in ("--intent", "--replay", "--bind", "--doctor", "--repair"):
+            self.assertIn(option, history.stdout)
 
 
 if __name__ == "__main__":

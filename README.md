@@ -7,7 +7,7 @@
 
 Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
-Version 3.7.0 adds an append-only Intent Chronicle and History Observer to the demonstrable-increment workflow. The active Intent Observer stays focused on current delivery, while humans can understand why prior work happened and agents can retrieve bounded provenance and replay context. The same branch supports Codex and Claude Code.
+Version 3.7.1 hardens the append-only Intent Chronicle and History Observer introduced in 3.7.0. History records now receive semantic and cross-record validation, interrupted appends are recoverable, replay strength requires its claimed evidence, and every chronicle reports whether exact Git binding is established, pending, optional, or unavailable. The same `main` branch supports Codex and Claude Code.
 
 ![Pyramid Task Intent Observer showing outcome progress, an active blocker, recommended action, and intent structure](docs/images/pyramid-task-map.png)
 
@@ -63,7 +63,7 @@ Pyramid Task separates agent guidance from runtime enforcement. Specialized skil
 | `.pyramid/assurance.json` | Impacts, inspections, findings, drift, and controls | Relevant task or audit slice only |
 | `.pyramid/events/*.json` | One immutable, hash-linked event per mutation | Not injected into normal prompts; query a bounded `diff` |
 | `.pyramid/handoffs/` | Durable pause and resume evidence | Loaded only for the active handoff |
-| `.pyramid/history/` | Append-only intent starts, chronicles, and clean Git bindings | Queried by intent, path, commit, or bounded replay context |
+| `.pyramid/history/` | Semantically validated, hash-linked intent starts, chronicles, and clean Git bindings | Queried by intent, path, commit, bounded replay context, or ledger health |
 | `.pyramid/head.json` | Atomic identity of the committed canonical state | Used to validate publication and context |
 | Graph, ready, Markdown, and HTML files | Human and machine-readable projections | Regenerated; never mutation inputs |
 
@@ -80,6 +80,38 @@ The ledger separates claims that are easy to blur:
 - a later clean Git binding proves that the exact committed repository range matches those declarations.
 
 This supports both observers. A human can follow purpose → progress → turning points → final rationale. An agent can query only the relevant intent, path, commit, or replay manifest instead of loading every historical graph. Replay is reported honestly as `partial`, `behaviorally-equivalent`, or `artifact-identical`; inspection never executes recorded commands automatically.
+
+History capture is lifecycle-driven; agents do not need a reminder at every transition:
+
+| Boundary | History behavior |
+| --- | --- |
+| `create`, `reset`, applied upgrade | Automatically append or reconstruct the intent-start record |
+| Task updates, audits, replans, and other mutations | Automatically retain hash-linked plan events used by the final journey |
+| `close` or deliberate archive | Automatically append a completed or incomplete chronicle |
+| Clean Git provenance | Explicitly run `history --bind` after committing implementation |
+| Binding ledger publication | Commit the resulting `.pyramid/history` and regenerated projection changes normally |
+
+An append first writes a recoverable `transaction.json`, publishes the immutable record and hash-linked head, rebuilds the disposable index, validates the committed ledger, and only then clears the transaction. Normal history reads stop on a pending transaction. Diagnose and, with recovery authority, complete the exact prepared append:
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py history \
+  --project /path/to/project --doctor --json
+python3 plugins/pyramid-task/scripts/pyramid.py history \
+  --project /path/to/project --repair --json
+```
+
+The ledger is tamper-evident relative to a trusted `head.json`; it is not an external signature, trusted timestamp, or substitute for repository access controls. Chronicles can contain plans, paths, commands, and runtime metadata, so review them before publishing a repository. Corrections append a new chronicle cycle or binding instead of editing old records.
+
+### System properties and limits
+
+| Property | Benefit | Deliberate limit |
+| --- | --- | --- |
+| Active graph separated from chronicles | Current agents load only actionable context; humans retain the full causal story | Cross-intent comparisons use a projection rather than one giant graph |
+| Deterministic runtime behind reasoning skills | The same transition and evidence rules apply across Codex and Claude Code | Semantic planning quality still depends on agent reasoning and review |
+| Demonstrable-increment gates | Every delivery rung targets a runnable or otherwise observable result | A passed command proves only the evidence actually recorded |
+| Hash-linked, semantically validated records | Detects content, metadata, ordering, and reference corruption | Trust still begins at the checked-in head and Git repository |
+| Recoverable prepared appends | A crash cannot silently leave mixed history accepted as valid | Divergent or malformed transactions require investigation, not automatic invention |
+| Explicit replay and binding states | Humans and agents can distinguish behavioral evidence from exact code identity | Environment-dependent behavior cannot be guaranteed by a tree hash alone |
 
 ## Exact context at the mutation boundary
 
@@ -212,9 +244,9 @@ Read the [brownfield assurance contract](plugins/pyramid-task/references/brownfi
 
 The browser opens on a human-first **Intent Observer**. It answers what the current intent is, what outcome was last proven, what proof comes next, what work is actually active, what needs intervention and why, what action is recommended, and how the selected path is organized. It reports verified outcomes rather than inventing a completion percentage from task counts.
 
-The **History Observer** presents each prior intent as a semantic causal card: why it began, the demonstrated path, recorded turning points, why it ended that way, changed-file provenance, and replay strength. Historical task nodes never re-enter the active ready frontier.
+The **History Observer** presents each prior intent as a semantic causal card: why it began, the demonstrated path, recorded turning points, why it ended that way, changed-file provenance, replay strength, and the next Git-binding action when exact reproduction is not yet established. Historical task nodes never re-enter the active ready frontier.
 
-![Pyramid Task History Observer showing completed and deliberately archived intents with purpose, progress, ending rationale, provenance, and replay strength](docs/images/pyramid-task-history.png)
+![Pyramid Task History Observer showing completed and deliberately archived intents with purpose, progress, ending rationale, replay strength, and exact-code binding readiness](docs/images/pyramid-task-history.png)
 
 The **Technical graph** remains available as a drill-down with focus, star, pyramid, and dependency layouts plus task state, handoffs, assurance, assets, inspections, findings, drift, blockers, and publication health. Machine IDs, graph revisions, raw enums, and overlays no longer dominate the landing view.
 
@@ -260,6 +292,13 @@ claude plugin marketplace add ./pyramid-task
 claude plugin install pyramid-task@kmerdan-skills
 ```
 
+Update an existing Claude Code installation:
+
+```bash
+claude plugin marketplace update kmerdan-skills
+claude plugin update pyramid-task@kmerdan-skills
+```
+
 Start a new agent session after installation or update so the runtime discovers the current skills.
 
 ## Recommended workflow
@@ -272,7 +311,7 @@ Start a new agent session after installation or update so the runtime discovers 
 6. Refresh shared inspections once at the returned batch boundary.
 7. Audit implementation nodes and the common composition gate independently.
 8. Close only after the intent and assurance case pass; keep the returned chronicle ID.
-9. After the implementation is committed and the worktree is clean, bind that chronicle to Git for exact repository provenance, then archive or start a new intent.
+9. After the implementation is committed and the worktree is clean, bind that chronicle to Git for exact repository provenance. Commit the appended binding record and regenerated projections, then archive or start a new intent; transition previews surface any missing binding.
 
 Natural-language entry points:
 
@@ -286,7 +325,7 @@ Use $pyramid-task:take to claim the next safe task.
 Use $pyramid-task:update to record implementation and actual change scope.
 Use $pyramid-task:audit to verify a task, composition gate, outcome, or intent.
 Use $pyramid-task:pause and $pyramid-task:resume for a durable handoff.
-Use $pyramid-task:history to explain why a path changed or return a bounded replay context.
+Use $pyramid-task:history to explain why a path changed, return bounded replay context, or diagnose a pending ledger append.
 Use $pyramid-task:visualize to open the live intent, history, and technical views.
 Use $pyramid-task:lifecycle to close, archive, reset, or restore a plan.
 ```

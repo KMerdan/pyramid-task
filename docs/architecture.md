@@ -52,7 +52,7 @@ flowchart LR
     BIND --> REPLAY
 ```
 
-The chronicle copies the historical start and end contracts required for later interpretation; it does not copy historical nodes into the current graph. A later code binding appends evidence instead of mutating the closed chronicle. Generated indexes and dashboard summaries remain disposable projections.
+The chronicle copies the historical start and end contracts required for later interpretation; it does not copy historical nodes into the current graph. A later code binding appends evidence instead of mutating the closed chronicle. Each append is prepared in a recoverable transaction, then atomically publishes the immutable record and hash-linked head before rebuilding the disposable index. A pending transaction blocks mixed-state reads and can only be completed by deterministic repair. Generated indexes and dashboard summaries remain disposable projections.
 
 ## Planning and delivery boundary
 

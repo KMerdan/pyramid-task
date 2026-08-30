@@ -1,6 +1,6 @@
 ---
 name: history
-description: Inspect and explain Pyramid Task V3 intent chronicles across implementation cycles, trace a repository path or Git commit to why and how it changed, produce a bounded read-only replay context for an agent, or bind a closed intent to a clean descendant Git commit. Use when a human needs the causal project story or an agent needs reproducibility evidence beyond the active intent graph.
+description: Inspect and explain Pyramid Task V3 intent chronicles across implementation cycles, trace a repository path or Git commit to why and how it changed, produce a bounded read-only replay context, diagnose or recover an interrupted ledger append, or bind a closed intent to a clean descendant Git commit. Use when a human needs the causal project story or an agent needs reproducibility evidence beyond the active intent graph.
 ---
 
 # Inspect Pyramid Intent History
@@ -9,7 +9,13 @@ Read `../../references/history-contract.md`. Load `../../references/lifecycle-co
 
 ## Workflow
 
-1. Validate the project. Stop on a history hash or chain error.
+1. Validate the project. If validation reports a pending history append, inspect it without mutation:
+
+```bash
+python3 ../../scripts/pyramid.py history --project <project-root> --doctor --json
+```
+
+Run `history --repair` only when the user asked to recover the ledger. It may complete the exact prepared append, but it must reject malformed or divergent state.
 2. Use the smallest read-only query:
 
 ```bash
@@ -34,5 +40,6 @@ python3 ../../scripts/pyramid.py history --project <project-root> --bind <chroni
 
 - Keep the active graph and ready frontier scoped to the current intent.
 - Never hand-edit `.pyramid/history`, infer missing changed files, or promote replay fidelity from prose.
+- Never delete `transaction.json` to bypass recovery. Use `--doctor`; use `--repair` only to finish the validated prepared record.
 - Never execute replay commands, check out commits, or create worktrees during a history inspection.
 - Distinguish an exact repository-tree binding from deterministic runtime behavior; surface environment limitations.

@@ -23,7 +23,7 @@
 
 ## Preview and approval
 
-Preview validates the candidate plan and hashes the exact candidate file, current plan and state, actor, reason, selected mode, transition, blockers, and component upgrade hash. Existing projects require approving user identity, a durable reference, the exact `new_intent_sha256`, and an expected graph version when available. Fresh creation does not require transition approval.
+Preview validates the candidate plan and hashes the exact candidate file, current plan and state, actor, reason, selected mode, transition, blockers, binding warnings, and component upgrade hash. A completed chronicle with pending or unavailable exact code binding remains transitionable, but the warning cannot disappear from the approved material unnoticed. Existing projects require approving user identity, a durable reference, the exact `new_intent_sha256`, and an expected graph version when available. Fresh creation does not require transition approval.
 
 Apply recomputes the preview and rejects stale or changed material. A legacy completed plan first receives a validated pre-upgrade snapshot, V3 evidence bridge, and honest late-partial intent-start record. Reset then creates or verifies the restorable archive, carries the brownfield baseline and project-wide intent chronicles when present, starts a new assurance bundle and graph version, records the parent transition approval in the new `plan.created` event, and captures the new intent's source starting point. A historical `plan_id` cannot be reused; restore that archive instead.
 

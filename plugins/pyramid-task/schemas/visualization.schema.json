@@ -54,7 +54,11 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["chronicle_id", "plan_id", "title", "recorded_at", "outcome", "intent", "path", "progress", "turning_points", "ending", "why_this_result", "changed_files", "provenance_status", "replay_fidelity", "bound_commit", "current_applicability"]
+            "required": ["chronicle_id", "plan_id", "title", "recorded_at", "outcome", "intent", "path", "progress", "turning_points", "ending", "why_this_result", "changed_files", "provenance_status", "replay_fidelity", "bound_commit", "binding_status", "binding_next_action", "current_applicability"],
+            "properties": {
+              "binding_status": {"enum": ["established", "pending", "unavailable", "optional"]},
+              "binding_next_action": {"type": ["string", "null"]}
+            }
           }
         }
       }

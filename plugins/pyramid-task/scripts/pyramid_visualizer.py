@@ -401,6 +401,12 @@ HTML_TEMPLATE = r"""<!doctype html>
   .history-card h2 { margin: 4px 0 7px; font-size: 1.08rem; }
   .history-card p { margin: 5px 0; }
   .history-meta { color: var(--muted); font-size: .82rem; }
+  .history-binding { margin-top: 10px; padding: 8px 10px; border-radius: 8px; border-left: 4px solid var(--muted); background: var(--bg); }
+  .history-binding.established { border-left-color: var(--verified); }
+  .history-binding.pending { border-left-color: var(--working); }
+  .history-binding.unavailable { border-left-color: var(--blocked); }
+  .history-binding.optional { border-left-color: var(--paused); }
+  .history-binding strong { display: block; text-transform: capitalize; }
   .history-path { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 9px; }
   .history-path span { padding: 3px 7px; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); font-size: .78rem; }
   .structure-tree, .structure-tree ul { list-style: none; margin: 0; padding-left: 16px; }
@@ -739,6 +745,7 @@ HTML_TEMPLATE = r"""<!doctype html>
       const index = chronicles.length - reverseIndex;
       const path = item.path || [];
       const progress = item.progress || [];
+      const bindingStatus = ['established', 'pending', 'unavailable', 'optional'].includes(item.binding_status) ? item.binding_status : 'unavailable';
       return `<article class="history-card ${item.outcome === 'completed' ? '' : 'incomplete'}">
         <div>
           <div class="eyebrow">Intent ${index} · ${esc(item.outcome === 'completed' ? 'Completed' : 'Archived incomplete')}</div>
@@ -754,7 +761,10 @@ HTML_TEMPLATE = r"""<!doctype html>
           ${item.turning_points?.length ? `<p><strong>Turning points:</strong> ${esc(item.turning_points.join('; '))}</p>` : ''}
           <p><strong>Why it ended this way:</strong> ${esc(item.ending)} ${esc(item.why_this_result || '')}</p>
           ${path.length ? `<div class="history-path">${path.map(step => `<span>${esc(step)}</span>`).join('')}</div>` : ''}
-          ${item.bound_commit ? `<p class="history-meta">Bound commit ${esc(item.bound_commit)}</p>` : `<p class="history-meta">No clean end commit is bound yet.</p>`}
+          <div class="history-binding ${bindingStatus}">
+            <strong>Code binding: ${esc(bindingStatus)}</strong>
+            ${item.bound_commit ? `<span class="history-meta">Commit ${esc(item.bound_commit)}</span>` : `<span class="history-meta">${esc(item.binding_next_action || 'Review the replay record before relying on exact reproduction.')}</span>`}
+          </div>
         </div>
       </article>`;
     }).join('') : '<article class="observer-panel empty-state">No intent has closed or been deliberately archived yet. The active intent remains in the Intent observer.</article>';

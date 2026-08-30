@@ -20,6 +20,7 @@ from pyramid_core import (
     bind_history_commit,
     inspect_lifecycle,
     inspect_history,
+    inspect_history_health,
     inspect_changes,
     inspect_project,
     impact_project,
@@ -27,6 +28,7 @@ from pyramid_core import (
     new_intent_project,
     pause_task,
     replan_project,
+    repair_history,
     reopen_node,
     resume_task,
     reset_project,
@@ -339,6 +341,12 @@ def build_parser() -> argparse.ArgumentParser:
     history_query.add_argument("--commit", help="Find intents bound to a Git commit")
     history_query.add_argument("--replay", help="Return a read-only replay context for an intent")
     history_query.add_argument("--bind", help="Bind an intent chronicle to the current clean Git HEAD")
+    history_query.add_argument(
+        "--doctor", action="store_true", help="Inspect ledger integrity and pending append recovery"
+    )
+    history_query.add_argument(
+        "--repair", action="store_true", help="Complete a valid interrupted history append"
+    )
     history.add_argument("--actor", help="Required with --bind")
     add_json(history)
 
@@ -575,6 +583,10 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     if args.command == "lifecycle":
         return inspect_lifecycle(args.project), 0
     if args.command == "history":
+        if args.doctor:
+            return inspect_history_health(args.project), 0
+        if args.repair:
+            return repair_history(args.project), 0
         if args.bind:
             if not args.actor:
                 raise PyramidError("history --bind requires --actor")
