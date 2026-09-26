@@ -54,6 +54,11 @@ from pyramid_graph import (
     start_blockers,
 )
 from pyramid_parallel import build_parallel_frontier
+from pyramid_verification import (
+    VerificationError, contracts as verification_contracts, normalize_proofs,
+    proof_readiness, publish_artifacts, query_harness, render_guide,
+    validate_contracts,
+)
 from pyramid_history import (
     HistoryError,
     ensure_intent_start,
@@ -641,6 +646,18 @@ def _persist_event(
     event: dict[str, Any],
 ) -> dict[str, Any]:
     previous_id, previous_sha256 = _previous_event(paths)
+    # Proof blobs share the existing event/head publication and archive boundary.
+    # Validation happens before this point; an interrupted publication fails the
+    # canonical-head check rather than silently accepting partial evidence.
+    field = {"task.implemented": "last_result", "audit.pass": "last_audit"}.get(event["type"])
+    if field and plan.get("schema_version") == 2:
+        record = state["nodes"][event["node"]][field]
+        try:
+            publish_artifacts(paths["root"], record)
+        except (VerificationError, OSError) as exc:
+            raise PyramidError(f"Could not publish proof artifacts: {exc}") from exc
+        event["after"][field] = copy.deepcopy(record)
+        event["payload"]["result" if field == "last_result" else "audit"] = copy.deepcopy(record)
     state["context_id"] = canonical_context_id(plan, state)
     context = context_identity(plan, state)
     event.update(
@@ -1160,8 +1177,8 @@ def validate_plan(plan: dict[str, Any]) -> list[str]:
     if missing:
         errors.append(f"Missing top-level fields: {', '.join(missing)}")
         return errors
-    if plan.get("schema_version") != SCHEMA_VERSION:
-        errors.append(f"schema_version must be {SCHEMA_VERSION}")
+    if plan.get("schema_version") not in (1, 2):
+        errors.append("plan.schema_version must be 1 (legacy) or 2 (candidate-bound harness)")
     if not isinstance(plan.get("plan_id"), str) or not plan["plan_id"].strip():
         errors.append("plan_id must be a non-empty string")
     if not isinstance(plan.get("title"), str) or not plan["title"].strip():
@@ -1509,6 +1526,8 @@ def validate_plan(plan: dict[str, Any]) -> list[str]:
     uncovered = sorted(success_ids - requirement_ids)
     if uncovered:
         errors.append(f"Intent success evidence is not traced by nodes: {', '.join(uncovered)}")
+    if not errors:
+        errors.extend(validate_contracts(plan))
     return errors
 
 
@@ -1740,6 +1759,17 @@ def task_packet(
         },
     }
     packet["mutation_guard"] = packet["mutation_guards"]["task"]
+    if plan.get("schema_version") == 2 and node["selection"] == "primary":
+        packet["required_evidence"] = [
+            {key: value for key, value in evidence.items() if key != "verification"}
+            for evidence in node["required_evidence"]
+        ]
+        packet["harness"] = {
+            "contracts": verification_contracts(plan, nid),
+            "capture": f"inspect --harness {nid}",
+            "guide": "docs/tasks/DEVELOPMENT_HARNESS.md",
+            "instruction": "Reuse existing checks; implement only missing capability. Capture candidate before checks; view required screenshots. Submit proofs or reuse a current run. A mutation guard is not a source fingerprint.",
+        }
     if baseline is not None and assurance is not None:
         packet["assurance"] = assurance_for_tasks(
             baseline,
@@ -1889,6 +1919,7 @@ def graph_snapshot(
         "title": plan["title"],
         "revision": plan["revision"],
         "intent": plan["intent"],
+        "verification_scope": "recorded-candidate" if plan.get("schema_version") == 2 else "legacy-unbound",
         "lifecycle": copy.deepcopy(lifecycle_state(state)),
         "summary": {
             "primary_nodes": len(primary),
@@ -2029,6 +2060,7 @@ def render_node_markdown(
 
 {_markdown_list([f'`{gate}`' for gate in packet['audit_gates']])}
 {assurance_section}
+{render_guide(plan, node['id']) if plan.get('schema_version') == 2 and node['selection'] == 'primary' else ''}
 """
 
 
@@ -2066,6 +2098,8 @@ def _compile_project_locked(project: str | Path, *, allow_archived: bool = False
     )
 
     paths["docs"].mkdir(parents=True, exist_ok=True)
+    if plan.get("schema_version") == 2:
+        (paths["docs"] / "DEVELOPMENT_HARNESS.md").write_text(render_guide(plan), encoding="utf-8")
     for node in plan["nodes"]:
         path = node_doc_path(paths, node)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -2130,6 +2164,9 @@ def _compile_project_locked(project: str | Path, *, allow_archived: bool = False
         "",
     ]
     readme_lines.extend([f"- `{packet['task']}` — {packet['title']}" for packet in ready_packets] or ["- None"])
+    if plan.get("schema_version") == 2:
+        readme_lines.extend(["", "## Development Harness", "",
+                             "[Generated guide](DEVELOPMENT_HARNESS.md). Use `inspect --harness <node>` for scoped capture/reuse and audit readiness for current input freshness. Recorded verification is historical, not a working-tree watch."])
     if baseline is not None and assurance is not None:
         summary_assurance = assurance_summary(
             baseline,
@@ -2986,6 +3023,7 @@ def resume_task(
     lease_minutes: int = 120,
     accept_stale: bool = False,
     takeover: bool = False,
+    for_recovery: bool = False,
     expected_version: int | dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Resume a paused task only after its recorded continuation context is checked."""
@@ -3019,8 +3057,11 @@ def resume_task(
                 raise PyramidError(
                     f"{nid} is held by {item.get('paused_by')}; only that actor may resume it before its deadline"
                 )
-        if item.get("health") == "blocked":
-            raise PyramidError(f"{nid} is blocked; resolve or clear the blocker before resuming")
+        if item.get("health") == "blocked" and not for_recovery:
+            raise PyramidError(
+                f"{nid} is blocked; use --for-recovery to resume ownership for blocker resolution. "
+                "Recovery preserves the blocker and all resume guards."
+            )
         blocked_by = start_blockers(plan, state, nodes[nid])
         if blocked_by:
             raise PyramidError(f"{nid} cannot resume because dependencies are not verified: {', '.join(blocked_by)}")
@@ -3069,6 +3110,7 @@ def resume_task(
                 "handoff_sha256": canonical_sha256(handoff),
                 "lease_minutes": lease_minutes,
                 "takeover": takeover,
+                "for_recovery": for_recovery,
                 "accepted_stale_drift": drift,
             },
         )
@@ -3465,6 +3507,7 @@ def update_task(
                 raise PyramidError(f"{nid} must be working before it can be implemented")
             if result is None:
                 raise PyramidError("implemented requires --result agent-result-v1 JSON")
+            result = _normalize_proofs(paths, plan, state, nid, result)
             errors = _validate_agent_result(result, nodes[nid])
             if errors:
                 raise PyramidError("Invalid agent result:\n- " + "\n- ".join(errors))
@@ -3572,6 +3615,21 @@ def _validate_audit_result(result: dict[str, Any], nid: str, expected_result: st
     if not isinstance(checks, list) or not checks:
         errors.append("audit checks must be a non-empty array")
     else:
+        seen = set()
+        for check in checks:
+            if not isinstance(check, dict):
+                errors.append("each audit check must be an object")
+                continue
+            cid = check.get("id")
+            if not isinstance(cid, str) or not cid.strip() or cid in seen:
+                errors.append("audit check IDs must be non-empty and unique")
+            else:
+                seen.add(cid)
+            if check.get("result") not in ("passed", "failed"):
+                errors.append("audit check result must be passed or failed")
+            refs = check.get("evidence")
+            if not _is_string_list(refs) or not refs or any(not ref.strip() for ref in refs):
+                errors.append("each audit check needs non-empty evidence references")
         statuses = [check.get("result") for check in checks if isinstance(check, dict)]
         if expected_result == "pass" and any(status != "passed" for status in statuses):
             errors.append("all checks must be passed for a passing audit")
@@ -3588,6 +3646,41 @@ def _validate_audit_result(result: dict[str, Any], nid: str, expected_result: st
             if assertion.get("scope_review") not in {"complete", "incomplete"}:
                 errors.append("audit assurance.scope_review must be complete or incomplete")
     return errors
+
+
+def _normalize_proofs(paths, plan, state, nid, payload):
+    try:
+        return normalize_proofs(paths["root"], plan, state, nid, payload)
+    except (VerificationError, OSError) as exc:
+        raise PyramidError(f"Invalid harness proof: {exc}") from exc
+
+
+def _proof_errors(paths, plan, state, targets=None):
+    if plan.get("schema_version") != 2:
+        return []
+    selected = set(targets) if targets is not None else {
+        node["id"] for node in plan["nodes"] if node["selection"] == "primary"
+    }
+    return [f"{nid}: {blocker}" for nid in sorted(selected)
+            for blocker in proof_readiness(paths["root"], plan, state, nid)["blockers"]]
+
+
+def _audit_proof_dependencies(paths, plan, state, node):
+    if plan.get("schema_version") != 2:
+        return []
+    nodes = node_map(plan)
+    seen, pending = {node["id"]}, [node["id"]]
+    while pending:
+        current = pending.pop()
+        dependencies = {edge["to"] for edge in edges_from(plan, current, AUDIT_BLOCKING | {"validated-by"})}
+        dependencies.update(edge["from"] for edge in edges_to(plan, current, {"contributes-to"}))
+        for target in dependencies - seen:
+            if nodes[target]["selection"] == "primary":
+                seen.add(target)
+                pending.append(target)
+    return _proof_errors(paths, plan, state, {
+        target for target in seen - {node["id"]} if state["nodes"][target]["verification"] == "passed"
+    })
 
 
 def _covered_assurance_tasks(plan: dict[str, Any], node: dict[str, Any]) -> set[str]:
@@ -3769,9 +3862,6 @@ def audit_node(
     if result_value not in {"pass", "fail"}:
         raise PyramidError("audit result must be pass or fail")
     evidence = load_json(Path(evidence_path).expanduser().resolve())
-    evidence_errors = _validate_audit_result(evidence, nid, result_value)
-    if evidence_errors:
-        raise PyramidError("Invalid audit result:\n- " + "\n- ".join(evidence_errors))
     paths = project_paths(project)
     with project_lock(paths):
         paths, plan, state = load_project(project)
@@ -3792,12 +3882,19 @@ def audit_node(
         else:
             check_expected_version(plan, state, expected_version)
         if result_value == "pass":
+            evidence = _normalize_proofs(paths, plan, state, nid, evidence)
             prerequisite_errors = _audit_prerequisite_errors(plan, state, nodes[nid])
+            prerequisite_errors.extend(_audit_proof_dependencies(paths, plan, state, nodes[nid]))
             prerequisite_errors.extend(
                 _assurance_audit_errors(paths, plan, state, nodes[nid], evidence)
             )
             if prerequisite_errors:
                 raise PyramidError("Audit prerequisites are not satisfied:\n- " + "\n- ".join(prerequisite_errors))
+        elif evidence.get("proofs"):
+            raise PyramidError("Record failed observations in checks; failed audits cannot publish passing proof runs")
+        evidence_errors = _validate_audit_result(evidence, nid, result_value)
+        if evidence_errors:
+            raise PyramidError("Invalid audit result:\n- " + "\n- ".join(evidence_errors))
         item = state["nodes"][nid]
         if item.get("execution") == "paused":
             raise PyramidError(f"{nid} is paused; resume it before recording an audit")
@@ -3863,6 +3960,8 @@ def _edge_key(edge: dict[str, Any]) -> tuple[str, str, str]:
 
 
 def prepare_replan(old: dict[str, Any], candidate: dict[str, Any], allow_intent_change: bool = False) -> tuple[dict[str, Any], dict[str, Any]]:
+    if old.get("schema_version") == 2 and candidate.get("schema_version") != 2:
+        raise PyramidError("A harness-enabled plan cannot downgrade to legacy unbound verification")
     if candidate.get("plan_id") != old.get("plan_id"):
         raise PyramidError("A replan must preserve plan_id")
     if candidate.get("intent", {}).get("id") != old.get("intent", {}).get("id") and not allow_intent_change:
@@ -4335,6 +4434,23 @@ def replan_project(
             merged_edges[edge["to"]].add(_edge_key(edge))
         timestamp = utc_now()
         next_states: dict[str, Any] = {}
+        changed_contracts = {
+            nid for nid in merged_nodes if nid not in current_nodes
+            or _semantic_node(current_nodes[nid]) != _semantic_node(merged_nodes[nid])
+            or current_edges[nid] != merged_edges[nid]
+        }
+        if merged.get("schema_version") == 2:
+            for nid, node in merged_nodes.items():
+                if node["selection"] != "primary":
+                    continue
+                old_contracts = (verification_contracts(current, nid)
+                                 if nid in current_nodes and current_nodes[nid]["selection"] == "primary" else [])
+                if old_contracts != verification_contracts(merged, nid):
+                    changed_contracts.add(nid)
+        stale_claims = set(changed_contracts)
+        for nid in changed_contracts:
+            stale_claims.update(dependent_claims(current, nid))
+            stale_claims.update(dependent_claims(merged, nid))
         for nid, node in merged_nodes.items():
             if nid not in state["nodes"]:
                 next_states[nid] = initial_node_state(node, timestamp)
@@ -4347,17 +4463,14 @@ def replan_project(
                 item["work_origin"] = None
                 clear_active_pause(item)
                 item["health"] = "clear"
-            elif nid in current_nodes and (
-                _semantic_node(current_nodes[nid]) != _semantic_node(node)
-                or current_edges[nid] != merged_edges[nid]
-            ):
-                if item["execution"] == "working":
+            elif nid in stale_claims:
+                if item["execution"] == "working" and nid in changed_contracts:
                     item["execution"] = "planned"
                     item["owner"] = None
                     item["lease_expires_at"] = None
                 item["verification"] = "pending" if item["execution"] == "implemented" else "unverified"
                 item["health"] = "at-risk"
-                item["blocker"] = "Replan changed this node's contract or graph relations; re-audit required."
+                item["blocker"] = "Replan changed this claim, its proof contract, or a prerequisite; re-audit required."
             item["updated_at"] = timestamp
             next_states[nid] = item
         state["nodes"] = next_states
@@ -4381,6 +4494,7 @@ def replan_project(
             payload={
                 "reason": reason,
                 "diff": diff,
+                "invalidated_claims": sorted(stale_claims),
                 "stale_inspections": stale_inspections,
             },
         )
@@ -4795,6 +4909,7 @@ def close_project(
             assurance,
             implementation_frontier(paths),
         )
+        errors.extend(_proof_errors(paths, plan, state))
         if errors:
             raise PyramidError("Plan cannot close:\n- " + "\n- ".join(errors))
         completed_at = utc_now()
@@ -5653,7 +5768,7 @@ def inspect_lifecycle(project: str | Path) -> dict[str, Any]:
     manifest, baseline, assurance = load_assurance_bundle(paths, plan)
     frontier = implementation_frontier(paths)
     errors = (
-        completion_errors(plan, state, baseline, assurance, frontier)
+        completion_errors(plan, state, baseline, assurance, frontier) + _proof_errors(paths, plan, state)
         if lifecycle_status(state) == "active"
         else []
     )
@@ -5770,6 +5885,7 @@ def inspect_project(
     parallel_ready: bool = False,
     max_agents: int = 4,
     audit_readiness: str | None = None,
+    harness: str | None = None,
     nid: str | None = None,
 ) -> dict[str, Any]:
     paths, plan, state = load_project(project)
@@ -5779,6 +5895,11 @@ def inspect_project(
         plan, state, baseline, assurance, manifest, frontier
     )
     context = context_identity(plan, state)
+    if harness:
+        try:
+            return {**query_harness(paths["root"], plan, state, harness), "context": context}
+        except (VerificationError, OSError) as exc:
+            raise PyramidError(str(exc)) from exc
     if assurance_view or assurance_summary_view or assurance_detail:
         if baseline is None or assurance is None:
             return {
@@ -5831,6 +5952,8 @@ def inspect_project(
         node = nodes[audit_readiness]
         covered_tasks = _covered_assurance_tasks(plan, node)
         blockers = _audit_prerequisite_errors(plan, state, node)
+        blockers.extend(_audit_proof_dependencies(paths, plan, state, node))
+        blockers.extend(_proof_errors(paths, plan, state, {audit_readiness}))
         coverage = None
         if baseline is not None and assurance is not None:
             coverage = assurance_for_tasks(
@@ -5857,6 +5980,7 @@ def inspect_project(
             "ready": not blockers,
             "blockers": sorted(set(blockers)),
             "assurance": coverage,
+            "harness_query": f"inspect --harness {audit_readiness}" if plan.get("schema_version") == 2 else None,
             "refresh_inspection_ids": sorted(
                 inspection.get("id")
                 for inspection in (assurance or {}).get("inspections", [])
@@ -5888,7 +6012,7 @@ def inspect_project(
         nodes = [
             task_summary(plan, state, node["id"], baseline, assurance, frontier)
             for node in plan["nodes"]
-            if availability(plan, state, node) == "paused"
+            if state["nodes"][node["id"]].get("execution") == "paused"
         ]
         return {
             "schema": "pyramid-query-v1",
@@ -5945,7 +6069,9 @@ def inspect_project(
         if baseline is not None and assurance is not None
         else None,
         "closure_ready": lifecycle_status(state) == "active"
-        and not completion_errors(plan, state, baseline, assurance, frontier),
+        and not completion_errors(plan, state, baseline, assurance, frontier)
+        and not _proof_errors(paths, plan, state),
+        "verification_mode": "candidate-bound" if plan.get("schema_version") == 2 else "legacy-unbound",
         "intent": plan["intent"],
         "summary": snapshot["summary"],
         "ready": [node["id"] for node in snapshot["nodes"] if node["availability"] in {"ready", "needs-rework"}],

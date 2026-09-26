@@ -20,6 +20,14 @@
     "node": {"type": ["string", "null"]},
     "before": {},
     "after": {},
-    "payload": {"type": "object"}
+    "payload": {
+      "type": "object",
+      "properties": {
+        "for_recovery": {
+          "type": "boolean",
+          "description": "For task.resumed, explicit recovery ownership was requested. It does not clear health, blockers, or verification. Absent in older events."
+        }
+      }
+    }
   }
 }

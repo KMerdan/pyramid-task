@@ -7,6 +7,8 @@ description: Claim a ready executable node from a Pyramid Task V3 project and re
 
 Use the compact ready frontier first. Load `../../references/agent-contracts.md` only for ownership or packet-contract questions, `../../references/intra-task-helpers.md` when the host has sub-agents and spare slots, `../../references/brownfield-assurance.md` only when the selected packet contains assurance, and `../../references/lifecycle-contract.md` only if the plan is inactive.
 
+When the packet has `harness`, read `../../references/development-harness.md`. Establish only missing observation capability required by the task, using project-fit probes and browser tooling. Capture `inspect --harness <node>` before checks. Do not install a generic test stack or make independent product work wait unnecessarily.
+
 ## Workflow
 
 1. Identify the project root and stable actor name.

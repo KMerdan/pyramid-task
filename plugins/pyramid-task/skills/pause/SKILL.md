@@ -7,6 +7,8 @@ description: Pause a currently claimed Pyramid Task V3 executable node with a co
 
 Read `../../references/handoff-contract.md`. Load `../../references/agent-contracts.md` only for ownership or transition edge cases, `../../references/brownfield-assurance.md` only when the task packet contains assurance context, and `../../references/lifecycle-contract.md` only if the runtime rejects the plan state.
 
+For a packet with `harness`, include probe/browser launch commands, fixture/build identity, partial artifact references and cleanup ownership in the existing handoff fields. Do not store secrets or represent a running process as durable proof; resume must re-establish its candidate.
+
 ## Workflow
 
 1. Confirm the task is currently `working`, the actor owns it, and its packet is current. Reuse `mutation_guards.task` for the pause guard. Do not pause another actor’s work.

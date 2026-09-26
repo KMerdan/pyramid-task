@@ -7,6 +7,8 @@ description: Create the first Pyramid Task V3 project from an intent, idea, feat
 
 Create a plan only after the intended final state is clear enough to test. Begin with the current demonstrable baseline and the smallest honest ladder of usable states to that intent, then decompose the ladder into a claim-and-evidence task pyramid.
 
+Read `../../references/development-harness.md` while defining proof. Create schema-2 plans with minimal outcome-scoped external, internal and applicable visual observations; reuse current tools and checks and add only missing capability before acceptance. Use `../../assets/example-harness-plan.json` for the current contract; the schema-1 example is for legacy compatibility.
+
 ## Context routing
 
 Read `../../references/pathfinder-workflow.md`, `../../references/demonstrable-increments.md`, `../../references/plan-refinement.md`, and `../../references/graph-contract.md` for graph construction and candidate refinement. Read `../../references/agent-contracts.md` when defining executable packets. Read `../../references/brownfield-assurance.md` only for an existing system. Read `../../references/lifecycle-contract.md` only when an existing plan requires routing to another skill.

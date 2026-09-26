@@ -7,6 +7,8 @@ description: Audit a Pyramid Task V3 implementation node, joint or demonstrable-
 
 Read `../../references/agent-contracts.md` for audit-result rules. Load `../../references/demonstrable-increments.md` for an increment outcome or gate, `../../references/graph-contract.md` only for composition or parent claims, `../../references/brownfield-assurance.md` only when the packet has assurance context, and `../../references/lifecycle-contract.md` only when auditing closure or inactive work.
 
+For a schema-2 plan, read `../../references/development-harness.md` and use `inspect --harness <target>` to collect or reuse candidate-bound proof. View required captures and evaluate the visual claim; a screenshot filename is not review. Missing capability blocks acceptance. Reuse observations across parent/task/inspection claims without conflating their distinct obligations. Record failure through ordinary failed checks even when passing proofs are unavailable.
+
 ## Workflow
 
 1. Inspect `--audit-readiness <target>` first. It returns the same freshness blockers enforced by audit, the minimal inspection refresh set, and an `audit_guard`. Determine whether the target is an implementation, internal joint gate, demonstrable-increment gate, outcome, or intent; load related nodes only when that claim requires them.

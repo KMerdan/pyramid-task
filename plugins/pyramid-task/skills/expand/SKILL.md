@@ -7,6 +7,8 @@ description: Propose and apply a deeper subtree for a broad executable Pyramid T
 
 Read `../../references/expansion-contract.md` and `../../references/graph-contract.md`. Load `../../references/demonstrable-increments.md` when the target contributes to a planned increment, `../../references/agent-contracts.md` only for changed child contracts, `../../references/brownfield-assurance.md` only when assurance is present, and `../../references/lifecycle-contract.md` only when the plan is not active. Use `../../assets/example-expansion.json` only as structure.
 
+For schema-2 plans, read `../../references/development-harness.md`. Preserve the parent's proof contract and cover each new child criterion, reusing a procedure only when it actually proves that child. Keep missing harness setup within the approved subtree; do not introduce an unrelated testing platform.
+
 ## Decide whether to propose
 
 Inspect the task contract and nearby graph. Propose expansion only when evidence shows at least one material signal:

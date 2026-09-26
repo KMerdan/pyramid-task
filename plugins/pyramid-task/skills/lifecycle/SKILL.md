@@ -7,6 +7,8 @@ description: Manage the full lifecycle of a Pyramid Task V3 plan. Use when the a
 
 Read `../../references/lifecycle-contract.md`. Load `../../references/history-contract.md` when closing, archiving, resetting, restoring, or explaining preservation; load `../../references/graph-contract.md` only to explain structural closure blockers, `../../references/agent-contracts.md` only for active claim repair, and `../../references/brownfield-assurance.md` only in brownfield mode.
 
+For harness-enabled plans, consult `../../references/development-harness.md` at adoption, closure or restore. Proof blobs follow the report archive; restored historical passes do not prove the current code. Recheck audit/closure readiness before advancing. Installing a runtime update does not migrate live plans.
+
 ## Start with status
 
 ```bash

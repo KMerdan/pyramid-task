@@ -7,6 +7,8 @@ description: Map Pyramid Task V3 graph work to affected brownfield assets, plan 
 
 Read `../../references/brownfield-assurance.md`. Load `../../references/graph-contract.md` only when tracing transitive graph impact and `../../references/agent-contracts.md` only when reconciling worker results. Follow `../../schemas/assurance.schema.json`; use `../../assets/example-assurance.json` only as structure.
 
+If the task has a harness contract, reuse its valid run/artifact references as inspection evidence when they establish the inspection's claim. Keep impact coverage, safety and frontier requirements intact; do not repeat the execution just to populate another record. Consult `../../references/development-harness.md` only when collecting or changing that proof.
+
 ## Workflow
 
 1. Inspect the current baseline, graph, relevant history, and existing assurance:

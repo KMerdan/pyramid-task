@@ -560,6 +560,17 @@ def _append_record(meta: Path, record: dict[str, Any]) -> dict[str, Any]:
     return record
 
 
+def _git_object_or_none(value: Any) -> str | None:
+    """A Git object ID, or None when the value is missing or not one.
+
+    Older captures stored a symbolic ref such as "HEAD" when the repository had
+    no commits yet. Recording that as a commit would assert a provenance the
+    intent never had, so an unusable value becomes None: the schema permits it
+    and replay fidelity degrades to partial on its own.
+    """
+    return str(value) if value is not None and GIT_OBJECT_PATTERN.fullmatch(str(value)) else None
+
+
 def _git(root: Path, *arguments: str) -> tuple[bool, str]:
     try:
         result = subprocess.run(
@@ -582,8 +593,10 @@ def source_snapshot(root: Path) -> dict[str, Any]:
             "git": {"available": False, "reason": "Project root is not in a readable Git worktree."},
             "runtime": _runtime_snapshot(),
         }
-    _, commit = _git(root, "rev-parse", "HEAD")
-    _, tree = _git(root, "rev-parse", "HEAD^{tree}")
+    # On an unborn branch `git rev-parse HEAD` exits non-zero but still prints
+    # the literal "HEAD" to stdout. Trust the exit status, never the output.
+    resolved_commit, commit = _git(root, "rev-parse", "HEAD")
+    resolved_tree, tree = _git(root, "rev-parse", "HEAD^{tree}")
     _, tracked = _git(root, "diff", "--name-only", "HEAD", "--")
     _, staged = _git(root, "diff", "--cached", "--name-only", "HEAD", "--")
     _, untracked = _git(root, "ls-files", "--others", "--exclude-standard")
@@ -603,8 +616,8 @@ def source_snapshot(root: Path) -> dict[str, Any]:
         "git": {
             "available": True,
             "repository_root": repository_root,
-            "commit": commit or None,
-            "tree": tree or None,
+            "commit": commit if resolved_commit else None,
+            "tree": tree if resolved_tree else None,
             "clean": not changed_files,
             "changed_files": changed_files,
             "changed_file_sha256": changed_file_sha256,
@@ -1259,11 +1272,23 @@ def record_intent_chronicle(
     for binding in bindings:
         for check in binding["checks"]:
             if isinstance(check, dict) and check.get("command"):
+                # Agent results arrive with either {result: passed|failed} or
+                # the equally common {status: pass|fail} shape; update-time
+                # validation accepts both, so replay must normalize rather
+                # than invalidate an immutable event over the synonym.
+                raw = check.get("result") or check.get("status")
+                normalized = {
+                    "passed": "passed",
+                    "pass": "passed",
+                    "failed": "failed",
+                    "fail": "failed",
+                    "not-run": "not-run",
+                }.get(raw, "not-run")
                 commands.append(
                     {
                         "task": binding["task"],
                         "command": check["command"],
-                        "recorded_result": check.get("result"),
+                        "recorded_result": normalized,
                     }
                 )
     if clean_committed_range and coverage_status == "complete":
@@ -1360,7 +1385,9 @@ def record_intent_chronicle(
         },
         "replay": {
             "fidelity": fidelity,
-            "start_commit": start.get("source_snapshot", {}).get("git", {}).get("commit"),
+            "start_commit": _git_object_or_none(
+                start.get("source_snapshot", {}).get("git", {}).get("commit")
+            ),
             "end_commit": end_snapshot.get("git", {}).get("commit"),
             "commands": commands,
             "limitations": sorted(set(limitations)),

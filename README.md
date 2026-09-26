@@ -7,7 +7,7 @@
 
 Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
-Version 3.7.1 hardens the append-only Intent Chronicle and History Observer introduced in 3.7.0. History records now receive semantic and cross-record validation, interrupted appends are recoverable, replay strength requires its claimed evidence, and every chronicle reports whether exact Git binding is established, pending, optional, or unavailable. The same `main` branch supports Codex and Claude Code.
+Version 3.8.0 adds outcome-scoped development harnesses: plan the smallest sufficient probes and visual inspection, reuse existing checks, bind observations to the candidate, and retain proof through the existing lifecycle. It also includes blocked-task recovery and history compatibility fixes. The same `main` branch and versioned source package support Codex and Claude Code.
 
 ![Pyramid Task Intent Observer showing outcome progress, an active blocker, recommended action, and intent structure](docs/images/pyramid-task-map.png)
 
@@ -48,7 +48,41 @@ The general term is **demonstrable increment**. A game launches into a playable 
 
 Read the [demonstrable increment contract](plugins/pyramid-task/references/demonstrable-increments.md) for creation, graph representation, inherited proof, replanning, and progress reporting.
 
-## Current architecture
+## Development harness: only what the outcome needs
+
+Planning now designs the proof alongside the outcome. The agent inventories existing tools, selects external behavior, relevant internal invariants and applicable visual observations, and implements only missing capability. Visible behavior normally needs a rendered screenshot and actual model inspection through a project-fit browser tool; a successful API call is not proof of visual correctness. Headless outcomes explain why visual inspection is inapplicable.
+
+```mermaid
+flowchart LR
+    O["Outcome and acceptance claims"] --> C["Minimal proof contract"]
+    C --> R["Reuse existing checks and tools"]
+    R --> M{"Missing capability?"}
+    M -->|Yes| S["Bounded probe or capture setup"]
+    M -->|No| P["Capture candidate, run and observe"]
+    S --> P
+    P --> E["External + internal + applicable visual evidence"]
+    E --> A["Reuse current proof; audit composition"]
+    A -->|Pass| L["Close and archive proof"]
+    A -->|Changed or failed| F["Targeted repair or replan"]
+    F --> C
+```
+
+This adds no scheduler, universal runner, new node kind or separate harness state file. Missing setup is ordinary scoped work and gates acceptance; unrelated product work may proceed concurrently. One valid run can support several tasks, an outcome and an inspection without repeated execution. Distinct composition or safety claims still need evidence.
+
+New plans use **plan schema 2**. Their canonical `required_evidence[].verification` contracts generate `docs/tasks/DEVELOPMENT_HARNESS.md` and compact task instructions. The runtime checks declared input hashes (including dirty/untracked files), criterion/procedure identity, artifact hashes and required observation coverage. Visual review itself remains an agent responsibility, not a claim that Python understands screenshots.
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --harness TASK-201 --json
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --audit-readiness GATE-290 --json
+```
+
+Capture the first query before running checks; submit its filled `proofs` or a returned reusable run with normal update/audit. The runtime imports bounded artifacts into `.pyramid/reports/proof-artifacts/`, deduplicates content and preserves it with report archives. Do not edit that storage or the generated guide directly. Audit and closure recheck current inputs; the Observer displays recorded verification and its event watcher does not watch source files.
+
+Existing schema-1 plans remain usable in **legacy-unbound** mode; no project is migrated during installation. Adopt schema 2 through a complete candidate replan and guarded apply. Older runtimes reject schema 2, and an active schema-2 plan cannot downgrade. Source/contract changes require fresh affected proof, not a new global assurance cycle. Replan also invalidates old/new dependent claims instead of leaving ancestors falsely verified.
+
+See the [development harness contract](plugins/pyramid-task/references/development-harness.md), [schema-2 example](plugins/pyramid-task/assets/example-harness-plan.json), and [architecture](docs/architecture.md) for setup, evidence reuse, safety boundaries and lifecycle details.
+
+## System architecture
 
 Pyramid Task separates agent guidance from runtime enforcement. Specialized skills help agents choose the right workflow and produce bounded task or audit artifacts; the Python runtime validates every transition, maintains canonical `.pyramid` state, records immutable events, and regenerates disposable projections.
 
@@ -271,7 +305,7 @@ Requirements: Codex or Claude Code with plugin support, plus Python 3.10 or newe
 ### Codex
 
 ```bash
-codex plugin marketplace add KMerdan/pyramid-task
+codex plugin marketplace add KMerdan/pyramid-task --ref main
 codex plugin add pyramid-task@kmerdan-skills
 ```
 
@@ -287,8 +321,7 @@ codex plugin add pyramid-task@kmerdan-skills
 The same `main` branch contains both runtime manifests:
 
 ```bash
-git clone https://github.com/KMerdan/pyramid-task
-claude plugin marketplace add ./pyramid-task
+claude plugin marketplace add KMerdan/pyramid-task
 claude plugin install pyramid-task@kmerdan-skills
 ```
 
@@ -300,6 +333,8 @@ claude plugin update pyramid-task@kmerdan-skills
 ```
 
 Start a new agent session after installation or update so the runtime discovers the current skills.
+
+Both examples register the GitHub repository, so marketplace refreshes can fetch newer commits. A marketplace registered with a local directory remains local: refreshing it does not pull GitHub. Check `codex plugin marketplace list` or `claude plugin marketplace list`; if `kmerdan-skills` still points at a development/recovery folder, replace that marketplace source with `KMerdan/pyramid-task` through the host CLI and reinstall the same `pyramid-task@kmerdan-skills` plugin. Keep any local development source backed up; do not register a second marketplace name to get an update.
 
 ## Recommended workflow
 

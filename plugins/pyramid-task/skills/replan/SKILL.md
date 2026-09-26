@@ -9,6 +9,8 @@ Read `../../references/pathfinder-workflow.md`, `../../references/demonstrable-i
 
 Use `pyramid-task:expand` instead when a single executable task keeps the same purpose, contract, selected path, and external relations and only needs a deeper approved subtree.
 
+Read `../../references/development-harness.md` when changing proof or adopting it in a legacy plan. Reuse sufficient procedures and add only capability required by the changed outcome. Preserve schema 2 once adopted. Explain invalidated shared proof and dependent claims, not only changed task text; regenerate the guide through guarded replan.
+
 ## Workflow
 
 1. Capture the triggering evidence or audit result.

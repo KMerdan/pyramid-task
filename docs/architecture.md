@@ -19,6 +19,7 @@ flowchart LR
     CORE --> PAR["pyramid_parallel.py pure batch analysis"]
     PAR --> GRAPH
     CORE --> ASSURE["pyramid_assurance.py assurance rules"]
+    CORE --> PROOF["pyramid_verification.py proof contracts and evidence"]
     CORE --> HISTORY["pyramid_history.py intent chronicle ledger"]
     CORE --> STORE["Canonical JSON and hash-linked events"]
     CORE --> VIEW["Compiled projections"]
@@ -36,6 +37,18 @@ The dependency direction is intentional:
 - skills may coordinate sub-agents, while the runtime only returns deterministic scheduling facts.
 
 The visualization runtime derives a disposable `observer` read model from the same validated graph projection. It summarizes intent, outcome gates, proof counts, active work, interventions, recommended action, and the selected-path hierarchy without adding mutable dashboard state. A separate compact history projection is derived from immutable chronicles for causal human reading. The browser renders the active semantics as its default landing view, offers the cross-intent History Observer beside it, and keeps raw graph topology as a technical drill-down.
+
+## Development harness boundary (3.8.0)
+
+`pyramid_verification.py` owns contract/reuse resolution, scoped fingerprints, observation validation, bounded content-addressed artifacts and generated guidance. It has no dependency on the transaction facade, model API, browser, process runner or scheduler. The facade owns publication under the existing project lock; skills choose, establish and run the project-fit procedures.
+
+Canonical requirements are nested under existing evidence requirements in plan schema 2. Result/audit records retain runs, and report storage retains artifact bytes; there is no independently mutable harness ledger. Ordinary packets carry only the selected contracts. `inspect --harness` is read-only and captures pre-run fingerprints, setup blockers and current reusable references. No runtime query launches an application or installs tools.
+
+Fingerprints bind declared source/fixture/environment files and proof-family criteria, requirements and procedures, not global graph versions or timestamps. Shared run IDs bind observed content and are independent of artifact storage paths. Source inputs include matching dirty/untracked files; generated projections and declared evidence outputs are excluded. Shared families need intentionally narrow scope. An omitted dependency cannot be detected magically; planning must declare it. External process/DB identity and actual model visual review remain evidence-collection responsibilities.
+
+The existing update/audit publication imports artifact bytes, updates state and event records, and publishes the canonical head. Ingestion errors clean up their own newly created blobs; interruptions after ingestion use the existing fail-closed head validation, not a second transaction protocol. Archive/reset/restore already retain or replace report storage, so proof shares those lifecycle boundaries. Restore does not assert current source identity; audit readiness and closure revalidate it. The Observer remains an event-driven view of recorded verification, not a working-tree monitor.
+
+Replan preserves implementation history but invalidates affected proof families and their dependent closure in both old and new graphs. Schema-1 adoption is a guarded replan, not an installation side effect. Project format V3 and state schema 1 remain unchanged; plan schema 2 prevents older runtimes from silently dropping enforcement. The agent guidance covers create/new-intent, implement, replan/expand, pause/resume, audit, closure and retirement without creating new lifecycle states.
 
 ## Cross-intent history boundary
 

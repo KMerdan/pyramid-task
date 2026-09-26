@@ -188,6 +188,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Derive conflict-safe same-wave task batches for sub-agent orchestration",
     )
     group.add_argument("--audit-readiness")
+    group.add_argument("--harness", help="Show scoped proof contracts, pre-run candidate templates, and reusable runs")
     group.add_argument("--node")
     inspect.add_argument(
         "--max-agents",
@@ -235,6 +236,7 @@ def build_parser() -> argparse.ArgumentParser:
     resume.add_argument("--lease-minutes", type=int, default=120)
     resume.add_argument("--accept-stale", action="store_true", help="Explicitly accept graph, assurance, or worktree drift")
     resume.add_argument("--takeover", action="store_true", help="Take an expired hold owned by another actor")
+    resume.add_argument("--for-recovery", action="store_true", help="Resume a blocked task for recovery without clearing its blocker or bypassing guards")
     add_version(resume)
     add_json(resume)
 
@@ -458,6 +460,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             parallel_ready=args.parallel_ready,
             max_agents=args.max_agents,
             audit_readiness=args.audit_readiness,
+            harness=args.harness,
             nid=args.node,
         ), 0
     if args.command == "diff":
@@ -500,6 +503,7 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             lease_minutes=args.lease_minutes,
             accept_stale=args.accept_stale,
             takeover=args.takeover,
+            for_recovery=args.for_recovery,
             expected_version=expected_guard(args),
         ), 0
     if args.command == "update":

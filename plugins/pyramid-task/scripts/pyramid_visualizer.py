@@ -680,6 +680,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     observerSummary.innerHTML = `
       <article class="story-card ${last ? 'verified' : ''}">
         <div class="eyebrow">Last proven</div>
+        ${data.verification_scope === 'recorded-candidate' ? '<p>Recorded candidate proof. Audit readiness checks current source freshness; this view follows graph events.</p>' : ''}
         <h2>${last ? esc(last.title) : 'No outcome has passed its audit yet'}</h2>
         <p>${last ? esc(last.summary) : 'Progress is visible, but no usable outcome is claimed without passing proof.'}</p>
         ${last ? `<button type="button" data-node-id="${esc(last.id)}">Inspect accepted proof</button>` : ''}

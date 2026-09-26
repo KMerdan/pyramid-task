@@ -7,6 +7,8 @@ description: Record progress, blockers, risk, release, or implementation complet
 
 Read `../../references/agent-contracts.md` before creating a result. Load `../../references/brownfield-assurance.md` only when reporting changed assets or drift, and `../../references/lifecycle-contract.md` only if the plan is inactive.
 
+For a packet with `harness`, follow `../../references/development-harness.md`: submit performed observations and hashed artifacts or valid run references with the existing result. Never refresh a pre-run fingerprint after checking to disguise changed inputs. Stage evidence outside `.pyramid`; the update imports it. Keep failed/unperformed checks visible.
+
 ## Workflow
 
 1. Confirm the actor owns the active claim and the task packet is current.

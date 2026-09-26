@@ -38,6 +38,10 @@ This guard prevents a resumed agent from assuming that its old scope, affected a
 
 ## Lifecycle and recovery
 
+- A blocked, paused task may resume with explicit `--for-recovery`. This restores a working owner/lease without changing health, the blocker, verification, or the immutable handoff. The `task.resumed` event records `payload.for_recovery`; older events may omit it.
+- Recovery enforces the same dependency, handoff integrity, hold/takeover, expected-version/context, and stale-handoff checks as ordinary resume. It is not completion or audit approval.
+- Only after acquiring recovery ownership may the actor record a blocker resolution through `update`, with evidence and a reason. Preserve remaining risks with `at-risk`, or leave the task blocked when no resolution exists. Do not edit canonical state to escape the paused/blocked cycle.
+- `inspect --paused` includes paused tasks even when their health is blocked.
 - Do not use archive/reset/release as a break mechanism.
 - Archive and reset reject paused tasks because their handoff state is active work.
 - Archive snapshots carry historical handoff records; reset purges the current records only after snapshotting them.

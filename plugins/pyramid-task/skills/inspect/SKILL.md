@@ -7,6 +7,8 @@ description: Inspect an existing Pyramid Task V3 or compatible legacy project wi
 
 Start with the smallest runtime query. Route cross-intent causality, path/commit provenance, and replay questions to `pyramid-task:history`. Load `../../references/demonstrable-increments.md` only for delivery or increment progress, `../../references/graph-contract.md` only for topology, `../../references/agent-contracts.md` only for one detailed node, `../../references/handoff-contract.md` only for paused work, `../../references/brownfield-assurance.md` only when assurance is present, and `../../references/lifecycle-contract.md` only for lifecycle questions.
 
+For proof collection or reuse, query `inspect --harness <node> --json`. It returns scoped contracts, pre-run candidate templates, setup blockers and reusable runs without executing tools or writing state. Consult `../../references/development-harness.md` when interpreting or changing proof. Recorded verification in the Observer is historical; audit readiness checks the current declared inputs.
+
 ## Workflow
 
 1. Locate `<project-root>/.pyramid/plan.json`.

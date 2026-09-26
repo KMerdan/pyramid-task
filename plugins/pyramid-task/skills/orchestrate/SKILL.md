@@ -7,6 +7,8 @@ description: Coordinate multiple ready Pyramid Task nodes with sub-agents when t
 
 Derive one safe parallel batch from current canonical state, give each worker only its exact task packet, and rejoin through the graph's audit boundary. The runtime recommends batches; the host agent decides whether and how to spawn sub-agents.
 
+For harness-enabled packets, use `../../references/development-harness.md` when collecting or joining proof. Revalidate executor/helper input fingerprints against the integrated candidate before acceptance. Shared setup may enable several branches; serialize only true prerequisites. Reuse valid shared runs and perform distinct composition checks once at the joint boundary.
+
 ## Context routing
 
 Read `../../references/parallel-execution.md` before coordinating a batch and `../../references/intra-task-helpers.md` before using spare slots inside a claimed task. Read `../../references/demonstrable-increments.md` when a selected join is an increment gate. Read `../../references/agent-contracts.md` only when constructing worker prompts or resolving a guard conflict. Read `../../references/brownfield-assurance.md` only when the frontier names shared inspections or an assurance blocker.

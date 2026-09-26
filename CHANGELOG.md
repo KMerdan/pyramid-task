@@ -2,6 +2,34 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## 3.8.0
+
+### Outcome-scoped development harness
+
+- Plan the smallest sufficient external, internal and applicable visual observations alongside each outcome; reuse existing project tools and implement only missing probe/capture capability before acceptance.
+- Add plan schema 2 with criterion-linked proof contracts and shared proof references. Keep project format V3 and state schema 1; preserve legacy schema-1 execution and require explicit guarded replan for adoption. Reject downgrades and prevent older runtimes from silently ignoring bound-proof requirements.
+- Add read-only `inspect --harness` with task-scoped instructions, pre-run candidate fingerprints, setup blockers and reusable runs. Generate `docs/tasks/DEVELOPMENT_HARNESS.md` from canonical contracts rather than maintaining a second acceptance guide.
+- Validate declared source/fixture/environment inputs, required observations and hashed artifacts at update/audit; recheck prerequisite proof at audit and all primary proof at closure. Preserve failed checks instead of replacing them with passing summaries.
+- Deduplicate bounded proof artifacts in existing report storage and retain them through archive/reset/restore. Keep model visual review and external runtime identity explicit agent responsibilities.
+- Integrate harness guidance with planning, implementation, helpers, replan/expand, pause/resume, assurance and lifecycle without adding a scheduler, universal test runner, node kind or mutable harness ledger.
+
+### Correctness and recovery
+
+- Reject malformed, empty-evidence and duplicate audit checks. Invalidate changed proof families and old/new dependent claims on replan while retaining implementation history and unrelated verified work.
+- Preserve explicit `resume --for-recovery` for blocked paused tasks and keep blocked handoffs discoverable without bypassing ownership, dependency, stale-context or takeover checks.
+- Normalize historical check status/result synonyms conservatively and avoid recording symbolic refs as commit identities in unborn repositories.
+- Label Observer proof as recorded candidate evidence rather than a working-tree watch. Keep normal agent context scoped and avoid duplicate contract injection.
+
+### Distribution and validation
+
+- Publish matching Codex and Claude Code 3.8.0 manifests from `main`, with repository-backed installation/update instructions for both hosts.
+- Pass 120 regression tests, including bound proof, reuse, malformed inputs, replan invalidation, pause/resume, expansion, archive/reset/restore, legacy adoption and live visualization.
+
+## 3.7.1
+
+- Harden history semantics and cross-record validation, recover interrupted chronicle appends, and require evidence for claimed replay fidelity.
+- Surface exact Git binding as established, pending, optional or unavailable rather than inferring provenance.
+
 ## 3.7.0
 
 ### Cross-intent implementation chronicles

@@ -7,6 +7,8 @@ description: Review and simplify a generated or existing Pyramid Task V3 plan wi
 
 Reduce unjustified graph complexity without weakening the outcome or its proof.
 
+When refining proof, read `../../references/development-harness.md`. Challenge duplicate test execution and speculative setup; preserve distinct external, internal and applicable visual claims. Use shared proof references only when the same run establishes each consumer's criterion.
+
 ## Context routing
 
 Read `../../references/plan-refinement.md`, `../../references/pathfinder-workflow.md`, `../../references/demonstrable-increments.md`, and `../../references/graph-contract.md`. Follow `../../schemas/plan-review.schema.json`; use `../../assets/example-plan-review.json` only as structure. Read `../../references/brownfield-assurance.md` for an existing system and `../replan/SKILL.md` before changing a canonical graph.

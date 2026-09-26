@@ -455,6 +455,18 @@ class PyramidRuntimeTests(unittest.TestCase):
         with self.assertRaisesRegex(PyramidError, "content hash"):
             resume_task(self.root, "RESEARCH-101", "worker")
 
+    def test_legacy_replan_invalidates_transitive_verification(self) -> None:
+        self.complete_graph()
+        candidate = load_json(self.example)
+        node = next(n for n in candidate["nodes"] if n["id"] == "TASK-201")
+        node["acceptance_criteria"][0]["description"] += " with a revised constraint"
+        replan_project(self.root, self.write_json("changed.json", candidate), "planner", "changed contract", True)
+        state = load_project(self.root)[2]
+        for nid in ["TASK-201", "GATE-290", "OUTCOME-010", "INTENT-001"]:
+            self.assertNotEqual("passed", state["nodes"][nid]["verification"])
+        self.assertEqual("implemented", state["nodes"]["TASK-201"]["execution"])
+        self.assertEqual("passed", state["nodes"]["RESEARCH-101"]["verification"])
+
     def test_replan_preview_and_apply(self) -> None:
         original_context = inspect_project(self.root, summary=True)["context"]["id"]
         candidate = load_json(self.example)
@@ -844,6 +856,51 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertTrue(closed_again["already_completed"])
         self.assertEqual(chronicle_id, closed_again["chronicle"])
         self.assertEqual(1, inspect_history(self.root)["count"])
+
+    def test_close_accepts_legacy_check_results_and_records_them_conservatively(self) -> None:
+        original = self.result_for
+
+        def legacy_result(nid: str, criteria: list[str]) -> Path:
+            path = original(nid, criteria)
+            if nid == "TASK-201":
+                result = load_json(path)
+                result["checks"] = [
+                    {"command": "unit", "result": "passed"},
+                    {"command": "blocked-host-run", "result": "blocked"},
+                    {"command": "partial-suite", "result": "partial"},
+                    {"command": "free-text", "result": "passed: 615 tests, no failures"},
+                    {"command": "status-shape", "status": "pass"},
+                    {"command": "failing", "result": "failed"},
+                ]
+                path = self.write_json(f"{nid}-legacy-result.json", result)
+            return path
+
+        self.result_for = legacy_result
+        self.complete_graph()
+        closed = close_project(self.root, "owner")
+        chronicle = load_json(
+            self.root / ".pyramid" / "history" / "records" / f"{closed['chronicle']}.json"
+        )
+        recorded = {
+            item["command"]: item["recorded_result"]
+            for item in chronicle["replay"]["commands"]
+            if item["task"] == "TASK-201"
+        }
+        self.assertEqual(
+            {
+                "unit": "passed",
+                "blocked-host-run": "not-run",
+                "partial-suite": "not-run",
+                "free-text": "not-run",
+                "status-shape": "passed",
+                "failing": "failed",
+            },
+            recorded,
+        )
+        jsonschema.validate(
+            chronicle,
+            load_json(PLUGIN_ROOT / "schemas" / "intent-chronicle.schema.json"),
+        )
 
     def test_reset_preserves_history_and_rejects_reused_plan_identity_before_mutation(self) -> None:
         self.complete_graph()

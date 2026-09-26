@@ -6,11 +6,11 @@ The composite context is `(plan_id, plan_revision, graph_version, context_id)`. 
 
 Each mutation writes a separate immutable event record under `.pyramid/events/`. The event chain is snapshot-style evidence, not Git-style content-addressed deltas, but it also is not accumulated inside `plan.json`, `state.json`, or `graph.json`. Current-state queries therefore remain bounded. `diff` reads the selected version interval and returns event identity, type, actor, node, changed field names, and payload field names; full before/after/payload values require explicit `--detail`.
 
-Use `schema_version: 1`. Use stable IDs such as `INTENT-001`, `OUTCOME-010`, `CAP-020`, `TASK-101`, `RESEARCH-110`, `CONTRACT-120`, and `GATE-190`.
+New plans use `schema_version: 2` with outcome-scoped proof contracts described in `development-harness.md`. Schema 1 remains legacy-unbound and can adopt schema 2 through an explicit replan. This is separate from project format V3 and state schema 1. Older runtimes reject schema 2. Use stable IDs such as `INTENT-001`, `OUTCOME-010`, `CAP-020`, `TASK-101`, `RESEARCH-110`, `CONTRACT-120`, and `GATE-190`.
 
 ## Required plan fields
 
-- `schema_version`: integer `1`;
+- `schema_version`: integer `2` for new plans, `1` for legacy plans;
 - `plan_id`, `title`, `revision`;
 - `intent`: `id`, `statement`, `success_evidence`, `constraints`, `non_goals`, `assumptions`;
 - `evidence`: evidence ledger entries;

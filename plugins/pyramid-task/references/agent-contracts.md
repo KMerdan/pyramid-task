@@ -43,6 +43,8 @@ Helper envelopes are not canonical Pyramid state and never enter normal task pac
 
 ## Agent result
 
+For schema-2 plans, the packet additionally carries a scoped `harness` contract. Read `development-harness.md` for `inspect --harness <id>`, pre-run capture, actual visual review, proof artifacts and run reuse. Add `proofs` to the result below; the old reference-only example is insufficient by itself. Check/acceptance summaries may be omitted or empty when proofs supply them. Raw logs and images are not injected into task packets.
+
 Submit `agent-result-v1` as JSON:
 
 ```json
@@ -66,6 +68,8 @@ Use `blocked` when the task cannot continue inside its existing contract. Report
 `agent.effect` declares whether a task is expected to produce source changes, evidence only, or a mixture. It is a validation boundary, not an instruction to hide incidental product changes. Generated-output asset IDs must exist in the current baseline, and evidence-only results may not classify product files as evidence.
 
 ## Audit result
+
+Schema-2 passing audits require candidate-bound proofs (explicit runs/reuse, or revalidation of the target's last implementation proof). They also check prerequisite proof freshness. Failed audits retain ordinary failed checks so missing or broken proof cannot prevent recording failure. The Observer shows recorded verification; current working-tree eligibility comes from audit readiness, not historical green state.
 
 Submit `audit-result-v1` as JSON:
 
