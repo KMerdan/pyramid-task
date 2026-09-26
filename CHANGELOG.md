@@ -2,6 +2,11 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## 3.8.1
+
+- Enforce portable recursive-glob syntax before matching proof inputs: `**` must occupy a complete path component. Reject malformed patterns consistently on Python 3.10, 3.12 and 3.13, including patterns that would otherwise match files on newer Python.
+- Reject those patterns during plan validation as well as candidate capture; retain the same schema and lifecycle contracts.
+
 ## 3.8.0
 
 ### Outcome-scoped development harness

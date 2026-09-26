@@ -7,7 +7,7 @@
 
 Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
-Version 3.8.0 adds outcome-scoped development harnesses: plan the smallest sufficient probes and visual inspection, reuse existing checks, bind observations to the candidate, and retain proof through the existing lifecycle. It also includes blocked-task recovery and history compatibility fixes. The same `main` branch and versioned source package support Codex and Claude Code.
+Version 3.8.1 includes outcome-scoped development harnesses: plan the smallest sufficient probes and visual inspection, reuse existing checks, bind observations to the candidate, and retain proof through the existing lifecycle. It also includes blocked-task recovery, history compatibility fixes and consistent input-pattern validation across supported Python versions. The same `main` branch and versioned source package support Codex and Claude Code.
 
 ![Pyramid Task Intent Observer showing outcome progress, an active blocker, recommended action, and intent structure](docs/images/pyramid-task-map.png)
 

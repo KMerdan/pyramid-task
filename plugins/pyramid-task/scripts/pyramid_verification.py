@@ -44,6 +44,11 @@ def _relative(value: Any) -> bool:
             and ".." not in PurePosixPath(value).parts and "\\" not in value)
 
 
+def _input_pattern(value: Any) -> bool:
+    return _relative(value) and all('**' not in part or part == '**'
+                                    for part in PurePosixPath(value).parts)
+
+
 def _catalog(plan: dict) -> dict[str, tuple[dict, dict]]:
     return {f"{n['id']}/{e['id']}": (n, e) for n in plan['nodes']
             for e in n.get('required_evidence', []) if isinstance(e, dict) and 'id' in e}
@@ -112,8 +117,8 @@ def validate_contracts(plan: dict) -> list[str]:
             if not _text(spec.get('procedure')) or not _text(spec.get('environment')):
                 errors.append(f'{key}: procedure and environment must be explicit')
             inputs = spec.get('inputs')
-            if not _strings(inputs) or any(not _relative(x) for x in inputs):
-                errors.append(f'{key}: inputs must be safe project-relative file patterns')
+            if not _strings(inputs) or any(not _input_pattern(x) for x in inputs):
+                errors.append(f'{key}: inputs must be safe project-relative file patterns; ** must be a complete path component')
             elif not inputs and spec.get('method') != 'review':
                 errors.append(f'{key}: executable proof needs source/fixture/environment inputs')
             obs = spec.get('observations')
@@ -163,6 +168,10 @@ def input_snapshot(root: Path, plan: dict, contract: dict) -> dict:
     outputs = [p for n in plan['nodes'] for p in n.get('agent', {}).get('evidence_outputs', [])]
     files: dict[str, str] = {}
     for pattern in contract['inputs']:
+        # Python 3.13 accepts embedded ** where older pathlib rejects it.
+        # Enforce one portable grammar before delegating matching to the host.
+        if not _input_pattern(pattern):
+            raise VerificationError(f'Invalid input pattern: {pattern}')
         matched = False
         # pathlib <=3.12 treats trailing ** as directories only; task-scope
         # globs conventionally mean all descendant files on every supported host.

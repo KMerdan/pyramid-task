@@ -195,8 +195,12 @@ class HarnessTests(unittest.TestCase):
         spec['inputs'] = ['inputs']
         self.assertEqual(len(self.plan['nodes']), input_snapshot(self.root, self.plan, spec)['file_count'])
         spec['inputs'] = ['inputs/**bad']
+        (self.root / 'inputs/actually-bad').write_text('would match on Python 3.13')
         with self.assertRaisesRegex(VerificationError, 'Invalid input pattern'):
             input_snapshot(self.root, self.plan, spec)
+        invalid = copy.deepcopy(self.plan)
+        invalid['nodes'][2]['required_evidence'][0]['verification']['inputs'] = spec['inputs']
+        self.assertTrue(validate_plan(invalid))
         outside = Path(self.temp.name) / 'outside.txt'
         outside.write_text('outside project')
         (self.root / 'inputs/link.txt').symlink_to(outside)
