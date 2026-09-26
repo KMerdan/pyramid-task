@@ -28,7 +28,6 @@ from pyramid_assurance import (
     default_assurance,
     default_baseline,
     default_project_manifest,
-    derive_legacy_bundle,
     detect_repository_mode,
     mark_assurance_stale,
     validate_assurance,
@@ -156,6 +155,25 @@ def project_paths(project: str | Path) -> dict[str, Path]:
     }
 
 
+UNSUPPORTED_LEGACY_PROJECT = (
+    "Unsupported legacy Pyramid project: .pyramid/project.json is missing. "
+    "This runtime requires project format V3 and no longer provides V2/V2.1 migration. "
+    "Preserve the existing data; if this is a damaged V3 project, restore its original "
+    "manifest from backup rather than creating a replacement."
+)
+
+
+def require_supported_project(paths: dict[str, Path]) -> None:
+    """Reject unsupported current/archive formats before any filesystem mutation."""
+    if not paths["plan"].exists():
+        return
+    if not paths["project"].exists():
+        raise PyramidError(UNSUPPORTED_LEGACY_PROJECT)
+    manifest = load_json(paths["project"])
+    if manifest.get("format_version") != PROJECT_FORMAT_VERSION:
+        raise PyramidError(f"Unsupported Pyramid project format; this runtime requires V{PROJECT_FORMAT_VERSION}")
+
+
 def load_assurance_bundle(
     paths: dict[str, Path],
     plan: dict[str, Any] | None = None,
@@ -191,7 +209,7 @@ def assurance_validation_errors(
     except PyramidError as exc:
         return [str(exc)]
     if manifest is None:
-        return errors
+        return [UNSUPPORTED_LEGACY_PROJECT]
     errors.extend(validate_project_manifest(manifest, plan.get("plan_id")))
     if manifest.get("mode") == "brownfield":
         if baseline is None:
@@ -309,7 +327,7 @@ def intent_transition_route(project: str | Path) -> dict[str, Any]:
     manifest = load_json(paths["project"]) if paths["project"].exists() else None
     _, baseline, assurance = load_assurance_bundle(paths, plan)
     frontier = implementation_frontier(paths)
-    project_format = manifest.get("format_version") if manifest else "legacy-v2"
+    project_format = manifest["format_version"]
     status = lifecycle_status(state)
     claims = active_claims(state)
     closure_ready = (
@@ -328,21 +346,11 @@ def intent_transition_route(project: str | Path) -> dict[str, Any]:
     elif status == "completed":
         can_start = True
         recommended_action = "preview-new-intent"
-        transition = (
-            ["upgrade", "archive", "reset"]
-            if manifest is None
-            else ["archive", "reset"]
-        )
-    elif status == "archived" and manifest is not None:
+        transition = ["archive", "reset"]
+    elif status == "archived":
         can_start = True
         recommended_action = "preview-new-intent"
         transition = ["reset"]
-    elif status == "archived":
-        recommended_action = "restore-upgrade-or-start-without-legacy-baseline"
-        blockers.append(
-            "The current legacy plan is archived; restore it before deriving a V3 baseline, "
-            "or explicitly choose a new baseline before reset."
-        )
     elif closure_ready:
         recommended_action = "close-then-preview-new-intent"
         blockers.append(
@@ -383,11 +391,16 @@ def intent_transition_route(project: str | Path) -> dict[str, Any]:
 
 @contextmanager
 def project_lock(paths: dict[str, Path]):
+    # Existing lock files let us wait for an in-progress V3 reset/restore before
+    # checking its manifest. Reject lock-less legacy data without creating files.
+    if not paths["lock"].exists():
+        require_supported_project(paths)
     paths["meta"].mkdir(parents=True, exist_ok=True)
     with paths["lock"].open("a+", encoding="utf-8") as handle:
         if fcntl is not None:
             fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
         try:
+            require_supported_project(paths)
             yield
         finally:
             if fcntl is not None:
@@ -2391,191 +2404,6 @@ def check_expected_version(
         raise PyramidError(f"Stale context: expected {expected_context}, current {current_context}")
 
 
-def _upgrade_material(
-    project: str | Path,
-    actor: str,
-    source_version: str,
-    mode: str,
-) -> tuple[dict[str, Path], dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any] | None, dict[str, Any] | None, dict[str, Any]]:
-    paths, plan, state = load_project(project)
-    if lifecycle_status(state) == "archived":
-        raise PyramidError("Restore an archived legacy project before upgrading it")
-    if paths["project"].exists():
-        manifest, baseline, assurance = load_assurance_bundle(paths, plan)
-        return paths, plan, state, manifest or {}, baseline, assurance, {
-            "status": "up-to-date",
-            "project_format_version": manifest.get("format_version") if manifest else None,
-        }
-    selected_mode = detect_repository_mode(paths["root"]) if mode == "auto" else mode
-    if selected_mode not in {"greenfield", "brownfield"}:
-        raise PyramidError("upgrade mode must be auto, greenfield, or brownfield")
-    migration_time = state.get("updated_at") or state.get("created_at") or utc_now()
-    manifest = default_project_manifest(
-        plan_id=plan["plan_id"],
-        mode=selected_mode,
-        actor=actor,
-        created_at=state.get("created_at") or migration_time,
-    )
-    baseline: dict[str, Any] | None = None
-    assurance: dict[str, Any] | None = None
-    if selected_mode == "brownfield":
-        baseline, assurance = derive_legacy_bundle(
-            plan=plan,
-            state=state,
-            actor=actor,
-            source_version=source_version,
-            at=migration_time,
-        )
-    material = {
-        "plan_sha256": canonical_sha256(plan),
-        "state_sha256": canonical_sha256(state),
-        "graph_version": state["graph_version"],
-        "source_version": source_version,
-        "target_format_version": PROJECT_FORMAT_VERSION,
-        "mode": selected_mode,
-        "manifest": manifest,
-        "baseline": baseline,
-        "assurance": assurance,
-    }
-    preview = {
-        "schema": "pyramid-upgrade-preview-v1",
-        "status": "preview",
-        "plan_id": plan["plan_id"],
-        "from": source_version,
-        "to": PROJECT_FORMAT_VERSION,
-        "graph_version": state["graph_version"],
-        "context": context_identity(plan, state),
-        "preserved": {
-            "plan_revision": plan["revision"],
-            "nodes": len(plan["nodes"]),
-            "node_states": len(state["nodes"]),
-            "verified_nodes": sum(item.get("verification") == "passed" for item in state["nodes"].values()),
-            "active_claims": active_claims(state),
-            "immutable_events": len(list(paths["events"].glob("*.json"))) if paths["events"].exists() else 0,
-        },
-        "generated": {
-            "mode": selected_mode,
-            "assets": len(baseline.get("assets", [])) if baseline else 0,
-            "impacts": len(assurance.get("impacts", [])) if assurance else 0,
-            "legacy_inspections": len(assurance.get("inspections", [])) if assurance else 0,
-        },
-        "assurance_gaps": (
-            copy.deepcopy(assurance.get("legacy_bridge", {}).get("gap_asset_ids", []))
-            if assurance
-            else []
-        ),
-        "upgrade_sha256": canonical_sha256(material),
-        "approval_required": True,
-    }
-    return paths, plan, state, manifest, baseline, assurance, preview
-
-
-def upgrade_project(
-    project: str | Path,
-    actor: str,
-    *,
-    source_version: str = "2.x-legacy",
-    mode: str = "auto",
-    apply: bool = False,
-    approved_by: str | None = None,
-    approval_reference: str | None = None,
-    approved_upgrade_sha256: str | None = None,
-    expected_version: int | dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    paths, plan, state, manifest, baseline, assurance, preview = _upgrade_material(
-        project, actor, source_version, mode
-    )
-    check_expected_version(plan, state, expected_version)
-    if preview.get("status") == "up-to-date":
-        return preview
-    if not apply:
-        return preview
-    if not approved_by or not approval_reference or not approved_upgrade_sha256:
-        raise PyramidError("upgrade apply requires approved-by, approval-reference, and approved-upgrade-sha256")
-    if approved_upgrade_sha256 != preview["upgrade_sha256"]:
-        raise PyramidError("Approved upgrade hash does not match the current preview")
-    with project_lock(paths):
-        current = _upgrade_material(project, actor, source_version, mode)
-        paths, plan, state, manifest, baseline, assurance, current_preview = current
-        check_expected_version(plan, state, expected_version)
-        if current_preview.get("status") == "up-to-date":
-            return current_preview
-        if current_preview["upgrade_sha256"] != approved_upgrade_sha256:
-            raise PyramidError("Upgrade inputs changed after preview; preview and approve again")
-        archive_id, archive_path = _create_upgrade_snapshot(
-            paths,
-            plan,
-            state,
-            actor=actor,
-            reason=f"Pre-v3 upgrade snapshot from {source_version}",
-            token=approved_upgrade_sha256[:12],
-        )
-        timestamp = utc_now()
-        migration = {
-            "id": f"MIGRATION-V3-{approved_upgrade_sha256[:12].upper()}",
-            "from": source_version,
-            "to": PROJECT_FORMAT_VERSION,
-            "at": timestamp,
-            "actor": actor,
-            "preview_sha256": approved_upgrade_sha256,
-            "archive_id": archive_id,
-        }
-        manifest.update(
-            {
-                "runtime_version": RUNTIME_VERSION,
-                "last_upgraded_at": timestamp,
-                "last_upgraded_by": actor,
-                "upgraded_from": source_version,
-                "migrations": [migration],
-            }
-        )
-        write_json(paths["project"], manifest)
-        if baseline is not None and assurance is not None:
-            write_json(paths["baseline"], baseline)
-            write_json(paths["assurance"], assurance)
-        event = commit_event(
-            paths,
-            state,
-            actor=actor,
-            event_type="project.upgraded",
-            node=plan["intent"]["id"],
-            before={"project_format_version": "legacy-v2", "graph_version": preview["graph_version"]},
-            after={"project_format_version": PROJECT_FORMAT_VERSION, "mode": manifest["mode"]},
-            payload={
-                "migration": migration,
-                "approval": {
-                    "approved_by": approved_by,
-                    "reference": approval_reference,
-                    "upgrade_sha256": approved_upgrade_sha256,
-                },
-                "snapshot": str(archive_path),
-                "preserved": preview["preserved"],
-                "generated": preview["generated"],
-                "assurance_gaps": preview["assurance_gaps"],
-            },
-        )
-        try:
-            ensure_intent_start(
-                paths["meta"], paths["root"], plan, state, actor, legacy_capture=True
-            )
-        except HistoryError as exc:
-            raise PyramidError(str(exc)) from exc
-    compiled = compile_project(project)
-    return {
-        "status": "upgraded",
-        "from": source_version,
-        "to": PROJECT_FORMAT_VERSION,
-        "mode": manifest["mode"],
-        "archive_id": archive_id,
-        "archive": str(archive_path),
-        "upgrade_sha256": approved_upgrade_sha256,
-        "event": event,
-        "preserved": preview["preserved"],
-        "assurance_gaps": preview["assurance_gaps"],
-        **compiled,
-    }
-
-
 def assess_project(
     project: str | Path,
     baseline_path: str | Path,
@@ -2593,7 +2421,7 @@ def assess_project(
     require_active(state, "assess the baseline")
     manifest, current, assurance = load_assurance_bundle(paths, plan)
     if not manifest or manifest.get("mode") != "brownfield" or current is None or assurance is None:
-        raise PyramidError("assess requires a v3 brownfield project; upgrade legacy projects first")
+        raise PyramidError("assess requires a V3 brownfield project")
     if candidate["revision"] < current["revision"] or (
         candidate["revision"] == current["revision"] and current.get("status") != "incomplete"
     ):
@@ -2733,7 +2561,7 @@ def impact_project(
     require_active(state, "update change impact")
     manifest, baseline, current = load_assurance_bundle(paths, plan)
     if not manifest or manifest.get("mode") != "brownfield" or baseline is None or current is None:
-        raise PyramidError("impact requires a v3 brownfield project; upgrade legacy projects first")
+        raise PyramidError("impact requires a V3 brownfield project")
     errors = validate_assurance(candidate, plan=plan, baseline=baseline)
     if errors:
         raise PyramidError("Candidate assurance is invalid:\n- " + "\n- ".join(errors))
@@ -5133,42 +4961,6 @@ def _copy_current_snapshot(paths: dict[str, Path], destination: Path, manifest: 
     write_json(destination / "manifest.json", manifest)
 
 
-def _create_upgrade_snapshot(
-    paths: dict[str, Path],
-    plan: dict[str, Any],
-    state: dict[str, Any],
-    *,
-    actor: str,
-    reason: str,
-    token: str,
-) -> tuple[str, Path]:
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    archive_id = (
-        f"{slugify(plan['plan_id']).upper()}-R{plan['revision']}-"
-        f"G{state['graph_version']}-PRE-UPGRADE-{token.upper()}-{stamp}"
-    )
-    destination = paths["archives"] / archive_id
-    manifest = {
-        "schema": "pyramid-archive-v1",
-        "archive_id": archive_id,
-        "plan_id": plan["plan_id"],
-        "title": plan["title"],
-        "revision": plan["revision"],
-        "graph_version": state["graph_version"],
-        "archived_at": utc_now(),
-        "archived_by": actor,
-        "previous_status": lifecycle_status(state),
-        "reason": reason,
-        "plan_sha256": _file_sha256(paths["plan"]),
-        "state_sha256": _file_sha256(paths["state"]),
-    }
-    _copy_current_snapshot(paths, destination, manifest)
-    validation = validate_project(destination)
-    if not validation["valid"]:
-        raise PyramidError("Pre-upgrade snapshot validation failed:\n- " + "\n- ".join(validation["errors"]))
-    return archive_id, destination
-
-
 def list_archives(project: str | Path) -> list[dict[str, Any]]:
     paths = project_paths(project)
     archives: list[dict[str, Any]] = []
@@ -5415,7 +5207,7 @@ def reset_project(
         raise PyramidError("Candidate reset plan is invalid:\n- " + "\n- ".join(errors))
     paths, current, state = load_project(project)
     manifest, current_baseline, _ = load_assurance_bundle(paths, current)
-    next_mode = manifest.get("mode") if manifest else detect_repository_mode(paths["root"])
+    next_mode = manifest["mode"]
     check_expected_version(current, state, expected_version)
     if candidate["plan_id"] == current["plan_id"]:
         raise PyramidError("A reset must use a new plan_id; use replan to revise the current plan")
@@ -5464,7 +5256,6 @@ def _new_intent_material(
     actor: str,
     reason: str,
     *,
-    source_version: str,
     mode: str,
     expected_version: int | dict[str, Any] | None,
 ) -> tuple[dict[str, Any], dict[str, Any] | None]:
@@ -5479,7 +5270,6 @@ def _new_intent_material(
     paths = project_paths(project)
     route = intent_transition_route(project)
     current: dict[str, Any] | None = None
-    components: dict[str, Any] = {}
     selected_mode = detect_repository_mode(paths["root"]) if mode == "auto" else mode
     if selected_mode not in {"greenfield", "brownfield"}:
         raise PyramidError("new-intent mode must be auto, greenfield, or brownfield")
@@ -5489,14 +5279,11 @@ def _new_intent_material(
         check_expected_version(current_plan, state, expected_version)
         if candidate["plan_id"] == current_plan["plan_id"]:
             raise PyramidError("A new intent must use a new plan_id; use replan for the current intent")
-        manifest = load_json(paths["project"]) if paths["project"].exists() else None
-        if manifest is not None:
-            selected_mode = manifest["mode"]
+        manifest = load_json(paths["project"])
+        selected_mode = manifest["mode"]
         current = {
             "plan_id": current_plan["plan_id"],
-            "project_format_version": (
-                manifest.get("format_version") if manifest else "legacy-v2"
-            ),
+            "project_format_version": manifest["format_version"],
             "lifecycle": lifecycle_status(state),
             "graph_version": state["graph_version"],
             "context": context_identity(current_plan, state),
@@ -5504,16 +5291,6 @@ def _new_intent_material(
             "plan_sha256": _file_sha256(paths["plan"]),
             "state_sha256": _file_sha256(paths["state"]),
         }
-        if manifest is None and route["can_start_new_intent"]:
-            upgrade_preview = upgrade_project(
-                project,
-                actor,
-                source_version=source_version,
-                mode=mode,
-                apply=False,
-                expected_version=expected_version,
-            )
-            components["upgrade_sha256"] = upgrade_preview["upgrade_sha256"]
 
     material = {
         "actor": actor,
@@ -5528,7 +5305,6 @@ def _new_intent_material(
         "transition": route["transition"],
         "blockers": route["blockers"],
         "warnings": route["warnings"],
-        "components": components,
     }
     approval_required = current is not None
     preview = {
@@ -5542,12 +5318,10 @@ def _new_intent_material(
         "preserves": [
             "canonical plan and node history in a restorable archive",
             "events, reports, dossiers, and completed evidence",
-            *(["legacy node state in a validated pre-upgrade snapshot"] if components else []),
             *(["the current brownfield baseline for the next assurance cycle"] if selected_mode == "brownfield" else []),
         ],
         "blockers": copy.deepcopy(route["blockers"]),
         "warnings": copy.deepcopy(route["warnings"]),
-        "components": components,
         "approval_required": approval_required,
         "new_intent_sha256": canonical_sha256(material),
     }
@@ -5560,7 +5334,6 @@ def new_intent_project(
     actor: str,
     reason: str,
     *,
-    source_version: str = "2.x-legacy",
     mode: str = "auto",
     apply: bool = False,
     approved_by: str | None = None,
@@ -5573,7 +5346,6 @@ def new_intent_project(
         plan_path,
         actor,
         reason,
-        source_version=source_version,
         mode=mode,
         expected_version=expected_version,
     )
@@ -5589,7 +5361,6 @@ def new_intent_project(
             "status": "started",
             "transition": ["create"],
             "new_intent_sha256": preview["new_intent_sha256"],
-            "upgrade": None,
             "reset": None,
             "created": created,
         }
@@ -5606,30 +5377,15 @@ def new_intent_project(
         "reference": approval_reference,
         "new_intent_sha256": approved_new_intent_sha256,
     }
-    upgrade_result: dict[str, Any] | None = None
-    reset_expected = current["graph_version"]
-    if current["project_format_version"] == "legacy-v2":
-        upgrade_result = upgrade_project(
-            project,
-            actor,
-            source_version=source_version,
-            mode=mode,
-            apply=True,
-            approved_by=approved_by,
-            approval_reference=(
-                f"{approval_reference}; parent new-intent {approved_new_intent_sha256}"
-            ),
-            approved_upgrade_sha256=preview["components"]["upgrade_sha256"],
-            expected_version=expected_version,
-        )
-        reset_expected = upgrade_result["graph_version"]
-
     reset_result = reset_project(
         project,
         plan_path,
         actor,
         reason,
-        expected_version=reset_expected,
+        expected_version={
+            "graph_version": current["graph_version"],
+            "context_id": current["context"]["id"],
+        },
         transition_approval=approval,
     )
     return {
@@ -5638,7 +5394,6 @@ def new_intent_project(
         "transition": preview["transition"],
         "new_intent_sha256": approved_new_intent_sha256,
         "approval": approval,
-        "upgrade": upgrade_result,
         "reset": reset_result,
         "plan_id": reset_result["plan_id"],
         "previous_archive": reset_result["previous_archive"],
@@ -5665,6 +5420,7 @@ def restore_project(
     if not reason.strip():
         raise PyramidError("restore requires a non-empty reason")
     source, manifest = _resolve_archive(project, archive_reference)
+    require_supported_project(project_paths(source))
     source_plan = load_json(source / ".pyramid" / "plan.json")
     source_state = load_json(source / ".pyramid" / "state.json")
     validation_errors = validate_plan(source_plan) + validate_state(source_plan, source_state)

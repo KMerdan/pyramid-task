@@ -79,6 +79,6 @@ Plan lifecycle is `active`, `completed`, or `archived`. It does not replace node
 
 Read `expansion-contract.md` before converting an executable node into a work-package.
 
-Read `brownfield-assurance.md` before creating or auditing changes in an existing system. Read `upgrade-contract.md` before adding V3 companions to a legacy plan.
+Read `brownfield-assurance.md` before creating or auditing changes in an existing system. V2/V2.1 projects are unsupported; do not add a fabricated V3 manifest to legacy data.
 
 Read `handoff-contract.md` before pausing, transferring, or resuming claimed work.

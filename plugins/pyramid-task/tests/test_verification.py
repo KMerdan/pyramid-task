@@ -4,12 +4,14 @@ import base64
 import copy
 import hashlib
 import json
+import os
 import shlex
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import jsonschema
 
@@ -31,6 +33,9 @@ from pyramid_output import compact_response
 
 class HarnessTests(unittest.TestCase):
     def setUp(self):
+        usage = mock.patch.dict(os.environ, {'PYRAMID_USAGE': 'off'})
+        usage.start()
+        self.addCleanup(usage.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name) / 'project'

@@ -1,6 +1,6 @@
 {
   "name": "pyramid-task",
-  "version": "3.9.0",
+  "version": "4.0.0",
   "description": "Plan demonstrable increments, assure changes, and preserve causal intent chronicles for humans and agents.",
   "author": {
     "name": "Dr. Merdan Bay",
@@ -31,7 +31,7 @@
       "Parallel Orchestration",
       "Brownfield Assurance",
       "Impact Analysis",
-      "Migration",
+      "Command Usage Audit",
       "Intent Transition",
       "Session Continuity",
       "Expansion",

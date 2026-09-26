@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/usage-report.schema.json",
+  "title": "Local cross-project CLI usage report",
+  "type": "object",
+  "required": ["schema", "status", "error", "scope", "storage", "collection_enabled", "window", "first_recorded", "last_recorded", "totals", "commands", "unmeasured_skills", "limitations"],
+  "properties": {
+    "schema": {"const": "pyramid-usage-report-v1"},
+    "status": {"enum": ["available", "empty", "unavailable"]},
+    "error": {"type": ["string", "null"]},
+    "scope": {"const": "local-user-all-projects"},
+    "storage": {"type": ["string", "null"]},
+    "collection_enabled": {"type": "boolean"},
+    "window": {
+      "type": "object", "required": ["days", "from_utc"],
+      "properties": {"days": {"type": ["integer", "null"], "minimum": 1, "maximum": 36500}, "from_utc": {"type": ["string", "null"]}},
+      "additionalProperties": false
+    },
+    "first_recorded": {"type": ["string", "null"]},
+    "last_recorded": {"type": ["string", "null"]},
+    "totals": {"anyOf": [{"$ref": "#/$defs/measure"}, {"type": "null"}]},
+    "commands": {"type": "array", "items": {"anyOf": [
+      {"allOf": [{"$ref": "#/$defs/measure"}], "required": ["command"], "properties": {"command": {"type": "string"}}},
+      {"type": "object", "required": ["command", "invocations"], "properties": {"command": {"type": "string"}, "invocations": {"const": 0}}, "additionalProperties": false}
+    ]}},
+    "breakdown": {
+      "type": "array", "items": {
+        "allOf": [{"$ref": "#/$defs/measure"}], "required": ["command", "mode", "format", "version"],
+        "properties": {"command": {"type": "string"}, "mode": {"type": "string"}, "format": {"enum": ["compact", "full"]}, "version": {"type": "string"}}
+      }
+    },
+    "unmeasured_skills": {"type": "array", "items": {"type": "string"}},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "measure": {
+      "type": "object",
+      "required": ["invocations", "succeeded", "failed", "interrupted", "unfinished", "duration_ms", "stdout_bytes", "average_ms"],
+      "properties": {
+        "invocations": {"type": "integer", "minimum": 0},
+        "succeeded": {"type": "integer", "minimum": 0},
+        "failed": {"type": "integer", "minimum": 0},
+        "interrupted": {"type": "integer", "minimum": 0},
+        "unfinished": {"type": "integer", "minimum": 0},
+        "duration_ms": {"type": "integer", "minimum": 0},
+        "stdout_bytes": {"type": "integer", "minimum": 0},
+        "average_ms": {"type": ["number", "null"], "minimum": 0}
+      }
+    }
+  }
+}

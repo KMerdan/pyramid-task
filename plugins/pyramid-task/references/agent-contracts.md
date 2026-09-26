@@ -114,8 +114,8 @@ A passing audit requires a non-empty check list and no failed check. In brownfie
 - Approved expansion preserves the task ID and contract, converts it to a work-package, initializes child branches and a joint gate, and invalidates stale dependent proofs.
 - Baseline change, replan, expansion, reopen, audit failure, or undeclared scope stales affected inspections and assurance.
 - Brownfield close writes a change dossier and advances the baseline revision.
-- In-place upgrade preserves legacy node state and active ownership while introducing conservative future assurance enforcement.
-- New-intent preview separates installed runtime, project format, and lifecycle state, then binds any upgrade/archive/reset sequence to one user-approved hash.
+- Unsupported legacy projects are rejected before mutation; existing V3 migration provenance and assurance obligations remain intact.
+- New-intent preview separates installed runtime, project format, and lifecycle state, then binds an archive/reset or reset sequence to one user-approved hash.
 
 A completed plan rejects take, pause, resume, update, audit, expand, and replan. An archived plan rejects every canonical mutation. Use the lifecycle interface for close, archive, reset, restore, clean, and manual reopen semantics.
 

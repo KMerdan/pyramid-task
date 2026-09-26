@@ -22,6 +22,9 @@ import pyramid_history
 
 class EfficiencyTests(unittest.TestCase):
     def setUp(self):
+        usage = mock.patch.dict(os.environ, {'PYRAMID_USAGE': 'off'})
+        usage.start()
+        self.addCleanup(usage.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name) / "project"

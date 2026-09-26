@@ -1,9 +1,11 @@
 ---
 name: audit
-description: Audit a Pyramid Task V3 implementation node, joint or demonstrable-increment gate, level outcome, or final intent against explicit evidence and brownfield inspection coverage. Use when the agent must determine whether completed work is correct, whether branches compose, whether the current candidate remains runnable or otherwise demonstrable, whether predicted impact matches actual scope, or whether a parent claim may become verified.
+description: Audit a Pyramid Task V3 implementation node, joint or demonstrable-increment gate, level outcome, or final intent against explicit evidence and brownfield inspection coverage. Use when the agent must determine whether completed work is correct, whether branches compose, whether the current candidate remains runnable or otherwise demonstrable, whether predicted impact matches actual scope, or whether a parent claim may become verified. For command usage audits or workflow overhead analysis, use inspect instead.
 ---
 
 # Audit a Pyramid Task
+
+Route command usage audits to `pyramid-task:inspect`; they do not verify task evidence or change graph state.
 
 Read `../../references/agent-contracts.md` for audit-result rules. Load `../../references/demonstrable-increments.md` for an increment outcome or gate, `../../references/graph-contract.md` only for composition or parent claims, `../../references/brownfield-assurance.md` only when the packet has assurance context, and `../../references/lifecycle-contract.md` only when auditing closure or inactive work.
 

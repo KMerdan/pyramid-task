@@ -49,7 +49,7 @@ Reset requires a fully validated candidate plan with a new `plan_id`. It archive
 python3 ../../scripts/pyramid.py reset --project <project-root> --plan <new-plan.json> --actor <actor> --reason <reason> --expected-version <graph-version> --expected-context <context-id> --json
 ```
 
-When the user is starting a distinct intent, prefer `pyramid-task:new-intent`. Its preview chooses create, upgrade/archive/reset, or archive/reset from the actual format and lifecycle and binds user approval to the complete transition.
+When the user is starting a distinct intent, prefer `pyramid-task:new-intent`. Its preview chooses create, archive/reset, or reset from the actual V3 lifecycle and binds user approval to the complete transition.
 
 Clean only generated graph, ready, Markdown, and browser artifacts, then regenerate them. It preserves plan, state, reports, and events byte-for-byte:
 
@@ -66,6 +66,7 @@ python3 ../../scripts/pyramid.py restore --project <project-root> --archive <arc
 ## Boundaries
 
 - Never use `create --force`, delete `.pyramid`, or hand-edit lifecycle state to restart.
+- Reject unsupported legacy current plans and archive sources before changes; do not fabricate a V3 manifest.
 - Never archive, reset, or restore over active claims. Resume a paused task and finish or release it first; do not discard its handoff.
 - Treat final reports and archive manifests as evidence artifacts, not mutable working notes.
 - Treat intent chronicles as append-only. After a later clean implementation commit, route commit provenance through `pyramid-task:history`; do not rewrite the closure record.

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -23,6 +24,9 @@ from pyramid_core import (  # noqa: E402
 
 class RecoveryResumeTests(unittest.TestCase):
     def setUp(self) -> None:
+        usage = mock.patch.dict(os.environ, {'PYRAMID_USAGE': 'off'})
+        usage.start()
+        self.addCleanup(usage.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name) / "project"

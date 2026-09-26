@@ -26,7 +26,7 @@ The active `plan.json`, `state.json`, and per-plan events remain authoritative f
 
 ## Lifecycle behavior
 
-- `create`, `reset`, and an applied legacy upgrade capture an intent-start record.
+- `create` and `reset` capture an intent-start record. Historical migration events remain preserved; no new migration is performed.
 - `close` appends a completed chronicle after the final report, optional change dossier, and `plan.completed` event exist.
 - Archiving active work appends an `archived-incomplete` chronicle. Archiving a completed intent reuses its completed chronicle.
 - `reset` and `restore` preserve the project-wide ledger. A reset candidate may not reuse a historical `plan_id`; restore the matching archive instead.

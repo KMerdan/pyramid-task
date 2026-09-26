@@ -7,7 +7,7 @@
 
 Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
-Version 3.9.0 adds compact-by-default CLI output, guarded task amendments and decision-scoped context loading. Outcome-scoped development harnesses still require the smallest sufficient probes and visual inspection, reuse existing checks, bind observations to the candidate, and retain proof through the lifecycle. The same `main` branch and versioned source package support Codex and Claude Code.
+Version 4.0.0 adds a local cross-project command usage audit and removes V2/V2.1 migration. The project format remains V3, with 17 skills and 26 CLI commands. Compact-by-default output, guarded task amendments and outcome-scoped development harnesses remain supported. The same `main` branch and versioned source package support Codex and Claude Code.
 
 ![Pyramid Task Intent Observer showing outcome progress, an active blocker, recommended action, and intent structure](docs/images/pyramid-task-map.png)
 
@@ -78,7 +78,7 @@ python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/proje
 
 Capture the first query before running checks; submit its filled `proofs` or a returned reusable run with normal update/audit. The runtime imports bounded artifacts into `.pyramid/reports/proof-artifacts/`, deduplicates content and preserves it with report archives. Do not edit that storage or the generated guide directly. Audit and closure recheck current inputs; the Observer displays recorded verification and its event watcher does not watch source files.
 
-Existing schema-1 plans remain usable in **legacy-unbound** mode; no project is migrated during installation. Adopt schema 2 through a complete candidate replan and guarded apply. Older runtimes reject schema 2, and an active schema-2 plan cannot downgrade. Source/contract changes require fresh affected proof, not a new global assurance cycle. Replan also invalidates old/new dependent claims instead of leaving ancestors falsely verified.
+Existing schema-1 plans in V3 projects remain usable in **legacy-unbound** mode; no project is migrated during installation. Adopt schema 2 through a complete candidate replan and guarded apply. Older runtimes reject schema 2, and an active schema-2 plan cannot downgrade. Source/contract changes require fresh affected proof, not a new global assurance cycle. Replan also invalidates old/new dependent claims instead of leaving ancestors falsely verified.
 
 See the [development harness contract](plugins/pyramid-task/references/development-harness.md), [schema-2 example](plugins/pyramid-task/assets/example-harness-plan.json), and [architecture](docs/architecture.md) for setup, evidence reuse, safety boundaries and lifecycle details.
 
@@ -119,7 +119,7 @@ History capture is lifecycle-driven; agents do not need a reminder at every tran
 
 | Boundary | History behavior |
 | --- | --- |
-| `create`, `reset`, applied upgrade | Automatically append or reconstruct the intent-start record |
+| `create`, `reset` | Automatically append or reconstruct the intent-start record |
 | Task updates, audits, replans, and other mutations | Automatically retain hash-linked plan events used by the final journey |
 | `close` or deliberate archive | Automatically append a completed or incomplete chronicle |
 | Clean Git provenance | Explicitly run `history --bind` after committing implementation |
@@ -210,6 +210,38 @@ python3 plugins/pyramid-task/scripts/pyramid.py amend \
 ```
 
 Already-small responses remain unchanged when compact metadata would add overhead. See the [amendment contract and proposal example](plugins/pyramid-task/references/task-amendments.md). Reduced JSON bytes and reference words measure context size; they are not a claim of measured end-to-end model token or latency savings.
+
+## Global command usage audit (4.0.0)
+
+Ask the agent: **“Analyze the Pyramid usage audit for the last 30 days and identify possible workflow overhead.”** This is part of the existing `pyramid-task:inspect` skill, not a new slash command. For explicit routing:
+
+```text
+Use $pyramid-task:inspect to analyze the Pyramid usage audit for the last 30 days.
+```
+
+`inspect` reads usage counters and explains patterns; `pyramid-task:audit` verifies a task, gate, outcome or intent against evidence. Say “usage audit” when you mean command efficiency, not task acceptance. The agent first checks measurement coverage, then compares command frequency, failures and output/runtime cost, separates facts from hypotheses, and proposes targeted follow-up checks. Analysis alone does not authorize workflow changes or command removal. This routing and collection require plugin 4.0.0 or later; older installations need an update.
+
+Measure the workflow before simplifying it. Every parsed CLI execution records a local invocation, exit outcome, wall-clock duration and JSON stdout byte count. Counters are aggregated by UTC day, runtime version, command, allowlisted mode (such as preview/apply or update status), and compact/full format. No arguments, project paths, task IDs, actor names, prompts, source, or command output are stored. Nothing is sent over the network.
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --usage --json
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --usage --usage-days 30 --json
+# Only when comparing query modes, runtime versions or compact/full output:
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --usage --usage-days 30 --full --json
+```
+
+No project is required. The report includes every CLI command, including zero-count commands; compact zero-count rows omit redundant outcome/cost fields. Reading it does not create or update counters. This adds no new skill or top-level command: the current source has 17 skills and 26 CLI commands after removing `upgrade`. Recorded counts for older removed commands remain visible as history, not available operations.
+
+The shared default store is `~/.local/state/pyramid-task/usage.sqlite3` (`$XDG_STATE_HOME/pyramid-task/usage.sqlite3` when configured). Codex and Claude Code aggregate into the same store when they share this location. Use an absolute `PYRAMID_USAGE_DIR` to choose another directory, or `PYRAMID_USAGE=off` to disable collection while retaining readable prior counts. The store is separate from project `.pyramid` artifacts and versioned plugin caches, so project cleanup and plugin updates do not reset it. It is machine-local, not synchronized across devices.
+
+Each host must permit writes to the chosen directory. If its sandbox disallows them, collection warns on stderr and the command continues unchanged; there is no project-local fallback or automatic permission expansion. Do not run development commands unsandboxed merely to collect usage. Report status distinguishes an empty store from an unreadable/corrupt one; it cannot prove that all earlier calls were recorded. Tests disable collection or use isolated temporary stores.
+
+Interpretation limits:
+
+- Collection starts with this implementation; older releases, disabled collection, help/parser errors, Python API calls and the usage report itself are not counted. Do not backfill graph events as if they measured reads or skill invocation.
+- `unfinished` includes running, killed, or completion-recording failures; it does not mean the task failed. Live visualization duration includes the server lifetime. Failure counts refer to CLI exits, not necessarily product defects.
+- CLI usage cannot establish which skill was read or followed. `orchestrate` and `simplify` have no standalone CLI entry point and are explicitly unmeasured, not unused.
+- High counts, repeated failure modes and large output may identify friction to investigate. Low counts may reflect recovery-only commands or the current development phase; historical counts for removed commands do not imply current availability. Counts alone do not justify removing gates, audits or lifecycle protection; bytes and runtime are not model token or latency measurements.
 
 ## Parallel execution with sub-agents
 
@@ -385,6 +417,7 @@ Use $pyramid-task:create to turn this feature request into an evidence-backed im
 Use $pyramid-task:assess to baseline this existing system.
 Use $pyramid-task:impact to map affected assets and required inspections.
 Use $pyramid-task:inspect to show the ready frontier or audit readiness.
+Use $pyramid-task:inspect to analyze the Pyramid usage audit for the last 30 days.
 Use $pyramid-task:orchestrate to run one conflict-safe ready batch with sub-agents.
 Use $pyramid-task:take to claim the next safe task.
 Use $pyramid-task:update to record implementation and actual change scope.
@@ -420,11 +453,10 @@ If the baseline is not known, creation writes a deliberately incomplete placehol
 | --- | --- |
 | `pyramid-task:create` | Clarify intent, define demonstrable increments, compare paths, and create the first graph. |
 | `pyramid-task:simplify` | Fact-check and reduce unjustified graph complexity while preserving real increment, outcome, and assurance boundaries. |
-| `pyramid-task:new-intent` | Safely route a distinct intent through create, upgrade, archive, and reset. |
+| `pyramid-task:new-intent` | Safely route a distinct intent through create, archive, and reset. |
 | `pyramid-task:assess` | Establish or refresh the existing-system baseline. |
 | `pyramid-task:impact` | Map affected assets, inspections, findings, drift, and controls. |
-| `pyramid-task:upgrade` | Upgrade an active V2/V2.1 project in place without rebuilding its graph. |
-| `pyramid-task:inspect` | Query increment progress, compact status, readiness, blockers, audit freshness, and traces. |
+| `pyramid-task:inspect` | Query status, readiness and audit freshness; analyze the global command usage audit and possible workflow overhead. |
 | `pyramid-task:history` | Explain cross-intent causality, trace path or commit provenance, and return bounded replay context. |
 | `pyramid-task:orchestrate` | Coordinate graph-task workers first, then use spare slots for bounded helpers. |
 | `pyramid-task:take` | Claim one ready task and opportunistically delegate safe read-only helper work. |
@@ -443,9 +475,9 @@ Implementation is not verification. A brownfield intent is complete only after p
 
 Use `pause` for an interruption, `expand` when a valid task contract needs multiple internal work units, and `replan` when evidence changes the contract or selected path. All topology and lifecycle changes preserve history and use explicit preview or evidence boundaries.
 
-Use `new-intent` for the next distinct outcome. It chooses the safe create, upgrade/archive/reset, archive/reset, or blocked route from actual project state and binds an existing-project transition to one approval hash.
+Use `new-intent` for the next distinct outcome. It chooses the safe create, archive/reset, reset, or blocked route from actual project state and binds an existing-project transition to one approval hash.
 
-Legacy projects without `.pyramid/project.json` remain readable and can upgrade in place. Older standalone `pyramid-task-planner` installations should be replaced by the compatibility router in `compat/pyramid-task-planner`; `doctor --json` reports the conflict.
+V2/V2.1 project migration has been removed in 4.0.0: no `upgrade` skill, CLI command or internal `new-intent` migration remains. `new-intent --from-version` is also removed. Existing projects and restored archives must have a valid V3 `.pyramid/project.json`; unsupported legacy data is rejected before writes, not converted or reset. If a V3 manifest was accidentally lost, restore its original backup rather than fabricating one. Existing V3 migration provenance and assurance obligations remain valid, and V3 plans using schema 1 still work. Plugin installation updates are unrelated and remain supported. Older standalone `pyramid-task-planner` installations should be replaced by the compatibility router in `compat/pyramid-task-planner`; `doctor --json` reports the conflict.
 
 Detailed contracts:
 
@@ -461,7 +493,6 @@ Detailed contracts:
 - [Pause and resume](plugins/pyramid-task/references/handoff-contract.md)
 - [Lifecycle](plugins/pyramid-task/references/lifecycle-contract.md)
 - [Expansion](plugins/pyramid-task/references/expansion-contract.md)
-- [Upgrade](plugins/pyramid-task/references/upgrade-contract.md)
 - [New intent](plugins/pyramid-task/references/new-intent-contract.md)
 
 ## State model
@@ -490,6 +521,7 @@ plugins/pyramid-task/
 │   ├── pyramid_assurance.py           Assurance domain rules
 │   ├── pyramid_amendment.py           Pure additive candidate preparation
 │   ├── pyramid_output.py              Loss-aware CLI response projections
+│   ├── pyramid_usage.py               Local cross-project CLI counters
 │   ├── pyramid_verification.py        Outcome-scoped proof and candidate inputs
 │   ├── pyramid_history.py             Append-only intent provenance and replay rules
 │   ├── pyramid_live.py                Validated loopback live server

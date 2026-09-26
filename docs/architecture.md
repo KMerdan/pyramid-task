@@ -62,6 +62,16 @@ Amendment coverage and input capture share one matcher in `pyramid_verification.
 
 Skills select only the references needed for the current decision. Candidate refinement remains required, but generic repeated review, full-graph reloads on task updates and full replans for eligible amendments are avoided. Context-size tests do not assert end-to-end model token savings.
 
+## Usage measurement boundary (4.0.0)
+
+`pyramid_usage.py` observes the CLI boundary, not graph transitions or skill execution. It maintains a separate user-local SQLite database of daily aggregate counters. One short transaction records invocation before dispatch; another records exit outcome, elapsed milliseconds and emitted JSON bytes. No transaction is held while project work runs. Unfinished invocations remain visible after hard termination, and SQLite transactions serialize concurrent processes without read/modify/write races. Lock waits are bounded; storage failures warn but never invalidate successful project work.
+
+`inspect --usage` reads this database without project access, initialization or self-counting. It lists the current command catalog, retains older recorded commands and optionally breaks down modes, versions and output format. The data contains no project identity or raw arguments and has no relationship to canonical evidence, mutation guards, closure or retirement. Collection is local and best-effort, requires an authorized writable directory, and can be disabled. Internal Python API calls and agent-only skills remain outside its coverage. This is a usage diagnostic, not an assurance audit or a model-token profiler.
+
+## Supported project boundary (4.0.0)
+
+Only project format V3 is supported for existing-project operations and restore sources. Legacy migration commands, helpers and `new-intent` migration branches have been removed. Validation reports a missing manifest as unsupported, and the project lock boundary rejects it before mutation. Restore checks the source format before archiving or replacing the current project. Previously migrated V3 records keep their immutable provenance and assurance obligations; plan schemas 1 and 2 are independent of the project format and remain supported.
+
 ## Cross-intent history boundary
 
 Per-plan events explain mutation order inside one active or archived graph. They do not by themselves provide a stable project narrative or a Git provenance claim. `pyramid_history.py` therefore owns a separate append-only ledger:
@@ -96,7 +106,7 @@ The increment ladder is recorded in a selected-path decision and normally forms 
 
 ## Why not split everything at once
 
-`pyramid_core.py` accumulated storage, validation, projection, query, and lifecycle responsibilities. A big-bang rewrite would create high regression risk in graph history, locks, migration, and serialized contracts. New behavior should land behind pure functions first, then existing functions can move without changing their public signatures.
+`pyramid_core.py` accumulated storage, validation, projection, query, and lifecycle responsibilities. A big-bang rewrite would create high regression risk in graph history, locks, lifecycle transitions, and serialized contracts. New behavior should land behind pure functions first, then existing functions can move without changing their public signatures.
 
 ## Incremental extraction sequence
 
@@ -105,7 +115,7 @@ The increment ladder is recorded in a selected-path decision and normally forms 
 3. **Storage and publication** — paths, JSON loading, locks, atomic commits, head validation, and event writes.
 4. **Projection** — graph, ready index, Markdown, archive, and browser payload compilation.
 5. **Task lifecycle** — take, update, pause, resume, audit, and scoped guards.
-6. **Topology lifecycle** — create, replan, expand, upgrade, reset, restore, and new-intent transitions.
+6. **Topology lifecycle** — create, replan, expand, reset, restore, and new-intent transitions.
 7. **Queries** — inspect, diff, readiness, and closure views.
 
 Each extraction should preserve the compatibility imports from `pyramid_core.py`, add focused tests around the moved boundary, and avoid serialized changes unless a published schema is updated.

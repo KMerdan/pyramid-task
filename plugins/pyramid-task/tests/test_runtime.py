@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -56,7 +57,6 @@ from pyramid_core import (  # noqa: E402
     restore_project,
     take_task,
     update_task,
-    upgrade_project,
     validate_plan,
     validate_project,
 )
@@ -67,6 +67,9 @@ import pyramid_history  # noqa: E402
 
 class PyramidRuntimeTests(unittest.TestCase):
     def setUp(self) -> None:
+        usage = mock.patch.dict(os.environ, {'PYRAMID_USAGE': 'off'})
+        usage.start()
+        self.addCleanup(usage.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name) / "project"
         self.example = PLUGIN_ROOT / "assets" / "example-plan.json"
@@ -1674,71 +1677,6 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertEqual("stale", assurance["status"])
         self.assertEqual("stale", assurance["inspections"][0]["status"])
 
-    def test_upgrade_v21_plan_in_place_preserves_running_work_and_history(self) -> None:
-        root = Path(self.temp.name) / "legacy-project"
-        create_project(root, self.example, "planner", mode="greenfield")
-        take_task(root, "worker", nid="RESEARCH-101")
-        (root / "src").mkdir(parents=True)
-        (root / "src" / "legacy.py").write_text("value = 1\n", encoding="utf-8")
-        (root / ".pyramid" / "project.json").unlink()
-        (root / ".pyramid" / "head.json").unlink()
-        legacy_state = load_json(root / ".pyramid" / "state.json")
-        legacy_state.pop("context_id", None)
-        legacy_state["lifecycle"].pop("change_dossier", None)
-        (root / ".pyramid" / "state.json").write_text(
-            json.dumps(legacy_state, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        for event_path in (root / ".pyramid" / "events").glob("*.json"):
-            event = load_json(event_path)
-            for field in (
-                "plan_id",
-                "plan_revision",
-                "context_id",
-                "previous_event_id",
-                "previous_event_sha256",
-            ):
-                event.pop(field, None)
-            event_path.write_text(json.dumps(event, indent=2) + "\n", encoding="utf-8")
-        before_plan = (root / ".pyramid" / "plan.json").read_bytes()
-        before_state = load_json(root / ".pyramid" / "state.json")
-        before_events = sorted((root / ".pyramid" / "events").glob("*.json"))
-        self.assertTrue(validate_project(root)["valid"])
-        self.assertEqual("legacy", inspect_project(root, summary=True)["project"]["mode"])
-
-        preview = upgrade_project(root, "migrator", source_version="2.1", mode="auto")
-        repeated = upgrade_project(root, "migrator", source_version="2.1", mode="auto")
-        self.assertEqual(preview["upgrade_sha256"], repeated["upgrade_sha256"])
-        self.assertEqual("brownfield", preview["generated"]["mode"])
-        jsonschema.validate(
-            preview,
-            load_json(PLUGIN_ROOT / "schemas" / "upgrade-preview.schema.json"),
-        )
-        applied = upgrade_project(
-            root,
-            "migrator",
-            source_version="2.1",
-            mode="auto",
-            apply=True,
-            approved_by="owner",
-            approval_reference="upgrade-approval-001",
-            approved_upgrade_sha256=preview["upgrade_sha256"],
-            expected_version=before_state["graph_version"],
-        )
-        after_state = load_json(root / ".pyramid" / "state.json")
-        self.assertEqual(before_plan, (root / ".pyramid" / "plan.json").read_bytes())
-        self.assertEqual(before_state["nodes"], after_state["nodes"])
-        self.assertEqual(before_state["graph_version"] + 1, after_state["graph_version"])
-        self.assertEqual(len(before_events) + 1, len(list((root / ".pyramid" / "events").glob("*.json"))))
-        self.assertEqual("working", after_state["nodes"]["RESEARCH-101"]["execution"])
-        self.assertEqual("worker", after_state["nodes"]["RESEARCH-101"]["owner"])
-        self.assertTrue(Path(applied["archive"]).exists())
-        self.assertTrue(validate_project(Path(applied["archive"]))["valid"])
-        self.assertEqual("incomplete", load_json(root / ".pyramid" / "baseline.json")["status"])
-        self.assertEqual("pending", load_json(root / ".pyramid" / "assurance.json")["legacy_bridge"]["status"])
-        self.assertEqual("up-to-date", upgrade_project(root, "migrator")["status"])
-        self.assertTrue(validate_project(root)["valid"])
-
     def test_brownfield_reset_carries_baseline_and_archives_assurance(self) -> None:
         root = Path(self.temp.name) / "reset-brownfield"
         create_project(
@@ -1815,72 +1753,13 @@ class PyramidRuntimeTests(unittest.TestCase):
         )
         self.assertEqual("started", started["status"])
         self.assertEqual("PLAN-NEXT-V3", inspect_project(self.root, summary=True)["plan_id"])
-        self.assertIsNone(started["upgrade"])
+        self.assertNotIn("upgrade", started)
         event_files = sorted((self.root / ".pyramid" / "events").glob("*.json"))
         created_event = load_json(event_files[-1])
         self.assertEqual(
             preview["new_intent_sha256"],
             created_event["payload"]["transition_approval"]["new_intent_sha256"],
         )
-        self.assertTrue(validate_project(self.root)["valid"])
-
-    def test_new_intent_upgrades_completed_v2_before_reset(self) -> None:
-        self.complete_graph()
-        close_project(self.root, "owner")
-        (self.root / "src").mkdir()
-        (self.root / "src" / "legacy.py").write_text("value = 1\n", encoding="utf-8")
-        (self.root / ".pyramid" / "project.json").unlink()
-        (self.root / ".pyramid" / "head.json").unlink()
-        legacy_state = load_json(self.root / ".pyramid" / "state.json")
-        legacy_state.pop("context_id", None)
-        (self.root / ".pyramid" / "state.json").write_text(
-            json.dumps(legacy_state, indent=2) + "\n",
-            encoding="utf-8",
-        )
-        for event_path in (self.root / ".pyramid" / "events").glob("*.json"):
-            event = load_json(event_path)
-            for field in (
-                "plan_id",
-                "plan_revision",
-                "context_id",
-                "previous_event_id",
-                "previous_event_sha256",
-            ):
-                event.pop(field, None)
-            event_path.write_text(json.dumps(event, indent=2) + "\n", encoding="utf-8")
-        candidate = load_json(self.example)
-        candidate["plan_id"] = "PLAN-AFTER-V2"
-        candidate["title"] = "Intent after completed V2"
-        candidate_path = self.write_json("after-v2-plan.json", candidate)
-
-        preview = new_intent_project(
-            self.root,
-            candidate_path,
-            "planner",
-            "Continue from the completed legacy intent",
-            source_version="2.1",
-        )
-        self.assertEqual(["upgrade", "archive", "reset"], preview["transition"])
-        self.assertIn("upgrade_sha256", preview["components"])
-        started = new_intent_project(
-            self.root,
-            candidate_path,
-            "planner",
-            "Continue from the completed legacy intent",
-            source_version="2.1",
-            apply=True,
-            approved_by="owner",
-            approval_reference="conversation-102",
-            approved_new_intent_sha256=preview["new_intent_sha256"],
-            expected_version=preview["current"]["graph_version"],
-        )
-        self.assertIsNotNone(started["upgrade"])
-        self.assertEqual("PLAN-AFTER-V2", inspect_project(self.root, summary=True)["plan_id"])
-        project = load_json(self.root / ".pyramid" / "project.json")
-        self.assertEqual(3, project["format_version"])
-        self.assertEqual("brownfield", project["mode"])
-        self.assertTrue((self.root / ".pyramid" / "baseline.json").exists())
-        self.assertGreaterEqual(len(inspect_lifecycle(self.root)["archives"]), 2)
         self.assertTrue(validate_project(self.root)["valid"])
 
     def test_new_intent_blocks_an_active_plan_and_reports_legacy_skill_conflict(self) -> None:
@@ -1931,15 +1810,16 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertEqual("started", started["status"])
         self.assertEqual("PLAN-001", inspect_project(root, summary=True)["plan_id"])
 
-    def test_v3_cli_exposes_brownfield_and_upgrade_interfaces(self) -> None:
+    def test_v3_cli_exposes_current_interfaces_without_legacy_migration(self) -> None:
         completed = subprocess.run(
             [sys.executable, str(PLUGIN_ROOT / "scripts" / "pyramid.py"), "--help"],
             check=True,
             capture_output=True,
             text=True,
         )
-        for command in ("new-intent", "upgrade", "assess", "impact", "diff"):
+        for command in ("new-intent", "assess", "impact", "diff"):
             self.assertIn(command, completed.stdout)
+        self.assertNotIn("upgrade", completed.stdout)
         inspect = subprocess.run(
             [sys.executable, str(PLUGIN_ROOT / "scripts" / "pyramid.py"), "inspect", "--help"],
             check=True,

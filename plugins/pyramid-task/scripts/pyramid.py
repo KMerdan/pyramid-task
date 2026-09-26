@@ -36,12 +36,13 @@ from pyramid_core import (
     restore_project,
     take_task,
     update_task,
-    upgrade_project,
     validate_project,
 )
 from pyramid_live import LiveVisualizationServer
 from pyramid_visualizer import render_visualization
 from pyramid_output import compact_response
+from pyramid_assurance import RUNTIME_VERSION
+from pyramid_usage import UsageRecorder, usage_report
 
 
 def add_project(parser: argparse.ArgumentParser) -> None:
@@ -108,7 +109,6 @@ def build_parser() -> argparse.ArgumentParser:
     new_intent.add_argument("--plan", required=True)
     new_intent.add_argument("--actor", required=True)
     new_intent.add_argument("--reason", required=True)
-    new_intent.add_argument("--from-version", default="2.1")
     new_intent.add_argument(
         "--mode",
         choices=["auto", "greenfield", "brownfield"],
@@ -122,27 +122,6 @@ def build_parser() -> argparse.ArgumentParser:
     new_intent.add_argument("--approved-new-intent-sha256")
     add_version(new_intent)
     add_json(new_intent)
-
-    upgrade = sub.add_parser(
-        "upgrade",
-        help="Preview or apply an in-place legacy plan upgrade without rebuilding it",
-    )
-    add_project(upgrade)
-    upgrade.add_argument("--actor", required=True)
-    upgrade.add_argument("--from-version", default="2.1")
-    upgrade.add_argument(
-        "--mode",
-        choices=["auto", "greenfield", "brownfield"],
-        default="auto",
-    )
-    upgrade_mode = upgrade.add_mutually_exclusive_group(required=True)
-    upgrade_mode.add_argument("--preview", action="store_true")
-    upgrade_mode.add_argument("--apply", action="store_true")
-    upgrade.add_argument("--approved-by")
-    upgrade.add_argument("--approval-reference")
-    upgrade.add_argument("--approved-upgrade-sha256")
-    add_version(upgrade)
-    add_json(upgrade)
 
     assess = sub.add_parser("assess", help="Preview or apply a brownfield system baseline")
     add_project(assess)
@@ -180,8 +159,9 @@ def build_parser() -> argparse.ArgumentParser:
     add_json(doctor)
 
     inspect = sub.add_parser("inspect", help="Query an existing project")
-    add_project(inspect)
+    inspect.add_argument("--project", help="Project root; required except for global --usage")
     group = inspect.add_mutually_exclusive_group()
+    group.add_argument("--usage", action="store_true", help="Report local cross-project CLI usage (no project required)")
     group.add_argument("--summary", action="store_true")
     group.add_argument("--ready", action="store_true")
     group.add_argument("--blocked", action="store_true")
@@ -204,6 +184,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=4,
         help="Maximum coordinator plus sub-agents in one parallel batch",
     )
+    inspect.add_argument("--usage-days", type=int, help="Limit --usage to the last N UTC calendar days")
     add_json(inspect)
 
     diff = sub.add_parser("diff", help="Show compact event changes between graph versions")
@@ -378,11 +359,14 @@ def build_parser() -> argparse.ArgumentParser:
     visualize.add_argument("--poll-interval", type=float, default=0.25, help="Seconds between publication checks")
     visualize.add_argument("--open", dest="open_browser", action="store_true", help="Open the live URL in the default browser")
     add_json(visualize)
+    parser.set_defaults(command_catalog=tuple(sub.choices))
     return parser
 
 
-def emit(data: dict[str, Any], _: bool = False) -> None:
-    print(json.dumps(data, indent=2, ensure_ascii=False), flush=True)
+def emit(data: dict[str, Any], _: bool = False) -> int:
+    rendered = json.dumps(data, indent=2, ensure_ascii=False)
+    print(rendered, flush=True)
+    return len((rendered + "\n").encode("utf-8"))
 
 
 def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
@@ -402,24 +386,11 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             args.plan,
             args.actor,
             args.reason,
-            source_version=args.from_version,
             mode=args.mode,
             apply=args.apply,
             approved_by=args.approved_by,
             approval_reference=args.approval_reference,
             approved_new_intent_sha256=args.approved_new_intent_sha256,
-            expected_version=expected_guard(args),
-        ), 0
-    if args.command == "upgrade":
-        return upgrade_project(
-            args.project,
-            args.actor,
-            source_version=args.from_version,
-            mode=args.mode,
-            apply=args.apply,
-            approved_by=args.approved_by,
-            approval_reference=args.approval_reference,
-            approved_upgrade_sha256=args.approved_upgrade_sha256,
             expected_version=expected_guard(args),
         ), 0
     if args.command == "assess":
@@ -465,6 +436,9 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             "compiled": compile_project(args.project),
         }, 0
     if args.command == "inspect":
+        if args.usage:
+            result = usage_report(args.command_catalog, days=args.usage_days, detail=not args.compact)
+            return result, 1 if result["status"] == "unavailable" else 0
         return inspect_project(
             args.project,
             summary=args.summary,
@@ -635,6 +609,15 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+    if args.command == "inspect":
+        if args.usage and args.project:
+            parser.error("--usage is global; omit --project")
+        if not args.usage and not args.project:
+            parser.error("inspect requires --project unless --usage is selected")
+        if args.usage_days is not None and (not args.usage or not 1 <= args.usage_days <= 36500):
+            parser.error("--usage-days requires --usage and a value from 1 to 36500")
+    recorder = UsageRecorder.start(args, RUNTIME_VERSION)
+    exit_code, stdout_bytes = 1, 0
     try:
         if args.command == "visualize" and args.live:
             if args.output:
@@ -644,27 +627,35 @@ def main() -> int:
                 port=args.port,
                 poll_interval=args.poll_interval,
             )
-            emit(server.describe(), args.json)
+            stdout_bytes = emit(server.describe(), args.json)
             if args.open_browser:
                 server.open_browser()
             try:
                 server.serve_forever()
             except KeyboardInterrupt:
+                exit_code = 0
                 return 0
+            exit_code = 0
             return 0
         if args.command == "visualize" and args.open_browser:
             raise PyramidError("--open requires --live")
         data, code = run(args)
         if getattr(args, "compact", False):
             data = compact_response(data, args.command)
-        emit(data, getattr(args, "json", False))
+        stdout_bytes = emit(data, getattr(args, "json", False))
+        exit_code = code
         return code
     except PyramidError as exc:
-        emit({"ok": False, "error": str(exc)}, getattr(args, "json", False))
+        stdout_bytes = emit({"ok": False, "error": str(exc)}, getattr(args, "json", False))
+        exit_code = 2
         return 2
     except KeyboardInterrupt:
-        emit({"ok": False, "error": "Interrupted"}, getattr(args, "json", False))
+        stdout_bytes = emit({"ok": False, "error": "Interrupted"}, getattr(args, "json", False))
+        exit_code = 130
         return 130
+    finally:
+        if recorder is not None:
+            recorder.finish(exit_code, stdout_bytes)
 
 
 if __name__ == "__main__":

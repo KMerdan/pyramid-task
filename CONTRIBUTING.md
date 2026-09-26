@@ -20,6 +20,8 @@ make check
 ## Test scope and evidence
 
 - Runtime and CLI tests create isolated projects and exercise real files, guards, events, state transitions, proof hashes, artifact imports and recovery paths. Efficiency tests verify that compact output preserves safety data and full records remain recoverable.
+- Usage tests run real multi-project and concurrent CLI processes against temporary databases. Other CLI fixtures explicitly disable collection. Keep developer/test calls out of real user counters (`PYRAMID_USAGE=off`); fault-injected execution exceptions test accounting, not product outcomes.
+- Legacy-removal tests use serialized format fixtures and real CLI/API calls to verify rejection without file changes, removed command/flag handling, and continued support for existing V3 migration provenance. They do not simulate successful migrations.
 - Most harness tests supply synthetic observations to test evidence contracts. Their `passed` fixture values are not actual project tests or model reviews. The executed-probe integration test separately runs a real subprocess, derives failure/success from its exit and output, rejects failed completion, records the failure, repairs the input and verifies publication and audit through the CLI.
 - Targeted mocks inject ownership/conflict states, clock expiry or I/O failures; they do not replace the amendment validator or force a passing result. The concurrent-update projection test constructs an intervening mutation deterministically; it is not a scheduling stress test.
 - The image fixture tests artifact-format requirements, not browser capture or visual judgment. No suite certifies screenshot interpretation, agent planning quality, real-product acceptance, host compaction, or end-to-end token/latency savings. Those require relevant real observations or separately scoped evaluations.
@@ -40,6 +42,7 @@ Keep contract fixtures for fast negative-path coverage, and use executed integra
 - Readiness and audit must use the same implementation-frontier freshness rules.
 - Evidence-only classification requires declared output scope; generated output requires a real baseline-asset mapping.
 - Reset and restore preserve recoverable archives.
+- Existing project operations and restore sources require V3 format; do not reintroduce implicit V2/V2.1 migration. Keep historical provenance intact and distinguish project format from plan schema version.
 - Agent packets never expand normal authorization to files or external systems.
 - Codex and Claude Code manifests ship from `main` and keep the same base release version; only the Codex manifest may carry a cache-busting build suffix.
 - Pure domain modules do not import `pyramid_core`; the core facade owns locks, events, guarded mutations, and compatibility exports.

@@ -7,7 +7,7 @@ description: Create the first Pyramid Task V3 project from an intent, idea, feat
 
 Create a plan only after the intended final state is clear enough to test. Begin with the current demonstrable baseline and the smallest honest ladder of usable states to that intent, then decompose the ladder into a claim-and-evidence task pyramid.
 
-Read `../../references/development-harness.md` while defining proof. Create schema-2 plans with minimal outcome-scoped external, internal and applicable visual observations; reuse current tools and checks and add only missing capability before acceptance. Use `../../assets/example-harness-plan.json` for the current contract; the schema-1 example is for legacy compatibility.
+Read `../../references/development-harness.md` while defining proof. Create schema-2 plans with minimal outcome-scoped external, internal and applicable visual observations; reuse current tools and checks and add only missing capability before acceptance. Use `../../assets/example-harness-plan.json` for the current contract; the schema-1 example covers unbound verification within V3, not V2 project support.
 
 ## Context routing
 
@@ -22,7 +22,7 @@ Reuse current facts and references already in context; reopen them when missing 
 
 ## Workflow
 
-1. Read the source request, repository shape, existing plans, tests, schemas, history, and constraints. Run `doctor --json` when `.pyramid/plan.json` exists. Use `pyramid-task:new-intent` for another intent; use `pyramid-task:upgrade` only when continuing the same legacy intent.
+1. Read the source request, repository shape, existing plans, tests, schemas, history, and constraints. Run `doctor --json` when `.pyramid/plan.json` exists. Use `pyramid-task:new-intent` for another intent. An existing plan requires a valid V3 project manifest; report unsupported legacy data without replacing it or inventing a migration.
 2. Normalize the intent into actors, target state, success evidence, invariants, constraints, non-goals, and assumptions. Ask only about ambiguities that would materially change the path; otherwise record the assumption.
 3. Gather evidence for the affected path. Separate observed facts, sourced claims, assumptions, and unknowns. Reuse a current brownfield baseline and inspect affected assets; build or refresh it with `pyramid-task:assess` only where missing or stale. Stop discovery when load-bearing claims are evidenced, explicitly assumed with early validation, or blocked; do not survey unrelated subsystems.
 4. Define the current demonstrable baseline and the smallest evidence-supported increment ladder. For software, each rung should build or launch and complete a meaningful actor-visible scenario. Record the baseline, ordered ladder, and rejected slicing alternatives in a selected-path decision backed by evidence. Keep one increment when no smaller honest state exists; never call setup alone an increment.

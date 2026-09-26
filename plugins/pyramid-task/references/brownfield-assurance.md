@@ -6,7 +6,7 @@ Pyramid Task V3 treats work in an existing system as change assurance, not only 
 
 `.pyramid/project.json` declares format version 3 and either `greenfield` or `brownfield` mode. `create --mode auto` selects brownfield when the project root already contains meaningful files. Use an explicit mode only when repository evidence makes the automatic choice wrong.
 
-Legacy projects without `project.json` remain readable. Upgrade them through the upgrade contract before using brownfield enforcement.
+Existing plans without a valid V3 `project.json` are rejected without migration. Previously migrated V3 projects remain supported: their stored provenance and any outstanding assurance bridge obligations are preserved.
 
 ## Baseline
 

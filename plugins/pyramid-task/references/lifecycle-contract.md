@@ -61,9 +61,9 @@ The manifest records plan and graph identity, previous lifecycle state, archive 
 
 `reset` validates the candidate before mutation, requires a new plan ID that has never identified another recorded intent, refuses active claims, creates or verifies an archive snapshot, then starts the candidate at graph version 1. The new `plan.created` event points to the previous archive and its intent-start record points to the prior chronicle. It never mixes event histories between plans. Brownfield reset carries the current baseline and prior dossiers, but starts a fresh assurance bundle for the new intent.
 
-For a distinct intent, `new-intent` is the preferred front door. Its preview chooses `create`, `upgrade → archive → reset`, `archive → reset`, or a blocked route from the actual project format and lifecycle. Existing projects require the exact transition hash and approval provenance. The new `plan.created` event records that parent approval. See `new-intent-contract.md`.
+For a distinct intent, `new-intent` is the preferred front door. Its preview chooses `create`, `archive → reset`, `reset`, or a blocked route from the actual project format and lifecycle. Existing projects require the exact transition hash and approval provenance. The new `plan.created` event records that parent approval. See `new-intent-contract.md`.
 
-`restore` resolves an archive ID or archived plan ID, validates the snapshot, archives the current plan when present, installs the selected plan and its per-plan evidence, preserves the newer project-wide intent ledger, clears ownership, leases, and active pause pointers, records `plan.restored`, and regenerates projections. Historical handoff files remain preserved as evidence. It restores the lifecycle that existed before archiving: active plans resume active, and completed plans remain completed until reopened.
+`restore` resolves an archive ID or archived plan ID, rejects unsupported legacy sources before touching the current plan, validates the snapshot, archives the current plan when present, installs the selected plan and its per-plan evidence, preserves the newer project-wide intent ledger, clears ownership, leases, and active pause pointers, records `plan.restored`, and regenerates projections. Historical handoff files remain preserved as evidence. It restores the lifecycle that existed before archiving: active plans resume active, and completed plans remain completed until reopened.
 
 ## Clean
 
@@ -82,7 +82,6 @@ Lifecycle mutations use immutable events:
 - `plan.restored`;
 - `plan.created` with reset provenance.
 - `plan.created` with new-intent transition approval when reset was composed by `new-intent`;
-- `project.upgraded` with approval hash and snapshot provenance;
 - `assurance.baseline-assessed` and `assurance.impact-updated`.
 
 All mutations require an actor. Evidence, reasons, invalidated nodes, report paths, archive IDs, and reset/restore provenance live in event payloads.

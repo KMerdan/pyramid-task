@@ -11,7 +11,7 @@ Route requests as follows:
 
 - First intent with no `.pyramid/plan.json`: use `pyramid-task:create`.
 - New intent after an existing or completed cluster: use `pyramid-task:new-intent`.
-- Existing legacy project that must continue its current intent: use `pyramid-task:upgrade`.
+- V2/V2.1 project data or a missing V3 manifest: stop and report unsupported format; migration is no longer available. Never fabricate the manifest or overwrite existing work.
 - Current execution, audit, inspection, or lifecycle work: use the corresponding Pyramid Task V3 skill.
 
 Treat `.pyramid/project.json` as the V3 project-format marker. `plan.json` and `state.json` are compatible canonical contracts and do not identify the installed runtime version.

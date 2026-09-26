@@ -1,4 +1,4 @@
 interface:
-  display_name: "Inspect Pyramid Plan"
-  short_description: "Query increments, status, and safe batches"
-  default_prompt: "Use $inspect to report the last verified increment, next exact blocker, or smallest requested runtime status query."
+  display_name: "Inspect Pyramid Status and Usage"
+  short_description: "Query plan status or analyze the command usage audit"
+  default_prompt: "Use $inspect for the smallest requested status query or to analyze the Pyramid command usage audit for workflow overhead."

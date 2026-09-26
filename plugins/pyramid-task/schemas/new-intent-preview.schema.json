@@ -15,7 +15,6 @@
     "preserves",
     "blockers",
     "warnings",
-    "components",
     "approval_required",
     "new_intent_sha256"
   ],
@@ -43,10 +42,7 @@
           "properties": {
             "plan_id": {"type": "string", "minLength": 1},
             "project_format_version": {
-              "oneOf": [
-                {"const": "legacy-v2"},
-                {"type": "integer", "minimum": 3}
-              ]
+              "const": 3
             },
             "lifecycle": {"enum": ["active", "completed", "archived"]},
             "graph_version": {"type": "integer", "minimum": 1},
@@ -79,18 +75,11 @@
     },
     "transition": {
       "type": "array",
-      "items": {"enum": ["create", "upgrade", "archive", "reset"]}
+      "items": {"enum": ["create", "archive", "reset"]}
     },
     "preserves": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "blockers": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "warnings": {"type": "array", "items": {"type": "string", "minLength": 1}},
-    "components": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "upgrade_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
-      }
-    },
     "approval_required": {"type": "boolean"},
     "new_intent_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
   }

@@ -2,6 +2,15 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## 4.0.0
+
+- Route natural-language “usage audit” and workflow-overhead questions through `inspect`, distinct from task evidence `audit`, with coverage-aware, read-only analysis guidance and README examples.
+- Breaking: remove the V2/V2.1-to-V3 `upgrade` skill, CLI/API, migration helpers, preview schema and reference. Remove `new-intent --from-version`, internal migration and migration-only response fields. The catalog now has 17 skills and 26 CLI commands.
+- Reject unsupported legacy current plans and archive sources before writes, including direct reset/restore paths. Preserve ordinary V3 safeguards, schema-1 V3 plans, historical migration provenance and existing assurance obligations. Test real CLI rejection, byte-preservation and V3 continuation.
+- Add local cross-project CLI usage counters and read-only `inspect --usage`, including zero-count commands, outcomes, unfinished calls, runtime and stdout bytes. Support UTC day windows and mode/version/format detail without adding a skill or top-level command.
+- Keep counters separate from canonical project evidence and plugin caches; store no raw arguments or project identities, support opt-out, and fail open on storage restrictions. Document that CLI calls do not measure skill invocation or model tokens.
+- Test actual multi-project and concurrent CLI processes, read-only reports, opt-out, interrupted execution and locked/corrupt storage. Isolate all tests from real user counters.
+
 ## 3.9.0
 
 - Integrate the guarded task-amendment and compact-output work from `1eea7dd`. Existing-file additions within an unchanged owned task use a preview-bound delta instead of a full plan rewrite; ownership, conflict checks, assurance invalidation and causal history remain intact.

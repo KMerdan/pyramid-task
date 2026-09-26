@@ -1,6 +1,6 @@
 ---
 name: inspect
-description: Inspect an existing Pyramid Task V3 or compatible legacy project without changing it. Use when an agent or a human needs status, demonstrable-increment progress, ready or paused work, conflict-safe parallel batches, handoff identity, blockers, pending audits, baseline and impact coverage, stale inspections, scope drift, evidence gaps, task details, or the trace from a node to the final intent.
+description: Inspect Pyramid status, readiness, evidence gaps or task details, and analyze the global command usage audit for workflow overhead. Use for command counts, usage frequency and efficiency questions; task evidence verification belongs to audit, causal intent history to history.
 ---
 
 # Inspect a Pyramid Task Plan
@@ -8,6 +8,24 @@ description: Inspect an existing Pyramid Task V3 or compatible legacy project wi
 Start with the smallest runtime query. Route cross-intent causality, path/commit provenance, and replay questions to `pyramid-task:history`. Load `../../references/demonstrable-increments.md` only for delivery or increment progress, `../../references/graph-contract.md` only for topology, `../../references/agent-contracts.md` only for one detailed node, `../../references/handoff-contract.md` only for paused work, `../../references/brownfield-assurance.md` only when assurance is present, and `../../references/lifecycle-contract.md` only for lifecycle questions.
 
 For proof collection or reuse, query `inspect --harness <node> --json`. It returns scoped contracts, pre-run candidate templates, setup blockers and reusable runs without executing tools or writing state. Consult `../../references/development-harness.md` when interpreting or changing proof. Recorded verification in the Observer is historical; audit readiness checks the current declared inputs.
+
+## Analyze the usage audit
+
+Route requests such as “analyze the Pyramid usage audit”, “which commands do we actually use?” or “check workflow overhead” here, not to `pyramid-task:audit`. For an ambiguous “audit” request, use the conversation context or ask whether the user means usage analysis or task evidence verification.
+
+Skip the project workflow below; no `--project`, graph validation or canonical evidence reads are needed:
+
+```bash
+python3 ../../scripts/pyramid.py inspect --usage --json
+# For a requested recent window:
+python3 ../../scripts/pyramid.py inspect --usage --usage-days 30 --json
+```
+
+Check store status, recording dates, selected window and collection limitations first. An empty or unavailable store cannot establish that commands are unnecessary. Counts cover recorded CLI invocations on this machine, not skill invocation, internal API calls or earlier unrecorded work. `orchestrate` and `simplify` are unmeasured, not unused.
+
+Compare invocation counts, failure/unfinished counts, stdout bytes and duration; use `--full` only when a mode/version/output-format breakdown is needed to explain a pattern. Separate measured findings from hypotheses and suggest the smallest follow-up measurement. Counts alone cannot prove duplicated work or missing workflow steps; rare recovery/safety commands can be essential. Historical counters for removed commands do not mean those commands remain available. Duration and output bytes are not model time or tokens.
+
+Keep recommendations read-only: do not change the workflow, disable collection or remove commands from an analysis request.
 
 ## Workflow
 
