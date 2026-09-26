@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/agent-status.schema.json",
+  "title": "Compact status after a contract-preserving task update",
+  "type": "object",
+  "required": ["schema", "task", "context", "graph_version", "execution", "verification", "health", "blocker", "blocked_by", "owner", "lease_expires_at", "mutation_guards"],
+  "properties": {
+    "schema": {"const": "agent-status-v1"},
+    "task": {"type": "string"},
+    "context": {"type": "object"},
+    "graph_version": {"type": "integer"},
+    "execution": {"type": "string"},
+    "verification": {"type": "string"},
+    "health": {"type": "string"},
+    "blocker": {"type": ["string", "null"]},
+    "blocked_by": {"type": "array"},
+    "owner": {"type": ["string", "null"]},
+    "lease_expires_at": {"type": ["string", "null"]},
+    "mutation_guards": {"type": "object"}
+  },
+  "additionalProperties": true
+}

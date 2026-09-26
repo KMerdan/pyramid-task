@@ -57,9 +57,14 @@ An increment gate should normally establish:
 
 Use the smallest proof that is representative. A process starting and exiting successfully is insufficient when the increment promises usable behavior. Manual evidence is acceptable only when automation is unreasonable and the observation is specific and reproducible.
 
+Exercise the actual public entry point and critical integration boundaries early in the increment, before broad qualification. For an agent application this includes the prompt/tool/result path visible to the real parent agent, not only internal service tests. Keep final cumulative acceptance and disclose simulated providers or effects.
+
+Name the delivery environment in the evidence contract. Record candidate source/build identity and distinguish candidate verification from demonstrated availability in the intended installation. A user-equivalent isolated installation does not prove the user's running process was updated; deployment still requires its normal authorization. Express this in existing acceptance/evidence records, not new execution states.
+
 ## Shape work around increments
 
 - Decompose vertically through the layers needed to demonstrate a rung. Avoid horizontal “all backend, then all UI, then test” paths when a thinner end-to-end slice is feasible.
+- Give each executable task a bounded behavior and identify its likely entry points and integration owners. Avoid broad behavioral promises paired with arbitrary tiny file lists; stop mapping when the task's acceptance and ownership boundaries are clear.
 - Trace every primary executable node to the earliest increment it establishes, validates, or safely enables. Research may support a later rung without pretending to be runnable value.
 - Keep waves truthful. One increment may require several waves, and one wave may contain safe work for different future increments.
 - Treat task `implemented` and batch completion as intermediate facts. Only the increment gate and outcome audit establish the rung.

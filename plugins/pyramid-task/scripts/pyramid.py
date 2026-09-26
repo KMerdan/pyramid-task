@@ -9,6 +9,7 @@ from typing import Any
 
 from pyramid_core import (
     PyramidError,
+    amend_task,
     archive_project,
     assess_project,
     audit_node,
@@ -40,6 +41,7 @@ from pyramid_core import (
 )
 from pyramid_live import LiveVisualizationServer
 from pyramid_visualizer import render_visualization
+from pyramid_output import compact_response
 
 
 def add_project(parser: argparse.ArgumentParser) -> None:
@@ -60,6 +62,12 @@ def add_scoped_guard(parser: argparse.ArgumentParser) -> None:
 
 def add_json(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON")
+    output = parser.add_mutually_exclusive_group()
+    output.add_argument("--compact", dest="compact", action="store_true",
+                        help="Use compact responses (default); retain safety information")
+    output.add_argument("--full", dest="compact", action="store_false",
+                        help="Return the complete command response when more decision detail is needed")
+    parser.set_defaults(compact=True)
 
 
 def expected_guard(args: argparse.Namespace) -> int | dict[str, Any] | None:
@@ -260,6 +268,16 @@ def build_parser() -> argparse.ArgumentParser:
     add_version(audit)
     add_scoped_guard(audit)
     add_json(audit)
+
+    amend = sub.add_parser("amend", help="Preview/apply additive file context for one owned task")
+    add_project(amend)
+    amend.add_argument("--proposal", required=True)
+    amend.add_argument("--actor", required=True)
+    mode = amend.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--preview", action="store_true")
+    mode.add_argument("--apply", action="store_true")
+    amend.add_argument("--expected-amendment", help="Exact token returned by preview; required on apply")
+    add_json(amend)
 
     replan = sub.add_parser("replan", help="Preview or apply a new topology")
     add_project(replan)
@@ -537,6 +555,11 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             allow_intent_change=args.allow_intent_change,
             expected_version=expected_guard(args),
         ), 0
+    if args.command == "amend":
+        return amend_task(
+            args.project, args.proposal, args.actor,
+            apply=args.apply, expected_amendment=args.expected_amendment,
+        ), 0
     if args.command == "expand":
         return expand_project(
             args.project,
@@ -632,6 +655,8 @@ def main() -> int:
         if args.command == "visualize" and args.open_browser:
             raise PyramidError("--open requires --live")
         data, code = run(args)
+        if getattr(args, "compact", False):
+            data = compact_response(data, args.command)
         emit(data, getattr(args, "json", False))
         return code
     except PyramidError as exc:

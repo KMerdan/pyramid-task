@@ -11,7 +11,7 @@ When refining proof, read `../../references/development-harness.md`. Challenge d
 
 ## Context routing
 
-Read `../../references/plan-refinement.md`, `../../references/pathfinder-workflow.md`, `../../references/demonstrable-increments.md`, and `../../references/graph-contract.md`. Follow `../../schemas/plan-review.schema.json`; use `../../assets/example-plan-review.json` only as structure. Read `../../references/brownfield-assurance.md` for an existing system and `../replan/SKILL.md` before changing a canonical graph.
+Read `../../references/plan-refinement.md` and `../../references/graph-contract.md`. Load `../../references/pathfinder-workflow.md` for changed paths or load-bearing uncertainty and `../../references/demonstrable-increments.md` for increment/composition changes. Follow `../../schemas/plan-review.schema.json`; use `../../assets/example-plan-review.json` only as structure. Read `../../references/brownfield-assurance.md` for an existing system and `../replan/SKILL.md` before changing a canonical graph. Reuse current references and evidence already in context; do not repeat a completed review without a concrete new finding.
 
 ## Workflow
 
@@ -21,7 +21,7 @@ Read `../../references/plan-refinement.md`, `../../references/pathfinder-workflo
 4. Trace both directions: every primary node must support an intent requirement and the earliest demonstrable increment it enables, while every intent requirement and increment must retain an implementation, inherited-proof, and audit path.
 5. Test the graph for duplicated work or evidence, artificial increments, horizontal component phases that could be vertical slices, missing inherited checks, speculative scope, unsupported claims, unjustified dependencies or gates, accidental serialization, ambiguous acceptance, and over- or under-decomposition. Challenge each candidate with its strongest reason to retain the current design.
 6. Write a `pyramid-plan-review-v1` artifact. Record facts, findings, counterevidence, dispositions, requirement coverage, before/after metrics, preserved invariants, and limitations. A valid artifact records the reasoning; it does not make the semantic claims true by itself.
-7. Apply only equivalence-preserving reductions to a temporary revised plan. Re-run the pathfinder audit and graph validation. Promote an unsupported load-bearing claim to an assumption, research node, or blocker instead of deleting the uncertainty.
+7. Apply only equivalence-preserving reductions to a temporary revised plan. Re-run graph validation and affected requirement/proof traces; revisit deeper pathfinding only when the path or its assumptions changed. Promote an unsupported load-bearing claim to an assumption, research node, or blocker instead of deleting the uncertainty.
 8. For a new candidate, pass the revised plan into `create` or `new-intent`. For a canonical graph, produce the revised candidate and review first, then use `replan --preview`; obtain user direction before applying a topology, scope, or intent change.
 9. Report applied, rejected, deferred, and blocking findings; before/after complexity; preserved assurance; and unresolved limitations. Report a justified no-change result when no safe simplification exists.
 

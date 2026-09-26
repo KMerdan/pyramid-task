@@ -5,7 +5,9 @@ description: Replan an existing Pyramid Task V3 graph or demonstrable-increment 
 
 # Replan a Pyramid Task Path
 
-Read `../../references/pathfinder-workflow.md`, `../../references/demonstrable-increments.md`, `../../references/plan-refinement.md`, and `../../references/graph-contract.md`. Load `../../references/agent-contracts.md` only for changed executable contracts, `../../references/brownfield-assurance.md` only in brownfield mode, and `../../references/lifecycle-contract.md` only when the plan is not active.
+For additive file/context discoveries inside an unchanged owned task, first read only `../../references/task-amendments.md` and use `amend` if eligible. Do not load the full planning references or regenerate the plan for that path.
+
+For a semantic or topology replan, read `../../references/graph-contract.md` and `../../references/plan-refinement.md`. Load `../../references/pathfinder-workflow.md` only for a changed path or load-bearing uncertainty; `../../references/demonstrable-increments.md` for changed increment/composition boundaries; `../../references/agent-contracts.md` for changed packet/result details; `../../references/brownfield-assurance.md` in brownfield mode; and `../../references/lifecycle-contract.md` when the plan is inactive. Reuse current references already in context.
 
 Use `pyramid-task:expand` instead when a single executable task keeps the same purpose, contract, selected path, and external relations and only needs a deeper approved subtree.
 
@@ -15,7 +17,7 @@ Read `../../references/development-harness.md` when changing proof or adopting i
 
 1. Capture the triggering evidence or audit result.
 2. Confirm the plan lifecycle is active. Restore an archived plan or reopen affected completed work before replanning.
-3. Inspect affected nodes, the current demonstrable baseline, increment outcomes and gates, descendants, alternatives, completed evidence, and the current graph version.
+3. Start with affected node packets and bounded `diff` output. Inspect their dependency/proof consumers, relevant baseline and completed evidence; load the full canonical plan only to assemble the complete candidate. Do not reload unrelated source, logs or history. Capture current composite context before preview/apply.
 4. Preserve nodes, historical increment passes, and evidence that remain valid. Mark replaced paths `superseded`; never erase history or present a historical pass as current regression evidence.
 5. Re-run backward and forward path checks across the affected region. Start at the earliest invalid rung, preserve earlier verified rungs, and revise later acceptance and inherited proofs when a load-bearing assumption changes.
 6. Write a complete candidate plan JSON. Confirm that changed increment outcomes remain actor-visible and form a justified cumulative ladder, each has its own gate, each later gate depends on the previous verified increment outcome and inherits earlier proofs, and any distinct final gate covers every direct intent branch. Run the evidence-based refinement pass, write a `pyramid-plan-review-v1` artifact, and preserve valid completed work, evidence, assurance, and history. Use `pyramid-task:simplify` when reduction or fact-checking is the primary trigger.
@@ -25,7 +27,7 @@ Read `../../references/development-harness.md` when changing proof or adopting i
 python3 ../../scripts/pyramid.py replan --project <project-root> --plan <candidate-plan.json> --actor <actor> --reason <reason> --preview --json
 ```
 
-8. Explain added, changed, merged, split, superseded, and newly blocked or ready nodes and increments. Obtain direction before a material intent change or scope expansion.
+8. Report the material delta, invalidations and next action; reference the review artifact instead of repeating it. Obtain direction before a material intent change or scope expansion. Stop refinement once coverage, evidence and safety are adequate; another pass needs a concrete unresolved finding.
 9. Apply the approved revision. Brownfield replan stales affected inspections and assurance; run `pyramid-task:impact` to map new and changed tasks before their audits:
 
 ```bash

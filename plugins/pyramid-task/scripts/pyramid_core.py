@@ -53,11 +53,12 @@ from pyramid_graph import (
     node_map,
     start_blockers,
 )
-from pyramid_parallel import build_parallel_frontier
+from pyramid_parallel import build_parallel_frontier, _patterns_overlap, _task_scopes
+from pyramid_amendment import prepare_amendment
 from pyramid_verification import (
     VerificationError, contracts as verification_contracts, normalize_proofs,
     proof_readiness, publish_artifacts, query_harness, render_guide,
-    validate_contracts,
+    validate_contracts, validate_amendment_inputs,
 )
 from pyramid_history import (
     HistoryError,
@@ -4393,6 +4394,106 @@ def expand_project(
         ),
         **compiled,
     }
+
+
+def amend_task(
+    project: str | Path,
+    proposal_path: str | Path,
+    actor: str,
+    apply: bool = False,
+    expected_amendment: str | None = None,
+) -> dict[str, Any]:
+    """Extend one live owner's implementation context without replacing its contract."""
+    proposal = load_json(Path(proposal_path).expanduser().resolve())
+    paths = project_paths(project)
+    with project_lock(paths):
+        paths, plan, state = load_project(project)
+        require_active(state, "amend work")
+        try:
+            candidate, additions = prepare_amendment(plan, proposal)
+        except ValueError as exc:
+            raise PyramidError(str(exc)) from exc
+        nid = proposal["task"]
+        nodes = node_map(plan)
+        node, item = nodes[nid], state["nodes"][nid]
+        if node["kind"] not in EXECUTABLE_KINDS or node["selection"] != "primary":
+            raise PyramidError("Only primary executable tasks can be amended")
+        if item["execution"] != "working" or item.get("owner") != actor:
+            raise PyramidError("Only the working task owner may amend; resume or claim first")
+        expiry = parse_time(item.get("lease_expires_at"))
+        if expiry is None or expiry <= datetime.now(timezone.utc):
+            raise PyramidError("Amendment requires an unexpired ownership lease")
+        manifest, baseline, assurance = load_assurance_bundle(paths, plan)
+        for value in additions["allowed_write_scope"] + additions["required_context"]:
+            path = paths["root"] / value
+            if not path.is_file() or path.resolve() != path or not path.resolve().is_relative_to(paths["root"]):
+                raise PyramidError(f"Amendments require existing, non-symlink repository files: {value}")
+        writes = additions["allowed_write_scope"]
+        for value in writes:
+            if _path_matches(value, node["agent"]["allowed_write_scope"]):
+                raise PyramidError(f"Write path is already permitted; no amendment needed: {value}")
+        if writes and node["agent"].get("effect") == "evidence-only":
+            raise PyramidError("Evidence-only write-scope changes require replan")
+        try:
+            validate_amendment_inputs(paths["root"], candidate, nid, writes)
+        except VerificationError as exc:
+            raise PyramidError(str(exc)) from exc
+        for other_id, other in nodes.items():
+            if other_id == nid or state["nodes"][other_id]["execution"] not in {"working", "paused"}:
+                continue
+            scopes = _task_scopes(other)
+            if writes and (not scopes or any(_patterns_overlap(path, scope) for path in writes for scope in scopes)):
+                raise PyramidError(f"Amendment conflicts with active task {other_id}; resolve ownership first")
+        if writes and manifest and manifest.get("mode") == "brownfield":
+            mapped = {
+                impact["asset_id"] for impact in (assurance or {}).get("impacts", [])
+                if nid in impact.get("task_ids", []) and impact.get("status") != "dismissed"
+            }
+            for value in writes:
+                assets = set(asset_ids_for_file(baseline or {}, value))
+                if not assets or not assets.issubset(mapped):
+                    raise PyramidError(f"Amendment {value} needs impact mapping before extending scope")
+        errors = validate_plan(candidate)
+        if errors:
+            raise PyramidError("Invalid amendment candidate:\n- " + "\n- ".join(errors))
+        amendment_id = "AMEND-" + canonical_sha256({
+            "context": context_identity(plan, state), "proposal": proposal, "actor": actor,
+            "baseline": baseline, "assurance": assurance,
+        })
+        response = {
+            "status": "preview", "task": nid, "context": context_identity(plan, state),
+            "amendment_id": amendment_id, "additions": additions,
+            "reason": proposal["reason"], "boundary_review": proposal["boundary_review"],
+            "warnings": ["Boundary review is an agent assertion, not runtime proof of unchanged authority or sufficient verification."]
+                        + (["Scope additions conservatively stale affected brownfield inspections."] if writes else []),
+        }
+        if not apply:
+            return response
+        if not expected_amendment or expected_amendment != amendment_id:
+            raise PyramidError("Stale or missing amendment preview token; preview again before applying")
+        before = {field: copy.deepcopy(node["agent"][field]) for field in additions}
+        write_json(paths["plan"], candidate)
+        stale = _invalidate_assurance_for_change(
+            paths, candidate, {nid}, actor, f"Task {nid} write scope amended; review affected evidence."
+        ) if writes else []
+        item["updated_at"] = utc_now()
+        event = commit_event(
+            paths, state, actor=actor, event_type="task.amended", node=nid,
+            before=before,
+            after={field: node_map(candidate)[nid]["agent"][field] for field in additions},
+            payload={"reason": proposal["reason"], "amendment": proposal,
+                     "amendment_id": amendment_id, "stale_inspections": stale},
+        )
+        _compile_project_locked(project)
+        _, baseline, assurance = load_assurance_bundle(paths, candidate)
+        response.update({
+            "status": "applied", "context": context_identity(candidate, state),
+            "event": event, "stale_inspections": stale,
+            "mutation_guard": task_mutation_guard(candidate, state, nid, baseline, assurance),
+            "owner": item["owner"], "lease_expires_at": item["lease_expires_at"],
+            "graph_version": state["graph_version"],
+        })
+        return response
 
 
 def replan_project(

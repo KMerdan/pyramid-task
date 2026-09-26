@@ -4,6 +4,7 @@ import base64
 import copy
 import hashlib
 import json
+import shlex
 import subprocess
 import sys
 import tempfile
@@ -16,7 +17,7 @@ PLUGIN = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PLUGIN / 'scripts'))
 
 from pyramid_core import (
-    PyramidError, archive_project, audit_node, close_project, create_project,
+    PyramidError, amend_task, archive_project, audit_node, close_project, create_project,
     inspect_project, load_json, load_project, replan_project, reset_project,
     pause_task, resume_task, expand_project, expansion_parent_snapshot,
     restore_project, take_task, update_task, validate_plan, validate_project,
@@ -25,6 +26,7 @@ from pyramid_verification import (
     ARTIFACT_DIR, VerificationError, contracts, input_snapshot, normalize_proofs,
     proof_readiness, query_harness,
 )
+from pyramid_output import compact_response
 
 
 class HarnessTests(unittest.TestCase):
@@ -65,6 +67,7 @@ class HarnessTests(unittest.TestCase):
         return path
 
     def proof(self, nid):
+        """Synthetic observations for evidence-contract tests, not an executed probe."""
         packet = inspect_project(self.root, harness=nid)
         proof = packet['proof_templates'][0]
         for obs in proof['run']['observations']:
@@ -122,6 +125,182 @@ class HarnessTests(unittest.TestCase):
         packet = inspect_project(self.root, nid='RESEARCH-101')
         self.assertIn('harness', packet)
         self.assertNotIn('verification', packet['required_evidence'][0])
+
+    def amendment(self, write_paths, context_paths=None):
+        return self.write('amendment.json', {
+            'schema': 'pyramid-amendment-v1', 'task': 'RESEARCH-101',
+            'reason': 'Existing helper belongs to the same bounded investigation.',
+            'boundary_review': 'Outcome, acceptance, authority and procedure remain unchanged.',
+            'add_write_paths': write_paths, 'add_context_paths': context_paths or [],
+        })
+
+    def test_amendment_rejects_untracked_proof_scope_without_mutation(self):
+        take_task(self.root, 'worker', nid='RESEARCH-101')
+        outside = self.root / 'helper.txt'
+        outside.write_text('not covered by the task proof')
+        head = (self.root / '.pyramid/head.json').read_bytes()
+        with self.assertRaisesRegex(PyramidError, 'outside.*verification inputs'):
+            amend_task(self.root, self.amendment(['helper.txt']), 'worker')
+        self.assertEqual(head, (self.root / '.pyramid/head.json').read_bytes())
+        self.assertTrue(validate_project(self.root)['valid'])
+
+    def test_covered_amendment_preserves_proof_until_source_changes(self):
+        taken = take_task(self.root, 'worker', nid='RESEARCH-101')
+        proof = self.proof('RESEARCH-101')
+        path = self.amendment(['inputs/RESEARCH-101.txt'])
+        preview = amend_task(self.root, path, 'worker')
+        applied = amend_task(self.root, path, 'worker', True, preview['amendment_id'])
+        self.assertEqual(taken['packet']['owner'], applied['owner'])
+        self.assertNotEqual(taken['packet']['mutation_guard'], applied['mutation_guard'])
+        self.assertEqual(proof['run']['inputs_sha256'], self.proof('RESEARCH-101')['run']['inputs_sha256'])
+        self.assertEqual(proof['run']['contract_sha256'], self.proof('RESEARCH-101')['run']['contract_sha256'])
+        self.assertEqual('working', load_project(self.root)[2]['nodes']['RESEARCH-101']['execution'])
+        (self.root / 'inputs/RESEARCH-101.txt').write_text('candidate changed after amendment')
+        with self.assertRaisesRegex(PyramidError, 'candidate inputs changed'):
+            update_task(self.root, 'RESEARCH-101', 'worker', 'implemented',
+                        result_path=self.write('result.json', self.result('RESEARCH-101', proof)),
+                        expected_guard=applied['mutation_guard'])
+        self.assertTrue(validate_project(self.root)['valid'])
+
+        # A fresh actual observation can finish the same claim after the rejection.
+        updated = update_task(self.root, 'RESEARCH-101', 'worker', 'implemented',
+                              result_path=self.write('result.json', self.result('RESEARCH-101')),
+                              expected_guard=applied['mutation_guard'])
+        self.assertEqual('implemented', updated['status'])
+        self.assertLess(len(json.dumps(compact_response(updated, 'update'))), 0.7 * len(json.dumps(updated)))
+        self.audit('RESEARCH-101')
+        self.assertTrue(validate_project(self.root)['valid'])
+
+    def test_amendment_resolves_reused_inputs_and_preserves_context_only_proof(self):
+        ev = self.node('RESEARCH-101')['required_evidence'][0]
+        ev['verification'] = {'criteria': ['AC-101-01'], 'reuse': 'TASK-201/EVREQ-201-01'}
+        replan_project(self.root, self.write('reuse-plan.json', self.plan), 'planner', 'share probe', True)
+        take_task(self.root, 'worker', nid='RESEARCH-101')
+        path = self.amendment(['inputs/TASK-201.txt'])
+        preview = amend_task(self.root, path, 'worker')
+        amend_task(self.root, path, 'worker', True, preview['amendment_id'])
+        before = self.proof('RESEARCH-101')['run']['inputs_sha256']
+        (self.root / 'notes.txt').write_text('non-binding read context')
+        path = self.amendment([], ['notes.txt'])
+        preview = amend_task(self.root, path, 'worker')
+        amend_task(self.root, path, 'worker', True, preview['amendment_id'])
+        self.assertEqual(before, self.proof('RESEARCH-101')['run']['inputs_sha256'])
+        self.assertTrue(validate_project(self.root)['valid'])
+
+    def test_amendment_uses_capture_globs_and_exclusions_without_requiring_unbuilt_setup(self):
+        ev = self.node('RESEARCH-101')['required_evidence'][0]
+        ev['verification']['inputs'] = ['inputs/**', 'proof-output/**', 'future-fixture.txt']
+        replan_project(self.root, self.write('glob-plan.json', self.plan), 'planner', 'declare setup', True)
+        take_task(self.root, 'worker', nid='RESEARCH-101')
+        # Missing future setup does not prevent a covered amendment; it still blocks capture.
+        preview = amend_task(self.root, self.amendment(['inputs/TASK-201.txt']), 'worker')
+        self.assertEqual('preview', preview['status'])
+        with self.assertRaisesRegex(PyramidError, 'outside.*verification inputs'):
+            amend_task(self.root, self.amendment(['proof-output/check.txt']), 'worker')
+        self.assertTrue(inspect_project(self.root, harness='RESEARCH-101')['setup_blockers'])
+
+    def test_compact_bound_update_preserves_proof_failures_and_recovery_queries(self):
+        take_task(self.root, 'worker', nid='RESEARCH-101')
+        full = update_task(self.root, 'RESEARCH-101', 'worker', 'blocked', reason='Probe failed',
+                           result_path=self.write('result.json', {**self.result('RESEARCH-101'),
+                               'checks': [{'command': 'probe', 'result': 'failed'}]}))
+        compact = compact_response(full, 'update')
+        self.assertEqual('agent-status-v1', compact['packet']['schema'])
+        self.assertNotIn('contracts', compact['packet']['harness'])
+        self.assertEqual(['contracts'], compact['omitted_fields']['packet.harness'])
+        self.assertEqual(full['packet']['harness']['capture'], compact['packet']['harness']['capture'])
+        self.assertEqual(full['event']['payload'], compact['event']['payload'])
+        self.assertEqual('Probe failed', compact['packet']['blocker'])
+        self.assertEqual(full['packet']['harness'], inspect_project(self.root, nid='RESEARCH-101')['harness'])
+        self.assertEqual(full['packet'], compact_response(full, 'resume')['packet'])
+        self.assertLess(len(json.dumps(compact)), 0.8 * len(json.dumps(full)))
+
+    def test_executed_probe_failure_repair_and_audit_through_cli(self):
+        nid = 'RESEARCH-101'
+        source = self.root / f'inputs/{nid}.txt'
+        probe = self.root / 'inputs/probe.py'
+        probe.write_text(
+            "from pathlib import Path\n"
+            "ok = Path('inputs/RESEARCH-101.txt').read_text() == 'RESEARCH-101'\n"
+            "print('PASS identity' if ok else 'FAIL identity')\n"
+            "raise SystemExit(0 if ok else 1)\n"
+        )
+        command = [sys.executable, '-B', 'inputs/probe.py']
+        spec = self.node(nid)['required_evidence'][0]['verification']
+        spec.update(method='command', procedure=shlex.join(command),
+                    inputs=[f'inputs/{nid}.txt', 'inputs/probe.py'])
+        self.node(nid)['agent']['allowed_write_scope'].append(f'inputs/{nid}.txt')
+        replan_project(self.root, self.write('probe-plan.json', self.plan),
+                       'planner', 'Exercise a real subprocess observation', True)
+
+        def cli(*args, expected_code=0):
+            completed = subprocess.run(
+                [sys.executable, '-B', str(PLUGIN / 'scripts/pyramid.py'), *args,
+                 '--project', str(self.root), '--json'],
+                capture_output=True, text=True, timeout=30,
+            )
+            self.assertEqual(expected_code, completed.returncode, completed.stdout + completed.stderr)
+            return json.loads(completed.stdout)
+
+        def observe(expected_code, name):
+            # Capture BEFORE execution; derive observations from the real exit/output.
+            proof = cli('inspect', '--harness', nid)['proof_templates'][0]
+            completed = subprocess.run(command, cwd=self.root, capture_output=True,
+                                       text=True, timeout=10)
+            self.assertEqual(expected_code, completed.returncode, completed.stderr)
+            status = 'passed' if completed.returncode == 0 else 'failed'
+            artifact = self.root / 'proof-output' / name
+            artifact.write_text(completed.stdout + completed.stderr)
+            for observation in proof['run']['observations']:
+                observation.update(result=status, summary=completed.stdout.strip(),
+                                   reviewer='subprocess-fixture', artifacts=[{
+                                       'path': artifact.relative_to(self.root).as_posix(),
+                                       'sha256': hashlib.sha256(artifact.read_bytes()).hexdigest(),
+                                   }])
+            result = self.result(nid, proof)
+            result['changed_files'] = [f'inputs/{nid}.txt']
+            result['checks'] = [{'command': shlex.join(command), 'result': status,
+                                 'evidence': [artifact.relative_to(self.root).as_posix()]}]
+            return result, artifact
+
+        taken = cli('take', '--node', nid, '--actor', 'worker')
+        guard = taken['packet']['mutation_guard']
+        source.write_text('broken identity')
+        failed, failure_log = observe(1, 'failure.txt')
+        self.assertEqual('FAIL identity\n', failure_log.read_text())
+        failed_path = self.write('failed-probe.json', failed)
+        head = (self.root / '.pyramid/head.json').read_bytes()
+        rejected = cli('update', '--node', nid, '--actor', 'worker', '--status', 'implemented',
+                       '--expected-guard', guard, '--result', str(failed_path), expected_code=2)
+        self.assertIn('Every required observation must be performed', rejected['error'])
+        self.assertEqual(head, (self.root / '.pyramid/head.json').read_bytes())
+        self.assertFalse((self.root / ARTIFACT_DIR).exists())
+        failed.pop('proofs')  # Failed observations belong in checks, not passing proof runs.
+        blocked = cli('update', '--node', nid, '--actor', 'worker', '--status', 'blocked',
+                      '--reason', 'Identity probe failed', '--expected-guard', guard,
+                      '--result', str(self.write('failed-probe.json', failed)))
+        self.assertEqual(failed['checks'], blocked['event']['payload']['result']['checks'])
+        failure_event = load_json(self.root / blocked['event']['path'])
+
+        source.write_text(nid)
+        passed, success_log = observe(0, 'success.txt')
+        self.assertEqual('PASS identity\n', success_log.read_text())
+        updated = cli('update', '--node', nid, '--actor', 'worker', '--status', 'implemented',
+                      '--expected-guard', blocked['packet']['mutation_guard'],
+                      '--result', str(self.write('passed-probe.json', passed)))
+        self.assertEqual('pending', updated['packet']['verification'])
+        stored = load_project(self.root)[2]['nodes'][nid]['last_result']
+        artifact = stored['proofs'][0]['run']['observations'][0]['artifacts'][0]
+        self.assertEqual(success_log.read_bytes(), (self.root / artifact['path']).read_bytes())
+        evidence = self.write('probe-audit.json', {
+            'schema': 'audit-result-v1', 'target': nid, 'result': 'pass',
+            'affected_claims': [nid], 'recommended_action': 'advance',
+        })
+        cli('audit', '--node', nid, '--actor', 'reviewer', '--result', 'pass',
+            '--evidence', str(evidence))
+        self.assertEqual('passed', cli('inspect', '--node', nid)['verification'])
+        self.assertEqual(failure_event, load_json(self.root / blocked['event']['path']))
+        self.assertTrue(cli('validate')['valid'])
 
     def test_published_example_and_cli_query(self):
         example = load_json(PLUGIN / 'assets/example-harness-plan.json')

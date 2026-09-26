@@ -17,6 +17,15 @@ python3 -m pip install -r requirements-dev.txt
 make check
 ```
 
+## Test scope and evidence
+
+- Runtime and CLI tests create isolated projects and exercise real files, guards, events, state transitions, proof hashes, artifact imports and recovery paths. Efficiency tests verify that compact output preserves safety data and full records remain recoverable.
+- Most harness tests supply synthetic observations to test evidence contracts. Their `passed` fixture values are not actual project tests or model reviews. The executed-probe integration test separately runs a real subprocess, derives failure/success from its exit and output, rejects failed completion, records the failure, repairs the input and verifies publication and audit through the CLI.
+- Targeted mocks inject ownership/conflict states, clock expiry or I/O failures; they do not replace the amendment validator or force a passing result. The concurrent-update projection test constructs an intervening mutation deterministically; it is not a scheduling stress test.
+- The image fixture tests artifact-format requirements, not browser capture or visual judgment. No suite certifies screenshot interpretation, agent planning quality, real-product acceptance, host compaction, or end-to-end token/latency savings. Those require relevant real observations or separately scoped evaluations.
+
+Keep contract fixtures for fast negative-path coverage, and use executed integration tests where behavior crosses a process or persistence boundary. Do not label synthetic evidence as performed product validation or duplicate checks without a distinct failure mode.
+
 ## Design invariants
 
 - `.pyramid/plan.json` is canonical topology; generated files are projections.
@@ -32,7 +41,7 @@ make check
 - Evidence-only classification requires declared output scope; generated output requires a real baseline-asset mapping.
 - Reset and restore preserve recoverable archives.
 - Agent packets never expand normal authorization to files or external systems.
-- Codex and Claude Code manifests ship from `main` and keep the same base release version; only the Codex manifest carries a cache-busting build suffix.
+- Codex and Claude Code manifests ship from `main` and keep the same base release version; only the Codex manifest may carry a cache-busting build suffix.
 - Pure domain modules do not import `pyramid_core`; the core facade owns locks, events, guarded mutations, and compatibility exports.
 
 ## Skill changes

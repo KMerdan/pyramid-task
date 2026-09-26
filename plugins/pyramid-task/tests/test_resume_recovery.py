@@ -182,7 +182,17 @@ class RecoveryResumeTests(unittest.TestCase):
         response = json.loads(completed.stdout)
         self.assertEqual("resumed", response["status"])
         self.assertTrue(response["event"]["payload"]["for_recovery"])
-        self.assertEqual("blocked", response["event"]["after"]["health"])
+        self.assertEqual("agent-task-v1", response["packet"]["schema"])
+        self.assertEqual("working", response["packet"]["execution"])
+        self.assertEqual("next-worker", response["packet"]["owner"])
+        self.assertEqual("blocked", response["packet"]["health"])
+        self.assertEqual("pyramid-event-reference-v1", response["event"]["schema"])
+        event = load_json(self.root / response["event"]["path"])
+        self.assertEqual(response["event"]["id"], event["id"])
+        self.assertEqual("blocked", event["after"]["health"])
+        self.assertEqual(event["after"]["blocker"], response["packet"]["blocker"])
+        state = load_json(self.root / ".pyramid/state.json")["nodes"]["RESEARCH-101"]
+        self.assertEqual(event["after"], state)
 
 
 if __name__ == "__main__":

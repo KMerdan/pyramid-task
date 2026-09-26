@@ -1191,6 +1191,7 @@ def _journey(plan: dict[str, Any], state: dict[str, Any], events: list[dict[str,
         )
     turning_types = {
         "plan.replanned",
+        "task.amended",
         "task.expanded",
         "task.reopened",
         "task.blocked",

@@ -35,6 +35,12 @@ Use `mutation_guards.task` for take, update, and pause, and `mutation_guards.aud
 
 Current-plan mutation history is stored as one hash-linked file per mutation under `.pyramid/events/`; it is not appended to the task packet or stored as a version array in the current graph JSON. Cross-intent causal history is stored separately under `.pyramid/history/` and queried through `history`. Do not read either record directory directly for normal work.
 
+CLI output is compact by default: duplicate event before/after snapshots become an explicit event reference; payloads, warnings and invalidations remain. For `update` only, the unchanged task contract (including static harness contracts) is omitted and the packet is labeled `agent-status-v1`. Harness capture/guide pointers, dependencies, health, ownership and guards remain. Take/resume still return complete task contracts. If another mutation intervened before response assembly, update conservatively returns the full packet. `omitted_fields` discloses the projection; canonical records and Python API output are unchanged. Use `--full` when a decision needs the original complete command response; explicit `--compact` remains supported. Read only the selected node or referenced event to recover missing detail, never repeat a mutation. Compact status is not proof-readiness: use `inspect --audit-readiness` before audit.
+
+For additive implementation-file/context discoveries inside an unchanged working task, read `task-amendments.md`. `amend` constructs the candidate internally, preserves ownership, emits a new guard, and records the reviewed delta. It does not approve semantic scope expansion or pass an audit.
+
+If projection metadata would make a response larger, the default returns it unchanged. Consumers must read `schema`/`response_format`, not assume every response contains an `agent-status-v1` packet or event reference. `--full` disables the output projection but does not expand the selected query: use `diff --detail` or `inspect --assurance-detail` for those additional scopes.
+
 ## Ephemeral intra-task helpers
 
 A task owner may use spare host slots for bounded read-only research or snapshot-isolated validation. Validate prompts and responses with `helper-job.schema.json` and `helper-result.schema.json`, and follow `intra-task-helpers.md` for eligibility, freshness, slot accounting, and reconciliation.

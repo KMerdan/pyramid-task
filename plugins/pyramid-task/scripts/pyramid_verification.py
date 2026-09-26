@@ -163,10 +163,10 @@ def contracts(plan: dict, nid: str) -> list[dict]:
     return result
 
 
-def input_snapshot(root: Path, plan: dict, contract: dict) -> dict:
+def _input_paths(root: Path, plan: dict, contract: dict, *, require_matches: bool = True) -> set[str]:
     root = root.resolve()
     outputs = [p for n in plan['nodes'] for p in n.get('agent', {}).get('evidence_outputs', [])]
-    files: dict[str, str] = {}
+    files: set[str] = set()
     for pattern in contract['inputs']:
         # Python 3.13 accepts embedded ** where older pathlib rejects it.
         # Enforce one portable grammar before delegating matching to the host.
@@ -191,11 +191,35 @@ def input_snapshot(root: Path, plan: dict, contract: dict) -> dict:
                 continue
             if not path.resolve().is_relative_to(root):
                 raise VerificationError(f'Input escapes project: {rel}')
-            files[rel] = hashlib.sha256(path.read_bytes()).hexdigest()
+            files.add(rel)
             matched = True
-        if not matched:
+        if require_matches and not matched:
             raise VerificationError(f"No verification inputs match {pattern!r}; establish the capability before collecting proof")
+    return files
+
+
+def input_snapshot(root: Path, plan: dict, contract: dict) -> dict:
+    files = {rel: hashlib.sha256((root / rel).read_bytes()).hexdigest()
+             for rel in _input_paths(root, plan, contract)}
     return {'sha256': digest(files), 'file_count': len(files)}
+
+
+def validate_amendment_inputs(root: Path, plan: dict, nid: str, writes: list[str]) -> None:
+    """Do not extend bound implementation scope beyond its resolved proof inputs.
+
+    Missing setup elsewhere is allowed here; collection still requires every
+    pattern to match. Use the exact capture matcher, including output exclusions.
+    This checks file coverage, not the semantic sufficiency of the procedure.
+    """
+    if plan.get('schema_version') != 2 or not writes:
+        return
+    covered: set[str] = set()
+    for contract in contracts(plan, nid):
+        covered.update(_input_paths(root, plan, contract, require_matches=False))
+    missing = sorted(set(writes) - covered)
+    if missing:
+        raise VerificationError('Amendment write paths are outside this task\'s verification inputs: '
+                                + ', '.join(missing) + '; replan the proof contract before extending scope')
 
 
 def known_runs(state: dict) -> dict[str, dict]:

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/amendment.schema.json",
+  "title": "Additive task amendment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "task", "reason", "boundary_review", "add_write_paths", "add_context_paths"],
+  "properties": {
+    "schema": {"const": "pyramid-amendment-v1"},
+    "task": {"type": "string", "minLength": 1},
+    "reason": {"type": "string", "pattern": "\\S"},
+    "boundary_review": {"type": "string", "pattern": "\\S"},
+    "add_write_paths": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "add_context_paths": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  },
+  "anyOf": [
+    {"properties": {"add_write_paths": {"minItems": 1}}},
+    {"properties": {"add_context_paths": {"minItems": 1}}}
+  ]
+}

@@ -2,6 +2,15 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## 3.9.0
+
+- Integrate the guarded task-amendment and compact-output work from `1eea7dd`. Existing-file additions within an unchanged owned task use a preview-bound delta instead of a full plan rewrite; ownership, conflict checks, assurance invalidation and causal history remain intact.
+- Make amendments harness-aware: schema-2 write additions must already belong to the task's resolved proof inputs using the same glob and evidence-output exclusions as capture. Changed proof requirements still require replan; covered source edits invalidate old proof normally.
+- Make compact CLI projections the default, with explicit omissions and event references; add `--full` for decisions needing the original command response and retain explicit `--compact`. Preserve full canonical/Python API data, failed evidence, warnings, blockers and fresh guards; keep take/resume packets complete and fall back to a full update packet if another mutation intervened. CLI consumers requiring the old complete response shape must use `--full`.
+- Route create/replan references by the current decision, reuse current baseline/packet context, and avoid whole-plan review for eligible amendments. Preserve candidate refinement and outcome-scoped harness obligations.
+- Add amendment/harness integration and output-safety regression tests. Output bytes and reference word counts are context-size proxies, not measured end-to-end model token or latency savings.
+- Add an executed subprocess failure/repair/audit test through the CLI and document the limits of synthetic proof and visual fixtures. Clarify that health/release updates need no new test run and that CLI compact output does not trigger host conversation compaction.
+
 ## 3.8.1
 
 - Enforce portable recursive-glob syntax before matching proof inputs: `**` must occupy a complete path component. Reject malformed patterns consistently on Python 3.10, 3.12 and 3.13, including patterns that would otherwise match files on newer Python.

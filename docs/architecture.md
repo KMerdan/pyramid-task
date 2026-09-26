@@ -15,6 +15,8 @@ flowchart LR
     H["Codex or Claude Code"] --> K["Skills and references"]
     K --> CLI["pyramid.py CLI adapter"]
     CLI --> CORE["pyramid_core.py transaction facade"]
+    CLI --> OUTPUT["pyramid_output.py compact response projection"]
+    CORE --> AMEND["pyramid_amendment.py additive candidate preparation"]
     CORE --> GRAPH["pyramid_graph.py pure graph rules"]
     CORE --> PAR["pyramid_parallel.py pure batch analysis"]
     PAR --> GRAPH
@@ -49,6 +51,16 @@ Fingerprints bind declared source/fixture/environment files and proof-family cri
 The existing update/audit publication imports artifact bytes, updates state and event records, and publishes the canonical head. Ingestion errors clean up their own newly created blobs; interruptions after ingestion use the existing fail-closed head validation, not a second transaction protocol. Archive/reset/restore already retain or replace report storage, so proof shares those lifecycle boundaries. Restore does not assert current source identity; audit readiness and closure revalidate it. The Observer remains an event-driven view of recorded verification, not a working-tree monitor.
 
 Replan preserves implementation history but invalidates affected proof families and their dependent closure in both old and new graphs. Schema-1 adoption is a guarded replan, not an installation side effect. Project format V3 and state schema 1 remain unchanged; plan schema 2 prevents older runtimes from silently dropping enforcement. The agent guidance covers create/new-intent, implement, replan/expand, pause/resume, audit, closure and retirement without creating new lifecycle states.
+
+## Amendment and output boundaries
+
+`pyramid_amendment.py` prepares a strict additive candidate without persistence. The transaction facade checks ownership/lease, exact existing files, concurrent write scopes, brownfield asset mapping and schema-2 proof-input coverage before any write. Preview binds the proposal, actor and canonical context; apply validates again under the project lock, retains ownership and publishes a `task.amended` event with a fresh task guard. Only write/context additions are permitted. Semantic acceptance, procedure, dependency or authority changes remain replans.
+
+Amendment coverage and input capture share one matcher in `pyramid_verification.py`, including recursive globs, resolved reuse and evidence-output exclusions. Missing future setup may block proof collection without blocking an already-covered amendment. No amendment silently broadens verification inputs. An unchanged contract/fingerprint need not lose valid proof because of a graph revision; subsequent source edits still invalidate it. The agent must review procedural sufficiency, which file coverage alone cannot establish.
+
+`pyramid_output.py` is a CLI-only projection after the normal runtime operation, enabled by default (also selectable with `--compact`). It replaces event snapshots with an explicit reference while retaining payloads. For update it omits static task/harness fields only when the packet and event identify the same committed context; an intervening mutation returns a full packet. Failures, warnings, invalidations, dependencies, ownership, capture pointers and guards remain available. Take/resume retain complete contracts. `--full` restores the original complete command response when needed; Python APIs and canonical records remain unchanged. No second compact state is persisted, and no hook is needed to select this default.
+
+Skills select only the references needed for the current decision. Candidate refinement remains required, but generic repeated review, full-graph reloads on task updates and full replans for eligible amendments are avoided. Context-size tests do not assert end-to-end model token savings.
 
 ## Cross-intent history boundary
 

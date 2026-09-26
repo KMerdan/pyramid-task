@@ -1,6 +1,6 @@
 # Evidence-Based Plan Refinement
 
-Use this contract after drafting a complete candidate graph and before making it canonical. Use the same analysis on an existing graph, but route any canonical topology change through replan.
+Use this contract after drafting a complete candidate graph and before making it canonical. Use the same analysis on an existing graph, but route any canonical topology change through replan. Review a candidate once, then revisit only concrete unresolved findings or affected invariants after a correction. Do not run a second generic review or invent alternatives to fill a template. An eligible task amendment uses its narrow boundary review instead of this whole-plan artifact.
 
 ## Evidence standard
 
@@ -65,8 +65,10 @@ A revised plan must preserve:
 - the current demonstrable baseline, justified increment ladder, and historical gate evidence;
 - explicit uncertainty and rejected alternatives needed for future reasoning.
 
-After refinement, re-run graph validation, the pathfinder audit, parallel-readiness inspection when relevant, and brownfield assurance checks. A structurally valid graph can still fail this semantic review.
+After refinement, run graph validation and the requirement/claim trace above; inspect parallel readiness and brownfield assurance when applicable. Revisit deeper pathfinder analysis only for changed paths or unresolved load-bearing uncertainty. A structurally valid graph can still fail this semantic review.
 
 ## Review artifact
 
 Write `pyramid-plan-review-v1` JSON against `../schemas/plan-review.schema.json`. Bind it to the source and revised plan hashes. Record facts separately from findings, connect findings to fact IDs, trace each intent requirement before and after, state invariant results, report graph metrics, and name limitations. A review may validly conclude `retained` when every apparent simplification would weaken the contract.
+
+For these review references, compute SHA-256 over the exact saved plan file bytes, as in the published example; do not substitute a reserialized JSON hash or runtime mutation guard. A retained candidate has identical source/revised hashes. Recompute the binding after any file change.

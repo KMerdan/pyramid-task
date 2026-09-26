@@ -11,15 +11,20 @@ Read `../../references/development-harness.md` while defining proof. Create sche
 
 ## Context routing
 
-Read `../../references/pathfinder-workflow.md`, `../../references/demonstrable-increments.md`, `../../references/plan-refinement.md`, and `../../references/graph-contract.md` for graph construction and candidate refinement. Read `../../references/agent-contracts.md` when defining executable packets. Read `../../references/brownfield-assurance.md` only for an existing system. Read `../../references/lifecycle-contract.md` only when an existing plan requires routing to another skill.
+Read `../../references/graph-contract.md` for graph construction and `../../references/plan-refinement.md` when the candidate is ready for review. Together with the harness contract above, these are the core planning references; do not preload all workflows.
 
-Use `../../assets/example-plan.json` as a structural example, never as product evidence.
+- Read `../../references/pathfinder-workflow.md` when a load-bearing uncertainty or competing architecture needs a deeper path comparison.
+- Read `../../references/demonstrable-increments.md` when designing multiple increments, composition or delivery-environment boundaries. The graph contract covers a simple single-increment plan.
+- Read `../../references/agent-contracts.md` only for packet/result details not covered by the graph and harness contracts.
+- Read `../../references/brownfield-assurance.md` for an existing system; read `../../references/lifecycle-contract.md` only when an existing plan requires lifecycle routing.
+
+Reuse current facts and references already in context; reopen them when missing or changed. Inspect the smallest repository region that establishes scope, dependencies and proof. Do not copy entire examples, logs or history into reasoning or reports. Examples show structure, never product evidence.
 
 ## Workflow
 
 1. Read the source request, repository shape, existing plans, tests, schemas, history, and constraints. Run `doctor --json` when `.pyramid/plan.json` exists. Use `pyramid-task:new-intent` for another intent; use `pyramid-task:upgrade` only when continuing the same legacy intent.
 2. Normalize the intent into actors, target state, success evidence, invariants, constraints, non-goals, and assumptions. Ask only about ambiguities that would materially change the path; otherwise record the assumption.
-3. Gather evidence. Separate observed facts, sourced claims, assumptions, and unknowns. For an existing system, build a `pyramid-baseline-v1` asset, relation, history, ownership, and unknown ledger; use `pyramid-task:assess` when this needs a dedicated pass.
+3. Gather evidence for the affected path. Separate observed facts, sourced claims, assumptions, and unknowns. Reuse a current brownfield baseline and inspect affected assets; build or refresh it with `pyramid-task:assess` only where missing or stale. Stop discovery when load-bearing claims are evidenced, explicitly assumed with early validation, or blocked; do not survey unrelated subsystems.
 4. Define the current demonstrable baseline and the smallest evidence-supported increment ladder. For software, each rung should build or launch and complete a meaningful actor-visible scenario. Record the baseline, ordered ladder, and rejected slicing alternatives in a selected-path decision backed by evidence. Keep one increment when no smaller honest state exists; never call setup alone an increment.
 5. Backward-chain from the intent through the ladder to required outcomes. Forward-chain from the current baseline to feasible work and proof. Reconcile both chains. Shape sibling work as independently reviewable outcomes where the evidence supports it: minimize unnecessary hard dependencies, assign genuinely independent branches the same earliest safe wave, keep scopes disjoint, and add one joint audit for their composition. Do not persist parallel groups; the runtime derives them from live readiness.
 6. Compare material alternatives by evidence strength, constraint fit, risk, reversibility, dependency burden, increment quality, and testability. Preserve rejected alternatives and rationale.
@@ -32,9 +37,9 @@ Use `../../assets/example-plan.json` as a structural example, never as product e
 python3 ../../scripts/pyramid.py create --project <project-root> --plan <candidate-plan.json> --actor <actor> --mode auto --baseline <baseline.json> --assurance <assurance.json> --json
 ```
 
-11. Omit baseline and assurance inputs only when an incomplete placeholder is honest; complete assessment and impact analysis before a brownfield audit can pass.
+11. Omit baseline and assurance inputs for genuine greenfield projects. In brownfield mode, permit an incomplete placeholder only when honest; complete assessment and impact analysis before an audit can pass.
 12. Run `validate` and inspect the ready frontier plus assurance blockers. Confirm that the increment outcomes form a justified ladder, every increment has its gate, later gates inherit prior proofs, and no wave is being reported as delivery evidence. When parallel execution is useful, also run `inspect --parallel-ready --max-agents <slots>` to confirm that intended sibling branches are actually independent. Fix candidates and recreate only when creation failed before committing project state. Use `reset`, never `create --force`, when a project already exists.
-13. Summarize the intent, captured source starting point, current demonstrable baseline, increment ladder and gates, selected path, refinement findings and metrics, levels, ready tasks, affected assets, inspection gaps, rejected alternatives, assumptions, and limitations. The runtime creates the immutable intent-start record; do not write history manually.
+13. Report the selected path, next demonstrable gate, ready work, material unknowns and evidence locations. Keep the complete reasoning in the plan/review artifacts, not repeated in the handoff. The runtime creates the immutable intent-start record; do not write history manually.
 
 ## Boundaries
 

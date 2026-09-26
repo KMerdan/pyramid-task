@@ -7,7 +7,7 @@
 
 Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
-Version 3.8.1 includes outcome-scoped development harnesses: plan the smallest sufficient probes and visual inspection, reuse existing checks, bind observations to the candidate, and retain proof through the existing lifecycle. It also includes blocked-task recovery, history compatibility fixes and consistent input-pattern validation across supported Python versions. The same `main` branch and versioned source package support Codex and Claude Code.
+Version 3.9.0 adds compact-by-default CLI output, guarded task amendments and decision-scoped context loading. Outcome-scoped development harnesses still require the smallest sufficient probes and visual inspection, reuse existing checks, bind observations to the candidate, and retain proof through the lifecycle. The same `main` branch and versioned source package support Codex and Claude Code.
 
 ![Pyramid Task Intent Observer showing outcome progress, an active blocker, recommended action, and intent structure](docs/images/pyramid-task-map.png)
 
@@ -180,6 +180,36 @@ python3 plugins/pyramid-task/scripts/pyramid.py update \
 python3 plugins/pyramid-task/scripts/pyramid.py inspect \
   --project /path/to/project --audit-readiness GATE-205 --json
 ```
+
+## Context efficiency
+
+Available in 3.9.0: `amend`, compact output by default, and `--full` for complete responses. CLI consumers requiring the pre-3.9 response shape must add `--full`; canonical records and Python API responses are unchanged.
+
+Pyramid's `--compact` reduces CLI response data; it does not compact the host conversation. Automatic conversation compaction and phase-triggered compaction hooks are not implemented.
+
+Spend context on the current decision, not repeated planning. Create loads graph, harness and candidate-refinement guidance; detailed path comparison, multi-increment design and brownfield assurance are loaded only when applicable. Reuse current baseline facts and task packets. A correction triggers another review only for concrete findings and affected invariants.
+
+| Situation | Smallest sufficient path |
+| --- | --- |
+| Routine progress with the task contract already in context | `update --json`: compact status, blockers and guards by default |
+| An existing implementation/context file is discovered inside the same task outcome | Preview/apply an `amend` delta; retain the claim |
+| Acceptance, proof inputs/procedure, dependencies or authority must change | Normal guarded `replan` with candidate review |
+| Context was lost or work is handed off | Full `inspect --node`, `take` or `resume` packet |
+
+CLI responses are compact by default: duplicate event snapshots and unchanged update contract fields, including static harness contracts, are omitted. Payloads, failed evidence, warnings, invalidations, dependencies and ownership remain. Explicit `omitted_fields` and event paths make the projection recoverable; canonical records and Python API responses remain complete. Use `--full` when more decision detail is necessary or an existing CLI consumer requires the old complete response shape; `--compact` remains an explicit alias for the default. Recover missing detail afterward through a read-only node/event query, never by repeating a mutation. A concurrent mutation causes update to retain its full packet. Read current proof freshness through audit readiness, not a compact progress acknowledgment. `--full` restores the selected command's response, not broader query scope such as `diff --detail`.
+
+An amendment accepts only exact existing files within an unchanged working task's outcome. It checks ownership, active-task conflicts and brownfield mappings. In schema-2 plans, added write files must already be covered by that task's resolved verification inputs. Otherwise replan the proof contract first. Input coverage does not establish semantic test sufficiency or authorize broader work. New files and changes to acceptance, procedures or generated-output policy also require replan.
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py amend \
+  --project /path/to/project --proposal amendment.json --actor worker \
+  --preview --json
+python3 plugins/pyramid-task/scripts/pyramid.py amend \
+  --project /path/to/project --proposal amendment.json --actor worker \
+  --apply --expected-amendment <preview-amendment-id> --json
+```
+
+Already-small responses remain unchanged when compact metadata would add overhead. See the [amendment contract and proposal example](plugins/pyramid-task/references/task-amendments.md). Reduced JSON bytes and reference words measure context size; they are not a claim of measured end-to-end model token or latency savings.
 
 ## Parallel execution with sub-agents
 
@@ -458,6 +488,9 @@ plugins/pyramid-task/
 │   ├── pyramid_graph.py               Pure graph and readiness primitives
 │   ├── pyramid_parallel.py            Pure parallel-frontier analysis
 │   ├── pyramid_assurance.py           Assurance domain rules
+│   ├── pyramid_amendment.py           Pure additive candidate preparation
+│   ├── pyramid_output.py              Loss-aware CLI response projections
+│   ├── pyramid_verification.py        Outcome-scoped proof and candidate inputs
 │   ├── pyramid_history.py             Append-only intent provenance and replay rules
 │   ├── pyramid_live.py                Validated loopback live server
 │   └── pyramid_visualizer.py          Static interactive renderer
@@ -478,6 +511,8 @@ make check
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for design invariants and review expectations. Security issues should follow [SECURITY.md](SECURITY.md). Release changes are recorded in [CHANGELOG.md](CHANGELOG.md).
+
+For what the tests execute versus simulate, see [test scope and evidence](CONTRIBUTING.md#test-scope-and-evidence). Passing runtime tests does not certify an agent's semantic or visual review.
 
 Maintainers can read [docs/architecture.md](docs/architecture.md) for module boundaries and the incremental plan for reducing `pyramid_core.py` without a compatibility-breaking rewrite.
 

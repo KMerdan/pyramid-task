@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/event-reference.schema.json",
+  "title": "Compact event reference with full payload and omitted snapshots",
+  "type": "object",
+  "required": ["schema", "id", "path", "type", "graph_version", "payload"],
+  "properties": {
+    "schema": {"const": "pyramid-event-reference-v1"},
+    "id": {"type": "string"},
+    "path": {"type": "string"},
+    "type": {"type": "string"},
+    "graph_version": {"type": "integer"},
+    "payload": {"type": "object"}
+  },
+  "additionalProperties": true
+}

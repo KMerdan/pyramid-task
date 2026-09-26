@@ -48,10 +48,11 @@ Include:
 - a requirement to report unexpected scope before writing it;
 - the join gate and an instruction not to perform it independently.
 
-Do not include unrelated packets, full assurance detail, all event files, or guessed implementation instructions.
+Do not include unrelated packets, full assurance detail, all event files, or guessed implementation instructions. Budget duplicated context and worker results before delegation; unused capacity is acceptable when extra workers would only repeat discovery.
 
 ## Boundaries
 
+- Qualification jobs consume frozen, identified source/build outputs. Never rebuild a directory while another job consumes it; use isolated outputs or serialize the jobs. Preserve full logs on disk and return bounded results with evidence references.
 - Treat parallel groups as disposable read-only recommendations. Recompute them after relevant state changes; never persist them in `plan.json` or `state.json`.
 - Treat intra-task helpers as disposable execution aids, not graph tasks, events, owners, guards, or independent completion claims.
 - Same level does not mean independent. Same wave is necessary but not sufficient.
