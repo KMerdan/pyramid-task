@@ -1,0 +1,141 @@
+{
+  "fixture_only": true,
+  "live_downgrade_was_ineligible": true,
+  "matching_snapshot_recovery_ready": true,
+  "original_proof_bytes_unchanged": true,
+  "newer_history_records_unchanged": 3,
+  "probe_exit_code": 0,
+  "probe_stdout": "PASS producer\n",
+  "cli": [
+    {
+      "runtime": "4.0.0",
+      "operation": "create",
+      "exit_code": 0,
+      "status": "created",
+      "ready": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-hqj7t_n0/project/.pyramid/ready.json",
+      "blockers": []
+    },
+    {
+      "runtime": "4.0.0",
+      "operation": "take",
+      "exit_code": 0,
+      "status": "taken",
+      "ready": null,
+      "blockers": []
+    },
+    {
+      "runtime": "4.0.0",
+      "operation": "inspect",
+      "exit_code": 0,
+      "status": null,
+      "ready": null,
+      "blockers": []
+    },
+    {
+      "runtime": "4.0.0",
+      "operation": "update",
+      "exit_code": 0,
+      "status": "implemented",
+      "ready": null,
+      "blockers": []
+    },
+    {
+      "runtime": "4.0.0",
+      "operation": "audit",
+      "exit_code": 0,
+      "status": "pass",
+      "ready": null,
+      "blockers": []
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "operation": "archive",
+      "exit_code": 0,
+      "status": "archived",
+      "ready": null,
+      "blockers": []
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "operation": "restore",
+      "exit_code": 0,
+      "status": "restored",
+      "ready": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-hqj7t_n0/project/.pyramid/ready.json",
+      "blockers": []
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "operation": "replan",
+      "exit_code": 0,
+      "status": "preview",
+      "ready": null,
+      "blockers": []
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "operation": "replan",
+      "exit_code": 0,
+      "status": "applied",
+      "ready": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-hqj7t_n0/project/.pyramid/ready.json",
+      "blockers": []
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "operation": "inspect",
+      "exit_code": 0,
+      "status": null,
+      "ready": true,
+      "blockers": []
+    },
+    {
+      "runtime": "4.0.0",
+      "operation": "inspect",
+      "exit_code": 0,
+      "status": null,
+      "ready": false,
+      "blockers": [
+        "RESEARCH-101: EVREQ-101-01: proof contract changed"
+      ]
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "operation": "archive",
+      "exit_code": 0,
+      "status": "archived",
+      "ready": null,
+      "blockers": []
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "operation": "restore",
+      "exit_code": 0,
+      "status": "restored",
+      "ready": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-hqj7t_n0/project/.pyramid/ready.json",
+      "blockers": []
+    },
+    {
+      "runtime": "4.0.0",
+      "operation": "validate",
+      "exit_code": 0,
+      "status": null,
+      "ready": null,
+      "blockers": []
+    },
+    {
+      "runtime": "4.0.0",
+      "operation": "inspect",
+      "exit_code": 0,
+      "status": null,
+      "ready": true,
+      "blockers": []
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "operation": "history",
+      "exit_code": 0,
+      "status": "valid",
+      "ready": null,
+      "blockers": []
+    }
+  ]
+}

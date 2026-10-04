@@ -2,6 +2,10 @@
 
 The runtime produces compact packets so a worker does not need the entire graph. Agents must keep normal authorization boundaries; plan metadata does not authorize files, services, deployments, messages, or destructive actions.
 
+Authorization, review, readiness, implementation and verification are distinct.
+For instruction authoring or ambiguous terminology, consult `operational-language.md`;
+normal task work does not require loading that profile.
+
 ## Agent task packet
 
 `take` returns `agent-task-v1` for one claimed node with:
@@ -40,6 +44,34 @@ CLI output is compact by default: duplicate event before/after snapshots become 
 For additive implementation-file/context discoveries inside an unchanged working task, read `task-amendments.md`. `amend` constructs the candidate internally, preserves ownership, emits a new guard, and records the reviewed delta. It does not approve semantic scope expansion or pass an audit.
 
 If projection metadata would make a response larger, the default returns it unchanged. Consumers must read `schema`/`response_format`, not assume every response contains an `agent-status-v1` packet or event reference. `--full` disables the output projection but does not expand the selected query: use `diff --detail` or `inspect --assurance-detail` for those additional scopes.
+
+## Stable procedure, fresh invocation authority
+
+Keep two identities separate: the reviewed procedure/source fingerprint and the
+current task/audit mutation guard. A lease refresh or unrelated graph event is
+not a source edit. Pass the guard as invocation data, not a literal embedded in
+the reviewed script, generated executable or proof input.
+
+1. Freeze the procedure and its behavior-affecting inputs before review/checks.
+2. Obtain the relevant guard from the current packet or audit-readiness query.
+   Check the exact project, node, actor and requested operation before invoking it.
+3. Pass that guard through an argument or scoped environment variable. The
+   existing runtime validates it when the operation runs; reading a guard is not
+   a lease renewal, implementation claim or approval.
+4. If the runtime rejects authority as stale, inspect only the affected packet.
+   Reconcile the changed contract/state. Use a fresh guard only if the intended
+   operation is still valid. Do not edit procedure source merely to renew authority.
+5. Reuse proof only when its contract, source, environment and artifacts remain
+   current. Changed procedure inputs require fresh proof even with a fresh guard.
+
+For example, a reviewed caller may receive `--expected-guard` from its invocation
+arguments. Do not put the current `GUARD-TASK-...` into that caller's source.
+Do not print credentials or persist broad host state to obtain invocation data.
+
+A Pyramid guard does not grant host permissions, deployment authority or approval
+for another project. A denied host operation remains denied. A fresh guard does
+not make an older helper result current: apply `intra-task-helpers.md`'s identity,
+snapshot, current-guard and evidence reconciliation before using its result.
 
 ## Ephemeral intra-task helpers
 

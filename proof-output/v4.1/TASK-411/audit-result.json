@@ -1,0 +1,63 @@
+{
+  "schema": "audit-result-v1",
+  "target": "TASK-411",
+  "result": "pass",
+  "checks": [
+    {
+      "id": "AC-TASK-411-01",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-411/baseline-failure.txt",
+        "proof-output/v4.1/TASK-411/consumer-growth-current.json",
+        "proof-output/v4.1/TASK-411/consumer-growth-4.0.json"
+      ]
+    },
+    {
+      "id": "AC-TASK-411-02",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-411/final-tests.txt",
+        "proof-output/v4.1/TASK-411/inspection-review.md"
+      ]
+    },
+    {
+      "id": "AC-TASK-411-03",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-411/consumer-growth-4.0.json",
+        "proof-output/v4.1/TASK-411/final-tests.txt",
+        "proof-output/v4.1/TASK-411/repository-validation.txt"
+      ]
+    }
+  ],
+  "affected_claims": [
+    "TASK-411"
+  ],
+  "recommended_action": "advance",
+  "assurance": {
+    "impact_ids": [
+      "IMPACT-GRAPH",
+      "IMPACT-PROOF",
+      "IMPACT-REGRESSION-I1"
+    ],
+    "inspection_ids": [
+      "INSPECT-GRAPH",
+      "INSPECT-PROOF",
+      "INSPECT-REGRESSION-I1"
+    ],
+    "finding_ids": [],
+    "scope_review": "complete",
+    "limitations": [
+      "Same-session implementer audit, not independent consequential joint review.",
+      "Source CLI and actual disposable subprocess/probe execution; installed Codex/Claude qualification remains TASK-432.",
+      "Schema-1 and pure contract fixtures are synthetic runtime-contract checks, not executed product acceptance.",
+      "Only TASK-411 is accepted; TASK-412, joint gates, all later work and final controls remain pending."
+    ]
+  },
+  "proofs": [
+    {
+      "requirement": "EV-411",
+      "reuse_run": "RUN-95F0B160A25EC5CC503D624CD9108F5D"
+    }
+  ]
+}

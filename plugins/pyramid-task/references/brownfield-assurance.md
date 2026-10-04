@@ -62,6 +62,17 @@ The runtime warns when a non-boundary inspection spans more than eight tasks, wh
 
 ## Closure and carry-forward
 
+For footprint questions, use the optional bounded `inspect --footprint` preview,
+not a normal-packet scan. It distinguishes declared proof inputs, evidence,
+generated output, canonical/projection files and unknown purpose; references are
+current result/audit references only. Historical/active-handoff retention remains
+unknown. It never deletes or declares files irrelevant. Capture rejects actual
+files where a rooted/specific proof-input pattern overlaps an evidence-output
+glob, or an output glob covers the whole repository. A whole-repository input
+may exclude dedicated evidence staging; keep behavior inputs in explicit scopes
+when staging could contain source. Amendment coverage excludes evidence without
+treating it as covered implementation. No classification proves delete eligibility.
+
 Closing a brownfield plan writes a JSON and Markdown change dossier containing predicted impact, actual changed files and assets, scope-drift reconciliation, inspections, findings, audits, controls, residual risk, legacy bridge, and the baseline before and after the change. It advances the baseline revision so the verified changed system becomes the starting point for the next plan.
 
 Reset archives the current plan but carries the current baseline and prior dossiers into the new brownfield planning cycle. Archive, restore, and clean preserve the manifest, baseline, assurance, dossiers, and their evidence provenance.

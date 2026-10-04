@@ -1,0 +1,261 @@
+{
+  "schema": "pyramid-baseline-v1",
+  "baseline_id": "BASELINE-PYRAMID-40",
+  "revision": 1,
+  "status": "current",
+  "captured_at": "2026-10-04T06:14:37Z",
+  "captured_by": "codex-pyramid41-planner",
+  "capture_method": "Read pinned 4.0.0 source and relevant contracts; compare both installed packages; execute repository validator and all 160 tests. Inventory is scoped to planned 4.1 impact, not a whole-host or private-project audit.",
+  "assets": [
+    {
+      "id": "ASSET-GRAPH",
+      "kind": "repository-area",
+      "name": "Canonical graph, lifecycle, guards and projections",
+      "locators": [
+        "plugins/pyramid-task/scripts/pyramid_core.py",
+        "plugins/pyramid-task/scripts/pyramid_graph.py",
+        "plugins/pyramid-task/scripts/pyramid_amendment.py",
+        "plugins/pyramid-task/scripts/pyramid_history.py"
+      ],
+      "exclude_locators": [
+        "proof-output/**",
+        ".pyramid/**",
+        "docs/tasks/**",
+        ".venv/**",
+        "**/__pycache__/**"
+      ],
+      "owner": "Pyramid maintainers",
+      "criticality": "high",
+      "confidence": "high",
+      "evidence": [
+        "plugins/pyramid-task/scripts/pyramid_core.py:replan_project",
+        "docs/architecture.md"
+      ]
+    },
+    {
+      "id": "ASSET-PROOF",
+      "kind": "repository-area",
+      "name": "Assurance and schema-2 verification identity",
+      "locators": [
+        "plugins/pyramid-task/scripts/pyramid_verification.py",
+        "plugins/pyramid-task/scripts/pyramid_assurance.py",
+        "plugins/pyramid-task/schemas/**"
+      ],
+      "exclude_locators": [
+        "proof-output/**",
+        ".pyramid/**",
+        "docs/tasks/**",
+        ".venv/**",
+        "**/__pycache__/**"
+      ],
+      "owner": "Pyramid maintainers",
+      "criticality": "high",
+      "confidence": "high",
+      "evidence": [
+        "plugins/pyramid-task/scripts/pyramid_verification.py:contracts",
+        "plugins/pyramid-task/references/development-harness.md"
+      ]
+    },
+    {
+      "id": "ASSET-GUIDANCE",
+      "kind": "repository-area",
+      "name": "Agent method and selective contracts",
+      "locators": [
+        "plugins/pyramid-task/skills/**",
+        "plugins/pyramid-task/references/**",
+        "compat/**"
+      ],
+      "exclude_locators": [
+        "proof-output/**",
+        ".pyramid/**",
+        "docs/tasks/**",
+        ".venv/**",
+        "**/__pycache__/**"
+      ],
+      "owner": "Pyramid maintainers",
+      "criticality": "high",
+      "confidence": "high",
+      "evidence": [
+        "plugins/pyramid-task/skills/create/SKILL.md",
+        "plugins/pyramid-task/references/intra-task-helpers.md"
+      ]
+    },
+    {
+      "id": "ASSET-CLI",
+      "kind": "repository-area",
+      "name": "Existing CLI query and mutation boundary",
+      "locators": [
+        "plugins/pyramid-task/scripts/pyramid.py"
+      ],
+      "exclude_locators": [
+        "proof-output/**",
+        ".pyramid/**",
+        "docs/tasks/**",
+        ".venv/**",
+        "**/__pycache__/**"
+      ],
+      "owner": "Pyramid maintainers",
+      "criticality": "high",
+      "confidence": "high",
+      "evidence": [
+        "plugins/pyramid-task/scripts/pyramid.py",
+        "README.md"
+      ]
+    },
+    {
+      "id": "ASSET-QUALIFICATION",
+      "kind": "repository-area",
+      "name": "Regression tests and repository qualification",
+      "locators": [
+        "plugins/pyramid-task/tests/**",
+        "tools/**",
+        "requirements-dev.txt",
+        "CONTRIBUTING.md",
+        "Makefile"
+      ],
+      "exclude_locators": [
+        "proof-output/**",
+        ".pyramid/**",
+        "docs/tasks/**",
+        ".venv/**",
+        "**/__pycache__/**"
+      ],
+      "owner": "Pyramid maintainers",
+      "criticality": "high",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/baseline-checks.json",
+        "CONTRIBUTING.md"
+      ]
+    },
+    {
+      "id": "ASSET-PACKAGING",
+      "kind": "repository-area",
+      "name": "Both host manifests, public docs and sanitized cases",
+      "locators": [
+        "plugins/pyramid-task/.codex-plugin/plugin.json",
+        "plugins/pyramid-task/.claude-plugin/plugin.json",
+        "README.md",
+        "CHANGELOG.md",
+        "docs/architecture.md",
+        "docs/planning/v4.1/**"
+      ],
+      "exclude_locators": [
+        "proof-output/**",
+        ".pyramid/**",
+        "docs/tasks/**",
+        ".venv/**",
+        "**/__pycache__/**"
+      ],
+      "owner": "Pyramid maintainers",
+      "criticality": "high",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/baseline-checks.json",
+        "docs/planning/v4.1/README.md"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "from": "ASSET-CLI",
+      "to": "ASSET-GRAPH",
+      "type": "calls",
+      "evidence": [
+        "plugins/pyramid-task/scripts/pyramid.py"
+      ]
+    },
+    {
+      "from": "ASSET-GRAPH",
+      "to": "ASSET-PROOF",
+      "type": "depends-on",
+      "evidence": [
+        "plugins/pyramid-task/scripts/pyramid_core.py:replan_project"
+      ]
+    },
+    {
+      "from": "ASSET-GUIDANCE",
+      "to": "ASSET-CLI",
+      "type": "calls",
+      "evidence": [
+        "plugins/pyramid-task/skills/create/SKILL.md"
+      ]
+    },
+    {
+      "from": "ASSET-GRAPH",
+      "to": "ASSET-QUALIFICATION",
+      "type": "guarded-by",
+      "evidence": [
+        "docs/planning/v4.1/baseline-checks.json"
+      ]
+    },
+    {
+      "from": "ASSET-PACKAGING",
+      "to": "ASSET-GUIDANCE",
+      "type": "deployed-with",
+      "evidence": [
+        "plugins/pyramid-task/.codex-plugin/plugin.json",
+        "plugins/pyramid-task/.claude-plugin/plugin.json"
+      ]
+    }
+  ],
+  "history": [
+    {
+      "id": "HIST-ALIGNMENT",
+      "kind": "change",
+      "summary": "Recovered the dirty obsolete 3.7.1 source checkout, preserved history/edits, then aligned sole local main and both hosts with upstream 4.0.0.",
+      "asset_ids": [
+        "ASSET-PACKAGING",
+        "ASSET-GUIDANCE"
+      ],
+      "evidence": [
+        "docs/planning/v4.1/baseline-checks.json"
+      ],
+      "date": "2026-10-04",
+      "controls": [
+        "Local recovery bundle retained outside repository; no 4.1 runtime change or publication."
+      ]
+    },
+    {
+      "id": "HIST-INVALIDATION",
+      "kind": "defect",
+      "summary": "Static 4.0 source confirms incident-edge and proof-consumer coupling. End-to-end failure and repair remain to be reproduced in TASK-411.",
+      "asset_ids": [
+        "ASSET-GRAPH",
+        "ASSET-PROOF"
+      ],
+      "evidence": [
+        "plugins/pyramid-task/scripts/pyramid_core.py:replan_project",
+        "plugins/pyramid-task/scripts/pyramid_verification.py:contracts"
+      ],
+      "date": "2026-10-04",
+      "controls": [
+        "Test consumer growth and changed composition independently; preserve stale-guard and historical-proof refusal."
+      ]
+    },
+    {
+      "id": "HIST-METHOD",
+      "kind": "decision",
+      "summary": "Adopt only a small testable operational language profile and read-only footprint preview; no new workflow controller or full STE compliance claim.",
+      "asset_ids": [
+        "ASSET-GUIDANCE",
+        "ASSET-CLI",
+        "ASSET-PACKAGING"
+      ],
+      "evidence": [
+        "docs/planning/v4.1/README.md"
+      ],
+      "date": "2026-10-04",
+      "controls": [
+        "Matched host decisions and actual usage must qualify benefit; do not turn byte counts into token-saving claims."
+      ]
+    }
+  ],
+  "unknowns": [
+    "Magnitude of model decision or token improvement is unknown; TASK-422 measures it.",
+    "Stored 4.0 proof compatibility under narrower producer identity needs actual fixtures and a documented rule in TASK-411.",
+    "Isolated candidate qualification capabilities on both current hosts must be established in TASK-432.",
+    "Retention ownership and safe deletion of private project evidence are not established; this release never deletes it.",
+    "The two investigated sessions have different risk, age and proof schemas; productivity differences are not controlled causal estimates."
+  ]
+}

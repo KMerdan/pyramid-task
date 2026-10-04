@@ -1,0 +1,154 @@
+{
+  "schema": "agent-result-v1",
+  "task": "TASK-422",
+  "outcome": "implemented",
+  "changed_files": [
+    "docs/planning/v4.1/cases/README.md",
+    "docs/planning/v4.1/cases/request.md",
+    "docs/planning/v4.1/cases/facts.md",
+    "proof-output/v4.1/TASK-422/summary.md",
+    "proof-output/v4.1/TASK-422/evaluation-rubric.md",
+    "proof-output/v4.1/TASK-422/sanitize-traces.cjs",
+    "proof-output/v4.1/TASK-422/codex-baseline-trace.json",
+    "proof-output/v4.1/TASK-422/claude-baseline-trace.json",
+    "proof-output/v4.1/TASK-422/codex-candidate-trace.json",
+    "proof-output/v4.1/TASK-422/claude-candidate-trace.json",
+    "proof-output/v4.1/TASK-422/claude-candidate-initial-blocked-trace.json",
+    "proof-output/v4.1/TASK-422/codex-candidate-final-trace.json",
+    "proof-output/v4.1/TASK-422/claude-candidate-final-trace.json",
+    "proof-output/v4.1/TASK-422/agent-result.json"
+  ],
+  "changed_assets": [
+    "ASSET-PACKAGING"
+  ],
+  "change_effect": "mixed",
+  "changes": [
+    {
+      "path": "docs/planning/v4.1/cases/README.md",
+      "class": "source"
+    },
+    {
+      "path": "docs/planning/v4.1/cases/request.md",
+      "class": "source"
+    },
+    {
+      "path": "docs/planning/v4.1/cases/facts.md",
+      "class": "source"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-422/summary.md",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-422/evaluation-rubric.md",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-422/sanitize-traces.cjs",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-422/codex-baseline-trace.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-422/claude-baseline-trace.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-422/codex-candidate-trace.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-422/claude-candidate-trace.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-422/claude-candidate-initial-blocked-trace.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-422/codex-candidate-final-trace.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-422/claude-candidate-final-trace.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-422/agent-result.json",
+      "class": "evidence"
+    }
+  ],
+  "checks": [
+    {
+      "command": "Native matched read-only Codex 0.155.1 and Claude 2.1.286 six-case pilot; exact owned ready probe",
+      "result": "passed"
+    },
+    {
+      "command": "Evaluate actual final decisions against withheld case rubric; retain discordant/denied attempts",
+      "result": "passed"
+    }
+  ],
+  "discovered_risks": [
+    "One batch per host is not a statistical model/productivity benchmark. Codex actual model identifier unavailable; Claude runtime code check not performed by the final case pilot.",
+    "Independent final join review remains a separate gate; expanded evidence transfer awaiting user approval."
+  ],
+  "suggested_graph_changes": [],
+  "proofs": [
+    {
+      "requirement": "EV-422",
+      "run": {
+        "contract_sha256": "0e30fe29be3cfb418e046cf517dc8d223b08d06728f0d6cef3103f962bf5abd0",
+        "inputs_sha256": "8341bb6528e886cf0a154d34e09aa22f322b08a3618fc7d1749399897ee94c98",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "external",
+            "result": "passed",
+            "summary": "Actual native staged skill discovery and disposable ready probes on both hosts; all six supplied decision families examined with no critical evidence/authority regression. Claude exact compatibility action is now correct but its runtime-source check stays unknown, resolved separately by metadata/manifest/CLI proof. These are not VM/DB/browser product runs.",
+            "reviewer": "native-codex-0.155.1-and-claude-2.1.286; reconciled-by-codex-pyramid41-worker",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-422/summary.md",
+                "sha256": "4a96c93357284549da57be9598597750e343195c026ca9b81cc8230e3dbff70e"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-422/codex-candidate-final-trace.json",
+                "sha256": "567ce1eaaa0bb57e448ba509b76a380dbb236ab6cd5e668a5cacb8b35e6e614c"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-422/claude-candidate-final-trace.json",
+                "sha256": "471bbbcefdff75dd80ae234cdd87c83bd35e6c4e70546e12e339986b233c7feb"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-422/claude-candidate-initial-blocked-trace.json",
+                "sha256": "d60e1049c77b6f48976c95b28e8cba0e63031865bef495fce11bf0f523c2c9e7"
+              }
+            ]
+          },
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "Matched facts/tools and exact frozen final source manifests reconciled with actual traces; all exposed native usage recorded. Candidate aggregate input increased; no token savings or host-install success inferred. Initial denied probe and unrepaired compatibility uncertainty preserved.",
+            "reviewer": "codex-pyramid41-worker",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-422/summary.md",
+                "sha256": "4a96c93357284549da57be9598597750e343195c026ca9b81cc8230e3dbff70e"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-422/evaluation-rubric.md",
+                "sha256": "685c96c8d5dda46bd6de1d3dc9b85c00a0f8a73e545ee2eedb29bb094120251c"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/package-identity.json",
+                "sha256": "d6366d4136eabbb19efb2c8a4ee22a650a72fa4865bfb3425934cae8f27a5c04"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

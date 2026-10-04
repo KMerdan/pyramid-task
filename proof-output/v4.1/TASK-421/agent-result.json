@@ -1,0 +1,151 @@
+{
+  "schema": "agent-result-v1",
+  "task": "TASK-421",
+  "outcome": "implemented",
+  "changed_files": [
+    "plugins/pyramid-task/scripts/pyramid_core.py",
+    "plugins/pyramid-task/scripts/pyramid_verification.py",
+    "plugins/pyramid-task/tests/test_efficiency.py",
+    "plugins/pyramid-task/references/operational-language.md",
+    "plugins/pyramid-task/references/agent-contracts.md",
+    "plugins/pyramid-task/references/plan-refinement.md",
+    "plugins/pyramid-task/references/demonstrable-increments.md",
+    "plugins/pyramid-task/skills/create/SKILL.md",
+    "plugins/pyramid-task/skills/take/SKILL.md",
+    "plugins/pyramid-task/skills/replan/SKILL.md",
+    "plugins/pyramid-task/skills/audit/SKILL.md",
+    "proof-output/v4.1/TASK-421/review.md",
+    "proof-output/v4.1/TASK-421/pre-run-capture.json",
+    "proof-output/v4.1/TASK-421/projection-failing-before.txt",
+    "proof-output/v4.1/TASK-421/projection-final-tests.txt",
+    "proof-output/v4.1/TASK-421/agent-result.json"
+  ],
+  "changed_assets": [
+    "ASSET-GRAPH",
+    "ASSET-GUIDANCE",
+    "ASSET-PROOF",
+    "ASSET-QUALIFICATION"
+  ],
+  "change_effect": "mixed",
+  "changes": [
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_core.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_verification.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/tests/test_efficiency.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/references/operational-language.md",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/references/agent-contracts.md",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/references/plan-refinement.md",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/references/demonstrable-increments.md",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/skills/create/SKILL.md",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/skills/take/SKILL.md",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/skills/replan/SKILL.md",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/skills/audit/SKILL.md",
+      "class": "source"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-421/review.md",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-421/pre-run-capture.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-421/projection-failing-before.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-421/projection-final-tests.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-421/agent-result.json",
+      "class": "evidence"
+    }
+  ],
+  "checks": [
+    {
+      "command": "PYRAMID_USAGE=off PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s plugins/pyramid-task/tests -p test_efficiency.py -v",
+      "result": "passed"
+    },
+    {
+      "command": "PYRAMID_USAGE=off PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/validate_repository.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "discovered_risks": [
+    "Actual matched two-host decisions/cost remain TASK-422; full-suite join remains TASK-432.",
+    "graph.json carries a real compile timestamp and remains a changed projection; no savings inferred from its write."
+  ],
+  "suggested_graph_changes": [],
+  "proofs": [
+    {
+      "requirement": "EV-421",
+      "run": {
+        "contract_sha256": "2bfecc2c2a666c9c3eff428534d54397b0715252521e4994795ecbd0a96af32b",
+        "inputs_sha256": "fed0c5a04a15204c6d48292c50341a531a3fcf288b462c5ec5507357a65bd3eb",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "Reviewed affected six failure-mode decisions and source/authority/proof/visual boundaries. Inspected actual generated schema-2 guide. Twenty-one efficiency tests passed, including real unchanged-byte/mtime and tampered-projection repair; full compute/publication remain. No token saving or actual host decision quality inferred.",
+            "reviewer": "Codex same-session review",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-421/review.md",
+                "sha256": "2d7183a89f128aa3037cd3f67c26cb92bcd44a2fe23520124ee3cdab4248f4e9"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-421/projection-final-tests.txt",
+                "sha256": "a2b2fe84c15bb3d2ab542ebdc1f7e46fb1a567a250245104b6105cae3585f154"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-421/projection-failing-before.txt",
+                "sha256": "8566fabf4445deebe43e532c9d708ecf74fd601835a73407b1204a231b951615"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-421/pre-run-capture.json",
+                "sha256": "baf4dbe59cead5d66c787e4a05b565b10bf22f2019a9e539cf4affb7ff580e68"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

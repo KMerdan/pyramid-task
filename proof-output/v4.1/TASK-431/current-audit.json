@@ -1,0 +1,96 @@
+{
+  "schema": "audit-result-v1",
+  "target": "TASK-431",
+  "result": "pass",
+  "checks": [
+    {
+      "id": "AC-TASK-431-01",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/local-review.md"
+      ]
+    },
+    {
+      "id": "AC-TASK-431-02",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/local-review.md"
+      ]
+    },
+    {
+      "id": "AC-TASK-431-03",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/local-review.md"
+      ]
+    }
+  ],
+  "affected_claims": [
+    "TASK-431"
+  ],
+  "recommended_action": "advance",
+  "assurance": {
+    "impact_ids": [
+      "IMPACT-FOOTPRINT-CLI",
+      "IMPACT-FOOTPRINT-GRAPH",
+      "IMPACT-FOOTPRINT-PROOF",
+      "IMPACT-FOOTPRINT-GUIDE",
+      "IMPACT-REGRESSION-I3"
+    ],
+    "inspection_ids": [
+      "INSPECT-FOOTPRINT-CLI",
+      "INSPECT-FOOTPRINT-GRAPH",
+      "INSPECT-FOOTPRINT-PROOF",
+      "INSPECT-FOOTPRINT-GUIDE",
+      "INSPECT-REGRESSION-I3"
+    ],
+    "finding_ids": [],
+    "scope_review": "complete",
+    "limitations": [
+      "Same-session implementer engineering review, not independent joint/native-host qualification."
+    ]
+  },
+  "proofs": [
+    {
+      "requirement": "EV-431",
+      "run": {
+        "contract_sha256": "db18cb2c1f31b51ff8ec5e3b9bed9a3f1b61620724b65db9c38704305cc85964",
+        "inputs_sha256": "43f587a0bd60e6165fd25554cf40dc29173110675e9f1296c25205634a2c0e24",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "external",
+            "result": "passed",
+            "summary": "Actual final-candidate disposable CLI/probe/tree behavior; see transcripts and final regression. No model, browser or production execution inferred.",
+            "reviewer": "Codex same-session engineering review",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-432/final-tests.txt",
+                "sha256": "138472806e28df678acf4123613a8b6b639c90d5fb0e0a66429c71e936b01b09"
+              }
+            ]
+          },
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "Reviewed current source/contracts and actual final tests. Prior failures preserved; host and independent joint acceptance remain separate.",
+            "reviewer": "Codex same-session engineering review",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-432/final-tests.txt",
+                "sha256": "138472806e28df678acf4123613a8b6b639c90d5fb0e0a66429c71e936b01b09"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/local-review.md",
+                "sha256": "d36b1c5f1c8df73e87f43d80463692e0bc11e3535490404b4b91aedcaaf8b87d"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

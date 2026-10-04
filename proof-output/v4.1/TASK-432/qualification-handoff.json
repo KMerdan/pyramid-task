@@ -1,0 +1,64 @@
+{
+  "schema": "pyramid-handoff-draft-v1",
+  "summary": "Local 4.1 changes/checks retained; native host payload approval blocks qualification, not a passing result.",
+  "progress": [
+    "Updated both source manifests/runtime to 4.1.0 candidate and docs.",
+    "Final 176-test suite, repository validation and diff checks pass.",
+    "Current producer, guard and footprint scoped audits pass; joint/native-host acceptance remains pending."
+  ],
+  "changed_files": [
+    "README.md",
+    "CHANGELOG.md",
+    "docs/architecture.md",
+    "plugins/pyramid-task/.codex-plugin/plugin.json",
+    "plugins/pyramid-task/.claude-plugin/plugin.json",
+    "plugins/pyramid-task/scripts/pyramid_assurance.py"
+  ],
+  "changed_assets": [
+    "ASSET-PACKAGING",
+    "ASSET-PROOF",
+    "ASSET-QUALIFICATION"
+  ],
+  "checks": [
+    {
+      "command": "Full candidate unittest suite",
+      "result": "passed",
+      "notes": "176 tests / 21.102s; original pre-run captures and failures retained."
+    },
+    {
+      "command": "Native two-host qualification",
+      "result": "not-run",
+      "notes": "Explicit source/case payload egress approval pending."
+    }
+  ],
+  "decisions": [
+    {
+      "decision": "Keep authority and verification separate.",
+      "rationale": "Local tests do not qualify native skill discovery or justify an external egress workaround.",
+      "reference": "proof-output/v4.1/TASK-432/continuation.md"
+    }
+  ],
+  "assumptions": [
+    "No installed plugin, remote ref, production or other project changes are authorized."
+  ],
+  "blockers": [
+    "Explicit approval to send staged unpublished Pyramid instructions/source and sanitized six-case facts to OpenAI/Codex and Anthropic/Claude through normally authenticated CLIs is pending."
+  ],
+  "risks": [
+    "Joint and final acceptance remain unverified; token improvements are unproven.",
+    "Staged temporary files may not survive reboot; recreate and confirm digests before use if missing."
+  ],
+  "next_steps": [
+    "After approval, resume from canonical paused frontier with --for-recovery and reviewed drift.",
+    "Run serial matched host pilot; retain native traces and actual usage/unknowns.",
+    "Complete independent joint reviews, minimal current inspection refresh, recovery/monitoring controls, audits and closure."
+  ],
+  "recommended_first_action": "Read proof-output/v4.1/TASK-432/continuation.md and resolve the explicit external-payload approval before launching either host.",
+  "context_references": [
+    "proof-output/v4.1/TASK-432/continuation.md",
+    "proof-output/v4.1/TASK-432/pre-run-captures.json",
+    "docs/planning/v4.1/cases/request.md"
+  ],
+  "external_session_refs": [],
+  "running_resources": []
+}

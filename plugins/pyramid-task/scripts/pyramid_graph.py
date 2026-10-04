@@ -81,6 +81,18 @@ def edges_to(
     ]
 
 
+def claim_relations(plan: dict[str, Any], nid: str) -> set[tuple[str, str, str]]:
+    """Relations that change this claim, not the consumers of its output."""
+    result = set()
+    for edge in plan["edges"]:
+        source, target, kind = edge["from"], edge["to"], edge["type"]
+        if ((kind in AUDIT_BLOCKING | {"validated-by"} and source == nid)
+                or (kind in {"contributes-to", "invalidates"} and target == nid)
+                or (kind == "alternative-to" and nid in {source, target})):
+            result.add((source, target, kind))
+    return result
+
+
 def start_blockers(
     plan: dict[str, Any], state: dict[str, Any], node: dict[str, Any]
 ) -> list[str]:

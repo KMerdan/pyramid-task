@@ -9,6 +9,17 @@ Start with the smallest runtime query. Route cross-intent causality, path/commit
 
 For proof collection or reuse, query `inspect --harness <node> --json`. It returns scoped contracts, pre-run candidate templates, setup blockers and reusable runs without executing tools or writing state. Consult `../../references/development-harness.md` when interpreting or changing proof. Recorded verification in the Observer is historical; audit readiness checks the current declared inputs.
 
+## Inspect artifact footprint
+
+For artifact size/retention questions, use `inspect --project <root> --footprint --json`.
+It scans at most 10,000 entries and returns counts/bytes, declared classes, current
+result/audit references and explicit unknowns. Use `--footprint-detail` only for
+the first 100 paths, or `--footprint-limit <1-100000>` for an explicit larger/smaller
+bounded scan. Check `scan.complete` and exclusions before interpreting totals.
+The query does not read historical payloads, certify ownership or authorize
+deletion. Unreferenced-in-current-state is not unused; failed/active/archived
+evidence may still be needed. Normal queries do not run this scan.
+
 ## Analyze the usage audit
 
 Route requests such as “analyze the Pyramid usage audit”, “which commands do we actually use?” or “check workflow overhead” here, not to `pyramid-task:audit`. For an ambiguous “audit” request, use the conversation context or ask whether the user means usage analysis or task evidence verification.

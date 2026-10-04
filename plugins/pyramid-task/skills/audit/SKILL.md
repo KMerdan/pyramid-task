@@ -36,3 +36,5 @@ python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 
 - Prefer an independent auditor for critical joint and intent gates.
 - A failed audit must remain visible in state and history until repaired or superseded.
 - Never treat an audit assertion as evidence by itself; its IDs must resolve to sufficient canonical records.
+- Keep observed result, evidence and limitations separate. Simulated transport, source hashes, process starts and screenshot files are not real external execution or visual review. A blocked check blocks that claim, not all independent authorized work.
+- Reuse an unchanged policy review when its relevant inputs remain current. A new turn or lease is not by itself new human authority; escalate only material ambiguity, new authority, irreversible/high-impact effects or unresolved consequential risk.

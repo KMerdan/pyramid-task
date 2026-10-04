@@ -1,0 +1,74 @@
+{
+  "schema": "audit-result-v1",
+  "target": "TASK-412",
+  "result": "pass",
+  "affected_claims": [
+    "TASK-412"
+  ],
+  "recommended_action": "advance",
+  "checks": [
+    {
+      "id": "AC-TASK-412-01",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/guard-qualified-result.json",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/independent-review-final-result.json"
+      ]
+    },
+    {
+      "id": "AC-TASK-412-02",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/guard-qualified-result.json",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/independent-review-final-result.json"
+      ]
+    }
+  ],
+  "assurance": {
+    "impact_ids": [
+      "IMPACT-GUARDS"
+    ],
+    "inspection_ids": [
+      "INSPECT-GUARDS"
+    ],
+    "finding_ids": [],
+    "scope_review": "complete",
+    "limitations": [
+      "Current real CLI/file/host observations and independent conditional review joined with satisfied identity conditions. Supplied case facts, synthetic test controls, coordination metadata, prompt-only budgets, unknown model/cost and installed-release limits remain explicit in join-review.md and qualification.md."
+    ]
+  },
+  "proofs": [
+    {
+      "requirement": "EV-412",
+      "run": {
+        "contract_sha256": "acf890e363ddf7d2b243d57624654394b95a5c7d7c06bf70f620a2b7e3cb602b",
+        "inputs_sha256": "9e6b9a9f906202f085e527bfac9920b2fc59df0f3c8adefecd827911bd739535",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "Current guard/source/helper recipe reviewed; actual immutable caller and current guard observations joined; permission and evidence freshness remain separate.",
+            "reviewer": "codex-pyramid41-audit; independent native Claude join review where applicable",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-432/guard-qualified-result.json",
+                "sha256": "677fc0ac7f0f2fd876ef0857ffd4b5528d71f3398b8eca1404f159591a728699"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/join-review.md",
+                "sha256": "654b22dba4bfa83411f2043501bdff8063ae25fd9b9e5cb20f1637fa07f5d84e"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/independent-review-final-result.json",
+                "sha256": "ee59428ada162bae6d5621b74fcbf572c360d0a58962f09eae5473d43b8631bd"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

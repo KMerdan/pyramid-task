@@ -1,0 +1,114 @@
+{
+  "schema": "audit-result-v1",
+  "target": "TASK-421",
+  "result": "pass",
+  "affected_claims": [
+    "TASK-421"
+  ],
+  "recommended_action": "advance",
+  "checks": [
+    {
+      "id": "AC-TASK-421-01",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ]
+    },
+    {
+      "id": "AC-TASK-421-02",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ]
+    },
+    {
+      "id": "AC-TASK-421-03",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ]
+    },
+    {
+      "id": "AC-TASK-421-04",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ]
+    }
+  ],
+  "assurance": {
+    "impact_ids": [
+      "IMPACT-LANGUAGE",
+      "IMPACT-GUIDE",
+      "IMPACT-LANGUAGE-PROOF",
+      "IMPACT-REGRESSION-I2"
+    ],
+    "inspection_ids": [
+      "INSPECT-LANGUAGE",
+      "INSPECT-GUIDE",
+      "INSPECT-LANGUAGE-PROOF",
+      "INSPECT-REGRESSION-I2"
+    ],
+    "finding_ids": [],
+    "scope_review": "complete",
+    "limitations": [
+      "Current real CLI/file/host observations and independent conditional review joined with satisfied identity conditions. Supplied case facts, synthetic test controls, coordination metadata, prompt-only budgets, unknown model/cost and installed-release limits remain explicit in join-review.md and qualification.md."
+    ]
+  },
+  "proofs": [
+    {
+      "requirement": "EV-421",
+      "run": {
+        "contract_sha256": "2bfecc2c2a666c9c3eff428534d54397b0715252521e4994795ecbd0a96af32b",
+        "inputs_sha256": "39fa5099bf81b3351fc6d34ea97de2d26f9a3b9e06a49d904495ecf8439d312f",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "Current instruction/profile and actual generated-guide review plus filesystem projection regressions; actual native decisions/counters reconciled without token-savings claim.",
+            "reviewer": "codex-pyramid41-audit; independent native Claude join review where applicable",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-432/join-review.md",
+                "sha256": "654b22dba4bfa83411f2043501bdff8063ae25fd9b9e5cb20f1637fa07f5d84e"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/qualified-tests.txt",
+                "sha256": "1c9a63bf5110a45acff0699e74b541c234e3d219ed3cbfed527e53c5a80660e1"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-421/final-review.md",
+                "sha256": "7c60c5956d1a6a8b40be1f0e537278ec38bff6fd52860cc08812f1fdef5e6815"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-421/generated-guide-final.md",
+                "sha256": "d65990a9fc8f371cdc5a60d95921662249ab2186f34cdea83a2a96fec3d5eebd"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-422/summary.md",
+                "sha256": "4a96c93357284549da57be9598597750e343195c026ca9b81cc8230e3dbff70e"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

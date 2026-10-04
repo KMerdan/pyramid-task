@@ -1,0 +1,188 @@
+{
+  "schema": "agent-result-v1",
+  "task": "TASK-411",
+  "outcome": "implemented",
+  "changed_files": [
+    "plugins/pyramid-task/scripts/pyramid_core.py",
+    "plugins/pyramid-task/scripts/pyramid_graph.py",
+    "plugins/pyramid-task/scripts/pyramid_verification.py",
+    "plugins/pyramid-task/schemas/state.schema.json",
+    "plugins/pyramid-task/tests/test_runtime.py",
+    "plugins/pyramid-task/tests/test_verification.py",
+    "proof-output/v4.1/TASK-411/README.md",
+    "proof-output/v4.1/TASK-411/baseline-failure.txt",
+    "proof-output/v4.1/TASK-411/consumer-growth-4.0.json",
+    "proof-output/v4.1/TASK-411/consumer-growth-current.json",
+    "proof-output/v4.1/TASK-411/final-tests.txt",
+    "proof-output/v4.1/TASK-411/graph-only-failure.txt",
+    "proof-output/v4.1/TASK-411/pre-run-capture.json",
+    "proof-output/v4.1/TASK-411/repository-validation.txt",
+    "proof-output/v4.1/TASK-411/agent-result.json"
+  ],
+  "changed_assets": [
+    "ASSET-GRAPH",
+    "ASSET-PROOF",
+    "ASSET-QUALIFICATION"
+  ],
+  "change_effect": "mixed",
+  "changes": [
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_core.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_graph.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_verification.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/state.schema.json",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/tests/test_runtime.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/tests/test_verification.py",
+      "class": "source"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-411/README.md",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-411/baseline-failure.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-411/consumer-growth-4.0.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-411/consumer-growth-current.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-411/final-tests.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-411/graph-only-failure.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-411/pre-run-capture.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-411/repository-validation.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-411/agent-result.json",
+      "class": "evidence"
+    }
+  ],
+  "checks": [
+    {
+      "command": "PYRAMID_TEST_EVIDENCE_DIR=proof-output/v4.1/TASK-411 PYRAMID_USAGE=off PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s plugins/pyramid-task/tests -p 'test_*.py' -v",
+      "result": "passed"
+    },
+    {
+      "command": "PYRAMID_USAGE=off PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/validate_repository.py",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "acceptance_evidence": [
+    {
+      "criterion": "AC-TASK-411-01",
+      "result": "passed",
+      "reference": "proof-output/v4.1/TASK-411/README.md"
+    },
+    {
+      "criterion": "AC-TASK-411-02",
+      "result": "passed",
+      "reference": "proof-output/v4.1/TASK-411/README.md"
+    },
+    {
+      "criterion": "AC-TASK-411-03",
+      "result": "passed",
+      "reference": "proof-output/v4.1/TASK-411/README.md"
+    }
+  ],
+  "discovered_risks": [
+    "Self-review and local source CLI are not independent consequential review or installed-host qualification; GATE-419 and TASK-432 remain pending.",
+    "Guarded 4.0 proof compatibility introduces optional canonical state metadata; it is covered by state schema/manual checks and negative tests, not read-time migration.",
+    "Overall assurance still stales on replan; no global acceptance blocker was cleared by this task.",
+    "One existing Python 3.14 temporary-directory ResourceWarning appeared in the otherwise passing full suite."
+  ],
+  "suggested_graph_changes": [],
+  "proofs": [
+    {
+      "requirement": "EV-411",
+      "run": {
+        "contract_sha256": "d9be1502f8d40949bffe089ddbebb3cef7d0cc5f8d949762fefa55518c61a683",
+        "inputs_sha256": "2f2d969df137328bfc577850e4ec1963d53e3172614ff9e6c4cf745eb363cab7",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "external",
+            "result": "passed",
+            "summary": "Final real CLI subprocess scenarios preserve a passed provider and current executed producer proof after consumer growth; the new consumer remains unverified. Frozen 4.0 hash compatibility is explicitly bound by guarded replan without rewriting history. Stale graph guards and changed source refuse reuse. The two API regression failures against unchanged 4.0 source and partial graph-only failure are retained; they are expected failing-before evidence, not current failures.",
+            "reviewer": "Codex, codex-pyramid41-worker (implementer review; not independent host qualification)",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-411/consumer-growth-current.json",
+                "sha256": "b371b8f632eefdcdfe13da23333f6c5ea94493f7e4aaf15365e4577de46fb774"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-411/consumer-growth-4.0.json",
+                "sha256": "5c286eebd025677b2a51a5fd3fab830024dc845ced5c1ae13711eee173cf338c"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-411/baseline-failure.txt",
+                "sha256": "13e2a4ec5f435c3f34e795b835a7c15861e5436beb935a5d87f85c3fdfd8379a"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-411/graph-only-failure.txt",
+                "sha256": "84bc9dcc9319b1064d8a1c8fbf6df2a344bc7e0bc8375945adf4f8975b5e35ba"
+              }
+            ]
+          },
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "168 final-candidate tests passed in 20.728 seconds; 17 skills and 31 schemas validated; git diff --check passed. Negative regressions reject changed producer procedure/selection/input, changed dependency/composition, malformed compatibility metadata and tampered run identity. Source fingerprint matches the pre-run capture. Synthetic schema-1/contract fixtures are distinguished from actual CLI/probe execution in README.",
+            "reviewer": "Codex, codex-pyramid41-worker (Python 3.14; disposable local tests)",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-411/final-tests.txt",
+                "sha256": "b19994b6a058fad5b21bd398625eff7ad357575d39a071ad66da7b3cad9299a2"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-411/repository-validation.txt",
+                "sha256": "3c71242e2c3196bacfb7d56907128d3f13391546d0be0f5bc8745b736ccfa89a"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-411/pre-run-capture.json",
+                "sha256": "d4aad780fcfa981b075a2fbe085cfeec5d3cccd0560a593e4990d358555d14fd"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-411/README.md",
+                "sha256": "037f4fb5555e918f153ff80a65f8bbb983eab6e0cf92f2601c33a1ae00f40955"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "schema": "audit-result-v1",
+  "target": "INTENT-410",
+  "result": "pass",
+  "affected_claims": [
+    "INTENT-410"
+  ],
+  "recommended_action": "advance",
+  "checks": [
+    {
+      "id": "AC-INTENT-410-01",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/recovery-final-result.json",
+        "proof-output/v4.1/TASK-432/guard-qualified-result.json",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualified-validation.txt",
+        "proof-output/v4.1/TASK-432/review-package-identity.json",
+        "proof-output/v4.1/TASK-432/independent-review-final-result.json",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md",
+        "proof-output/v4.1/TASK-432/current-footprint.json"
+      ]
+    }
+  ],
+  "assurance": {
+    "impact_ids": [
+      "IMPACT-GRAPH",
+      "IMPACT-PROOF",
+      "IMPACT-GUARDS",
+      "IMPACT-LANGUAGE",
+      "IMPACT-GUIDE",
+      "IMPACT-LANGUAGE-PROOF",
+      "IMPACT-CASES",
+      "IMPACT-FOOTPRINT-CLI",
+      "IMPACT-FOOTPRINT-GRAPH",
+      "IMPACT-FOOTPRINT-PROOF",
+      "IMPACT-FOOTPRINT-GUIDE",
+      "IMPACT-PACKAGE",
+      "IMPACT-PACKAGE-RUNTIME",
+      "IMPACT-REGRESSION-I1",
+      "IMPACT-REGRESSION-I2",
+      "IMPACT-REGRESSION-I3",
+      "IMPACT-PACKAGE-GUIDANCE"
+    ],
+    "inspection_ids": [
+      "INSPECT-GRAPH",
+      "INSPECT-PROOF",
+      "INSPECT-GUARDS",
+      "INSPECT-LANGUAGE",
+      "INSPECT-GUIDE",
+      "INSPECT-LANGUAGE-PROOF",
+      "INSPECT-CASES",
+      "INSPECT-FOOTPRINT-CLI",
+      "INSPECT-FOOTPRINT-GRAPH",
+      "INSPECT-FOOTPRINT-PROOF",
+      "INSPECT-FOOTPRINT-GUIDE",
+      "INSPECT-PACKAGE",
+      "INSPECT-PACKAGE-RUNTIME",
+      "INSPECT-REGRESSION-I1",
+      "INSPECT-REGRESSION-I2",
+      "INSPECT-REGRESSION-I3",
+      "INSPECT-PACKAGE-GUIDANCE"
+    ],
+    "finding_ids": [],
+    "scope_review": "complete",
+    "limitations": [
+      "Current real CLI/file/host observations and independent conditional review joined with satisfied identity conditions. Supplied case facts, synthetic test controls, coordination metadata, prompt-only budgets, unknown model/cost and installed-release limits remain explicit in join-review.md and qualification.md."
+    ]
+  },
+  "proofs": [
+    {
+      "requirement": "EV-FINAL",
+      "reuse_run": "RUN-7ED21BE4B7871E71FC78A1F3111952FC"
+    }
+  ]
+}

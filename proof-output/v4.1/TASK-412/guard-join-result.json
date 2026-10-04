@@ -1,0 +1,588 @@
+{
+  "caller_sha256_before": "138fa26efcc11d7a5cd8f8db1b12bcd928838d007cb5368da628972de08418c6",
+  "caller_sha256_after": "138fa26efcc11d7a5cd8f8db1b12bcd928838d007cb5368da628972de08418c6",
+  "lease_renewed": true,
+  "old_guard_refused": true,
+  "new_guard_accepted": true,
+  "host_permission_changed": false,
+  "fixture_only": true,
+  "cli": [
+    {
+      "operation": "create",
+      "exit_code": 0,
+      "result": {
+        "status": "created",
+        "project": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-ht0403g6/project",
+        "mode": "greenfield",
+        "project_format_version": 3,
+        "event": {
+          "schema": "pyramid-event-v1",
+          "id": "EVENT-20261004T080655089253Z-A4E59C72",
+          "at": "2026-10-04T08:06:55.088497Z",
+          "graph_version": 1,
+          "actor": "guard-join",
+          "type": "plan.created",
+          "node": "INTENT-001",
+          "before": null,
+          "after": {
+            "plan_id": "PLAN-001",
+            "revision": 1
+          },
+          "payload": {
+            "mode": "greenfield",
+            "project_format_version": 3
+          },
+          "plan_id": "PLAN-001",
+          "plan_revision": 1,
+          "context_id": "CTX-326387823C2B7FAA4F7F16DE9E005770",
+          "previous_event_id": null,
+          "previous_event_sha256": null
+        },
+        "graph": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-ht0403g6/project/.pyramid/graph.json",
+        "ready": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-ht0403g6/project/.pyramid/ready.json",
+        "docs": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-ht0403g6/project/docs/tasks",
+        "graph_version": 1,
+        "context": {
+          "id": "CTX-326387823C2B7FAA4F7F16DE9E005770",
+          "plan_id": "PLAN-001",
+          "plan_revision": 1,
+          "graph_version": 1
+        },
+        "ready_count": 1
+      }
+    },
+    {
+      "operation": "take",
+      "exit_code": 0,
+      "result": {
+        "status": "taken",
+        "event": {
+          "schema": "pyramid-event-reference-v1",
+          "id": "EVENT-20261004T080655237279Z-C6CFF6CE",
+          "at": "2026-10-04T08:06:55.237234Z",
+          "graph_version": 2,
+          "actor": "guard-join",
+          "type": "task.taken",
+          "node": "RESEARCH-101",
+          "payload": {
+            "lease_minutes": 120
+          },
+          "plan_id": "PLAN-001",
+          "plan_revision": 1,
+          "context_id": "CTX-488C3018B6E4670ACB20002E379CEE6F",
+          "previous_event_id": "EVENT-20261004T080655089253Z-A4E59C72",
+          "previous_event_sha256": "c1e790c1fa57e33f4a4d889444f470c9040f01f0ef940d628cdcf5130e3f8c63",
+          "path": ".pyramid/events/EVENT-20261004T080655237279Z-C6CFF6CE.json"
+        },
+        "packet": {
+          "schema": "agent-task-v1",
+          "task": "RESEARCH-101",
+          "graph_version": 2,
+          "context": {
+            "id": "CTX-488C3018B6E4670ACB20002E379CEE6F",
+            "plan_id": "PLAN-001",
+            "plan_revision": 1,
+            "graph_version": 2
+          },
+          "title": "Validate operation schema stability",
+          "purpose": "Confirm the extension boundary and document incompatible cases.",
+          "kind": "research",
+          "level": 2,
+          "wave": 0,
+          "workstream": "foundation",
+          "selection": "primary",
+          "availability": "working",
+          "execution": "working",
+          "verification": "unverified",
+          "health": "clear",
+          "blocker": null,
+          "goal_trace": [
+            "RESEARCH-101",
+            "OUTCOME-010",
+            "INTENT-001"
+          ],
+          "parents": [
+            "OUTCOME-010"
+          ],
+          "children": [],
+          "dependencies": [],
+          "blocked_by": [],
+          "required_context": [
+            "src/operation-plan",
+            "tests"
+          ],
+          "allowed_write_scope": [
+            "docs/tasks/evidence/**"
+          ],
+          "commands": [],
+          "deliverables": [
+            "Schema compatibility note"
+          ],
+          "non_goals": [
+            "Implementing the executor"
+          ],
+          "acceptance_criteria": [
+            {
+              "id": "AC-101-01",
+              "description": "Supported and unsupported schema cases are documented from repository evidence."
+            }
+          ],
+          "required_evidence": [
+            {
+              "id": "EVREQ-101-01",
+              "type": "repository-analysis",
+              "description": "References to schema definitions and existing tests."
+            }
+          ],
+          "audit_gates": [],
+          "owner": "guard-join",
+          "lease_expires_at": "2026-10-04T10:06:55.237172Z",
+          "pause": {
+            "active_handoff_id": null,
+            "paused_at": null,
+            "paused_by": null,
+            "mode": null,
+            "resume_deadline": null
+          },
+          "completion_report_schema": "agent-result-v1",
+          "mutation_guards": {
+            "task": "GUARD-TASK-4A32C85D3CAAC556248899496D809286",
+            "audit": "GUARD-AUDIT-C8D68F4AB707541D78FEAF71FDF74510"
+          },
+          "mutation_guard": "GUARD-TASK-4A32C85D3CAAC556248899496D809286"
+        },
+        "response_format": "compact-v1",
+        "omitted_fields": {
+          "event": [
+            "before",
+            "after"
+          ]
+        }
+      }
+    },
+    {
+      "operation": "pause",
+      "exit_code": 0,
+      "result": {
+        "status": "paused",
+        "event": {
+          "schema": "pyramid-event-reference-v1",
+          "id": "EVENT-20261004T080655372585Z-99899A7F",
+          "at": "2026-10-04T08:06:55.372518Z",
+          "graph_version": 3,
+          "actor": "guard-join",
+          "type": "task.paused",
+          "node": "RESEARCH-101",
+          "payload": {
+            "reason": "Exercise owned lease renewal",
+            "mode": "hold",
+            "resume_deadline": "2026-10-04T09:06:55.367243Z",
+            "handoff_id": "HANDOFF-RESEARCH-101-20261004T080655367247Z-9973EA7B",
+            "handoff_path": ".pyramid/handoffs/HANDOFF-RESEARCH-101-20261004T080655367247Z-9973EA7B.json",
+            "handoff_sha256": "c7ce45f3a8dd73600d9500c8dc917aa3e7edce662fa75f32bc76a5e017d69d37"
+          },
+          "plan_id": "PLAN-001",
+          "plan_revision": 1,
+          "context_id": "CTX-E34D3DECD9D9063FCE70CAC5C03E05D1",
+          "previous_event_id": "EVENT-20261004T080655237279Z-C6CFF6CE",
+          "previous_event_sha256": "2f6bbe99989f3c49d5c122adecac292ade1f964f64aca0eee08611b789f3196d",
+          "path": ".pyramid/events/EVENT-20261004T080655372585Z-99899A7F.json"
+        },
+        "packet": {
+          "schema": "agent-task-v1",
+          "task": "RESEARCH-101",
+          "graph_version": 3,
+          "context": {
+            "id": "CTX-E34D3DECD9D9063FCE70CAC5C03E05D1",
+            "plan_id": "PLAN-001",
+            "plan_revision": 1,
+            "graph_version": 3
+          },
+          "title": "Validate operation schema stability",
+          "purpose": "Confirm the extension boundary and document incompatible cases.",
+          "kind": "research",
+          "level": 2,
+          "wave": 0,
+          "workstream": "foundation",
+          "selection": "primary",
+          "availability": "paused",
+          "execution": "paused",
+          "verification": "unverified",
+          "health": "clear",
+          "blocker": null,
+          "goal_trace": [
+            "RESEARCH-101",
+            "OUTCOME-010",
+            "INTENT-001"
+          ],
+          "parents": [
+            "OUTCOME-010"
+          ],
+          "children": [],
+          "dependencies": [],
+          "blocked_by": [],
+          "required_context": [
+            "src/operation-plan",
+            "tests"
+          ],
+          "allowed_write_scope": [
+            "docs/tasks/evidence/**"
+          ],
+          "commands": [],
+          "deliverables": [
+            "Schema compatibility note"
+          ],
+          "non_goals": [
+            "Implementing the executor"
+          ],
+          "acceptance_criteria": [
+            {
+              "id": "AC-101-01",
+              "description": "Supported and unsupported schema cases are documented from repository evidence."
+            }
+          ],
+          "required_evidence": [
+            {
+              "id": "EVREQ-101-01",
+              "type": "repository-analysis",
+              "description": "References to schema definitions and existing tests."
+            }
+          ],
+          "audit_gates": [],
+          "owner": "guard-join",
+          "lease_expires_at": "2026-10-04T09:06:55.367243Z",
+          "pause": {
+            "active_handoff_id": "HANDOFF-RESEARCH-101-20261004T080655367247Z-9973EA7B",
+            "paused_at": "2026-10-04T08:06:55.367240Z",
+            "paused_by": "guard-join",
+            "mode": "hold",
+            "resume_deadline": "2026-10-04T09:06:55.367243Z"
+          },
+          "completion_report_schema": "agent-result-v1",
+          "mutation_guards": {
+            "task": "GUARD-TASK-C34A091BFA945FBE50857E93315CA28B",
+            "audit": "GUARD-AUDIT-993F19A3E5987918DAC183B9C6493526"
+          },
+          "mutation_guard": "GUARD-TASK-C34A091BFA945FBE50857E93315CA28B"
+        },
+        "handoff": {
+          "id": "HANDOFF-RESEARCH-101-20261004T080655367247Z-9973EA7B",
+          "json": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-ht0403g6/project/.pyramid/handoffs/HANDOFF-RESEARCH-101-20261004T080655367247Z-9973EA7B.json",
+          "markdown": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-ht0403g6/project/.pyramid/handoffs/HANDOFF-RESEARCH-101-20261004T080655367247Z-9973EA7B.md",
+          "resume_deadline": "2026-10-04T09:06:55.367243Z"
+        },
+        "graph": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-ht0403g6/project/.pyramid/graph.json",
+        "ready": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-ht0403g6/project/.pyramid/ready.json",
+        "docs": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-ht0403g6/project/docs/tasks",
+        "graph_version": 3,
+        "context": {
+          "id": "CTX-E34D3DECD9D9063FCE70CAC5C03E05D1",
+          "plan_id": "PLAN-001",
+          "plan_revision": 1,
+          "graph_version": 3
+        },
+        "ready_count": 0,
+        "response_format": "compact-v1",
+        "omitted_fields": {
+          "event": [
+            "before",
+            "after"
+          ]
+        }
+      }
+    },
+    {
+      "operation": "inspect",
+      "exit_code": 0,
+      "result": {
+        "schema": "pyramid-query-v1",
+        "query": "paused",
+        "graph_version": 3,
+        "context": {
+          "id": "CTX-E34D3DECD9D9063FCE70CAC5C03E05D1",
+          "plan_id": "PLAN-001",
+          "plan_revision": 1,
+          "graph_version": 3
+        },
+        "nodes": [
+          {
+            "id": "RESEARCH-101",
+            "task": "RESEARCH-101",
+            "title": "Validate operation schema stability",
+            "kind": "research",
+            "level": 2,
+            "wave": 0,
+            "workstream": "foundation",
+            "availability": "paused",
+            "execution": "paused",
+            "verification": "unverified",
+            "health": "clear",
+            "owner": "guard-join",
+            "blocker": null,
+            "blocked_by": [],
+            "handoff_id": "HANDOFF-RESEARCH-101-20261004T080655367247Z-9973EA7B",
+            "mutation_guards": {
+              "task": "GUARD-TASK-C34A091BFA945FBE50857E93315CA28B",
+              "audit": "GUARD-AUDIT-993F19A3E5987918DAC183B9C6493526"
+            },
+            "mutation_guard": "GUARD-TASK-C34A091BFA945FBE50857E93315CA28B"
+          }
+        ]
+      }
+    },
+    {
+      "operation": "resume",
+      "exit_code": 0,
+      "result": {
+        "status": "resumed",
+        "event": {
+          "schema": "pyramid-event-reference-v1",
+          "id": "EVENT-20261004T080655603070Z-41BCA8A6",
+          "at": "2026-10-04T08:06:55.602976Z",
+          "graph_version": 4,
+          "actor": "guard-join",
+          "type": "task.resumed",
+          "node": "RESEARCH-101",
+          "payload": {
+            "handoff_id": "HANDOFF-RESEARCH-101-20261004T080655367247Z-9973EA7B",
+            "handoff_sha256": "c7ce45f3a8dd73600d9500c8dc917aa3e7edce662fa75f32bc76a5e017d69d37",
+            "lease_minutes": 120,
+            "takeover": false,
+            "for_recovery": false,
+            "accepted_stale_drift": []
+          },
+          "plan_id": "PLAN-001",
+          "plan_revision": 1,
+          "context_id": "CTX-54FB5FCA886180E7BCC82B06AECF6936",
+          "previous_event_id": "EVENT-20261004T080655372585Z-99899A7F",
+          "previous_event_sha256": "0c0a42c2537ec6554839144f3a1dbf2053f156284128fe7cbe901b8fa40fe242",
+          "path": ".pyramid/events/EVENT-20261004T080655603070Z-41BCA8A6.json"
+        },
+        "packet": {
+          "schema": "agent-task-v1",
+          "task": "RESEARCH-101",
+          "graph_version": 4,
+          "context": {
+            "id": "CTX-54FB5FCA886180E7BCC82B06AECF6936",
+            "plan_id": "PLAN-001",
+            "plan_revision": 1,
+            "graph_version": 4
+          },
+          "title": "Validate operation schema stability",
+          "purpose": "Confirm the extension boundary and document incompatible cases.",
+          "kind": "research",
+          "level": 2,
+          "wave": 0,
+          "workstream": "foundation",
+          "selection": "primary",
+          "availability": "working",
+          "execution": "working",
+          "verification": "unverified",
+          "health": "clear",
+          "blocker": null,
+          "goal_trace": [
+            "RESEARCH-101",
+            "OUTCOME-010",
+            "INTENT-001"
+          ],
+          "parents": [
+            "OUTCOME-010"
+          ],
+          "children": [],
+          "dependencies": [],
+          "blocked_by": [],
+          "required_context": [
+            "src/operation-plan",
+            "tests"
+          ],
+          "allowed_write_scope": [
+            "docs/tasks/evidence/**"
+          ],
+          "commands": [],
+          "deliverables": [
+            "Schema compatibility note"
+          ],
+          "non_goals": [
+            "Implementing the executor"
+          ],
+          "acceptance_criteria": [
+            {
+              "id": "AC-101-01",
+              "description": "Supported and unsupported schema cases are documented from repository evidence."
+            }
+          ],
+          "required_evidence": [
+            {
+              "id": "EVREQ-101-01",
+              "type": "repository-analysis",
+              "description": "References to schema definitions and existing tests."
+            }
+          ],
+          "audit_gates": [],
+          "owner": "guard-join",
+          "lease_expires_at": "2026-10-04T10:06:55.602898Z",
+          "pause": {
+            "active_handoff_id": null,
+            "paused_at": null,
+            "paused_by": null,
+            "mode": null,
+            "resume_deadline": null
+          },
+          "completion_report_schema": "agent-result-v1",
+          "mutation_guards": {
+            "task": "GUARD-TASK-57915496372AE5053FCDBF8F434E23AF",
+            "audit": "GUARD-AUDIT-8B99D3D38CE2CA56219824A79AE45CCE"
+          },
+          "mutation_guard": "GUARD-TASK-57915496372AE5053FCDBF8F434E23AF",
+          "handoff": {
+            "id": "HANDOFF-RESEARCH-101-20261004T080655367247Z-9973EA7B",
+            "path": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-ht0403g6/project/.pyramid/handoffs/HANDOFF-RESEARCH-101-20261004T080655367247Z-9973EA7B.json",
+            "summary": "Owned disposable lease renewal proof; no source mutation.",
+            "progress": [
+              "Claim acquired through actual CLI."
+            ],
+            "changed_files": [],
+            "checks": [],
+            "decisions": [],
+            "blockers": [],
+            "risks": [],
+            "next_steps": [
+              "Resume and reconcile current guard without editing the caller."
+            ],
+            "recommended_first_action": "Inspect paused frontier and resume with its canonical context.",
+            "context_references": [],
+            "external_session_refs": [],
+            "running_resources": [],
+            "accepted_stale_drift": []
+          }
+        },
+        "response_format": "compact-v1",
+        "omitted_fields": {
+          "event": [
+            "before",
+            "after"
+          ]
+        }
+      }
+    },
+    {
+      "operation": "frozen-caller-release",
+      "exit_code": 2,
+      "result": {
+        "ok": false,
+        "error": "Stale task guard: expected GUARD-TASK-4A32C85D3CAAC556248899496D809286, current GUARD-TASK-57915496372AE5053FCDBF8F434E23AF. Refresh only this task or audit packet; unrelated global history may still be current."
+      }
+    },
+    {
+      "operation": "frozen-caller-release",
+      "exit_code": 0,
+      "result": {
+        "status": "release",
+        "event": {
+          "schema": "pyramid-event-reference-v1",
+          "id": "EVENT-20261004T080655860692Z-616A724A",
+          "at": "2026-10-04T08:06:55.860650Z",
+          "graph_version": 5,
+          "actor": "guard-join",
+          "type": "task.release",
+          "node": "RESEARCH-101",
+          "payload": {
+            "reason": null,
+            "result": null,
+            "scope_drift": [],
+            "assurance_invalidated": [],
+            "stale_inspections": []
+          },
+          "plan_id": "PLAN-001",
+          "plan_revision": 1,
+          "context_id": "CTX-93BEDA2F49C293DBE743032685AC4650",
+          "previous_event_id": "EVENT-20261004T080655603070Z-41BCA8A6",
+          "previous_event_sha256": "a2b9483202b9e45c43ea8b1a10d77b0ce91051dacbd1323d59c51ef9c93bf625",
+          "path": ".pyramid/events/EVENT-20261004T080655860692Z-616A724A.json"
+        },
+        "packet": {
+          "schema": "agent-status-v1",
+          "task": "RESEARCH-101",
+          "graph_version": 5,
+          "context": {
+            "id": "CTX-93BEDA2F49C293DBE743032685AC4650",
+            "plan_id": "PLAN-001",
+            "plan_revision": 1,
+            "graph_version": 5
+          },
+          "availability": "ready",
+          "execution": "planned",
+          "verification": "unverified",
+          "health": "clear",
+          "blocker": null,
+          "dependencies": [],
+          "blocked_by": [],
+          "owner": null,
+          "lease_expires_at": null,
+          "pause": {
+            "active_handoff_id": null,
+            "paused_at": null,
+            "paused_by": null,
+            "mode": null,
+            "resume_deadline": null
+          },
+          "mutation_guards": {
+            "task": "GUARD-TASK-4E1E7566986ADB028A3C5BE3CC12F056",
+            "audit": "GUARD-AUDIT-83662CE0685C17F2E691475FDE94DBCC"
+          },
+          "mutation_guard": "GUARD-TASK-4E1E7566986ADB028A3C5BE3CC12F056"
+        },
+        "scope_drift": [],
+        "assurance_invalidated": [],
+        "stale_inspections": [],
+        "response_format": "compact-v1",
+        "omitted_fields": {
+          "event": [
+            "before",
+            "after"
+          ],
+          "packet": [
+            "title",
+            "purpose",
+            "kind",
+            "level",
+            "wave",
+            "workstream",
+            "selection",
+            "goal_trace",
+            "parents",
+            "children",
+            "required_context",
+            "allowed_write_scope",
+            "commands",
+            "deliverables",
+            "non_goals",
+            "acceptance_criteria",
+            "required_evidence",
+            "audit_gates",
+            "completion_report_schema"
+          ]
+        }
+      }
+    },
+    {
+      "operation": "validate",
+      "exit_code": 0,
+      "result": {
+        "valid": true,
+        "errors": [],
+        "plan_id": "PLAN-001",
+        "revision": 1,
+        "graph_version": 5,
+        "context": {
+          "id": "CTX-93BEDA2F49C293DBE743032685AC4650",
+          "plan_id": "PLAN-001",
+          "plan_revision": 1,
+          "graph_version": 5
+        },
+        "project_format_version": 3,
+        "mode": "greenfield"
+      }
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "schema": "agent-result-v1",
+  "task": "TASK-431",
+  "outcome": "implemented",
+  "changed_files": [
+    "plugins/pyramid-task/scripts/pyramid.py",
+    "plugins/pyramid-task/scripts/pyramid_core.py",
+    "plugins/pyramid-task/scripts/pyramid_assurance.py",
+    "plugins/pyramid-task/scripts/pyramid_verification.py",
+    "plugins/pyramid-task/skills/inspect/SKILL.md",
+    "plugins/pyramid-task/references/brownfield-assurance.md",
+    "plugins/pyramid-task/tests/test_artifact_footprint.py",
+    "plugins/pyramid-task/tests/test_runtime.py",
+    "proof-output/v4.1/TASK-431/corrected-pre-run-capture.json",
+    "proof-output/v4.1/TASK-431/corrected-final-tests.txt",
+    "proof-output/v4.1/TASK-431/corrected-review.md",
+    "proof-output/v4.1/TASK-431/full-suite-first-failure.txt",
+    "proof-output/v4.1/TASK-431/failing-before.txt",
+    "proof-output/v4.1/TASK-431/pre-run-capture.json",
+    "proof-output/v4.1/TASK-431/review.md",
+    "proof-output/v4.1/TASK-431/final-tests.txt",
+    "proof-output/v4.1/TASK-431/agent-result.json"
+  ],
+  "changed_assets": [
+    "ASSET-CLI",
+    "ASSET-GRAPH",
+    "ASSET-GUIDANCE",
+    "ASSET-PROOF",
+    "ASSET-QUALIFICATION"
+  ],
+  "change_effect": "mixed",
+  "changes": [
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_core.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_assurance.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_verification.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/skills/inspect/SKILL.md",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/references/brownfield-assurance.md",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/tests/test_artifact_footprint.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/tests/test_runtime.py",
+      "class": "source"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-431/corrected-pre-run-capture.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-431/corrected-final-tests.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-431/corrected-review.md",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-431/full-suite-first-failure.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-431/failing-before.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-431/pre-run-capture.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-431/review.md",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-431/final-tests.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-431/agent-result.json",
+      "class": "evidence"
+    }
+  ],
+  "checks": [
+    {
+      "command": "PYRAMID_USAGE=off PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s plugins/pyramid-task/tests -p 'test_*.py'",
+        "result": "passed",
+      "summary": "176 tests, 21.035s; prior failure retained."
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/validate_repository.py",
+        "result": "passed",
+      "summary": "17 skills, 31 schemas"
+    }
+  ],
+  "discovered_risks": [
+    "Scan excludes dependency directories and reports logical, not allocated, bytes.",
+    "Historical and active handoff ownership is unknown; deletion remains unauthorized.",
+    "Installed-host qualification remains separate."
+  ],
+  "suggested_graph_changes": [],
+  "proofs": [
+    {
+      "requirement": "EV-431",
+      "run": {
+        "contract_sha256": "db18cb2c1f31b51ff8ec5e3b9bed9a3f1b61620724b65db9c38704305cc85964",
+        "inputs_sha256": "a0b64aaf39b52908aa400c693d73796cbf352fabc05f2f796053f667e2d05f5a",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "external",
+            "result": "passed",
+            "summary": "Actual disposable-tree public CLI summary/detail and bounded scans preserve bytes/mtimes; failed audit evidence remains failed/referenced. Corrected full suite includes six footprint tests.",
+            "reviewer": "codex-same-session",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-431/corrected-review.md",
+                "sha256": "6f1c5114154ad3f69703781e1799aad0aaa75936326e278e30c0864474ae4522"
+              }
+            ]
+          },
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "176 real tests pass, including corrected I/O fault injection, source/staging capture, limits, symlinks and amendment coverage. No mock success assertion.",
+            "reviewer": "codex-same-session",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-431/corrected-final-tests.txt",
+                "sha256": "b433fcf0eda5cc77ae097f41c3eb774f9a58a3251f808db7c1ad2c433efdee52"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

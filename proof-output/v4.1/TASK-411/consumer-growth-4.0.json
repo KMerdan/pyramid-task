@@ -1,0 +1,156 @@
+{
+  "probe": {
+    "command": [
+      "/Users/merdankiji/localGit/pyramid-task/.venv/bin/python",
+      "-B",
+      "inputs/probe.py"
+    ],
+    "exit_code": 0,
+    "stdout": "PASS producer\n"
+  },
+  "cli": [
+    {
+      "args": [
+        "take",
+        "--node",
+        "RESEARCH-101",
+        "--actor",
+        "worker"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"taken\",\n  \"event\": {\n    \"schema\": \"pyramid-event-reference-v1\",\n    \"id\": \"EVENT-20261004T063944190698Z-6A2E031E\",\n    \"at\": \"2026-10-04T06:39:44.190608Z\",\n    \"graph_version\": 3,\n    \"actor\": \"worker\",\n    \"type\": \"task.taken\",\n    \"node\": \"RESEARCH-101\",\n    \"payload\": {\n      \"lease_minutes\": 120\n    },\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 2,\n    \"context_id\": \"CTX-05D4A28E8899A8265961E2DE986BCD6C\",\n    \"previous_event_id\": \"EVENT-20261004T063944075769Z-3E9BC600\",\n    \"previous_event_sha256\": \"26630e134c1d1b293444525666b9b352deb52933a81453ebac233a1ef26e2783\",\n    \"path\": \".pyramid/events/EVENT-20261004T063944190698Z-6A2E031E.json\"\n  },\n  \"packet\": {\n    \"schema\": \"agent-task-v1\",\n    \"task\": \"RESEARCH-101\",\n    \"graph_version\": 3,\n    \"context\": {\n      \"id\": \"CTX-05D4A28E8899A8265961E2DE986BCD6C\",\n      \"plan_id\": \"PLAN-001\",\n      \"plan_revision\": 2,\n      \"graph_version\": 3\n    },\n    \"title\": \"Validate operation schema stability\",\n    \"purpose\": \"Confirm the extension boundary and document incompatible cases.\",\n    \"kind\": \"research\",\n    \"level\": 2,\n    \"wave\": 0,\n    \"workstream\": \"foundation\",\n    \"selection\": \"primary\",\n    \"availability\": \"working\",\n    \"execution\": \"working\",\n    \"verification\": \"unverified\",\n    \"health\": \"clear\",\n    \"blocker\": null,\n    \"goal_trace\": [\n      \"RESEARCH-101\",\n      \"OUTCOME-010\",\n      \"INTENT-001\"\n    ],\n    \"parents\": [\n      \"OUTCOME-010\"\n    ],\n    \"children\": [],\n    \"dependencies\": [],\n    \"blocked_by\": [],\n    \"required_context\": [\n      \"src/operation-plan\",\n      \"tests\"\n    ],\n    \"allowed_write_scope\": [\n      \"docs/tasks/evidence/**\"\n    ],\n    \"commands\": [],\n    \"deliverables\": [\n      \"Schema compatibility note\"\n    ],\n    \"non_goals\": [\n      \"Implementing the executor\"\n    ],\n    \"acceptance_criteria\": [\n      {\n        \"id\": \"AC-101-01\",\n        \"description\": \"Supported and unsupported schema cases are documented from repository evidence.\"\n      }\n    ],\n    \"required_evidence\": [\n      {\n        \"id\": \"EVREQ-101-01\",\n        \"type\": \"repository-analysis\",\n        \"description\": \"References to schema definitions and existing tests.\"\n      }\n    ],\n    \"audit_gates\": [],\n    \"owner\": \"worker\",\n    \"lease_expires_at\": \"2026-10-04T08:39:44.190460Z\",\n    \"pause\": {\n      \"active_handoff_id\": null,\n      \"paused_at\": null,\n      \"paused_by\": null,\n      \"mode\": null,\n      \"resume_deadline\": null\n    },\n    \"completion_report_schema\": \"agent-result-v1\",\n    \"mutation_guards\": {\n      \"task\": \"GUARD-TASK-B8D98222322E9AD2325D2BA3538F0E97\",\n      \"audit\": \"GUARD-AUDIT-BFD0CDC26AE7F52F6A9CAE8B60141422\"\n    },\n    \"mutation_guard\": \"GUARD-TASK-B8D98222322E9AD2325D2BA3538F0E97\",\n    \"harness\": {\n      \"contracts\": [\n        {\n          \"requirement\": \"EVREQ-101-01\",\n          \"owner\": \"RESEARCH-101/EVREQ-101-01\",\n          \"criteria\": [\n            \"AC-101-01\"\n          ],\n          \"method\": \"command\",\n          \"procedure\": \"/Users/merdankiji/localGit/pyramid-task/.venv/bin/python -B inputs/probe.py\",\n          \"inputs\": [\n            \"inputs/RESEARCH-101.txt\",\n            \"inputs/probe.py\"\n          ],\n          \"observations\": [\n            \"internal\"\n          ],\n          \"not_applicable\": {\n            \"external\": \"Unit fixture has no external interface\",\n            \"visual\": \"No rendered surface in this runtime fixture\"\n          },\n          \"environment\": \"isolated unit fixture\",\n          \"contract_sha256\": \"2a0e7ad8a5ee8296fea03d38e0f370617bb51c477b70d95f5284e01b61329289\"\n        }\n      ],\n      \"capture\": \"inspect --harness RESEARCH-101\",\n      \"guide\": \"docs/tasks/DEVELOPMENT_HARNESS.md\",\n      \"instruction\": \"Reuse existing checks; implement only missing capability. Capture candidate before checks; view required screenshots. Submit proofs or reuse a current run. A mutation guard is not a source fingerprint.\"\n    }\n  },\n  \"response_format\": \"compact-v1\",\n  \"omitted_fields\": {\n    \"event\": [\n      \"before\",\n      \"after\"\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "inspect",
+        "--harness",
+        "RESEARCH-101"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"schema\": \"pyramid-harness-v1\",\n  \"target\": \"RESEARCH-101\",\n  \"mode\": \"candidate-bound\",\n  \"contracts\": [\n    {\n      \"requirement\": \"EVREQ-101-01\",\n      \"owner\": \"RESEARCH-101/EVREQ-101-01\",\n      \"criteria\": [\n        \"AC-101-01\"\n      ],\n      \"method\": \"command\",\n      \"procedure\": \"/Users/merdankiji/localGit/pyramid-task/.venv/bin/python -B inputs/probe.py\",\n      \"inputs\": [\n        \"inputs/RESEARCH-101.txt\",\n        \"inputs/probe.py\"\n      ],\n      \"observations\": [\n        \"internal\"\n      ],\n      \"not_applicable\": {\n        \"external\": \"Unit fixture has no external interface\",\n        \"visual\": \"No rendered surface in this runtime fixture\"\n      },\n      \"environment\": \"isolated unit fixture\",\n      \"contract_sha256\": \"2a0e7ad8a5ee8296fea03d38e0f370617bb51c477b70d95f5284e01b61329289\"\n    }\n  ],\n  \"proof_templates\": [\n    {\n      \"requirement\": \"EVREQ-101-01\",\n      \"run\": {\n        \"contract_sha256\": \"2a0e7ad8a5ee8296fea03d38e0f370617bb51c477b70d95f5284e01b61329289\",\n        \"inputs_sha256\": \"29f1fc1663a75defd81f10a52ff1614cb4b448d1d61d21aa23e977e0d9197c68\",\n        \"environment\": \"isolated unit fixture\",\n        \"observations\": [\n          {\n            \"kind\": \"internal\",\n            \"result\": \"not-run\",\n            \"summary\": \"\",\n            \"reviewer\": \"\",\n            \"artifacts\": []\n          }\n        ]\n      }\n    }\n  ],\n  \"reusable_proofs\": [],\n  \"setup_blockers\": [],\n  \"instruction\": \"Capture this template BEFORE the checks. Execute or inspect the stated procedure; never invent observations. Source inputs must remain unchanged through submission.\",\n  \"context\": {\n    \"id\": \"CTX-05D4A28E8899A8265961E2DE986BCD6C\",\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 2,\n    \"graph_version\": 3\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "update",
+        "--node",
+        "RESEARCH-101",
+        "--actor",
+        "worker",
+        "--status",
+        "implemented",
+        "--expected-guard",
+        "GUARD-TASK-B8D98222322E9AD2325D2BA3538F0E97",
+        "--result",
+        "/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/tmpuarmrsfx/producer-result.json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"implemented\",\n  \"event\": {\n    \"schema\": \"pyramid-event-reference-v1\",\n    \"id\": \"EVENT-20261004T063944444797Z-40ECE116\",\n    \"at\": \"2026-10-04T06:39:44.444722Z\",\n    \"graph_version\": 4,\n    \"actor\": \"worker\",\n    \"type\": \"task.implemented\",\n    \"node\": \"RESEARCH-101\",\n    \"payload\": {\n      \"reason\": null,\n      \"result\": {\n        \"schema\": \"agent-result-v1\",\n        \"task\": \"RESEARCH-101\",\n        \"outcome\": \"implemented\",\n        \"changed_files\": [],\n        \"checks\": [\n          {\n            \"command\": \"/Users/merdankiji/localGit/pyramid-task/.venv/bin/python -B inputs/probe.py\",\n            \"result\": \"passed\",\n            \"evidence\": [\n              \"RUN-3E7824D709C62A88F878792D8A9FB97B\"\n            ]\n          }\n        ],\n        \"acceptance_evidence\": [\n          {\n            \"criterion\": \"AC-101-01\",\n            \"result\": \"passed\",\n            \"reference\": \"RUN-3E7824D709C62A88F878792D8A9FB97B\"\n          }\n        ],\n        \"discovered_risks\": [],\n        \"suggested_graph_changes\": [],\n        \"proofs\": [\n          {\n            \"requirement\": \"EVREQ-101-01\",\n            \"run\": {\n              \"contract_sha256\": \"b72281a85078c408ac2884a8b39917f1bce23ac6b5923621017832d106b0173e\",\n              \"inputs_sha256\": \"29f1fc1663a75defd81f10a52ff1614cb4b448d1d61d21aa23e977e0d9197c68\",\n              \"environment\": \"isolated unit fixture\",\n              \"observations\": [\n                {\n                  \"kind\": \"internal\",\n                  \"result\": \"passed\",\n                  \"summary\": \"PASS producer\",\n                  \"reviewer\": \"real-subprocess\",\n                  \"artifacts\": [\n                    {\n                      \"path\": \".pyramid/reports/proof-artifacts/30f26740ee603523c49212c48614437f62b2426415966056acec87d5b3f6f08c\",\n                      \"sha256\": \"30f26740ee603523c49212c48614437f62b2426415966056acec87d5b3f6f08c\"\n                    }\n                  ]\n                }\n              ],\n              \"id\": \"RUN-3E7824D709C62A88F878792D8A9FB97B\"\n            }\n          }\n        ]\n      },\n      \"scope_drift\": [],\n      \"assurance_invalidated\": [],\n      \"stale_inspections\": []\n    },\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 2,\n    \"context_id\": \"CTX-1BC0934447DA52E2D0195779CD08238D\",\n    \"previous_event_id\": \"EVENT-20261004T063944190698Z-6A2E031E\",\n    \"previous_event_sha256\": \"264f6d93ad1c916332a837ce69c6bc59adf09c874ec4484811d5965aa3410a79\",\n    \"path\": \".pyramid/events/EVENT-20261004T063944444797Z-40ECE116.json\"\n  },\n  \"packet\": {\n    \"schema\": \"agent-status-v1\",\n    \"task\": \"RESEARCH-101\",\n    \"graph_version\": 4,\n    \"context\": {\n      \"id\": \"CTX-1BC0934447DA52E2D0195779CD08238D\",\n      \"plan_id\": \"PLAN-001\",\n      \"plan_revision\": 2,\n      \"graph_version\": 4\n    },\n    \"availability\": \"implemented\",\n    \"execution\": \"implemented\",\n    \"verification\": \"pending\",\n    \"health\": \"clear\",\n    \"blocker\": null,\n    \"dependencies\": [],\n    \"blocked_by\": [],\n    \"owner\": null,\n    \"lease_expires_at\": null,\n    \"pause\": {\n      \"active_handoff_id\": null,\n      \"paused_at\": null,\n      \"paused_by\": null,\n      \"mode\": null,\n      \"resume_deadline\": null\n    },\n    \"mutation_guards\": {\n      \"task\": \"GUARD-TASK-0928DD58CA5F8C7299A4BD7ED09F0D95\",\n      \"audit\": \"GUARD-AUDIT-E40F2037387B2F9B962C7155ADD836EA\"\n    },\n    \"mutation_guard\": \"GUARD-TASK-0928DD58CA5F8C7299A4BD7ED09F0D95\",\n    \"harness\": {\n      \"capture\": \"inspect --harness RESEARCH-101\",\n      \"guide\": \"docs/tasks/DEVELOPMENT_HARNESS.md\",\n      \"instruction\": \"Reuse existing checks; implement only missing capability. Capture candidate before checks; view required screenshots. Submit proofs or reuse a current run. A mutation guard is not a source fingerprint.\"\n    }\n  },\n  \"scope_drift\": [],\n  \"assurance_invalidated\": [],\n  \"stale_inspections\": [],\n  \"response_format\": \"compact-v1\",\n  \"omitted_fields\": {\n    \"event\": [\n      \"before\",\n      \"after\"\n    ],\n    \"packet.harness\": [\n      \"contracts\"\n    ],\n    \"packet\": [\n      \"title\",\n      \"purpose\",\n      \"kind\",\n      \"level\",\n      \"wave\",\n      \"workstream\",\n      \"selection\",\n      \"goal_trace\",\n      \"parents\",\n      \"children\",\n      \"required_context\",\n      \"allowed_write_scope\",\n      \"commands\",\n      \"deliverables\",\n      \"non_goals\",\n      \"acceptance_criteria\",\n      \"required_evidence\",\n      \"audit_gates\",\n      \"completion_report_schema\"\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "audit",
+        "--node",
+        "RESEARCH-101",
+        "--actor",
+        "reviewer",
+        "--result",
+        "pass",
+        "--evidence",
+        "/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/tmpuarmrsfx/producer-audit.json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"pass\",\n  \"event\": {\n    \"schema\": \"pyramid-event-reference-v1\",\n    \"id\": \"EVENT-20261004T063944574691Z-AEDA53AF\",\n    \"at\": \"2026-10-04T06:39:44.574596Z\",\n    \"graph_version\": 5,\n    \"actor\": \"reviewer\",\n    \"type\": \"audit.pass\",\n    \"node\": \"RESEARCH-101\",\n    \"payload\": {\n      \"audit\": {\n        \"schema\": \"audit-result-v1\",\n        \"target\": \"RESEARCH-101\",\n        \"result\": \"pass\",\n        \"affected_claims\": [\n          \"RESEARCH-101\"\n        ],\n        \"recommended_action\": \"advance\",\n        \"proofs\": [\n          {\n            \"requirement\": \"EVREQ-101-01\",\n            \"run\": {\n              \"contract_sha256\": \"b72281a85078c408ac2884a8b39917f1bce23ac6b5923621017832d106b0173e\",\n              \"inputs_sha256\": \"29f1fc1663a75defd81f10a52ff1614cb4b448d1d61d21aa23e977e0d9197c68\",\n              \"environment\": \"isolated unit fixture\",\n              \"observations\": [\n                {\n                  \"kind\": \"internal\",\n                  \"result\": \"passed\",\n                  \"summary\": \"PASS producer\",\n                  \"reviewer\": \"real-subprocess\",\n                  \"artifacts\": [\n                    {\n                      \"path\": \".pyramid/reports/proof-artifacts/30f26740ee603523c49212c48614437f62b2426415966056acec87d5b3f6f08c\",\n                      \"sha256\": \"30f26740ee603523c49212c48614437f62b2426415966056acec87d5b3f6f08c\"\n                    }\n                  ]\n                }\n              ],\n              \"id\": \"RUN-3E7824D709C62A88F878792D8A9FB97B\"\n            }\n          }\n        ],\n        \"checks\": [\n          {\n            \"id\": \"EVREQ-101-01\",\n            \"result\": \"passed\",\n            \"evidence\": [\n              \"RUN-3E7824D709C62A88F878792D8A9FB97B\"\n            ]\n          }\n        ]\n      },\n      \"invalidated\": [],\n      \"stale_inspections\": []\n    },\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 2,\n    \"context_id\": \"CTX-5392D65359760C97AB30340DE9752E1E\",\n    \"previous_event_id\": \"EVENT-20261004T063944444797Z-40ECE116\",\n    \"previous_event_sha256\": \"66b8d46bfb7c38311bda5521c9bd345858d7b73fd879445721cfa6d0beb33f32\",\n    \"path\": \".pyramid/events/EVENT-20261004T063944574691Z-AEDA53AF.json\"\n  },\n  \"packet\": {\n    \"schema\": \"agent-task-v1\",\n    \"task\": \"RESEARCH-101\",\n    \"graph_version\": 5,\n    \"context\": {\n      \"id\": \"CTX-5392D65359760C97AB30340DE9752E1E\",\n      \"plan_id\": \"PLAN-001\",\n      \"plan_revision\": 2,\n      \"graph_version\": 5\n    },\n    \"title\": \"Validate operation schema stability\",\n    \"purpose\": \"Confirm the extension boundary and document incompatible cases.\",\n    \"kind\": \"research\",\n    \"level\": 2,\n    \"wave\": 0,\n    \"workstream\": \"foundation\",\n    \"selection\": \"primary\",\n    \"availability\": \"verified\",\n    \"execution\": \"implemented\",\n    \"verification\": \"passed\",\n    \"health\": \"clear\",\n    \"blocker\": null,\n    \"goal_trace\": [\n      \"RESEARCH-101\",\n      \"OUTCOME-010\",\n      \"INTENT-001\"\n    ],\n    \"parents\": [\n      \"OUTCOME-010\"\n    ],\n    \"children\": [],\n    \"dependencies\": [],\n    \"blocked_by\": [],\n    \"required_context\": [\n      \"src/operation-plan\",\n      \"tests\"\n    ],\n    \"allowed_write_scope\": [\n      \"docs/tasks/evidence/**\"\n    ],\n    \"commands\": [],\n    \"deliverables\": [\n      \"Schema compatibility note\"\n    ],\n    \"non_goals\": [\n      \"Implementing the executor\"\n    ],\n    \"acceptance_criteria\": [\n      {\n        \"id\": \"AC-101-01\",\n        \"description\": \"Supported and unsupported schema cases are documented from repository evidence.\"\n      }\n    ],\n    \"required_evidence\": [\n      {\n        \"id\": \"EVREQ-101-01\",\n        \"type\": \"repository-analysis\",\n        \"description\": \"References to schema definitions and existing tests.\"\n      }\n    ],\n    \"audit_gates\": [],\n    \"owner\": null,\n    \"lease_expires_at\": null,\n    \"pause\": {\n      \"active_handoff_id\": null,\n      \"paused_at\": null,\n      \"paused_by\": null,\n      \"mode\": null,\n      \"resume_deadline\": null\n    },\n    \"completion_report_schema\": \"agent-result-v1\",\n    \"mutation_guards\": {\n      \"task\": \"GUARD-TASK-57365663839E52AE4A608D350B5CFD52\",\n      \"audit\": \"GUARD-AUDIT-0544888E74E018B6A724E00771C64AA4\"\n    },\n    \"mutation_guard\": \"GUARD-TASK-57365663839E52AE4A608D350B5CFD52\",\n    \"harness\": {\n      \"contracts\": [\n        {\n          \"requirement\": \"EVREQ-101-01\",\n          \"owner\": \"RESEARCH-101/EVREQ-101-01\",\n          \"criteria\": [\n            \"AC-101-01\"\n          ],\n          \"method\": \"command\",\n          \"procedure\": \"/Users/merdankiji/localGit/pyramid-task/.venv/bin/python -B inputs/probe.py\",\n          \"inputs\": [\n            \"inputs/RESEARCH-101.txt\",\n            \"inputs/probe.py\"\n          ],\n          \"observations\": [\n            \"internal\"\n          ],\n          \"not_applicable\": {\n            \"external\": \"Unit fixture has no external interface\",\n            \"visual\": \"No rendered surface in this runtime fixture\"\n          },\n          \"environment\": \"isolated unit fixture\",\n          \"contract_sha256\": \"2a0e7ad8a5ee8296fea03d38e0f370617bb51c477b70d95f5284e01b61329289\"\n        }\n      ],\n      \"capture\": \"inspect --harness RESEARCH-101\",\n      \"guide\": \"docs/tasks/DEVELOPMENT_HARNESS.md\",\n      \"instruction\": \"Reuse existing checks; implement only missing capability. Capture candidate before checks; view required screenshots. Submit proofs or reuse a current run. A mutation guard is not a source fingerprint.\"\n    }\n  },\n  \"invalidated\": [],\n  \"stale_inspections\": [],\n  \"response_format\": \"compact-v1\",\n  \"omitted_fields\": {\n    \"event\": [\n      \"before\",\n      \"after\"\n    ]\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "replan",
+        "--actor",
+        "planner",
+        "--reason",
+        "Add a new consumer",
+        "--plan",
+        "/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/tmpuarmrsfx/consumer-plan.json",
+        "--preview"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"preview\",\n  \"graph_version\": 5,\n  \"context\": {\n    \"id\": \"CTX-5392D65359760C97AB30340DE9752E1E\",\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 2,\n    \"graph_version\": 5\n  },\n  \"diff\": {\n    \"from_revision\": 2,\n    \"to_revision\": 3,\n    \"added_nodes\": [\n      \"TASK-202\"\n    ],\n    \"changed_nodes\": [],\n    \"superseded_nodes\": [],\n    \"added_edges\": [\n      [\n        \"GATE-290\",\n        \"TASK-202\",\n        \"integration-requires\"\n      ],\n      [\n        \"TASK-202\",\n        \"OUTCOME-010\",\n        \"contributes-to\"\n      ],\n      [\n        \"TASK-202\",\n        \"RESEARCH-101\",\n        \"requires\"\n      ]\n    ],\n    \"removed_edges\": []\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "replan",
+        "--actor",
+        "planner",
+        "--reason",
+        "Add a new consumer",
+        "--plan",
+        "/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/tmpuarmrsfx/consumer-plan.json",
+        "--apply",
+        "--expected-version",
+        "5",
+        "--expected-context",
+        "CTX-5392D65359760C97AB30340DE9752E1E"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"status\": \"applied\",\n  \"event\": {\n    \"schema\": \"pyramid-event-v1\",\n    \"id\": \"EVENT-20261004T063944823873Z-8CB50DF9\",\n    \"at\": \"2026-10-04T06:39:44.823805Z\",\n    \"graph_version\": 6,\n    \"actor\": \"planner\",\n    \"type\": \"plan.replanned\",\n    \"node\": \"INTENT-001\",\n    \"before\": {\n      \"revision\": 2,\n      \"graph_version\": 5\n    },\n    \"after\": {\n      \"revision\": 3\n    },\n    \"payload\": {\n      \"reason\": \"Add a new consumer\",\n      \"diff\": {\n        \"from_revision\": 2,\n        \"to_revision\": 3,\n        \"added_nodes\": [\n          \"TASK-202\"\n        ],\n        \"changed_nodes\": [],\n        \"superseded_nodes\": [],\n        \"added_edges\": [\n          [\n            \"GATE-290\",\n            \"TASK-202\",\n            \"integration-requires\"\n          ],\n          [\n            \"TASK-202\",\n            \"OUTCOME-010\",\n            \"contributes-to\"\n          ],\n          [\n            \"TASK-202\",\n            \"RESEARCH-101\",\n            \"requires\"\n          ]\n        ],\n        \"removed_edges\": []\n      },\n      \"invalidated_claims\": [\n        \"GATE-290\",\n        \"INTENT-001\",\n        \"OUTCOME-010\",\n        \"TASK-202\"\n      ],\n      \"stale_inspections\": [],\n      \"proof_contract_bindings\": {\n        \"RUN-3E7824D709C62A88F878792D8A9FB97B\": {\n          \"version\": 2,\n          \"owner\": \"RESEARCH-101/EVREQ-101-01\",\n          \"legacy_sha256\": \"b72281a85078c408ac2884a8b39917f1bce23ac6b5923621017832d106b0173e\",\n          \"producer_sha256\": \"2a0e7ad8a5ee8296fea03d38e0f370617bb51c477b70d95f5284e01b61329289\",\n          \"from_revision\": 2,\n          \"to_revision\": 3\n        }\n      }\n    },\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 3,\n    \"context_id\": \"CTX-FF7F973E9C1A173946DC6B17494DD3FE\",\n    \"previous_event_id\": \"EVENT-20261004T063944574691Z-AEDA53AF\",\n    \"previous_event_sha256\": \"e7d0d0e446ec3d45dc7a934598ed7652ae1e9df487a047a05e58306080fbfc49\"\n  },\n  \"diff\": {\n    \"from_revision\": 2,\n    \"to_revision\": 3,\n    \"added_nodes\": [\n      \"TASK-202\"\n    ],\n    \"changed_nodes\": [],\n    \"superseded_nodes\": [],\n    \"added_edges\": [\n      [\n        \"GATE-290\",\n        \"TASK-202\",\n        \"integration-requires\"\n      ],\n      [\n        \"TASK-202\",\n        \"OUTCOME-010\",\n        \"contributes-to\"\n      ],\n      [\n        \"TASK-202\",\n        \"RESEARCH-101\",\n        \"requires\"\n      ]\n    ],\n    \"removed_edges\": []\n  },\n  \"stale_inspections\": [],\n  \"graph\": \"/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/tmpuarmrsfx/project/.pyramid/graph.json\",\n  \"ready\": \"/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/tmpuarmrsfx/project/.pyramid/ready.json\",\n  \"docs\": \"/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/tmpuarmrsfx/project/docs/tasks\",\n  \"graph_version\": 6,\n  \"context\": {\n    \"id\": \"CTX-FF7F973E9C1A173946DC6B17494DD3FE\",\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 3,\n    \"graph_version\": 6\n  },\n  \"ready_count\": 2\n}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "inspect",
+        "--harness",
+        "TASK-202"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"schema\": \"pyramid-harness-v1\",\n  \"target\": \"TASK-202\",\n  \"mode\": \"candidate-bound\",\n  \"contracts\": [\n    {\n      \"requirement\": \"EVREQ-202-01\",\n      \"owner\": \"RESEARCH-101/EVREQ-101-01\",\n      \"criteria\": [\n        \"AC-202-01\"\n      ],\n      \"method\": \"command\",\n      \"procedure\": \"/Users/merdankiji/localGit/pyramid-task/.venv/bin/python -B inputs/probe.py\",\n      \"inputs\": [\n        \"inputs/RESEARCH-101.txt\",\n        \"inputs/probe.py\"\n      ],\n      \"observations\": [\n        \"internal\"\n      ],\n      \"not_applicable\": {\n        \"external\": \"Unit fixture has no external interface\",\n        \"visual\": \"No rendered surface in this runtime fixture\"\n      },\n      \"environment\": \"isolated unit fixture\",\n      \"contract_sha256\": \"2a0e7ad8a5ee8296fea03d38e0f370617bb51c477b70d95f5284e01b61329289\"\n    }\n  ],\n  \"proof_templates\": [\n    {\n      \"requirement\": \"EVREQ-202-01\",\n      \"run\": {\n        \"contract_sha256\": \"2a0e7ad8a5ee8296fea03d38e0f370617bb51c477b70d95f5284e01b61329289\",\n        \"inputs_sha256\": \"29f1fc1663a75defd81f10a52ff1614cb4b448d1d61d21aa23e977e0d9197c68\",\n        \"environment\": \"isolated unit fixture\",\n        \"observations\": [\n          {\n            \"kind\": \"internal\",\n            \"result\": \"not-run\",\n            \"summary\": \"\",\n            \"reviewer\": \"\",\n            \"artifacts\": []\n          }\n        ]\n      }\n    }\n  ],\n  \"reusable_proofs\": [\n    {\n      \"requirement\": \"EVREQ-202-01\",\n      \"reuse_run\": \"RUN-3E7824D709C62A88F878792D8A9FB97B\"\n    }\n  ],\n  \"setup_blockers\": [],\n  \"instruction\": \"Capture this template BEFORE the checks. Execute or inspect the stated procedure; never invent observations. Source inputs must remain unchanged through submission.\",\n  \"context\": {\n    \"id\": \"CTX-FF7F973E9C1A173946DC6B17494DD3FE\",\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 3,\n    \"graph_version\": 6\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "take",
+        "--node",
+        "TASK-202",
+        "--actor",
+        "worker",
+        "--expected-version",
+        "5"
+      ],
+      "exit_code": 2,
+      "stdout": "{\n  \"ok\": false,\n  \"error\": \"Stale graph version: expected 5, current 6\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "inspect",
+        "--harness",
+        "TASK-202"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"schema\": \"pyramid-harness-v1\",\n  \"target\": \"TASK-202\",\n  \"mode\": \"candidate-bound\",\n  \"contracts\": [\n    {\n      \"requirement\": \"EVREQ-202-01\",\n      \"owner\": \"RESEARCH-101/EVREQ-101-01\",\n      \"criteria\": [\n        \"AC-202-01\"\n      ],\n      \"method\": \"command\",\n      \"procedure\": \"/Users/merdankiji/localGit/pyramid-task/.venv/bin/python -B inputs/probe.py\",\n      \"inputs\": [\n        \"inputs/RESEARCH-101.txt\",\n        \"inputs/probe.py\"\n      ],\n      \"observations\": [\n        \"internal\"\n      ],\n      \"not_applicable\": {\n        \"external\": \"Unit fixture has no external interface\",\n        \"visual\": \"No rendered surface in this runtime fixture\"\n      },\n      \"environment\": \"isolated unit fixture\",\n      \"contract_sha256\": \"2a0e7ad8a5ee8296fea03d38e0f370617bb51c477b70d95f5284e01b61329289\"\n    }\n  ],\n  \"proof_templates\": [\n    {\n      \"requirement\": \"EVREQ-202-01\",\n      \"run\": {\n        \"contract_sha256\": \"2a0e7ad8a5ee8296fea03d38e0f370617bb51c477b70d95f5284e01b61329289\",\n        \"inputs_sha256\": \"9698971df7395ca12c86534b5b1408121e4d34a61b69292f236adecc8f1f1968\",\n        \"environment\": \"isolated unit fixture\",\n        \"observations\": [\n          {\n            \"kind\": \"internal\",\n            \"result\": \"not-run\",\n            \"summary\": \"\",\n            \"reviewer\": \"\",\n            \"artifacts\": []\n          }\n        ]\n      }\n    }\n  ],\n  \"reusable_proofs\": [],\n  \"setup_blockers\": [],\n  \"instruction\": \"Capture this template BEFORE the checks. Execute or inspect the stated procedure; never invent observations. Source inputs must remain unchanged through submission.\",\n  \"context\": {\n    \"id\": \"CTX-FF7F973E9C1A173946DC6B17494DD3FE\",\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 3,\n    \"graph_version\": 6\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "validate"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"valid\": true,\n  \"errors\": [],\n  \"plan_id\": \"PLAN-001\",\n  \"revision\": 3,\n  \"graph_version\": 6,\n  \"context\": {\n    \"id\": \"CTX-FF7F973E9C1A173946DC6B17494DD3FE\",\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 3,\n    \"graph_version\": 6\n  },\n  \"project_format_version\": 3,\n  \"mode\": \"greenfield\"\n}\n",
+      "stderr": ""
+    }
+  ],
+  "producer_verification_after_extension": "passed",
+  "new_consumer_verification": "unverified",
+  "historical_event_hashes": {
+    "EVENT-20261004T063944574691Z-AEDA53AF.json": "e7d0d0e446ec3d45dc7a934598ed7652ae1e9df487a047a05e58306080fbfc49",
+    "EVENT-20261004T063944444797Z-40ECE116.json": "66b8d46bfb7c38311bda5521c9bd345858d7b73fd879445721cfa6d0beb33f32",
+    "EVENT-20261004T063944075769Z-3E9BC600.json": "26630e134c1d1b293444525666b9b352deb52933a81453ebac233a1ef26e2783",
+    "EVENT-20261004T063944190698Z-6A2E031E.json": "264f6d93ad1c916332a837ce69c6bc59adf09c874ec4484811d5965aa3410a79",
+    "EVENT-20261004T063944056826Z-98680768.json": "53b75d509d0a4649da072193318b832d769e53b1cb9de208de724f0bd710912d"
+  },
+  "history_and_artifacts_unchanged": true,
+  "changed_source_refused": true
+}

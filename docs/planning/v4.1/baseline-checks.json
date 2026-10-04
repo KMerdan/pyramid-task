@@ -1,0 +1,68 @@
+{
+  "status": "baseline-qualified-not-4.1-qualified",
+  "observed_at": "2026-10-04T06:14:37Z",
+  "source": {
+    "branch": "main",
+    "head": "3d787c5c2038d61f1146f24ba20188bfd18b6495",
+    "remote_main": "3d787c5c2038d61f1146f24ba20188bfd18b6495",
+    "plugin_version": "4.0.0"
+  },
+  "host_packages": {
+    "Codex": {
+      "version": "4.0.0",
+      "compared_files": 112,
+      "missing": 0,
+      "different": 0
+    },
+    "Claude_Code": {
+      "version": "4.0.0",
+      "compared_files": 112,
+      "missing": 0,
+      "different": 0
+    }
+  },
+  "checks": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYRAMID_USAGE=off .venv/bin/python tools/validate_repository.py",
+      "result": "pass",
+      "summary": "17 skills and 31 schemas validated."
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYRAMID_USAGE=off .venv/bin/python -m unittest discover -s plugins/pyramid-task/tests -p 'test_*.py'",
+      "result": "pass",
+      "tests": 160,
+      "seconds": 17.647,
+      "summary": "OK; one implicit TemporaryDirectory cleanup ResourceWarning in an HTTP-421 test."
+    },
+    {
+      "command": "JSON Schema plus pyramid_core.validate_plan(candidate)",
+      "result": "pass",
+      "summary": "Schema-2 candidate: 13 nodes, 30 edges, no semantic errors."
+    }
+  ],
+  "environment": {
+    "python": "3.14",
+    "jsonschema": "4.26.0",
+    "dependencies": "Repository-local ignored .venv; declared requirements-dev.txt. No global package change."
+  },
+  "initial_setup_failures": [
+    "Default Python lacked jsonschema; baseline tests were not evaluable until declared development dependencies were installed.",
+    "Ignored .DS_Store and script/test bytecode made repository validation fail; those generated files were moved to recoverable storage outside the source checkout."
+  ],
+  "preservation": {
+    "obsolete_branch": "dev/pyramid-efficiency",
+    "old_tip": "b4ea4714915ae91e228588a04d38539d830b5f53",
+    "stash": "40acddd15ffc744dfbf770109c7350dc792dcaa2",
+    "recovery": "Verified Git bundle and restore instructions under the user's local Pyramid state recovery/source-371-20261004, outside this repository.",
+    "saved_local_only_commits": [
+      "1f8942e9",
+      "1eea7dd",
+      "b4ea471"
+    ]
+  },
+  "limitations": [
+    "Baseline automated tests do not prove current coding-model decisions, screenshot judgment or a 4.1 installed-host adapter.",
+    "This record is an observation of checks run in the planning session, not fabricated future acceptance or a raw test trace.",
+    "The private investigated sessions are not reproducible public benchmarks; use sanitized cases and actual local reproductions."
+  ]
+}

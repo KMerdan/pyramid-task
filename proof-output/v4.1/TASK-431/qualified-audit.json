@@ -1,0 +1,148 @@
+{
+  "schema": "audit-result-v1",
+  "target": "TASK-431",
+  "result": "pass",
+  "affected_claims": [
+    "TASK-431"
+  ],
+  "recommended_action": "advance",
+  "checks": [
+    {
+      "id": "AC-TASK-431-01",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/recovery-final-result.json",
+        "proof-output/v4.1/TASK-432/guard-qualified-result.json",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-422/summary.md",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualified-validation.txt",
+        "proof-output/v4.1/TASK-432/review-package-identity.json",
+        "proof-output/v4.1/TASK-432/current-footprint.json"
+      ]
+    },
+    {
+      "id": "AC-TASK-431-02",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/recovery-final-result.json",
+        "proof-output/v4.1/TASK-432/guard-qualified-result.json",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-422/summary.md",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualified-validation.txt",
+        "proof-output/v4.1/TASK-432/review-package-identity.json",
+        "proof-output/v4.1/TASK-432/current-footprint.json"
+      ]
+    },
+    {
+      "id": "AC-TASK-431-03",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/recovery-final-result.json",
+        "proof-output/v4.1/TASK-432/guard-qualified-result.json",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-422/summary.md",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualified-validation.txt",
+        "proof-output/v4.1/TASK-432/review-package-identity.json",
+        "proof-output/v4.1/TASK-432/current-footprint.json"
+      ]
+    }
+  ],
+  "assurance": {
+    "impact_ids": [
+      "IMPACT-FOOTPRINT-CLI",
+      "IMPACT-FOOTPRINT-GRAPH",
+      "IMPACT-FOOTPRINT-PROOF",
+      "IMPACT-FOOTPRINT-GUIDE",
+      "IMPACT-REGRESSION-I3"
+    ],
+    "inspection_ids": [
+      "INSPECT-FOOTPRINT-CLI",
+      "INSPECT-FOOTPRINT-GRAPH",
+      "INSPECT-FOOTPRINT-PROOF",
+      "INSPECT-FOOTPRINT-GUIDE",
+      "INSPECT-REGRESSION-I3"
+    ],
+    "finding_ids": [],
+    "scope_review": "complete",
+    "limitations": [
+      "Current real CLI/file/host observations and independent conditional review joined with satisfied identity conditions. Supplied case facts, synthetic test controls, coordination metadata, prompt-only budgets, unknown model/cost and installed-release limits remain explicit in join-review.md and qualification.md."
+    ]
+  },
+  "proofs": [
+    {
+      "requirement": "EV-431",
+      "run": {
+        "contract_sha256": "db18cb2c1f31b51ff8ec5e3b9bed9a3f1b61620724b65db9c38704305cc85964",
+        "inputs_sha256": "43f587a0bd60e6165fd25554cf40dc29173110675e9f1296c25205634a2c0e24",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "external",
+            "result": "passed",
+            "summary": "Current declared procedure and criteria checked against actual CLI/file/probe/host evidence; runtime-vs-formula fixtures and limits retained; independent review conditions resolved with actual identity and recovery hashes.",
+            "reviewer": "codex-pyramid41-audit; independent native Claude join review where applicable",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-432/recovery-final-result.json",
+                "sha256": "03b0a43d4bd9d77ab37bc1900bce79eb7ad3a71279b89a6a55b48382162d1dfa"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/guard-qualified-result.json",
+                "sha256": "677fc0ac7f0f2fd876ef0857ffd4b5528d71f3398b8eca1404f159591a728699"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/qualification.md",
+                "sha256": "27c3323323aca6f8950d7592595688d99062a0ef11b47f2346f75a9471355ed9"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/join-review.md",
+                "sha256": "654b22dba4bfa83411f2043501bdff8063ae25fd9b9e5cb20f1637fa07f5d84e"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-422/summary.md",
+                "sha256": "4a96c93357284549da57be9598597750e343195c026ca9b81cc8230e3dbff70e"
+              }
+            ]
+          },
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "Current declared procedure and criteria checked against actual CLI/file/probe/host evidence; runtime-vs-formula fixtures and limits retained; independent review conditions resolved with actual identity and recovery hashes.",
+            "reviewer": "codex-pyramid41-audit; independent native Claude join review where applicable",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-432/join-review.md",
+                "sha256": "654b22dba4bfa83411f2043501bdff8063ae25fd9b9e5cb20f1637fa07f5d84e"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/qualified-tests.txt",
+                "sha256": "1c9a63bf5110a45acff0699e74b541c234e3d219ed3cbfed527e53c5a80660e1"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/qualified-validation.txt",
+                "sha256": "a1ae9b67ea2ff3d0bf0b54c6ba537f739463a34938b4a39ca0d73b57ab3bb9ab"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/review-package-identity.json",
+                "sha256": "fdfe552028a7749d90efb170f3fc8462fe8e013e6be5d07f4e9ca072e1dff037"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/current-footprint.json",
+                "sha256": "4d14992dade1215561881897eaffb61ab00f98df5e049495004ac245bb89e41f"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

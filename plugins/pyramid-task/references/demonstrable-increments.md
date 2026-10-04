@@ -59,6 +59,12 @@ Use the smallest proof that is representative. A process starting and exiting su
 
 Exercise the actual public entry point and critical integration boundaries early in the increment, before broad qualification. For an agent application this includes the prompt/tool/result path visible to the real parent agent, not only internal service tests. Keep final cumulative acceptance and disclose simulated providers or effects.
 
+The first gate must demonstrate the smallest complete promised public journey.
+Harness installation or a component matrix is supporting work, not that journey.
+Add only missing observation capability needed by the outcome; put its dependency
+at the acceptance that consumes it. Independent product work need not wait for a
+VM, browser, release credential or optional integration it does not consume.
+
 Name the delivery environment in the evidence contract. Record candidate source/build identity and distinguish candidate verification from demonstrated availability in the intended installation. A user-equivalent isolated installation does not prove the user's running process was updated; deployment still requires its normal authorization. Express this in existing acceptance/evidence records, not new execution states.
 
 ## Shape work around increments

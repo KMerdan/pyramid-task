@@ -27,6 +27,7 @@ from pyramid_core import (
 from pyramid_verification import (
     ARTIFACT_DIR, VerificationError, contracts, input_snapshot, normalize_proofs,
     proof_readiness, query_harness,
+    _legacy_contract_sha256, validate_proof_bindings,
 )
 from pyramid_output import compact_response
 
@@ -306,6 +307,189 @@ class HarnessTests(unittest.TestCase):
         self.assertEqual('passed', cli('inspect', '--node', nid)['verification'])
         self.assertEqual(failure_event, load_json(self.root / blocked['event']['path']))
         self.assertTrue(cli('validate')['valid'])
+
+    def test_consumer_growth_preserves_executed_producer_proof_through_cli(self, legacy_contract=False):
+        """Actual CLI/probe processes, source bytes and canonical evidence; no success mock."""
+        nid = 'RESEARCH-101'
+        probe = self.root / 'inputs/probe.py'
+        probe.write_text("from pathlib import Path\n"
+                         "ok = Path('inputs/RESEARCH-101.txt').read_text() == 'RESEARCH-101'\n"
+                         "print('PASS producer' if ok else 'FAIL producer')\n"
+                         "raise SystemExit(0 if ok else 1)\n")
+        command = [sys.executable, '-B', 'inputs/probe.py']
+        self.node(nid)['required_evidence'][0]['verification'].update(
+            method='command', procedure=shlex.join(command),
+            inputs=['inputs/RESEARCH-101.txt', 'inputs/probe.py'])
+        replan_project(self.root, self.write('probe-plan.json', self.plan),
+                       'planner', 'Declare the executed producer probe', True)
+
+        transcript = []
+
+        def cli(*args, expected_code=0):
+            completed = subprocess.run(
+                [sys.executable, '-B', str(PLUGIN / 'scripts/pyramid.py'), *args,
+                 '--project', str(self.root), '--json'],
+                capture_output=True, text=True, timeout=30)
+            transcript.append({'args': list(args), 'exit_code': completed.returncode,
+                               'stdout': completed.stdout, 'stderr': completed.stderr})
+            self.assertEqual(expected_code, completed.returncode, completed.stdout + completed.stderr)
+            return json.loads(completed.stdout)
+
+        taken = cli('take', '--node', nid, '--actor', 'worker')
+        proof = cli('inspect', '--harness', nid)['proof_templates'][0]
+        if legacy_contract:
+            # Reproduce the 4.0 on-disk format independently of the new hash code.
+            owner = f"{nid}/EVREQ-101-01"
+            producer = self.node(nid)
+            requirement = producer['required_evidence'][0]
+            consumers = [{'requirement': owner, 'description': requirement['description'],
+                'type': requirement['type'], 'criteria': producer['acceptance_criteria'],
+                'intent_claims': [c for c in self.plan['intent']['success_evidence']
+                                  if c['id'] in producer['source_requirements']]}]
+            material = {'plan': self.plan['plan_id'], 'owner': owner,
+                        'spec': requirement['verification'], 'consumers': consumers}
+            proof['run']['contract_sha256'] = hashlib.sha256(json.dumps(
+                material, sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()).hexdigest()
+        observed = subprocess.run(command, cwd=self.root, capture_output=True, text=True, timeout=10)
+        self.assertEqual(0, observed.returncode, observed.stdout + observed.stderr)
+        self.assertEqual('PASS producer\n', observed.stdout)
+        self.artifact.write_text(observed.stdout)
+        for observation in proof['run']['observations']:
+            observation.update(result='passed', summary=observed.stdout.strip(), reviewer='real-subprocess',
+                               artifacts=[{'path': 'proof-output/check.txt',
+                                           'sha256': hashlib.sha256(self.artifact.read_bytes()).hexdigest()}])
+        cli('update', '--node', nid, '--actor', 'worker', '--status', 'implemented',
+            '--expected-guard', taken['packet']['mutation_guard'],
+            '--result', str(self.write('producer-result.json', self.result(nid, proof))))
+        cli('audit', '--node', nid, '--actor', 'reviewer', '--result', 'pass',
+            '--evidence', str(self.write('producer-audit.json', {
+                'schema': 'audit-result-v1', 'target': nid, 'result': 'pass',
+                'affected_claims': [nid], 'recommended_action': 'advance'})))
+        _, before_plan, before_state = load_project(self.root)
+        prior = copy.deepcopy(before_state['nodes'][nid])
+        event_bytes = {p.name: p.read_bytes() for p in (self.root / '.pyramid/events').glob('*.json')}
+        artifact_bytes = {p.name: p.read_bytes() for p in (self.root / ARTIFACT_DIR).iterdir()}
+        consumer = copy.deepcopy(self.node('TASK-201'))
+        consumer.update(id='TASK-202', title='Use the proven producer')
+        consumer['acceptance_criteria'] = [{'id': 'AC-202-01', 'description': 'The new consumer is checked'}]
+        consumer['required_evidence'] = [{'id': 'EVREQ-202-01', 'type': 'test',
+            'description': 'Producer proof plus explicit new-consumer review',
+            'verification': {'criteria': ['AC-202-01'], 'reuse': 'RESEARCH-101/EVREQ-101-01'}}]
+        candidate = copy.deepcopy(before_plan)
+        candidate['nodes'].append(consumer)
+        candidate['edges'].extend([
+            {'from': 'TASK-202', 'to': nid, 'type': 'requires'},
+            {'from': 'TASK-202', 'to': 'OUTCOME-010', 'type': 'contributes-to'},
+            {'from': 'GATE-290', 'to': 'TASK-202', 'type': 'integration-requires'}])
+        path = self.write('consumer-plan.json', candidate)
+        preview = cli('replan', '--actor', 'planner', '--reason', 'Add a new consumer',
+                      '--plan', str(path), '--preview')
+        applied = cli('replan', '--actor', 'planner', '--reason', 'Add a new consumer',
+                      '--plan', str(path), '--apply', '--expected-version', str(preview['graph_version']),
+                      '--expected-context', preview['context']['id'])
+        self.assertNotIn(nid, applied['event']['payload']['invalidated_claims'])
+        _, plan, state = load_project(self.root)
+        self.assertEqual('passed', state['nodes'][nid]['verification'])
+        self.assertTrue(proof_readiness(self.root, plan, state, nid)['ready'])
+        self.assertEqual(prior['last_result'], state['nodes'][nid]['last_result'])
+        self.assertEqual(prior['last_audit'], state['nodes'][nid]['last_audit'])
+        self.assertEqual('unverified', state['nodes']['TASK-202']['verification'])
+        self.assertTrue(cli('inspect', '--harness', 'TASK-202')['reusable_proofs'])
+        if legacy_contract:
+            rid = prior['last_audit']['proofs'][0]['run']['id']
+            self.assertIn(rid, applied['event']['payload']['proof_contract_bindings'])
+            binding = state['proof_contract_bindings'][rid]
+            self.assertEqual(2, binding['version'])
+            self.assertEqual(proof['run']['contract_sha256'], binding['legacy_sha256'])
+            self.assertNotEqual(binding['legacy_sha256'], binding['producer_sha256'])
+            jsonschema.validate(state, load_json(PLUGIN / 'schemas/state.schema.json'))
+            no_binding = copy.deepcopy(state)
+            no_binding.pop('proof_contract_bindings')
+            self.assertFalse(proof_readiness(self.root, plan, no_binding, nid)['ready'])
+            altered = copy.deepcopy(prior['last_audit']['proofs'][0]['run'])
+            altered['observations'][0]['summary'] = 'Not the recorded observation'
+            with self.assertRaisesRegex(VerificationError, 'ID does not match'):
+                normalize_proofs(self.root, plan, state, nid,
+                    self.result(nid, {'requirement': 'EVREQ-101-01', 'run': altered}))
+        self.assertEqual(event_bytes, {name: (self.root / '.pyramid/events' / name).read_bytes()
+                                      for name in event_bytes})
+        self.assertEqual(artifact_bytes, {p.name: p.read_bytes() for p in (self.root / ARTIFACT_DIR).iterdir()})
+        rejected = cli('take', '--node', 'TASK-202', '--actor', 'worker',
+                       '--expected-version', str(before_state['graph_version']), expected_code=2)
+        self.assertIn('Stale graph version', rejected['error'])
+        (self.root / 'inputs/RESEARCH-101.txt').write_text('changed after the accepted run')
+        self.assertFalse(cli('inspect', '--harness', 'TASK-202')['reusable_proofs'])
+        self.assertFalse(proof_readiness(self.root, plan, state, nid)['ready'])
+        self.assertTrue(cli('validate')['valid'])
+        # Optional export preserves real probe/CLI output before temporary cleanup.
+        # Only the test invoker selects this owned staging directory; runtime has no exporter.
+        staging = os.environ.get('PYRAMID_TEST_EVIDENCE_DIR')
+        if staging:
+            target = Path(staging)
+            target.mkdir(parents=True, exist_ok=True)
+            label = '4.0' if legacy_contract else 'current'
+            (target / f'consumer-growth-{label}.json').write_text(json.dumps({
+                'probe': {'command': command, 'exit_code': observed.returncode, 'stdout': observed.stdout},
+                'cli': transcript,
+                'producer_verification_after_extension': state['nodes'][nid]['verification'],
+                'new_consumer_verification': state['nodes']['TASK-202']['verification'],
+                'historical_event_hashes': {name: hashlib.sha256(data).hexdigest()
+                                            for name, data in event_bytes.items()},
+                'history_and_artifacts_unchanged': True,
+                'changed_source_refused': True,
+            }, indent=2))
+
+    def test_guarded_replan_preserves_executed_40_proof_without_rewriting_it(self):
+        self.test_consumer_growth_preserves_executed_producer_proof_through_cli(legacy_contract=True)
+
+    def test_consumer_contract_changes_do_not_change_producer_identity(self):
+        self.complete()
+        prior = copy.deepcopy(load_project(self.root)[2]['nodes']['TASK-201'])
+        candidate = copy.deepcopy(self.plan)
+        consumer = next(n for n in candidate['nodes'] if n['id'] == 'OUTCOME-010')
+        consumer['acceptance_criteria'][0]['description'] += ' with a changed consumer condition'
+        replan_project(self.root, self.write('consumer-change.json', candidate),
+                       'planner', 'Change consumer acceptance, not the observed producer', True)
+        _, plan, state = load_project(self.root)
+        self.assertEqual('passed', state['nodes']['TASK-201']['verification'])
+        self.assertTrue(proof_readiness(self.root, plan, state, 'TASK-201')['ready'])
+        self.assertEqual(prior['last_audit'], state['nodes']['TASK-201']['last_audit'])
+        self.assertNotEqual('passed', state['nodes']['OUTCOME-010']['verification'])
+
+    def test_producer_procedure_or_selection_changes_reject_old_proof(self):
+        self.implement('RESEARCH-101')
+        for field in ('procedure', 'selection'):
+            with self.subTest(field=field):
+                candidate = copy.deepcopy(self.plan)
+                producer = next(n for n in candidate['nodes'] if n['id'] == 'RESEARCH-101')
+                if field == 'procedure':
+                    producer['required_evidence'][0]['verification']['procedure'] += '; check additional invariant'
+                else:
+                    producer['selection'] = 'superseded'
+                replan_project(self.root, self.write(f'{field}.json', candidate),
+                               'planner', 'Change the producer premise', True)
+                _, plan, state = load_project(self.root)
+                self.assertNotEqual('passed', state['nodes']['RESEARCH-101']['verification'])
+                self.assertFalse(proof_readiness(self.root, plan, state, 'RESEARCH-101')['ready'])
+
+    def test_legacy_binding_cannot_preserve_changed_inputs_or_bad_metadata(self):
+        nid = 'RESEARCH-101'
+        legacy = self.proof(nid)
+        legacy['run']['contract_sha256'] = _legacy_contract_sha256(self.plan, f'{nid}/EVREQ-101-01')
+        self.implement(nid, legacy)
+        candidate = copy.deepcopy(self.plan)
+        outcome = next(n for n in candidate['nodes'] if n['id'] == 'OUTCOME-010')
+        outcome['required_evidence'][0]['verification']['reuse'] = f'{nid}/EVREQ-101-01'
+        (self.root / f'inputs/{nid}.txt').write_text('changed before extension')
+        applied = replan_project(self.root, self.write('stale-legacy.json', candidate),
+                                 'planner', 'Add consumer after a real source change', True)
+        _, plan, state = load_project(self.root)
+        self.assertFalse(applied['event']['payload']['proof_contract_bindings'])
+        self.assertFalse(proof_readiness(self.root, plan, state, nid)['ready'])
+        for value in [None, {'RUN-' + 'A' * 32: {}}, {'bad-id': {'version': 2}}]:
+            bad = copy.deepcopy(state)
+            bad['proof_contract_bindings'] = value
+            self.assertTrue(validate_proof_bindings(plan, bad))
 
     def test_published_example_and_cli_query(self):
         example = load_json(PLUGIN / 'assets/example-harness-plan.json')

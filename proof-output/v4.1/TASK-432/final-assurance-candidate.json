@@ -1,0 +1,984 @@
+{
+  "schema": "pyramid-assurance-v1",
+  "plan_id": "PYRAMID-41-PRECISE-PROGRESS-20261004",
+  "baseline_id": "BASELINE-PYRAMID-40",
+  "baseline_revision": 1,
+  "policy": "brownfield",
+  "status": "ready",
+  "updated_at": "2026-10-04T09:21:01.261659Z",
+  "updated_by": "codex-pyramid41-worker",
+  "enforce_from_graph_version": 1,
+  "impacts": [
+    {
+      "id": "IMPACT-GRAPH",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-411"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-411/agent-result.json",
+        "proof-output/v4.1/TASK-411/inspection-review.md",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/recovery-final-result.json",
+        "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-current.json"
+      ],
+      "path": [
+        "Directional edge changes and old/new dependent claims, actual canonical CLI/state transitions."
+      ]
+    },
+    {
+      "id": "IMPACT-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-411"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-411/agent-result.json",
+        "proof-output/v4.1/TASK-411/inspection-review.md",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/recovery-final-result.json",
+        "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-current.json"
+      ],
+      "path": [
+        "Producer/consumer proof identity, stored observations and stale-source/history refusal."
+      ]
+    },
+    {
+      "id": "IMPACT-GUARDS",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-412"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/guard-qualified-result.json"
+      ],
+      "path": [
+        "Fresh guard invocation versus immutable reviewed source and independent host authority."
+      ]
+    },
+    {
+      "id": "IMPACT-LANGUAGE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-421"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ],
+      "path": [
+        "Precise conditions, minimal journey and selective references without weakened invariants."
+      ]
+    },
+    {
+      "id": "IMPACT-GUIDE",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-421"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ],
+      "path": [
+        "Generated task/harness guidance and unchanged canonical semantics."
+      ]
+    },
+    {
+      "id": "IMPACT-LANGUAGE-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-421"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ],
+      "path": [
+        "Generated proof instructions retain missing/failed/visual channel boundaries."
+      ]
+    },
+    {
+      "id": "IMPACT-CASES",
+      "asset_id": "ASSET-PACKAGING",
+      "task_ids": [
+        "TASK-422"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-422/summary.md",
+        "proof-output/v4.1/TASK-422/codex-candidate-final-trace.json",
+        "proof-output/v4.1/TASK-422/claude-candidate-final-trace.json"
+      ],
+      "path": [
+        "Six sanitized matched case families, actual host decisions and honest usage limits."
+      ]
+    },
+    {
+      "id": "IMPACT-FOOTPRINT-CLI",
+      "asset_id": "ASSET-CLI",
+      "task_ids": [
+        "TASK-431"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/current-footprint.json"
+      ],
+      "path": [
+        "Bounded read-only footprint/detail query and unchanged query defaults."
+      ]
+    },
+    {
+      "id": "IMPACT-FOOTPRINT-GRAPH",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-431"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/current-footprint.json"
+      ],
+      "path": [
+        "No scan mutations, normal-context history scans or evidence laundering."
+      ]
+    },
+    {
+      "id": "IMPACT-FOOTPRINT-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-431"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/current-footprint.json"
+      ],
+      "path": [
+        "Declared proof inputs and evidence/source overlap restrictions; preserved references and hashes."
+      ]
+    },
+    {
+      "id": "IMPACT-FOOTPRINT-GUIDE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-431"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ],
+      "path": [
+        "Inspect guidance distinguishes unknown ownership from retained evidence and authoritative source."
+      ]
+    },
+    {
+      "id": "IMPACT-PACKAGE",
+      "asset_id": "ASSET-PACKAGING",
+      "task_ids": [
+        "TASK-432"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/package-identity.json",
+        "proof-output/v4.1/TASK-432/review-package-identity.json"
+      ],
+      "path": [
+        "4.1 candidate manifests, joined release docs and isolated two-host qualification."
+      ]
+    },
+    {
+      "id": "IMPACT-PACKAGE-RUNTIME",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-432"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/package-identity.json",
+        "proof-output/v4.1/TASK-432/review-package-identity.json"
+      ],
+      "path": [
+        "Base-version agreement and no implicit live-plan migration."
+      ]
+    },
+    {
+      "id": "IMPACT-REGRESSION-I1",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-411"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-411/agent-result.json",
+        "proof-output/v4.1/TASK-411/inspection-review.md",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/recovery-final-result.json",
+        "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-current.json"
+      ],
+      "path": [
+        "Actual regression against baseline and both proof schemas, including negative cases."
+      ]
+    },
+    {
+      "id": "IMPACT-REGRESSION-I2",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-421"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ],
+      "path": [
+        "Selective-loading/guidance tests plus actual decision cases; unit tests are not model qualification."
+      ]
+    },
+    {
+      "id": "IMPACT-REGRESSION-I3",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-431",
+        "TASK-432"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/package-identity.json",
+        "proof-output/v4.1/TASK-432/review-package-identity.json"
+      ],
+      "path": [
+        "No-mutation footprint tests and complete final current regression."
+      ]
+    },
+    {
+      "id": "IMPACT-PACKAGE-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-432"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "proof-output/v4.1/TASK-422/evaluation-rubric.md",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/package-identity.json",
+        "proof-output/v4.1/TASK-432/review-package-identity.json"
+      ],
+      "path": [
+        "Native Claude qualification lacked exact 4.0 producer proof compatibility; document the existing tested 4.1 rule, without new runtime behavior."
+      ]
+    }
+  ],
+  "inspections": [
+    {
+      "id": "INSPECT-GRAPH",
+      "asset_ids": [
+        "ASSET-GRAPH"
+      ],
+      "task_ids": [
+        "TASK-411"
+      ],
+      "method": "Directional edge changes and old/new dependent claims, actual canonical CLI/state transitions.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/recovery-final-result.json",
+        "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-current.json"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-PROOF",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-411"
+      ],
+      "method": "Producer/consumer proof identity, stored observations and stale-source/history refusal.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/recovery-final-result.json",
+        "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-current.json"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-GUARDS",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-412"
+      ],
+      "method": "Fresh guard invocation versus immutable reviewed source and independent host authority.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/guard-qualified-result.json"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-LANGUAGE",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-421"
+      ],
+      "method": "Precise conditions, minimal journey and selective references without weakened invariants.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-GUIDE",
+      "asset_ids": [
+        "ASSET-GRAPH"
+      ],
+      "task_ids": [
+        "TASK-421"
+      ],
+      "method": "Generated task/harness guidance and unchanged canonical semantics.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-LANGUAGE-PROOF",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-421"
+      ],
+      "method": "Generated proof instructions retain missing/failed/visual channel boundaries.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-CASES",
+      "asset_ids": [
+        "ASSET-PACKAGING"
+      ],
+      "task_ids": [
+        "TASK-422"
+      ],
+      "method": "Six sanitized matched case families, actual host decisions and honest usage limits.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-422/summary.md",
+        "proof-output/v4.1/TASK-422/codex-candidate-final-trace.json",
+        "proof-output/v4.1/TASK-422/claude-candidate-final-trace.json"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-FOOTPRINT-CLI",
+      "asset_ids": [
+        "ASSET-CLI"
+      ],
+      "task_ids": [
+        "TASK-431"
+      ],
+      "method": "Bounded read-only footprint/detail query and unchanged query defaults.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/current-footprint.json"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-FOOTPRINT-GRAPH",
+      "asset_ids": [
+        "ASSET-GRAPH"
+      ],
+      "task_ids": [
+        "TASK-431"
+      ],
+      "method": "No scan mutations, normal-context history scans or evidence laundering.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/current-footprint.json"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-FOOTPRINT-PROOF",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-431"
+      ],
+      "method": "Declared proof inputs and evidence/source overlap restrictions; preserved references and hashes.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/current-footprint.json"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-FOOTPRINT-GUIDE",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-431"
+      ],
+      "method": "Inspect guidance distinguishes unknown ownership from retained evidence and authoritative source.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-PACKAGE",
+      "asset_ids": [
+        "ASSET-PACKAGING"
+      ],
+      "task_ids": [
+        "TASK-432"
+      ],
+      "method": "4.1 candidate manifests, joined release docs and isolated two-host qualification.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/package-identity.json",
+        "proof-output/v4.1/TASK-432/review-package-identity.json"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-PACKAGE-RUNTIME",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-432"
+      ],
+      "method": "Base-version agreement and no implicit live-plan migration.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/package-identity.json",
+        "proof-output/v4.1/TASK-432/review-package-identity.json"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-REGRESSION-I1",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-411"
+      ],
+      "method": "Actual regression against baseline and both proof schemas, including negative cases.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/recovery-final-result.json",
+        "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-current.json"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-REGRESSION-I2",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-421"
+      ],
+      "method": "Selective-loading/guidance tests plus actual decision cases; unit tests are not model qualification.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-REGRESSION-I3",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-431",
+        "TASK-432"
+      ],
+      "method": "No-mutation footprint tests and complete final current regression.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/package-identity.json",
+        "proof-output/v4.1/TASK-432/review-package-identity.json"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-PACKAGE-GUIDANCE",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-432"
+      ],
+      "method": "Compare shipped producer/legacy-binding description with runtime and native decisions; no broad migration or safety weakening.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/package-identity.json",
+        "proof-output/v4.1/TASK-432/review-package-identity.json"
+      ],
+      "limitations": [
+        "Actual current CLI/file/probe and native decision evidence reused for this narrow obligation after source/artifact checks; case facts and synthetic assertions are not product/browser execution. Independent review and its measured limits are in join-review.md. No installation, mixed-version support, power-loss durability, deletion authority or token-savings claim."
+      ],
+      "performed_at": "2026-10-04T09:21:41Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    }
+  ],
+  "findings": [],
+  "scope_drift": [],
+  "controls": {
+    "rollback": {
+      "status": "ready",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/recovery-final-result.json",
+        "proof-output/v4.1/TASK-432/qualification.md"
+      ],
+      "rationale": "Actual matching 4.0 source/canonical snapshot recovery validated old proof and preserved newer history bytes; blind live downgrade remained unready. Retain pre-change snapshot plus matching source and archive newer active state before restore. No user installation was changed."
+    },
+    "monitoring": {
+      "status": "ready",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/qualified-test-result.json",
+        "proof-output/v4.1/TASK-422/summary.md",
+        "proof-output/v4.1/TASK-432/current-footprint.json",
+        "proof-output/v4.1/TASK-432/qualification.md"
+      ],
+      "rationale": "Observed current bounded regression/native-decision/usage and optional footprint checks define the candidate release check: compare source/package identities and readiness, refresh affected proof on source/environment change. This is local qualification, not an automatic scheduler, production monitor or general cost benchmark."
+    }
+  },
+  "legacy_bridge": {
+    "required": false,
+    "status": "not-required",
+    "gap_asset_ids": [],
+    "evidence": [],
+    "upgraded_from": null
+  },
+  "stale_reasons": []
+}

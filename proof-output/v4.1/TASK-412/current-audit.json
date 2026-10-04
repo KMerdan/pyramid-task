@@ -1,0 +1,68 @@
+{
+  "schema": "audit-result-v1",
+  "target": "TASK-412",
+  "result": "pass",
+  "checks": [
+    {
+      "id": "AC-TASK-412-01",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-412/guard-join-result.json"
+      ]
+    },
+    {
+      "id": "AC-TASK-412-02",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-412/guard-join-result.json"
+      ]
+    }
+  ],
+  "affected_claims": [
+    "TASK-412"
+  ],
+  "recommended_action": "advance",
+  "assurance": {
+    "impact_ids": [
+      "IMPACT-GUARDS"
+    ],
+    "inspection_ids": [
+      "INSPECT-GUARDS"
+    ],
+    "finding_ids": [],
+    "scope_review": "complete",
+    "limitations": [
+      "Same-session implementer engineering review, not independent joint/native-host qualification."
+    ]
+  },
+  "proofs": [
+    {
+      "requirement": "EV-412",
+      "run": {
+        "contract_sha256": "acf890e363ddf7d2b243d57624654394b95a5c7d7c06bf70f620a2b7e3cb602b",
+        "inputs_sha256": "52ae6102923a6b75fca64959df7d028b2e1522f50564a3288f4d3ea080bbfd12",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "Reviewed current source/contracts and actual final tests. Prior failures preserved; host and independent joint acceptance remain separate.",
+            "reviewer": "Codex same-session engineering review",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-432/local-review.md",
+                "sha256": "d36b1c5f1c8df73e87f43d80463692e0bc11e3535490404b4b91aedcaaf8b87d"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-412/guard-join-result.json",
+                "sha256": "ddabde35d2e6277ee514a591bd76e9881984adf14f609e9d3db4c9f8fd06ff95"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

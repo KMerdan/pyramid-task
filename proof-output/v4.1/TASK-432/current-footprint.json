@@ -1,0 +1,58 @@
+{
+  "schema": "pyramid-artifact-footprint-v1",
+  "deletion_authorized": false,
+  "scan": {
+    "entries": 415,
+    "limit": 10000,
+    "complete": true,
+    "excluded_directories": [
+      ".git",
+      ".venv"
+    ],
+    "errors": []
+  },
+  "totals": {
+    "files": 327,
+    "bytes": 3788290
+  },
+  "classes": {
+    "canonical-or-projection": {
+      "files": 76,
+      "bytes": 773466,
+      "currently_referenced": 0
+    },
+    "declared-evidence": {
+      "files": 70,
+      "bytes": 856349,
+      "currently_referenced": 42
+    },
+    "proof-input": {
+      "files": 84,
+      "bytes": 935361,
+      "currently_referenced": 26
+    },
+    "retained-evidence": {
+      "files": 27,
+      "bytes": 399856,
+      "currently_referenced": 27
+    },
+    "unknown": {
+      "files": 70,
+      "bytes": 823258,
+      "currently_referenced": 0
+    }
+  },
+  "current_reference_count": 95,
+  "limitations": [
+    "Logical file bytes, not allocated disk or Git size.",
+    "Current result/audit references only; archive, handoff and historical reference ownership is unknown.",
+    "Declared classes are not executed proof or deletion eligibility. Symlinks are not followed.",
+    "Scan excludes Git metadata, .venv, node_modules and Python caches; incomplete scans are partial totals."
+  ],
+  "context": {
+    "id": "CTX-79E2247301A84235DE0A631682D5C1F9",
+    "plan_id": "PYRAMID-41-PRECISE-PROGRESS-20261004",
+    "plan_revision": 7,
+    "graph_version": 36
+  }
+}

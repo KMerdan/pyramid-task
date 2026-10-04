@@ -1,0 +1,64 @@
+{
+  "schema": "audit-result-v1",
+  "target": "OUTCOME-420",
+  "result": "pass",
+  "affected_claims": [
+    "OUTCOME-420"
+  ],
+  "recommended_action": "advance",
+  "checks": [
+    {
+      "id": "AC-OUTCOME-420-01",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/recovery-final-result.json",
+        "proof-output/v4.1/TASK-432/guard-qualified-result.json",
+        "proof-output/v4.1/TASK-432/qualification.md",
+        "proof-output/v4.1/TASK-432/join-review.md",
+        "proof-output/v4.1/TASK-432/qualified-tests.txt",
+        "proof-output/v4.1/TASK-432/qualified-validation.txt",
+        "proof-output/v4.1/TASK-432/review-package-identity.json",
+        "proof-output/v4.1/TASK-432/independent-review-final-result.json",
+        "proof-output/v4.1/TASK-421/final-review.md",
+        "proof-output/v4.1/TASK-421/generated-guide-final.md",
+        "proof-output/v4.1/TASK-422/summary.md",
+        "proof-output/v4.1/TASK-432/current-footprint.json"
+      ]
+    }
+  ],
+  "assurance": {
+    "impact_ids": [
+      "IMPACT-GRAPH",
+      "IMPACT-PROOF",
+      "IMPACT-GUARDS",
+      "IMPACT-LANGUAGE",
+      "IMPACT-GUIDE",
+      "IMPACT-LANGUAGE-PROOF",
+      "IMPACT-CASES",
+      "IMPACT-REGRESSION-I1",
+      "IMPACT-REGRESSION-I2"
+    ],
+    "inspection_ids": [
+      "INSPECT-GRAPH",
+      "INSPECT-PROOF",
+      "INSPECT-GUARDS",
+      "INSPECT-LANGUAGE",
+      "INSPECT-GUIDE",
+      "INSPECT-LANGUAGE-PROOF",
+      "INSPECT-CASES",
+      "INSPECT-REGRESSION-I1",
+      "INSPECT-REGRESSION-I2"
+    ],
+    "finding_ids": [],
+    "scope_review": "complete",
+    "limitations": [
+      "Current real CLI/file/host observations and independent conditional review joined with satisfied identity conditions. Supplied case facts, synthetic test controls, coordination metadata, prompt-only budgets, unknown model/cost and installed-release limits remain explicit in join-review.md and qualification.md."
+    ]
+  },
+  "proofs": [
+    {
+      "requirement": "EV-OUTCOME-420",
+      "reuse_run": "RUN-CC1A221030849E1B0ABCDB3FF62F99D2"
+    }
+  ]
+}

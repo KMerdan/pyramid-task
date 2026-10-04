@@ -34,8 +34,10 @@ python3 ../../scripts/pyramid.py take --project <project-root> --next --actor <a
 - Never claim work for a read-only status request.
 - Never bypass a locked dependency.
 - Never work from a stale task guard. A global graph version may advance for unrelated evidence; refresh only the selected packet when its scoped guard conflicts.
+- Keep the current guard as invocation data, not a literal in reviewed procedure source. For a custom caller or guard conflict, read the two-identity recipe in `../../references/agent-contracts.md`; host permission and proof freshness remain separate.
 - Never assume a check is read-only. Tests and builds may create caches, generated artifacts, databases, or snapshots; isolate them from the canonical worktree.
 - Never oversubscribe host capacity or let helpers spawn untracked nested agents. Reserve graph-task workers first and keep one coordinator-owned slot ledger.
 - Never take a paused task. Use `pyramid-task:resume` so the canonical handoff is checked and returned.
 - Release the claim if the task will not be attempted.
+- If a check is blocked, preserve its failed/missing evidence and exact pending need. Continue the next authorized dependency-safe slice; do not repeatedly ask unchanged routine questions or clear the blocked claim to continue.
 - Never take work from a completed or archived plan. Reopen or restore it through lifecycle first.

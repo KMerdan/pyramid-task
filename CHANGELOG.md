@@ -2,6 +2,17 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## 4.1.0 — unreleased source candidate
+
+- Make replan invalidation directional: a new consumer preserves an unchanged provider; changed producer claims, inputs and composition still invalidate affected claims.
+- Bind schema-2 proof to its producer contract rather than all current consumers. Add explicit guarded compatibility bindings for intact recorded 4.0 runs without rewriting observations, artifacts or history. Older runtimes cannot be assumed to understand new binding metadata; recovery must restore matching source and canonical snapshots, not downgrade a live plan blindly.
+- Separate stable reviewed procedure/source identity from fresh task/audit guards passed as invocation data. Preserve host permission and current proof checks.
+- Add a small original STE-inspired operational language profile, routed on demand. Distinguish authorization, review and verification; retain blocked evidence while independent authorized work continues. Scope the first increment to a complete public journey and only necessary harness capability.
+- Recompute and validate complete projections, but skip byte-identical ready/Markdown writes. Timestamped graph output still changes; no token savings follow from fewer writes.
+- Add optional bounded read-only `inspect --footprint` with logical-byte/count summaries, declared classes, current references, partial-scan limits and unknown ownership. No deletion, GC, extension-only classification or normal-packet scan.
+- Reject rooted/specific proof-input overlap with evidence outputs and repository-wide output globs during capture; keep dedicated staging exclusions for whole-repository captures and amendment coverage.
+- Retain failing attempts and qualify source/runtime and native host paths separately. See the 4.1 planning/evidence index for actual checks and matched pilot limitations; no production, installed-plugin update or publication is implied.
+
 ## 4.0.0
 
 - Route natural-language “usage audit” and workflow-overhead questions through `inspect`, distinct from task evidence `audit`, with coverage-aware, read-only analysis guidance and README examples.

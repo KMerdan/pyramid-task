@@ -21,6 +21,7 @@ Read `../../references/development-harness.md` when changing proof or adopting i
 4. Preserve nodes, historical increment passes, and evidence that remain valid. Mark replaced paths `superseded`; never erase history or present a historical pass as current regression evidence.
 5. Re-run backward and forward path checks across the affected region. Start at the earliest invalid rung, preserve earlier verified rungs, and revise later acceptance and inherited proofs when a load-bearing assumption changes.
 6. Write a complete candidate plan JSON. Confirm that changed increment outcomes remain actor-visible and form a justified cumulative ladder, each has its own gate, each later gate depends on the previous verified increment outcome and inherits earlier proofs, and any distinct final gate covers every direct intent branch. Run the evidence-based refinement pass, write a `pyramid-plan-review-v1` artifact, and preserve valid completed work, evidence, assurance, and history. Use `pyramid-task:simplify` when reduction or fact-checking is the primary trigger.
+   Copy the current candidate and edit only affected stable IDs/fields. Preserve untouched wording/contracts; a full saved snapshot does not require broad redrafting. Keep actual start dependencies separate from audit/release ordering and keep each changed gate a complete promised public journey.
 7. Preview the diff:
 
 ```bash

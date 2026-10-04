@@ -21,6 +21,29 @@ import pyramid_history
 
 
 class EfficiencyTests(unittest.TestCase):
+    def test_identical_projection_compile_keeps_bytes_and_mtimes(self):
+        paths = core.project_paths(self.root)
+        # graph.json carries an actual compilation timestamp, so it is not byte-identical.
+        projection_paths = [paths['ready'], *paths['docs'].rglob('*.md')]
+        fixed = 1_600_000_000_000_000_000
+        before = {}
+        for path in projection_paths:
+            os.utime(path, ns=(fixed, fixed))
+            before[path] = (path.read_bytes(), path.stat().st_mtime_ns)
+        core.compile_project(self.root)
+        self.assertEqual(before, {path: (path.read_bytes(), path.stat().st_mtime_ns)
+                                  for path in projection_paths})
+        self.assertEqual(core.load_project(self.root)[2]['graph_version'],
+                         core.load_json(paths['graph'])['graph_version'])
+
+    def test_projection_compile_recomputes_and_repairs_changed_content(self):
+        paths = core.project_paths(self.root)
+        expected = paths['ready'].read_bytes()
+        paths['ready'].write_text('{"tampered":true}\n')
+        core.compile_project(self.root)
+        self.assertEqual(expected, paths['ready'].read_bytes())
+        self.assertTrue(core.validate_project(self.root)['valid'])
+
     def setUp(self):
         usage = mock.patch.dict(os.environ, {'PYRAMID_USAGE': 'off'})
         usage.start()

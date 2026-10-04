@@ -1,0 +1,70 @@
+{
+  "schema": "pyramid-harness-v1",
+  "target": "TASK-421",
+  "mode": "candidate-bound",
+  "contracts": [
+    {
+      "requirement": "EV-421",
+      "owner": "TASK-421/EV-421",
+      "criteria": [
+        "AC-TASK-421-01",
+        "AC-TASK-421-02",
+        "AC-TASK-421-03",
+        "AC-TASK-421-04"
+      ],
+      "method": "review",
+      "procedure": "Trace revised instructions against the six case families and every affected ownership, permission, acceptance and visual invariant. Inspect selected generated schema-2 guidance from a disposable project. Measure loaded context rather than total repository bytes. TASK-422 supplies actual matched host evidence. Execute current-candidate projection mtime/content regressions; preserve unaffected candidate values and full publication/validation checks. File-write counts do not establish token savings.",
+      "inputs": [
+        "plugins/pyramid-task/skills/create/SKILL.md",
+        "plugins/pyramid-task/skills/take/SKILL.md",
+        "plugins/pyramid-task/skills/audit/SKILL.md",
+        "plugins/pyramid-task/skills/replan/SKILL.md",
+        "plugins/pyramid-task/references/agent-contracts.md",
+        "plugins/pyramid-task/references/development-harness.md",
+        "plugins/pyramid-task/references/demonstrable-increments.md",
+        "plugins/pyramid-task/references/plan-refinement.md",
+        "plugins/pyramid-task/scripts/pyramid_core.py",
+        "plugins/pyramid-task/scripts/pyramid_verification.py",
+        "plugins/pyramid-task/tests/test_efficiency.py",
+        "plugins/pyramid-task/references/operational-language.md"
+      ],
+      "observations": [
+        "internal"
+      ],
+      "not_applicable": {
+        "external": "Static contract inspection has no product interaction; actual dynamic guard behavior is covered by GATE-419.",
+        "visual": "These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review."
+      },
+      "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+      "contract_sha256": "2bfecc2c2a666c9c3eff428534d54397b0715252521e4994795ecbd0a96af32b"
+    }
+  ],
+  "proof_templates": [
+    {
+      "requirement": "EV-421",
+      "run": {
+        "contract_sha256": "2bfecc2c2a666c9c3eff428534d54397b0715252521e4994795ecbd0a96af32b",
+        "inputs_sha256": "fed0c5a04a15204c6d48292c50341a531a3fcf288b462c5ec5507357a65bd3eb",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "internal",
+            "result": "not-run",
+            "summary": "",
+            "reviewer": "",
+            "artifacts": []
+          }
+        ]
+      }
+    }
+  ],
+  "reusable_proofs": [],
+  "setup_blockers": [],
+  "instruction": "Capture this template BEFORE the checks. Execute or inspect the stated procedure; never invent observations. Source inputs must remain unchanged through submission.",
+  "context": {
+    "id": "CTX-6AC9ED90414FCB5286618635B575E12F",
+    "plan_id": "PYRAMID-41-PRECISE-PROGRESS-20261004",
+    "plan_revision": 5,
+    "graph_version": 14
+  }
+}

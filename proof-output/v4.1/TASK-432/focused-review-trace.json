@@ -1,0 +1,931 @@
+[
+  {
+    "type": "native-init",
+    "model": "claude-opus-5-5",
+    "plugins": [
+      {
+        "name": "pyramid-task",
+        "path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/package",
+        "source": "pyramid-task@inline",
+        "version": "4.1.0"
+      }
+    ],
+    "audit_skill_available": true
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01P9fWDuHpKFkeWh6WU3Ya5D",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/request.md"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01P9fWDuHpKFkeWh6WU3Ya5D",
+        "type": "tool_result",
+        "content": "1\t# Focused independent follow-up, no new product/runtime behavior\n2\t\n3\tReview the initial review's unresolved claims using new explicit observed evidence.\n4\tDo not approve merely because the coordinator describes a fix. Read the evidence\n5\tand relevant source. Up to 24 read-only tools, at most two exact allowed Bash\n6\tprobes. No tasks, mutations, writes, installation, helpers or sibling reads.\n7\t\n8\tKnown paths, so no broad inventory is needed:\n9\t- evidence/initial-review.json: actual first independent review, including unknowns.\n10\t- evidence/addendum.md: experiment distinctions and source/evidence locations.\n11\t- evidence/recovery-readable.json: mechanically projected real runtime-per-call\n12\t  results, exact old proof, changed-input rejection, restore and history hashes.\n13\t- evidence/guard.json and guard-caller.py: actual invocation guards and source.\n14\t- evidence/native-decisions.md: complete mechanically extracted decisions for\n15\t  both baseline/final hosts. Other traces in evidence retain probes/usage.\n16\t- evidence/test-result.json and tests.txt: exact capture/command/digest/log hashes.\n17\t- evidence/package-identity.json and README.md: frozen package and current limits.\n18\t- package/scripts/pyramid_assurance.py: bounded scan including finally.\n19\t- package/scripts/pyramid_core.py and tests/test_runtime.py: graph-last publication,\n20\t  canonical/head boundary, live context matching and fault-injection limits.\n21\t\n22\tCheck only unresolved consequential joins; reuse established observations instead\n23\tof asking for duplicate tests. Accept/reject/unknown with precise evidence and\n24\tresidual limits, at most 900 words. No statistical token saving, mixed-version\n25\tsupport, power-loss durability or installed/product/browser claim is requested.\n26\tReading recorded tests is not personally executing them. Probe the owned fixture\n27\texactly as allowed; it is not the development canonical plan.\n28\t"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01SL8HBUy4rcdDtDJm3wxnsS",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/initial-review.json"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01SL8HBUy4rcdDtDJm3wxnsS",
+        "type": "tool_result",
+        "content": {
+          "excerpt": "1\t\"# Pyramid 4.1 independent read-only qualification\\n\\n**Overall verdict: not qualified.** Two of the seven areas below are accepted with limits. None has enough evidence to call it fully accepted. Mixed-version compatibility and the six-case comparison remain open.\\n\\nI ran only the two allowed probes. `inspect --ready` returned only `RESEARCH-101` as ready, at graph version 1. `validate` returned `valid: true` with no errors. I did not claim, audit or write anything. I used all 20 allowed tool calls, so some items below are unknown because I could not read further, not because I found a problem.\\n\\n## The seven areas reviewed\\n\\n**1. Producer and consumer contracts — accepted, with one risk.**\\n- *Source:* `replan_proof_bindings` (`package/scripts/pyramid_verification.py:195-234`) carries an old passing proof forward only when four things all hold:\\n  - the producer's contract hash is unchanged;\\n  - the run carries the old version's legacy hash;\\n  - that legacy hash changed because of the replan;\\n  - the current inputs match the run.\\n- *Recorded evidence:* in `evidence/producer-current.json` the producer stays `passed`. `GATE-290`, `OUTCOME-010` and `INTENT-001` are correctly marked stale, and the new consumer `TASK-202` stays `unverified`.\\n- *Hash chain:* each recorded event's `previous_event_sha256` matches the hash listed for the event before it, so history appears intact.\\n- *Changed source:* the second `inspect --harness TASK-202` shows a new inputs hash (`9698971d…`) and no reusable proof is offered.\\n- **Limit:** `changed_source_refused: true` is just a summary flag. No trace shows an update or audit actually being rejected with the stale run.\\n- **Risk:** `TASK-202`'s requirement `EVREQ-202-01` is owned by `RESEARCH-101/EVREQ-101-01`, and the harness offers the producer's run (`PASS producer`) as reusable proof for the consumer's own criterion `AC-202-01`. That is the plan's choice rather than a runtime bug. But it lets a test that only exercised the producer count toward a consumer acceptance. The joint gate `GATE-290` still needs its own composition proof.\\n\\n**2. Unchanged 4.0 observations vs. changed source — unknown; one evidence defect.**\\n- In `evidence/producer-4.0.json`, the take and harness outputs show contract hash `2a0e7ad8…`, but the submitted and accepted proof carries `b72281a8…`.\\n- The file never says which runtime ran each call (unlike `recovery.json`). So I can't tell whether 4.0 produced the run or whether 4.1 accepted a proof whose hash doesn't match the current contract.\\n- **Fix:** label the runtime version on every call and record the 4.0-side harness output.\\n\\n**3. Fresh guards vs. reviewed source — accepted, with limits.**\\n- `evidence/guard-join.json`: the caller's hash is the same before and after. The pre-pause guard `GUARD-TASK-E59F…` is refused with a scoped \\\"stale task guard\\\" error, and a later release succeeds.\\n- **Limits:**\\n  - The guard used for the successful release is never recorded, so \\\"new guard accepted\\\" rests on a summary flag.\\n  - Nothing shows that the old guard was a literal inside the caller's source.\\n  - The release event has `\\\"reason\\\": null`, while `references/agent-contracts.md:154` says every mutation supplies a reason or result.\\n- This was all on a disposable fixture; no host permission was exercised.\\n\\n**4. Projection publishing and fault handling — partially accepted.**\\n- `write_projection_text` (`package/scripts/pyramid_core.py:2084-2098`) skips writing when the bytes are identical, otherwise writes a temp file and atomically swaps it in. The temp file is removed if that fails.\\n- **Gaps:**\\n  - No `fsync`, so a crash can lose the update.\\n  - A failure partway through compiling can leave a mix of new and old projections. I did not reach `_publish_head` (line 636), so whether it guards against this is unknown.\\n  - `_compile_project_locked` also rebuilds the history index (line 2112), so compiling writes more than projections.\\n\\n**5. Read-onl",
+          "truncated": true,
+          "original_chars": 8812,
+          "sha256": "8eec0c90b813620637a0d1337c07e678c3d1558bba8c02be4893ab1727b764c6"
+        }
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_014s3euxUsybWtpCwgMJycEP",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/addendum.md"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_014s3euxUsybWtpCwgMJycEP",
+        "type": "tool_result",
+        "content": "1\t# Evidence clarification for focused independent follow-up\n2\t\n3\tThe first review's unknowns are retained in independent-review-initial-result.json.\n4\tNo new runtime defect has been established. Review the actual detailed evidence,\n5\tnot this coordinator statement alone.\n6\t\n7\t- TASK-411 consumer-growth-4.0.json names the stored hash FORMULA, not a 4.0\n8\t  executable. Its CLI calls use 4.1 and its fixture independently computes the\n9\t  exact old format. recovery-detailed-result.json instead invokes the real\n10\t  frozen 4.0 executable, records every runtime/argument/stdout, including its\n11\t  harness output. Do not blur these experiments.\n12\t- The detailed recovery trace includes an actual changed-input audit rejection,\n13\t  exit 2, unchanged canonical state after refusal, restored archive ID and\n14\t  per-file snapshot hashes, per-record before/after history hashes. 4.0 validates\n15\t  the bound state structurally but reports proof not ready; that is deliberate\n16\t  fail-safe disagreement, not mixed-version support.\n17\t- guard-qualified-result.json records both invocation guards and the real resume\n18\t  packet, caller hash before/after, old-guard refusal and successful reasoned\n19\t  release. guard-caller.py is the initially refactored/reviewed recipe, not a\n20\t  claim that an old embedded literal was edited during renewal.\n21\t- artifact_footprint closes every remaining scandir iterator in finally at\n22\t  pyramid_assurance.py:152-154. Project queries use the normal serialization lock;\n23\t  coordination-file creation is not semantic state change. README now states this\n24\t  limit and corrects the old skill-count typo.\n25\t- Projection replacement is per-file atomic, not power-loss-durable/fsync or an\n26\t  atomic multi-view transaction. Graph is published last; readers retain the last\n27\t  context-matching graph. Canonical publication and projection failure tests are\n28\t  independent boundaries. Derived projections/indexes are rebuildable. See\n29\t  test_graph_is_published_only_after_other_projections_complete and live graph\n30\t  matching tests; no new crash-durability claim is made.\n31\t- A plan may reuse producer evidence for an actually covered consumer criterion;\n32\t  the fixture deliberately tests reuse availability, not new consumer semantics.\n33\t  Its consumer remains unverified. Agents must still establish new claims and\n34\t  parent composition; the runtime cannot judge semantic proof sufficiency.\n35\t- native-decisions-readable.md mechanically extracts the COMPLETE four final\n36\t  decision texts, avoiding JSON line-length truncation. Original bounded traces\n37\t  contain actual probes/usage. Case facts are supplied, not real product runs.\n38\t- qualified-test-pre-run.json and qualified-test-result.json record the exact\n39\t  command, pre-run current contract/input fingerprint, frozen package digest,\n40\t  result and artifact hashes. The 176-test log is not a process attestation beyond\n41\t  the actual coordinator execution; the existing ResourceWarning is retained.\n42\t\n43\tThe source plugin digest is unchanged by evidence repair or README clarification.\n44\tReview this consequential join without requiring unsupported installed-release,\n45\tmixed-version, real product/browser or statistical token-gain claims.\n46\t"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01Ev5pRPwQdk5HJB9gzAiEkq",
+        "name": "Glob",
+        "input": {
+          "pattern": "evidence/*"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01Ev5pRPwQdk5HJB9gzAiEkq",
+        "type": "tool_result",
+        "content": "evidence/claude-candidate-final-trace.json\nevidence/guard-join.json\nevidence/architecture.md\nevidence/producer-current.json\nevidence/package-identity.json\nevidence/CHANGELOG.md\nevidence/producer-4.0.json\nevidence/codex-baseline-trace.json\nevidence/codex-candidate-final-trace.json\nevidence/recovery.json\nevidence/claude-baseline-trace.json\nevidence/README.md\nevidence/initial-review.json\nevidence/addendum.md\nevidence/guard.json\nevidence/guard-caller.py\nevidence/native-decisions.md\nevidence/test-result.json\nevidence/tests.txt\nevidence/recovery-readable.json"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01GqHqsCrMMb6thJYzAcooSL",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/recovery-readable.json"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01GqHqsCrMMb6thJYzAcooSL",
+        "type": "tool_result",
+        "content": {
+          "excerpt": "1\t{\n2\t  \"fixture_only\": true,\n3\t  \"live_downgrade_was_ineligible\": true,\n4\t  \"matching_snapshot_recovery_ready\": true,\n5\t  \"original_proof_bytes_unchanged\": true,\n6\t  \"archive_id_restored\": \"PLAN-001-R1-G5-20261004T091451Z\",\n7\t  \"snapshot_file_hashes\": {\n8\t    \"manifest.json\": \"6d6c627b7dab8425d6c00c4643963ce4a7f40123d6c32e76a9b8ccb9f2d3e86e\",\n9\t    \".pyramid/state.json\": \"0010b83434037824485cebf51fac1742d541bc7388e1314ef0e53e1aefbf3e75\",\n10\t    \".pyramid/plan.json\": \"8b0eb77e5f17d1fc55049d6f6e9c05bcdf714b8a8548b8833a693560ff463a0f\",\n11\t    \".pyramid/project.json\": \"baa44d82dab402d5b790e9fb43d4d074e55286ae9e6ed26e3820a9b7e77e2cac\",\n12\t    \".pyramid/head.json\": \"fc8281e44fb7e9b5dc1c2a3a1fc8595e001d683ad0d991aaa8d50308c9ab602e\",\n13\t    \".pyramid/graph.json\": \"987b1c7ff186d0fe892633b26e2e853a5bc91ed18d6fe4b26518d0b1439eabfe\",\n14\t    \".pyramid/ready.json\": \"b8546adc07d29dff352d358a5b426897ce4b0ece931559170b03c24eede66059\",\n15\t    \"docs/tasks/DEVELOPMENT_HARNESS.md\": \"63239971148e59613a3e3a2177b0c01fb824b9a450f3ed7289ad2a99f7ca33b8\",\n16\t    \"docs/tasks/README.md\": \"0b7684e20ce455aea09c2b4502bbe3cfccf0e3543f72630605bbec46b3d229a7\",\n17\t    \"docs/tasks/INTENT.md\": \"fe634e8ad7cfab051372d21c7834a87d58a868833ee03f7395f83391acbaeb9d\",\n18\t    \"docs/tasks/00-foundation/RESEARCH-101-validate-operation-schema-stability.md\": \"cfc76f1856ac10ef0a192f6ded1aff5a0a4cebd11a7c5dac566c25cd2fcd143b\",\n19\t    \"docs/tasks/00-foundation/README.md\": \"770d565f2cb3f3b7e7450205c5008a8d6df0d2d7fd5dc7d69ad8050f404ba64a\",\n20\t    \"docs/tasks/02-execution/README.md\": \"2ed9c013519de64590e5baa0e3373001847c82997601e6d082b317b3c88a141c\",\n21\t    \"docs/tasks/02-execution/TASK-201-implement-safe-executor.md\": \"455a426c3f9b946d6a1009e2da362b5e9d054eb803b432186c33d1aae5e80c4d\",\n22\t    \"docs/tasks/nodes/INTENT-001-safe-operation-outcome.md\": \"c5a32485410bebd9f2cf6d53d2d70310ad7aa2dd82c6e9ea8e41a3a024c70d7e\",\n23\t    \"docs/tasks/nodes/OUTCOME-010-validated-execution-capability.md\": \"2a0ad2754c60ccf1cfbe68d7f116dd8f91df44dddf5ed3c8859b6e32a9ab447d\",\n24\t    \"docs/tasks/01-foundation/CONTRACT-102-define-executor-contract.md\": \"5728d66edbade75221737c6952d6c3284f0f8d53499fd985142827ec5afb0606\",\n25\t    \"docs/tasks/01-foundation/README.md\": \"7bdce5cfd85acee7121014fb79aa292597a67e4049ae8fe83d1894372ac0351b\",\n26\t    \"docs/tasks/03-audit/README.md\": \"0e0f3784e8fbe04de56f6fcc6eb550c2855c767bbe4b517c8c19fbbf591b5940\",\n27\t    \"docs/tasks/03-audit/GATE-290-audit-execution-composition.md\": \"21d55aab1c3ac30940ae0a1d3fd7ef7a0e7f0d9235864a382e8023000b93cf6d\",\n28\t    \".pyramid/history/head.json\": \"538177a590424360b029ff6f159a2f2a2f20577603e708e6d52dd0586c3f86e4\",\n29\t    \".pyramid/history/index.json\": \"0cfd9cb0a690f9694b243083d4f43637ee87c70b973c87674743560db90dc46c\",\n30\t    \".pyramid/events/EVENT-20261004T091450927632Z-3B5180B5.json\": \"63550a6ff1a7237715b1b70d8b9fe27759fafd0c1c58d18b2b5a0d3c31257b11\",\n31\t    \".pyramid/events/EVENT-20261004T091451167350Z-8B9CAC6B.json\": \"268be556c2a692c5eb7c71cc4d17b86d11d5e0fdd65aec008f40ae0d0db1366e\",\n32\t    \".pyramid/events/EVENT-20261004T091451400909Z-7C607FDE.json\": \"c9d52fa787c625683ad417257344c56d50dba659fce1b2a7e9ec2219aae4e35a\",\n33\t    \".pyramid/events/EVENT-20261004T091451283027Z-EFA2F074.json\": \"21eb6d3e9a4ecb409ce46bdd79f3ec4279b86ab0315c632ddda3243ae44d1fe8\",\n34\t    \".pyramid/events/EVENT-20261004T091450794657Z-C6CC1A7E.json\": \"c5290e83ffbb445ff5b0856ef45b9e9fb84ec8d1345eb597084625935ccb4cb5\",\n35\t    \".pyramid/reports/proof-artifacts/30f26740ee603523c49212c48614437f62b2426415966056acec87d5b3f6f08c\": \"30f26740ee603523c49212c48614437f62b2426415966056acec87d5b3f6f08c\",\n36\t    \".pyramid/history/records/CHRONICLE-PLAN-001-4481BFA400-C1.json\": \"3870576c8a482a8c6460c8ee88adac79ba5ae3b2371a2f4f47957a298b86c85f\",\n37\t    \".pyramid/history/records/START-PLAN-001-4481BFA400.json\": \"930b6add484647531a936bf75bc61ae02367f3a5dc6fdc8c1f86db88ec285865\"\n38\t  },\n39\t  \"history_record_hashes\": {\n40\t    \"CHRONICLE-PLAN-001-4481BFA400-C1.json\": {\n41\t      \"before\": \"3870576",
+          "truncated": true,
+          "original_chars": 16918,
+          "sha256": "881cbdda0a0f6e31496fd5ca5f47b3602fe56db7cf0c14d88251e8d07fadb5b6"
+        }
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01GTUJ17gwc8zoX2ooJQi13S",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/guard.json"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01GTUJ17gwc8zoX2ooJQi13S",
+        "type": "tool_result",
+        "content": {
+          "excerpt": "1\t{\n2\t  \"caller_sha256_before\": \"95510cfbd66bb736f3be835f505e1604af4833dd433099a060adf363ab9c32ee\",\n3\t  \"caller_sha256_after\": \"95510cfbd66bb736f3be835f505e1604af4833dd433099a060adf363ab9c32ee\",\n4\t  \"lease_renewed\": true,\n5\t  \"old_guard_refused\": true,\n6\t  \"new_guard_accepted\": true,\n7\t  \"host_permission_changed\": false,\n8\t  \"fixture_only\": true,\n9\t  \"cli\": [\n10\t    {\n11\t      \"operation\": \"create\",\n12\t      \"args\": [\n13\t        \"create\",\n14\t        \"--plan\",\n15\t        \"/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/assets/example-plan.json\",\n16\t        \"--actor\",\n17\t        \"guard-join\"\n18\t      ],\n19\t      \"runtime\": \"4.1.0-candidate\",\n20\t      \"exit_code\": 0,\n21\t      \"result\": {\n22\t        \"status\": \"created\",\n23\t        \"project\": \"/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-4919g8he/project\",\n24\t        \"mode\": \"greenfield\",\n25\t        \"project_format_version\": 3,\n26\t        \"event\": {\n27\t          \"schema\": \"pyramid-event-v1\",\n28\t          \"id\": \"EVENT-20261004T091403348217Z-DCD4913E\",\n29\t          \"at\": \"2026-10-04T09:14:03.347588Z\",\n30\t          \"graph_version\": 1,\n31\t          \"actor\": \"guard-join\",\n32\t          \"type\": \"plan.created\",\n33\t          \"node\": \"INTENT-001\",\n34\t          \"before\": null,\n35\t          \"after\": {\n36\t            \"plan_id\": \"PLAN-001\",\n37\t            \"revision\": 1\n38\t          },\n39\t          \"payload\": {\n40\t            \"mode\": \"greenfield\",\n41\t            \"project_format_version\": 3\n42\t          },\n43\t          \"plan_id\": \"PLAN-001\",\n44\t          \"plan_revision\": 1,\n45\t          \"context_id\": \"CTX-4DE2238006434421CA4006ACB8BBAEF9\",\n46\t          \"previous_event_id\": null,\n47\t          \"previous_event_sha256\": null\n48\t        },\n49\t        \"graph\": \"/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-4919g8he/project/.pyramid/graph.json\",\n50\t        \"ready\": \"/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-4919g8he/project/.pyramid/ready.json\",\n51\t        \"docs\": \"/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-guard-4919g8he/project/docs/tasks\",\n52\t        \"graph_version\": 1,\n53\t        \"context\": {\n54\t          \"id\": \"CTX-4DE2238006434421CA4006ACB8BBAEF9\",\n55\t          \"plan_id\": \"PLAN-001\",\n56\t          \"plan_revision\": 1,\n57\t          \"graph_version\": 1\n58\t        },\n59\t        \"ready_count\": 1\n60\t      }\n61\t    },\n62\t    {\n63\t      \"operation\": \"take\",\n64\t      \"args\": [\n65\t        \"take\",\n66\t        \"--node\",\n67\t        \"RESEARCH-101\",\n68\t        \"--actor\",\n69\t        \"guard-join\"\n70\t      ],\n71\t      \"runtime\": \"4.1.0-candidate\",\n72\t      \"exit_code\": 0,\n73\t      \"result\": {\n74\t        \"status\": \"taken\",\n75\t        \"event\": {\n76\t          \"schema\": \"pyramid-event-reference-v1\",\n77\t          \"id\": \"EVENT-20261004T091403478294Z-925CFF36\",\n78\t          \"at\": \"2026-10-04T09:14:03.478256Z\",\n79\t          \"graph_version\": 2,\n80\t          \"actor\": \"guard-join\",\n81\t          \"type\": \"task.taken\",\n82\t          \"node\": \"RESEARCH-101\",\n83\t          \"payload\": {\n84\t            \"lease_minutes\": 120\n85\t          },\n86\t          \"plan_id\": \"PLAN-001\",\n87\t          \"plan_revision\": 1,\n88\t          \"context_id\": \"CTX-DCA2115717FDBD1A52CD4AB5DBD517B7\",\n89\t          \"previous_event_id\": \"EVENT-20261004T091403348217Z-DCD4913E\",\n90\t          \"previous_event_sha256\": \"2b6a867582049eff4d1cd07c9dd85ab60eb2097228a000f20b690acce4583437\",\n91\t          \"path\": \".pyramid/events/EVENT-20261004T091403478294Z-925CFF36.json\"\n92\t        },\n93\t        \"packet\": {\n94\t          \"schema\": \"agent-task-v1\",\n95\t          \"task\": \"RESEARCH-101\",\n96\t          \"graph_version\": 2,\n97\t          \"context\": {\n98\t            \"id\": \"CTX-DCA2115717FDBD1A52CD4AB5DBD517B7\",\n99\t            \"plan_id\": \"PLAN-001\",\n100\t            \"plan_revision\": 1,\n101\t            \"graph_version\": 2\n102\t          },\n103\t          \"title\": \"Validate operation schema stability\",\n104\t          \"purpose\": \"Confirm the extension boundary and document incomp",
+          "truncated": true,
+          "original_chars": 24882,
+          "sha256": "9db845e6e3e2cee7f2b832e3203982aeb0beb1153c901c30914beb31c92f7f5b"
+        }
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01U3TUdJHRemNvZB4wkya2fo",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/guard-caller.py"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01U3TUdJHRemNvZB4wkya2fo",
+        "type": "tool_result",
+        "content": "1\t\"\"\"Frozen reviewed caller: runtime guard is argument data, never a source literal.\"\"\"\n2\timport os\n3\timport subprocess\n4\timport sys\n5\t\n6\truntime, project, guard = sys.argv[1:]\n7\tenv = dict(os.environ, PYRAMID_USAGE=\"off\", PYTHONDONTWRITEBYTECODE=\"1\")\n8\tresult = subprocess.run(\n9\t    [sys.executable, \"-B\", runtime, \"update\", \"--project\", project,\n10\t     \"--node\", \"RESEARCH-101\", \"--actor\", \"guard-join\", \"--status\", \"release\",\n11\t     \"--expected-guard\", guard, \"--reason\", \"Owned stable-caller qualification release\", \"--json\"],\n12\t    # The caller source is frozen before checks; authority remains invocation data.\n13\t    env=env, capture_output=True, text=True, timeout=15,\n14\t)\n15\tprint(result.stdout, end=\"\")\n16\tprint(result.stderr, end=\"\", file=sys.stderr)\n17\traise SystemExit(result.returncode)\n18\t"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "Guard and recovery traces are read; next I'm checking decisions, test/package identity, and the source claims."
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01TRYfes7qPnpza6bh4KeqmT",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/native-decisions.md"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01TRYfes7qPnpza6bh4KeqmT",
+        "type": "tool_result",
+        "content": {
+          "excerpt": "1\t# codex-baseline\n2\t\n3\tUsed the staged native `inspect` skill at `.agents/skills/inspect/SKILL.md`, not a global installation.\n4\t\n5\t**Observed:** The exact authorized command, with `PYRAMID_USAGE=off PYTHONDONTWRITEBYTECODE=1`, exited successfully. At graph version 1, it returned one ready task: `RESEARCH-101`, “Validate operation schema stability,” wave 0, planned, unverified, health clear, no owner or blockers. This establishes the returned frontier, not product acceptance. No separate validation command was run.\n6\t\n7\tAll six cases below are **supplied decision fixtures**, not observed database, browser, VM, or transport results. Six shell calls were used; no mutations, helpers, external tools, or sibling-workspace/output reads were performed.\n8\t\n9\t1. **CASE-EXTENSION — Preserve history; this runtime does not preserve freshness for an added proof consumer.**  \n10\t   The unchanged provider behavior remains useful historical evidence. However, the selected runtime includes the proof family’s consumers in `contract_sha256`; adding a reuse consumer changes that hash. `validate_run` rejects the old contract hash. Replan also treats changed incident edges and verification contracts as invalidating claims. Therefore, do not report the old provider proof as currently reusable under this package merely because its acceptance, source, and procedure stayed unchanged.\n11\t\n12\t   Next: inspect the affected harness/readiness and preview the candidate’s invalidations; collect fresh proof under the resulting contract before acceptance. Preserve historical run bytes—do not rewrite their hashes. The parent’s new contribution needs composition evidence and re-audit. In the second candidate, changed provider source requires fresh affected proof regardless of consumer changes. These are proposed follow-ups requiring an authorized implementation session.\n13\t\n14\t   Sources: `package/scripts/pyramid_verification.py:137–162,293–301`; `package/scripts/pyramid_core.py:4354–4402`; `package/skills/replan/SKILL.md`, workflow 4–9.\n15\t\n16\t2. **CASE-GUARD — Refresh the operational guard and recheck the changed caller.**  \n17\t   In an authorized working session, replace the old literal with the newly issued guard, or pass it through an existing runtime parameter mechanism. Use that guard for the next operation; guard renewal does not expand host permission or require renewed human approval when authority is unchanged.\n18\t\n19\t   The helper’s old snapshot review remains advisory. It cannot become final evidence for the edited caller, and an old helper guard also fails reconciliation. Freeze the updated caller and repeat the minimal affected review/check against its current snapshot and guard. Unaffected procedural findings may remain useful.\n20\t\n21\t   Sources: `package/skills/take/SKILL.md`, workflow 7–8 and boundaries; `package/references/intra-task-helpers.md`, “Phases and freshness” and “Result envelope and reconciliation.”\n22\t\n23\t3. **CASE-BLOCKER — Continue independent work; repair the artificial dependency.**  \n24\t   Do not retry the denied VM capability or request unchanged permission again. Continue authorized API validation and source work that consume no VM state. Propose a guarded replan removing the unsupported VM hard-start edge; do not bypass the canonical dependency informally.\n25\t\n26\t   Replace “VM initialized + component matrix” with a meaningful registration-to-profile-read scenario through an available authorized entry point. An API scenario can establish API behavior, but cannot silently replace promised UI acceptance. Add the smallest runnable browser/capture capability and rendered-screen review needed before UI acceptance; make the acceptance gate depend on that setup, while independent implementation remains free to proceed. Preserve VM integration as blocked where genuinely required. Seek human direction only for a material intent/scope change or genuinely new authority.\n27\t\n28\t   Sources: `package/skills/create/SKILL.md:28–32`; `packa",
+          "truncated": true,
+          "original_chars": 25732,
+          "sha256": "3b4d7d5af04ef753f513925dd4af3e65feb042ec81540de8bd09d90a7145f576"
+        }
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01XNx1ndjHoUrKSMuvAEBrB4",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/test-result.json"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01XNx1ndjHoUrKSMuvAEBrB4",
+        "type": "tool_result",
+        "content": {
+          "excerpt": "1\t{\n2\t  \"task\": {\n3\t    \"schema\": \"pyramid-harness-v1\",\n4\t    \"target\": \"TASK-432\",\n5\t    \"mode\": \"candidate-bound\",\n6\t    \"contracts\": [\n7\t      {\n8\t        \"requirement\": \"EV-432\",\n9\t        \"owner\": \"TASK-432/EV-432\",\n10\t        \"criteria\": [\n11\t          \"AC-TASK-432-01\",\n12\t          \"AC-TASK-432-02\",\n13\t          \"AC-TASK-432-03\"\n14\t        ],\n15\t        \"method\": \"command\",\n16\t        \"procedure\": \"Run the full declared regression suite and repository validator with usage collection off. Join I1/I2 and artifact proof, exercise real candidate skill paths in isolated Codex/Claude profiles, record exact candidate/manifests and environment identity, and review documented limits. No installed 4.0 overwrite, commit, publish or deployment is implicit.\",\n17\t        \"inputs\": [\n18\t          \"plugins/pyramid-task/scripts/**/*.py\",\n19\t          \"plugins/pyramid-task/tests/**/*.py\",\n20\t          \"plugins/pyramid-task/schemas/*.json\",\n21\t          \"plugins/pyramid-task/.codex-plugin/plugin.json\",\n22\t          \"plugins/pyramid-task/.claude-plugin/plugin.json\",\n23\t          \"plugins/pyramid-task/skills/*/SKILL.md\",\n24\t          \"tools/validate_repository.py\",\n25\t          \"README.md\",\n26\t          \"docs/architecture.md\",\n27\t          \"CHANGELOG.md\",\n28\t          \"plugins/pyramid-task/references/*.md\"\n29\t        ],\n30\t        \"observations\": [\n31\t          \"external\",\n32\t          \"internal\"\n33\t        ],\n34\t        \"not_applicable\": {\n35\t          \"visual\": \"These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review.\"\n36\t        },\n37\t        \"environment\": \"Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.\",\n38\t        \"contract_sha256\": \"0d4ec289f0d1c07da6e19299318b59421c30328b523dceb4c0fedc8e6c84dea8\"\n39\t      }\n40\t    ],\n41\t    \"proof_templates\": [\n42\t      {\n43\t        \"requirement\": \"EV-432\",\n44\t        \"run\": {\n45\t          \"contract_sha256\": \"0d4ec289f0d1c07da6e19299318b59421c30328b523dceb4c0fedc8e6c84dea8\",\n46\t          \"inputs_sha256\": \"74eec606d5a431319678f685a6fc377aa3af43e6f21b1b444f412a2f95ca04d7\",\n47\t          \"environment\": \"Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.\",\n48\t          \"observations\": [\n49\t            {\n50\t              \"kind\": \"external\",\n51\t              \"result\": \"not-run\",\n52\t              \"summary\": \"\",\n53\t              \"reviewer\": \"\",\n54\t              \"artifacts\": []\n55\t            },\n56\t            {\n57\t              \"kind\": \"internal\",\n58\t              \"result\": \"not-run\",\n59\t              \"summary\": \"\",\n60\t              \"reviewer\": \"\",\n61\t              \"artifacts\": []\n62\t            }\n63\t          ]\n64\t        }\n65\t      }\n66\t    ],\n67\t    \"reusable_proofs\": [],\n68\t    \"setup_blockers\": [],\n69\t    \"instruction\": \"Capture this template BEFORE the checks. Execute or inspect the stated procedure; never invent observations. Source inputs must remain unchanged through submission.\",\n70\t    \"context\": {\n71\t      \"id\": \"CTX-79E2247301A84235DE0A631682D5C1F9\",\n72\t      \"plan_id\": \"PYRAMID-41-PRECISE-PROGRESS-20261004\",\n73\t      \"plan_revision\": 7,\n74\t      \"graph_version\": 36\n75\t    }\n76\t  },\n77\t  \"gate\": {\n78\t    \"schema\": \"pyramid-harness-v1\",\n79\t    \"target\": \"GATE-439\",\n80\t    \"mode\": \"candidate-bound\",\n81\t    \"contracts\": [\n82\t      {\n83\t        \"requirement\": \"EV-GATE-439\",\n84\t        \"owner\": \"GATE-439/EV-GATE-439\",\n85\t        \"criteria\": [\n86\t          \"AC-GATE-439-01\"\n87\t        ],\n88\t        \"method\": \"command\",\n89\t        \"procedure\": \"Independently join current full-suite, CLI footprint and real two-host c",
+          "truncated": true,
+          "original_chars": 14006,
+          "sha256": "23539a63a30120ec375e753c46794622108ed45b0288d1a32fadc1ee5bacc5b4"
+        }
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01YHv7uExjPaLPZkgqSVeJDe",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/package-identity.json"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01YHv7uExjPaLPZkgqSVeJDe",
+        "type": "tool_result",
+        "content": {
+          "excerpt": "1\t{\n2\t  \"algorithm\": \"SHA256 of sorted per-file SHA256 + two spaces + relative path + LF; localeCompare ordering; excludes Python bytecode\",\n3\t  \"sources\": {\n4\t    \"baseline\": {\n5\t      \"root\": \"/tmp/pyramid41-hosts.7vw6LI/baseline\",\n6\t      \"files\": 112,\n7\t      \"digest\": \"5de6e675b961e8dac2c866f041cf285ec6db2c15e5ef24d52fa0d0d111fb88c0\",\n8\t      \"rows\": [\n9\t        {\n10\t          \"path\": \".claude-plugin/plugin.json\",\n11\t          \"sha256\": \"31223083644f674e8d2722e54a7d38bbb6e417ebbcb9c8c876428697440688f5\"\n12\t        },\n13\t        {\n14\t          \"path\": \".codex-plugin/plugin.json\",\n15\t          \"sha256\": \"4b7c00f67b35524523168289aaeb70067864b27452a5765cd58c5fa8c6034cd1\"\n16\t        },\n17\t        {\n18\t          \"path\": \"assets/example-assurance.json\",\n19\t          \"sha256\": \"5409627133de45e66a93ec66af950e1a8362799536247510782c664bafc525cb\"\n20\t        },\n21\t        {\n22\t          \"path\": \"assets/example-baseline.json\",\n23\t          \"sha256\": \"fdcc294cbbcb144fd6f00f987fc2ca7d0386bbaa9a150e02722d4288c9bb60a9\"\n24\t        },\n25\t        {\n26\t          \"path\": \"assets/example-expansion.json\",\n27\t          \"sha256\": \"0d43dc3568adeff753e01cac6e581d8421fac957b47c8eda80bab10bbb85bbff\"\n28\t        },\n29\t        {\n30\t          \"path\": \"assets/example-handoff-draft.json\",\n31\t          \"sha256\": \"487b49ba1bc11a114ed3f8e8e42129847056acac1f44a0699d09133f23f94e09\"\n32\t        },\n33\t        {\n34\t          \"path\": \"assets/example-harness-plan.json\",\n35\t          \"sha256\": \"ea091c56ed1072f43bc5a36071956e0b13e675439ac5dd95594cd9caab3d47a9\"\n36\t        },\n37\t        {\n38\t          \"path\": \"assets/example-plan-review.json\",\n39\t          \"sha256\": \"2e69362ee32d31631b94557b088402926a6c91f45107902f2bd405ef59910a34\"\n40\t        },\n41\t        {\n42\t          \"path\": \"assets/example-plan.json\",\n43\t          \"sha256\": \"06aa37403b7b24c86f2152196779a626681eae5661c177cd23ca6cd2bf6fadfa\"\n44\t        },\n45\t        {\n46\t          \"path\": \"references/agent-contracts.md\",\n47\t          \"sha256\": \"24a0c88bbba9656ded85183739be80d3e27024f0c0ddf9b93996dd4faf080f75\"\n48\t        },\n49\t        {\n50\t          \"path\": \"references/brownfield-assurance.md\",\n51\t          \"sha256\": \"8885e2362eac834168cce652c03a561a1da44422b63d99dcbdd1dfef00854ae4\"\n52\t        },\n53\t        {\n54\t          \"path\": \"references/demonstrable-increments.md\",\n55\t          \"sha256\": \"3a1c3fe6ae5304b020f8405ed78334d2024fc2ff78eb79cb48ad8129bfff81f9\"\n56\t        },\n57\t        {\n58\t          \"path\": \"references/development-harness.md\",\n59\t          \"sha256\": \"1ec2504556715d0f0e4021c3f64066d065c7c3e354fbe8f71f21502910a5ff4b\"\n60\t        },\n61\t        {\n62\t          \"path\": \"references/expansion-contract.md\",\n63\t          \"sha256\": \"5cb3909a27a66719d1f9cfc0ba1266b805ed34588c903acacafcb3cfbb004a5f\"\n64\t        },\n65\t        {\n66\t          \"path\": \"references/graph-contract.md\",\n67\t          \"sha256\": \"627715304882c0107b3092379d3cffb70672c379db0daa933808bc5a111796f9\"\n68\t        },\n69\t        {\n70\t          \"path\": \"references/handoff-contract.md\",\n71\t          \"sha256\": \"b257514e2a9e896f9208b06ca65f4a6d76a5e0b4104e6b286ae52992f959369f\"\n72\t        },\n73\t        {\n74\t          \"path\": \"references/history-contract.md\",\n75\t          \"sha256\": \"e34f3aea3cb20d376047cb7d76874a5ffd016586f7066b5d9273b6bf011bd25f\"\n76\t        },\n77\t        {\n78\t          \"path\": \"references/intra-task-helpers.md\",\n79\t          \"sha256\": \"79c27e2f04a08f70bda1e4bd74195618bdc449b0fec0b823f26eeac85e58d9b1\"\n80\t        },\n81\t        {\n82\t          \"path\": \"references/lifecycle-contract.md\",\n83\t          \"sha256\": \"65a987bfe811c016b98db32ee35b98c89b947bf2a54fa8cadd99b5b381870f90\"\n84\t        },\n85\t        {\n86\t          \"path\": \"references/new-intent-contract.md\",\n87\t          \"sha256\": \"24dbf6ba4276ef274d19ad66fd734d54861c728f6a3428948d74ecd177d253e4\"\n88\t        },\n89\t        {\n90\t          \"path\": \"references/parallel-execution.md\",\n91\t          \"sha256\": \"90899dea7e474a4bfcf16fe83e777bd98639a9b83d25e17245cc60fc73229cda\"\n92\t        },\n93\t        {\n94\t    ",
+          "truncated": true,
+          "original_chars": 49035,
+          "sha256": "3758c2f5179c81e6dd058c366d5a995c2ee3e2d29c9b565551674cf2fa936c45"
+        }
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01DeYNHZ8bH28eRAUhqy9kEn",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/tests.txt"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01DeYNHZ8bH28eRAUhqy9kEn",
+        "type": "tool_result",
+        "content": "1\t.............................................................................................................../opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 421: 'Misdirected Request'>\n2\t  _warnings.warn(self.warn_message, ResourceWarning)\n3\t.................................................................\n4\t----------------------------------------------------------------------\n5\tRan 176 tests in 20.583s\n6\t\n7\tOK\n8\t"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01JLAixWboQEDSRzag6WSzuW",
+        "name": "Grep",
+        "input": {
+          "pattern": "def artifact_footprint",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/package/scripts/pyramid_assurance.py"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01JLAixWboQEDSRzag6WSzuW",
+        "type": "tool_result",
+        "content": "Found 1 file\npackage/scripts/pyramid_assurance.py"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01Q2hfsQaFHuk2nL5inyv8K8",
+        "name": "Grep",
+        "input": {
+          "pattern": "lock|read-only|Eighteen|17 skills|fsync|power|atomic|mixed|4\\.0",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/README.md",
+          "-i": true
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01Q2hfsQaFHuk2nL5inyv8K8",
+        "type": "tool_result",
+        "content": "Found 1 file\nevidence/README.md"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01RsfQN4CoRketE63DmGnNrF",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/package/scripts/pyramid_assurance.py",
+          "offset": 55,
+          "limit": 105
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01RsfQN4CoRketE63DmGnNrF",
+        "type": "tool_result",
+        "content": {
+          "excerpt": "55\t\n56\t\n57\tdef artifact_footprint(root: Path, plan: dict, state: dict, baseline: dict | None,\n58\t                       *, detail: bool = False, limit: int = 10000) -> dict:\n59\t    \"\"\"Bounded metadata-only preview. References are current, not retention authority.\"\"\"\n60\t    if type(limit) is not int or not 1 <= limit <= 100000:\n61\t        raise ValueError('footprint limit must be between 1 and 100000')\n62\t    root = root.resolve()\n63\t    evidence, generated, inputs, references = [], [], [], set()\n64\t    for node in plan['nodes']:\n65\t        agent = node.get('agent', {})\n66\t        evidence.extend(agent.get('evidence_outputs', []))\n67\t        generated.extend(g.get('pattern', '') for g in agent.get('generated_outputs', []))\n68\t        inputs.extend(p for e in node.get('required_evidence', [])\n69\t                      for p in e.get('verification', {}).get('inputs', []))\n70\t\n71\t    def collect(value: Any) -> None:\n72\t        if isinstance(value, dict):\n73\t            for key, item in value.items():\n74\t                if key == 'path' and isinstance(item, str):\n75\t                    references.add(item)\n76\t                elif key == 'evidence' and isinstance(item, list):\n77\t                    references.update(x for x in item if isinstance(x, str))\n78\t                else:\n79\t                    collect(item)\n80\t        elif isinstance(value, list):\n81\t            for item in value:\n82\t                collect(item)\n83\t\n84\t    for item in state['nodes'].values():\n85\t        collect(item.get('last_result', {}))\n86\t        collect(item.get('last_audit', {}))\n87\t    matches = lambda rel, patterns: any(fnmatch.fnmatchcase(rel, p) for p in patterns)\n88\t    counts, files, excluded, errors = {}, [], set(), []\n89\t    entries = total_files = total_bytes = 0\n90\t    ignored = {'.git', '.venv', 'node_modules', '__pycache__'}\n91\t    stack = [os.scandir(root)]\n92\t    complete = True\n93\t    try:\n94\t        while stack:\n95\t            if entries >= limit:\n96\t                complete = False\n97\t                break\n98\t            try:\n99\t                entry = next(stack[-1])\n100\t            except StopIteration:\n101\t                stack.pop().close()\n102\t                continue\n103\t            except OSError as exc:\n104\t                errors.append(type(exc).__name__)\n105\t                complete = False\n106\t                stack.pop().close()\n107\t                continue\n108\t            entries += 1\n109\t            rel = Path(entry.path).relative_to(root).as_posix()\n110\t            try:\n111\t                if entry.is_symlink():\n112\t                    kind, size = 'symlink-not-followed', 0\n113\t                elif entry.is_dir(follow_symlinks=False):\n114\t                    if entry.name in ignored:\n115\t                        excluded.add(rel)\n116\t                    else:\n117\t                        stack.append(os.scandir(entry.path))\n118\t                    continue\n119\t                elif not entry.is_file(follow_symlinks=False):\n120\t                    kind, size = 'unknown-special', 0\n121\t                else:\n122\t                    size = entry.stat(follow_symlinks=False).st_size\n123\t                    is_input, is_evidence = matches(rel, inputs), matches(rel, evidence)\n124\t                    if is_input and is_evidence:\n125\t                        kind = 'input-evidence-conflict'\n126\t                    elif is_input:\n127\t                        kind = 'proof-input'\n128\t                    elif rel.startswith('.pyramid/reports/'):\n129\t                        kind = 'retained-evidence'\n130\t                    elif rel.startswith('.pyramid/') or rel.startswith('docs/tasks/'):\n131\t                        kind = 'canonical-or-projection'\n132\t                    elif is_evidence:\n133\t                        kind = 'declared-evidence'\n134\t                    elif matches(rel, generated):\n135\t                        kind = 'declared-generated'\n136\t                    else:\n137\t                        kind = 'unknown'\n138\t          ",
+          "truncated": true,
+          "original_chars": 5319,
+          "sha256": "95f6a99fe25880179edc7506c2315831a6300e9970667942a04857abb57a0b90"
+        }
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01JxiNvb5P9oRkKHs8wSyYJW",
+        "name": "Grep",
+        "input": {
+          "pattern": "lock|read-only|Eighteen|skills|fsync|power|atomic|mixed|4\\.0",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/README.md",
+          "-i": true,
+          "output_mode": "content"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01JxiNvb5P9oRkKHs8wSyYJW",
+        "type": "tool_result",
+        "content": {
+          "excerpt": "10:[Omitted long matching line]\n12:[4.1 development and qualification](docs/planning/v4.1/README.md) records scope, evidence and limitations. A source candidate is not a published or installed release; existing 4.0.0 installations are unchanged. Prompt clarity and fewer writes do not by themselves establish token savings.\n22:- A blocked check blocks the claim that needs it. Continue other authorized dependency-safe work while retaining the blocker. Routine agent review is not new human authority.\n36:Project queries use the existing serialization lock and may create its coordination\n37:file if missing. Read-only means no semantic state/proof change or cleanup, not a\n38:guarantee of zero coordination metadata. Mixed 4.0/4.1 hosts must not share an\n39:actively rebound plan: unchanged installations do not imply mixed-version readiness.\n41:![Pyramid Task Intent Observer showing outcome progress, an active blocker, recommended action, and intent structure](docs/images/pyramid-task-map.png)\n116:Pyramid Task separates agent guidance from runtime enforcement. Specialized skills help agents choose the right workflow and produce bounded task or audit artifacts; the Python runtime validates every transition, maintains canonical `.pyramid` state, records immutable events, and regenerates disposable projections.\n130:| `.pyramid/head.json` | Atomic identity of the committed canonical state | Used to validate publication and context |\n173:| Deterministic runtime behind reasoning skills | The same transition and evidence rules apply across Codex and Claude Code | Semantic planning quality still depends on agent reasoning and review |\n176:| Recoverable prepared appends | A crash cannot silently leave mixed history accepted as valid | Divergent or malformed transactions require investigation, not automatic invention |\n208:# Load the exact audit blockers and audit guard immediately before audit.\n223:| Routine progress with the task contract already in context | `update --json`: compact status, blockers and guards by default |\n228:[Omitted long matching line]\n243:## Global command usage audit (4.0.0)\n251:[Omitted long matching line]\n253:Measure the workflow before simplifying it. Every parsed CLI execution records a local invocation, exit outcome, wall-clock duration and JSON stdout byte count. Counters are aggregated by UTC day, runtime version, command, allowlisted mode (such as preview/apply or update status), and compact/full format. No arguments, project paths, task IDs, actor names, prompts, source, or command output are stored. Nothing is sent over the network.\n262:No project is required. The report includes every CLI command, including zero-count commands; compact zero-count rows omit redundant outcome/cost fields. Reading it does not create or update counters. This adds no new skill or top-level command: the current source has 17 skills and 26 CLI commands after removing `upgrade`. Recorded counts for older removed commands remain visible as history, not available operations.\n322:Research, reconnaissance, test discovery, and risk review are often read-only. Validation commands are not assumed read-only: tests and builds may write caches, coverage, generated files, databases, or snapshots. Repository-bound helpers therefore read an immutable snapshot, and write-producing checks run only in a disposable worktree or sandbox. Helper jobs and results are bounded serialized envelopes, but they are not graph nodes, events, versions, claims, or mutation guards.\n337:The ID is a disposable correlation handle for logs, prompts, and join metadata. It is not a graph node, event/version ID, persistent scheduler record, lock, authorization token, or mutation guard. Its batch can change or disappear whenever readiness, dependencies, scopes, assets, assurance, drift, wave membership, or the agent limit changes. Re-run `inspect --parallel-ready` after any such change and use each task's current claim guard for mutations.\n348:- structural and assurance bloc",
+          "truncated": true,
+          "original_chars": 6319,
+          "sha256": "b300c89df3bd71fe909eb85232d71a83cb81260970880df9da52947da3e4f86c"
+        }
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_011GmPSexEp26FozfnLcGjay",
+        "name": "Grep",
+        "input": {
+          "pattern": "def (_publish_head|write_projection_text|_compile_project_locked|project_lock)|graph\\.json|published last|publish.*graph",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/package/scripts/pyramid_core.py",
+          "output_mode": "content"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_011GmPSexEp26FozfnLcGjay",
+        "type": "tool_result",
+        "content": "146:        \"graph\": meta / \"graph.json\",\n396:def project_lock(paths: dict[str, Path]):\n636:def _publish_head(\n2084:def write_projection_text(path: Path, content: str) -> bool:\n2105:def _compile_project_locked(project: str | Path, *, allow_archived: bool = False) -> dict[str, Any]:"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01753Anyd59AhXfvKkr8g7Jd",
+        "name": "Grep",
+        "input": {
+          "pattern": "def test_graph_is_published_only_after_other_projections_complete|def test_.*(live|context).*(graph|match)|def test_.*projection.*fail",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/package/tests/test_runtime.py",
+          "output_mode": "content"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01753Anyd59AhXfvKkr8g7Jd",
+        "type": "tool_result",
+        "content": "714:    def test_live_graph_follows_complete_publications_and_keeps_last_valid_snapshot(self) -> None:\n749:    def test_live_server_serves_focus_view_graph_api_and_generated_task(self) -> None:\n779:    def test_live_graph_ignores_metadata_only_recompiles(self) -> None:\n787:    def test_live_graph_reports_a_context_waiting_for_projection(self) -> None:\n1253:    def test_graph_is_published_only_after_other_projections_complete(self) -> None:"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_012373peeF3uFZZkWqEE1EUp",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/package/scripts/pyramid_core.py",
+          "offset": 2084,
+          "limit": 80
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_012373peeF3uFZZkWqEE1EUp",
+        "type": "tool_result",
+        "content": "2084\tdef write_projection_text(path: Path, content: str) -> bool:\n2085\t    \"\"\"Skip identical generated bytes, never skip computing current truth.\"\"\"\n2086\t    encoded = content.encode('utf-8')\n2087\t    if path.is_file() and path.read_bytes() == encoded:\n2088\t        return False\n2089\t    path.parent.mkdir(parents=True, exist_ok=True)\n2090\t    fd, temp_name = tempfile.mkstemp(prefix=f'.{path.name}.', dir=str(path.parent))\n2091\t    try:\n2092\t        with os.fdopen(fd, 'wb') as handle:\n2093\t            handle.write(encoded)\n2094\t        os.replace(temp_name, path)\n2095\t    except Exception:\n2096\t        Path(temp_name).unlink(missing_ok=True)\n2097\t        raise\n2098\t    return True\n2099\t\n2100\t\n2101\tdef write_projection_json(path: Path, data: Any) -> bool:\n2102\t    return write_projection_text(path, json.dumps(data, indent=2, ensure_ascii=False) + '\\n')\n2103\t\n2104\t\n2105\tdef _compile_project_locked(project: str | Path, *, allow_archived: bool = False) -> dict[str, Any]:\n2106\t    paths, plan, state = load_project(project)\n2107\t    manifest, baseline, assurance = load_assurance_bundle(paths, plan)\n2108\t    frontier = implementation_frontier(paths)\n2109\t    if lifecycle_status(state) == \"archived\" and not allow_archived:\n2110\t        raise PyramidError(\"Archived plans are frozen; use their existing projections or restore the plan\")\n2111\t    try:\n2112\t        rebuild_history_index(paths[\"meta\"])\n2113\t    except HistoryError as exc:\n2114\t        raise PyramidError(str(exc)) from exc\n2115\t    snapshot = graph_snapshot(\n2116\t        plan, state, baseline, assurance, manifest, frontier\n2117\t    )\n2118\t    snapshot[\"history\"] = history_summary(paths[\"meta\"], plan[\"plan_id\"])\n2119\t    by_id = node_map(plan)\n2120\t    for item in snapshot[\"nodes\"]:\n2121\t        item[\"source_path\"] = str(node_doc_path(paths, by_id[item[\"id\"]]).relative_to(paths[\"root\"]))\n2122\t    ready_packets = [\n2123\t        task_summary(plan, state, node[\"id\"], baseline, assurance, frontier)\n2124\t        for node in plan[\"nodes\"]\n2125\t        if availability(plan, state, node) in {\"ready\", \"needs-rework\"}\n2126\t    ]\n2127\t    ready_packets.sort(key=lambda item: (item[\"wave\"], item[\"level\"], item[\"task\"]))\n2128\t    write_projection_json(\n2129\t        paths[\"ready\"],\n2130\t        {\n2131\t            \"schema\": \"pyramid-ready-v1\",\n2132\t            \"graph_version\": state[\"graph_version\"],\n2133\t            \"context\": context_identity(plan, state),\n2134\t            \"tasks\": ready_packets,\n2135\t        },\n2136\t    )\n2137\t\n2138\t    paths[\"docs\"].mkdir(parents=True, exist_ok=True)\n2139\t    if plan.get(\"schema_version\") == 2:\n2140\t        write_projection_text(paths[\"docs\"] / \"DEVELOPMENT_HARNESS.md\", render_guide(plan))\n2141\t    for node in plan[\"nodes\"]:\n2142\t        path = node_doc_path(paths, node)\n2143\t        path.parent.mkdir(parents=True, exist_ok=True)\n2144\t        write_projection_text(path,\n2145\t            render_node_markdown(\n2146\t                paths, plan, state, node, baseline, assurance, frontier\n2147\t            ),\n2148\t        )\n2149\t\n2150\t    intent = plan[\"intent\"]\n2151\t    intent_text = f\"\"\"<!-- Generated by Pyramid Task V3. -->\n2152\t# Intent: {plan['title']}\n2153\t\n2154\t{intent['statement']}\n2155\t\n2156\t## Success Evidence\n2157\t\n2158\t{_markdown_list([f\"`{item['id']}` — {item['description']}\" for item in intent['success_evidence']])}\n2159\t\n2160\t## Constraints\n2161\t\n2162\t{_markdown_list(intent['constraints'])}\n2163\t"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01528DuHMgRufqVtXuzNK5e4",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/package/tests/test_runtime.py",
+          "offset": 1253,
+          "limit": 40
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01528DuHMgRufqVtXuzNK5e4",
+        "type": "tool_result",
+        "content": "1253\t    def test_graph_is_published_only_after_other_projections_complete(self) -> None:\n1254\t        graph_path = self.root / \".pyramid\" / \"graph.json\"\n1255\t        graph_before = graph_path.read_bytes()\n1256\t        original_write_text = core.write_projection_text\n1257\t\n1258\t        def fail_final_readme(path: Path, data: str, *args: object, **kwargs: object) -> int:\n1259\t            if path.name == \"README.md\" and \"tasks\" in path.parts:\n1260\t                raise OSError(\"simulated projection failure\")\n1261\t            return original_write_text(path, data, *args, **kwargs)\n1262\t\n1263\t        with mock.patch.object(core, \"write_projection_text\", new=fail_final_readme):\n1264\t            with self.assertRaisesRegex(OSError, \"simulated projection failure\"):\n1265\t                compile_project(self.root)\n1266\t        self.assertEqual(graph_before, graph_path.read_bytes())\n1267\t\n1268\t    def test_restore_auto_archives_current_and_restores_selected_plan(self) -> None:\n1269\t        candidate = load_json(self.example)\n1270\t        candidate[\"plan_id\"] = \"PLAN-002\"\n1271\t        candidate_path = self.write_json(\"reset-plan.json\", candidate)\n1272\t        reset = reset_project(self.root, candidate_path, \"owner\", \"Move to second plan\")\n1273\t        restored = restore_project(self.root, reset[\"previous_archive\"], \"owner\", \"Return to the first plan\")\n1274\t        self.assertEqual(\"PLAN-001\", inspect_project(self.root, summary=True)[\"plan_id\"])\n1275\t        self.assertEqual(reset[\"previous_archive\"], restored[\"restored_from\"])\n1276\t        self.assertIsNotNone(restored[\"previous_archive\"])\n1277\t        self.assertGreaterEqual(len(inspect_lifecycle(self.root)[\"archives\"]), 2)\n1278\t\n1279\t    def test_generated_lifecycle_artifacts_match_published_schemas(self) -> None:\n1280\t        self.complete_graph()\n1281\t        closed = close_project(self.root, \"owner\")\n1282\t        archived = archive_project(self.root, \"owner\", \"Schema validation\")\n1283\t        schema_dir = PLUGIN_ROOT / \"schemas\"\n1284\t        artifacts = [\n1285\t            (schema_dir / \"plan.schema.json\", self.root / \".pyramid\" / \"plan.json\"),\n1286\t            (schema_dir / \"state.schema.json\", self.root / \".pyramid\" / \"state.json\"),\n1287\t            (schema_dir / \"head.schema.json\", self.root / \".pyramid\" / \"head.json\"),\n1288\t            (schema_dir / \"project.schema.json\", self.root / \".pyramid\" / \"project.json\"),\n1289\t            (schema_dir / \"final-report.schema.json\", Path(closed[\"report\"])),\n1290\t            (schema_dir / \"archive-manifest.schema.json\", Path(archived[\"archive\"]) / \"manifest.json\"),\n1291\t        ]\n1292\t        for schema_path, artifact_path in artifacts:"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01APNRexWyKuHBdcnN9b9hTH",
+        "name": "Grep",
+        "input": {
+          "pattern": "paths\\[\"graph\"\\]|generated_at|published_at",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/package/scripts/pyramid_core.py",
+          "output_mode": "content",
+          "-n": true
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01APNRexWyKuHBdcnN9b9hTH",
+        "type": "tool_result",
+        "content": "1932:        \"generated_at\": utc_now(),\n2243:    write_projection_json(paths[\"graph\"], snapshot)\n2245:        \"graph\": str(paths[\"graph\"]),\n2265:        return load_json(paths[\"graph\"])"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01JZPLnxoS9sVNxFKPZ4dvnB",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/package/scripts/pyramid_core.py",
+          "offset": 1925,
+          "limit": 12
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01JZPLnxoS9sVNxFKPZ4dvnB",
+        "type": "tool_result",
+        "content": "1925\t                implementation_frontier=frontier,\n1926\t            )\n1927\t        enriched.append(item)\n1928\t    primary = [node for node in enriched if node[\"selection\"] == \"primary\"]\n1929\t    verified = sum(node[\"state\"][\"verification\"] == \"passed\" for node in primary)\n1930\t    snapshot = {\n1931\t        \"schema\": \"pyramid-graph-v1\",\n1932\t        \"generated_at\": utc_now(),\n1933\t        \"graph_version\": state[\"graph_version\"],\n1934\t        \"context\": context_identity(plan, state),\n1935\t        \"plan_id\": plan[\"plan_id\"],\n1936\t        \"title\": plan[\"title\"],"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_011xVj4HvjhpibdZV9Trs2BN",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/package/scripts/pyramid_core.py",
+          "offset": 2200,
+          "limit": 50
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_011xVj4HvjhpibdZV9Trs2BN",
+        "type": "tool_result",
+        "content": "2200\t        \"## Ready Frontier\",\n2201\t        \"\",\n2202\t    ]\n2203\t    readme_lines.extend([f\"- `{packet['task']}` — {packet['title']}\" for packet in ready_packets] or [\"- None\"])\n2204\t    if plan.get(\"schema_version\") == 2:\n2205\t        readme_lines.extend([\"\", \"## Development Harness\", \"\",\n2206\t                             \"[Generated guide](DEVELOPMENT_HARNESS.md). Use `inspect --harness <node>` for scoped capture/reuse and audit readiness for current input freshness. Recorded verification is historical, not a working-tree watch.\"])\n2207\t    if baseline is not None and assurance is not None:\n2208\t        summary_assurance = assurance_summary(\n2209\t            baseline,\n2210\t            assurance,\n2211\t            implementation_frontier=frontier,\n2212\t        )\n2213\t        readme_lines.extend(\n2214\t            [\n2215\t                \"\",\n2216\t                \"## Brownfield Assurance\",\n2217\t                \"\",\n2218\t                f\"- Status: `{summary_assurance['status']}`\",\n2219\t                f\"- Baseline: `{summary_assurance['baseline_status']}` revision `{summary_assurance['baseline_revision']}`\",\n2220\t                f\"- Impacted assets inspected sufficiently: `{summary_assurance['sufficiently_inspected_assets']}/{summary_assurance['impacted_assets']}`\",\n2221\t                f\"- Open scope drift: `{summary_assurance['open_scope_drift']}`\",\n2222\t                f\"- Open material findings: `{summary_assurance['open_material_findings']}`\",\n2223\t            ]\n2224\t        )\n2225\t    readme_lines.extend([\"\", \"## Batch Order\", \"\"])\n2226\t    readme_lines.extend([f\"- [`{folder}`]({folder}/README.md)\" for folder in sorted(batches)] or [\"- No executable batches\"])\n2227\t    readme_lines.extend(\n2228\t        [\n2229\t            \"\",\n2230\t            \"## Dependency Rule\",\n2231\t            \"\",\n2232\t            \"Start work only from the generated ready frontier. Implementation completion remains unverified until its audit passes.\",\n2233\t            \"\",\n2234\t            \"## Definition of Done\",\n2235\t            \"\",\n2236\t            \"The final intent is done only when its success evidence exists, required children are verified, and its final audit passes.\",\n2237\t            \"\",\n2238\t        ]\n2239\t    )\n2240\t    write_projection_text(paths[\"docs\"] / \"README.md\", \"\\n\".join(readme_lines))\n2241\t    # Publish the graph last. Live readers treat its atomic replacement as proof that\n2242\t    # every other generated projection for this canonical version is complete.\n2243\t    write_projection_json(paths[\"graph\"], snapshot)\n2244\t    return {\n2245\t        \"graph\": str(paths[\"graph\"]),\n2246\t        \"ready\": str(paths[\"ready\"]),\n2247\t        \"docs\": str(paths[\"docs\"]),\n2248\t        \"graph_version\": state[\"graph_version\"],\n2249\t        \"context\": context_identity(plan, state),"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "Source checks are mostly done (footprint `finally` and graph-last publication confirmed); now checking the head publication boundary, then the two allowed probes."
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_0116midPTFM3AftqU7uKXwFv",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/package/scripts/pyramid_core.py",
+          "offset": 636,
+          "limit": 45
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_0116midPTFM3AftqU7uKXwFv",
+        "type": "tool_result",
+        "content": "636\tdef _publish_head(\n637\t    paths: dict[str, Path],\n638\t    plan: dict[str, Any],\n639\t    state: dict[str, Any],\n640\t    event: dict[str, Any],\n641\t    event_sha256: str,\n642\t) -> dict[str, Any]:\n643\t    context = context_identity(plan, state)\n644\t    head = {\n645\t        \"schema\": \"pyramid-head-v1\",\n646\t        \"committed_at\": event[\"at\"],\n647\t        \"context\": context,\n648\t        \"files\": _canonical_file_hashes(paths),\n649\t        \"event\": {\n650\t            \"id\": event[\"id\"],\n651\t            \"sha256\": event_sha256,\n652\t            \"previous_sha256\": event.get(\"previous_event_sha256\"),\n653\t        },\n654\t    }\n655\t    write_json(paths[\"head\"], head)\n656\t    return head\n657\t\n658\t\n659\tdef _persist_event(\n660\t    paths: dict[str, Path],\n661\t    plan: dict[str, Any],\n662\t    state: dict[str, Any],\n663\t    event: dict[str, Any],\n664\t) -> dict[str, Any]:\n665\t    previous_id, previous_sha256 = _previous_event(paths)\n666\t    # Proof blobs share the existing event/head publication and archive boundary.\n667\t    # Validation happens before this point; an interrupted publication fails the\n668\t    # canonical-head check rather than silently accepting partial evidence.\n669\t    field = {\"task.implemented\": \"last_result\", \"audit.pass\": \"last_audit\"}.get(event[\"type\"])\n670\t    if field and plan.get(\"schema_version\") == 2:\n671\t        record = state[\"nodes\"][event[\"node\"]][field]\n672\t        try:\n673\t            publish_artifacts(paths[\"root\"], record)\n674\t        except (VerificationError, OSError) as exc:\n675\t            raise PyramidError(f\"Could not publish proof artifacts: {exc}\") from exc\n676\t        event[\"after\"][field] = copy.deepcopy(record)\n677\t        event[\"payload\"][\"result\" if field == \"last_result\" else \"audit\"] = copy.deepcopy(record)\n678\t    state[\"context_id\"] = canonical_context_id(plan, state)\n679\t    context = context_identity(plan, state)\n680\t    event.update("
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01UmsjEVmW7sTbBm2Gi6gXRX",
+        "name": "Bash",
+        "input": {
+          "command": "/Users/merdankiji/localGit/pyramid-task/.venv/bin/python package/scripts/pyramid.py inspect --project fixture --ready --json",
+          "description": "Run allowed ready-frontier probe on fixture"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01UmsjEVmW7sTbBm2Gi6gXRX",
+        "type": "tool_result",
+        "content": "{\n  \"schema\": \"pyramid-query-v1\",\n  \"query\": \"ready\",\n  \"graph_version\": 1,\n  \"context\": {\n    \"id\": \"CTX-4F617FC196639DD8EE88B65087A8D353\",\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 1,\n    \"graph_version\": 1\n  },\n  \"tasks\": [\n    {\n      \"id\": \"RESEARCH-101\",\n      \"task\": \"RESEARCH-101\",\n      \"title\": \"Validate operation schema stability\",\n      \"kind\": \"research\",\n      \"level\": 2,\n      \"wave\": 0,\n      \"workstream\": \"foundation\",\n      \"availability\": \"ready\",\n      \"execution\": \"planned\",\n      \"verification\": \"unverified\",\n      \"health\": \"clear\",\n      \"owner\": null,\n      \"blocker\": null,\n      \"blocked_by\": [],\n      \"handoff_id\": null,\n      \"mutation_guards\": {\n        \"task\": \"GUARD-TASK-A1B05216722C286E14A13B8356109D74\",\n        \"audit\": \"GUARD-AUDIT-DB7CB6056D805EF262613C9C345CFF08\"\n      },\n      \"mutation_guard\": \"GUARD-TASK-A1B05216722C286E14A13B8356109D74\"\n    }\n  ]\n}",
+        "is_error": false
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01VuC64E3yMv8UhmG6HEvqvQ",
+        "name": "Bash",
+        "input": {
+          "command": "/Users/merdankiji/localGit/pyramid-task/.venv/bin/python package/scripts/pyramid.py validate --project fixture --json",
+          "description": "Run allowed fixture validation probe"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01VuC64E3yMv8UhmG6HEvqvQ",
+        "type": "tool_result",
+        "content": "{\n  \"valid\": true,\n  \"errors\": [],\n  \"plan_id\": \"PLAN-001\",\n  \"revision\": 1,\n  \"graph_version\": 1,\n  \"context\": {\n    \"id\": \"CTX-4F617FC196639DD8EE88B65087A8D353\",\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 1,\n    \"graph_version\": 1\n  },\n  \"project_format_version\": 3,\n  \"mode\": \"greenfield\"\n}",
+        "is_error": false
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_0121yeyxT6VLnAcavsjPJbdC",
+        "name": "Grep",
+        "input": {
+          "pattern": "\"runtime\"|2a0e7ad8|b72281a8|formula",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/producer-4.0.json",
+          "output_mode": "count"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_0121yeyxT6VLnAcavsjPJbdC",
+        "type": "tool_result",
+        "content": "evidence/producer-4.0.json:7\n\nFound 7 total occurrences across 1 file."
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01MVfbjkDiFT92Er5i9sQeBk",
+        "name": "Grep",
+        "input": {
+          "pattern": "\"runtime\"|formula|2a0e7ad8|b72281a8",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/producer-4.0.json",
+          "output_mode": "content"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01MVfbjkDiFT92Er5i9sQeBk",
+        "type": "tool_result",
+        "content": "21:[Omitted long matching line]\n31:[Omitted long matching line]\n49:[Omitted long matching line]\n65:[Omitted long matching line]\n99:[Omitted long matching line]\n109:[Omitted long matching line]\n133:[Omitted long matching line]"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_0195eeFzRqDXnBLmg7sUf22b",
+        "name": "Grep",
+        "input": {
+          "pattern": "\"runtime\": \"[^\"]*\"|formula[^\"]{0,80}",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/focused-review/evidence/producer-4.0.json",
+          "output_mode": "content",
+          "-o": true
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_0195eeFzRqDXnBLmg7sUf22b",
+        "type": "tool_result",
+        "content": "No matches found"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "## Verdict: **conditional accept**\n\nFour of the initial review's open items are now fixed by new evidence and the current source. Three are accepted with limits. The package-identity join is still unknown. I recommend accepting the guard, recovery, footprint and publication claims within the limits below. The candidate should not count as qualified until someone hashes the staged package and gets the frozen digest `df53c9a2…`.\n\nI made no audit submission and wrote no audit-result file, because writes and mutations were not allowed.\n\n## The two probes I ran\n- `inspect --ready` returned graph version 1, context `CTX-4F617FC1…`, and one ready task, `RESEARCH-101`, with guards `GUARD-TASK-A1B0…` and `GUARD-AUDIT-DB7C…`. This matches what the claude-candidate-final trace recorded.\n- `validate` returned `valid: true` with no errors at the same context.\n- This is the owned fixture, not the development plan.\n\n## Decision on each open item\n\n**1. Stale run refused after a changed input — accepted, with limits.**\n- `recovery-readable.json` now records a real 4.1 `audit --result pass` that exited with code 2: `Invalid harness proof: EVREQ-101-01: candidate inputs changed; collect fresh proof`. Readiness had reported the same blocker just before.\n- This replaces the summary flag the initial review objected to.\n- **Limits:**\n  - The step that changed the input, and the step that undid it, are not in the `cli` list. The trace only shows readiness flipping from not-ready back to ready.\n  - \"Canonical state unchanged after refusal\" has no before/after hashes here. The file points to `recovery-qualified-result.json` for full output, but that file is not in the evidence set.\n\n**2. Snapshot recovery and history retention — accepted, with limits.**\n- **Restore and history:**\n  - The restored archive is named: `PLAN-001-R1-G5-20261004T091451Z`.\n  - Each history record has before/after hashes, and they are identical.\n  - `C2` is not in the snapshot but survives the restore, which is what \"retain newer history\" claims.\n- **Proof and 4.0 behaviour:**\n  - The restored 4.0 proof (`RUN-FCB6…`, contract `a584…`) is byte-identical to the original.\n  - After the restore, 4.0 `validate` and 4.0 `--audit-readiness` both report ready.\n  - Before the restore, 4.0 validated the 4.1-bound state and said it was valid. Its readiness check then blocked it with \"proof contract changed\". That is the fail-safe disagreement the addendum describes, not mixed-version support. The README now says so (lines 36–39).\n- **Limit:** `snapshot_file_hashes` are hashes of the archive contents. No hashes of the live files after restore are compared against them.\n\n**3. Fresh guards versus the reviewed caller — accepted.**\n- `guard.json` records both guards that the frozen caller was invoked with:\n  - With the old take guard `…9891…`, it exited 2 with a scoped \"Stale task guard\" error.\n  - With the guard from the resume packet `…97AE…`, the release succeeded with reason \"Owned stable-caller qualification release\".\n- The caller hash `95510cfb…` is the same before and after.\n- `guard-caller.py` takes the guard as `sys.argv` and contains no guard literal.\n- **Limit:** I could not hash `evidence/guard-caller.py` to confirm it is the `95510cfb…` file, because no helper tools were allowed.\n\n**4. Footprint scan closing directory handles — accepted.**\n- `package/scripts/pyramid_assurance.py:150-152` closes every scan iterator still open in a `finally` block. Iterators are also closed when they are exhausted or hit an error (lines 101 and 106).\n- The README (lines 36–38) now says that a project query may create the lock file and that \"read-only\" means no change to plan state or proof.\n\n**5. Projection publishing — accepted, within the stated scope.**\n- `pyramid_core.py:2241-2243` writes `graph.json` last.\n- `test_runtime.py:1253` makes the README write fail and asserts that the graph bytes are unchanged. The test is meaningful because the graph includes `generated_at` (line 1932). Writing the graph early would therefore change its bytes.\n- `_publish_head` (line 636) hashes the plan and state files and is separate from these regenerated views.\n- **Limits (already disclosed):**\n  - Each file is replaced atomically, but there is no `fsync` and no atomic update across several views.\n  - The history index is rebuilt before any views are written (line 2112).\n- I read this test; I did not run it.\n\n**6. Decision text from the six cases — accepted, as decisions only.**\n- `native-decisions.md` has the complete text from all four hosts.\n- Both final hosts reach the expected decisions on all six cases, with explicit limits. For EXTENSION, they keep the old proof only through an explicit binding and require fresh proof when the source changes. For GUARD, they pass the guard at run time and re-review the caller if it changed.\n- Both baselines have defects:\n  - claude-baseline says the provider's proof stays current under 4.0. The real 4.0 trace contradicts this (\"proof contract changed\").\n  - codex-baseline offers editing the guard literal into the source as an option.\n- These are reasoned answers to supplied facts, not product runs.\n\n**7. Test log tied to the package and command — partially accepted.**\n- `test-result.json` binds:\n  - the exact command;\n  - package digest `df53c9a2…`;\n  - start and finish times (09:12:57–09:14:04 UTC), exit code 0, and \"176 passed; 17 skills / 31 schemas\";\n  - artifact hashes.\n- **Limits:**\n  - This is the coordinator's recorded run, not a run I did.\n  - I could not check that `tests.txt` hashes to `1c9a63bf…`.\n  - The `HTTPError 421` ResourceWarning is still in the log.\n  - The guard experiment's timestamps (09:14:03–04) fall inside the test window, so the two were run together or overlapped. That needs no fix but should be noted.\n\n## Still unknown or not resolved\n\n- **Package identity:** `package-identity.json` shows the source and the codex-candidate-final package both at `df53c9a2…`. Nothing hashes `focused-review/package/`, so I can't confirm that the source I read is the qualified candidate. The probe context matching claude-candidate-final is weak supporting evidence, not proof.\n- **`producer-4.0.json`:** it still has no runtime labels, so the `2a0e…` vs `b722…` contract-hash mismatch is unexplained inside that file. The addendum explains it as a formula-only experiment run on 4.1, but the file doesn't record that. Don't cite this file as 4.0 execution evidence. The real 4.0 evidence is now in `recovery-readable.json`, where the contract hash `a584…` is consistent end to end.\n- **Producer proof reused for the consumer:** a plan may let the producer's proof count toward the consumer's criterion. That is a plan-level choice the runtime can't judge. `TASK-202` and `GATE-290` stay unverified until they have their own composition proof.\n- **File names:** the addendum names files (`recovery-detailed-result.json`, `guard-qualified-result.json`, `qualified-test-*.json`, `consumer-growth-4.0.json`) that aren't in `evidence/`. The projections I reviewed stand in for them. Any claim that rests only on those full files is unverified.\n\n## What would close this\n1. Add a digest of `focused-review/package/` computed with the same algorithm.\n2. Label each call's runtime in `producer-4.0.json`, or retire it.\n3. Add the step that changed the input, the step that undid it, and the canonical hashes around the refused audit to the recovery projection.\n\nOut of scope and not claimed: power-loss durability, mixed-version support, an installed release, real product, browser or mail behaviour, and token savings."
+      }
+    ]
+  },
+  {
+    "type": "result",
+    "result": "## Verdict: **conditional accept**\n\nFour of the initial review's open items are now fixed by new evidence and the current source. Three are accepted with limits. The package-identity join is still unknown. I recommend accepting the guard, recovery, footprint and publication claims within the limits below. The candidate should not count as qualified until someone hashes the staged package and gets the frozen digest `df53c9a2…`.\n\nI made no audit submission and wrote no audit-result file, because writes and mutations were not allowed.\n\n## The two probes I ran\n- `inspect --ready` returned graph version 1, context `CTX-4F617FC1…`, and one ready task, `RESEARCH-101`, with guards `GUARD-TASK-A1B0…` and `GUARD-AUDIT-DB7C…`. This matches what the claude-candidate-final trace recorded.\n- `validate` returned `valid: true` with no errors at the same context.\n- This is the owned fixture, not the development plan.\n\n## Decision on each open item\n\n**1. Stale run refused after a changed input — accepted, with limits.**\n- `recovery-readable.json` now records a real 4.1 `audit --result pass` that exited with code 2: `Invalid harness proof: EVREQ-101-01: candidate inputs changed; collect fresh proof`. Readiness had reported the same blocker just before.\n- This replaces the summary flag the initial review objected to.\n- **Limits:**\n  - The step that changed the input, and the step that undid it, are not in the `cli` list. The trace only shows readiness flipping from not-ready back to ready.\n  - \"Canonical state unchanged after refusal\" has no before/after hashes here. The file points to `recovery-qualified-result.json` for full output, but that file is not in the evidence set.\n\n**2. Snapshot recovery and history retention — accepted, with limits.**\n- **Restore and history:**\n  - The restored archive is named: `PLAN-001-R1-G5-20261004T091451Z`.\n  - Each history record has before/after hashes, and they are identical.\n  - `C2` is not in the snapshot but survives the restore, which is what \"retain newer history\" claims.\n- **Proof and 4.0 behaviour:**\n  - The restored 4.0 proof (`RUN-FCB6…`, contract `a584…`) is byte-identical to the original.\n  - After the restore, 4.0 `validate` and 4.0 `--audit-readiness` both report ready.\n  - Before the restore, 4.0 validated the 4.1-bound state and said it was valid. Its readiness check then blocked it with \"proof contract changed\". That is the fail-safe disagreement the addendum describes, not mixed-version support. The README now says so (lines 36–39).\n- **Limit:** `snapshot_file_hashes` are hashes of the archive contents. No hashes of the live files after restore are compared against them.\n\n**3. Fresh guards versus the reviewed caller — accepted.**\n- `guard.json` records both guards that the frozen caller was invoked with:\n  - With the old take guard `…9891…`, it exited 2 with a scoped \"Stale task guard\" error.\n  - With the guard from the resume packet `…97AE…`, the release succeeded with reason \"Owned stable-caller qualification release\".\n- The caller hash `95510cfb…` is the same before and after.\n- `guard-caller.py` takes the guard as `sys.argv` and contains no guard literal.\n- **Limit:** I could not hash `evidence/guard-caller.py` to confirm it is the `95510cfb…` file, because no helper tools were allowed.\n\n**4. Footprint scan closing directory handles — accepted.**\n- `package/scripts/pyramid_assurance.py:150-152` closes every scan iterator still open in a `finally` block. Iterators are also closed when they are exhausted or hit an error (lines 101 and 106).\n- The README (lines 36–38) now says that a project query may create the lock file and that \"read-only\" means no change to plan state or proof.\n\n**5. Projection publishing — accepted, within the stated scope.**\n- `pyramid_core.py:2241-2243` writes `graph.json` last.\n- `test_runtime.py:1253` makes the README write fail and asserts that the graph bytes are unchanged. The test is meaningful because the graph includes `generated_at` (line 1932). Writing the graph early would therefore change its bytes.\n- `_publish_head` (line 636) hashes the plan and state files and is separate from these regenerated views.\n- **Limits (already disclosed):**\n  - Each file is replaced atomically, but there is no `fsync` and no atomic update across several views.\n  - The history index is rebuilt before any views are written (line 2112).\n- I read this test; I did not run it.\n\n**6. Decision text from the six cases — accepted, as decisions only.**\n- `native-decisions.md` has the complete text from all four hosts.\n- Both final hosts reach the expected decisions on all six cases, with explicit limits. For EXTENSION, they keep the old proof only through an explicit binding and require fresh proof when the source changes. For GUARD, they pass the guard at run time and re-review the caller if it changed.\n- Both baselines have defects:\n  - claude-baseline says the provider's proof stays current under 4.0. The real 4.0 trace contradicts this (\"proof contract changed\").\n  - codex-baseline offers editing the guard literal into the source as an option.\n- These are reasoned answers to supplied facts, not product runs.\n\n**7. Test log tied to the package and command — partially accepted.**\n- `test-result.json` binds:\n  - the exact command;\n  - package digest `df53c9a2…`;\n  - start and finish times (09:12:57–09:14:04 UTC), exit code 0, and \"176 passed; 17 skills / 31 schemas\";\n  - artifact hashes.\n- **Limits:**\n  - This is the coordinator's recorded run, not a run I did.\n  - I could not check that `tests.txt` hashes to `1c9a63bf…`.\n  - The `HTTPError 421` ResourceWarning is still in the log.\n  - The guard experiment's timestamps (09:14:03–04) fall inside the test window, so the two were run together or overlapped. That needs no fix but should be noted.\n\n## Still unknown or not resolved\n\n- **Package identity:** `package-identity.json` shows the source and the codex-candidate-final package both at `df53c9a2…`. Nothing hashes `focused-review/package/`, so I can't confirm that the source I read is the qualified candidate. The probe context matching claude-candidate-final is weak supporting evidence, not proof.\n- **`producer-4.0.json`:** it still has no runtime labels, so the `2a0e…` vs `b722…` contract-hash mismatch is unexplained inside that file. The addendum explains it as a formula-only experiment run on 4.1, but the file doesn't record that. Don't cite this file as 4.0 execution evidence. The real 4.0 evidence is now in `recovery-readable.json`, where the contract hash `a584…` is consistent end to end.\n- **Producer proof reused for the consumer:** a plan may let the producer's proof count toward the consumer's criterion. That is a plan-level choice the runtime can't judge. `TASK-202` and `GATE-290` stay unverified until they have their own composition proof.\n- **File names:** the addendum names files (`recovery-detailed-result.json`, `guard-qualified-result.json`, `qualified-test-*.json`, `consumer-growth-4.0.json`) that aren't in `evidence/`. The projections I reviewed stand in for them. Any claim that rests only on those full files is unverified.\n\n## What would close this\n1. Add a digest of `focused-review/package/` computed with the same algorithm.\n2. Label each call's runtime in `producer-4.0.json`, or retire it.\n3. Add the step that changed the input, the step that undid it, and the canonical hashes around the refused audit to the recovery projection.\n\nOut of scope and not claimed: power-loss durability, mixed-version support, an installed release, real product, browser or mail behaviour, and token savings.",
+    "usage": {
+      "input_tokens": 36,
+      "cache_creation_input_tokens": 86526,
+      "cache_read_input_tokens": 1086211,
+      "output_tokens": 8816,
+      "output_tokens_details": {
+        "thinking_tokens": 2571
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 86526,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 2942,
+          "cache_read_input_tokens": 92107,
+          "cache_creation_input_tokens": 212,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 212
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "duration_ms": 92041,
+    "num_turns": 29,
+    "permission_denials": []
+  }
+]

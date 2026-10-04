@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/Users/merdankiji/localGit/pyramid-task/proof-output/v4.1/TASK-432/recovery-check.py", line 125, in <module>
+    assert history.get('status') == 'healthy', history
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'schema': 'pyramid-history-health-v1', 'status': 'valid', 'record_count': 3, 'chronicle_count': 2, 'binding_count': 0, 'pending_transaction': None, 'errors': []}

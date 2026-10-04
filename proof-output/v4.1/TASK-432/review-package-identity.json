@@ -1,0 +1,20 @@
+{
+  "algorithm": "Same as package-identity.json",
+  "manifests": [
+    {
+      "root": "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task",
+      "files": 114,
+      "digest": "df53c9a28a83a0a73717b821fa1742f1f18793c68f37286e2b94e7337e943440"
+    },
+    {
+      "root": "/tmp/pyramid41-hosts.7vw6LI/independent-review/package",
+      "files": 114,
+      "digest": "df53c9a28a83a0a73717b821fa1742f1f18793c68f37286e2b94e7337e943440"
+    },
+    {
+      "root": "/tmp/pyramid41-hosts.7vw6LI/focused-review/package",
+      "files": 114,
+      "digest": "df53c9a28a83a0a73717b821fa1742f1f18793c68f37286e2b94e7337e943440"
+    }
+  ]
+}

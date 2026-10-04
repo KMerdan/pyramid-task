@@ -142,25 +142,96 @@ def contracts(plan: dict, nid: str) -> list[dict]:
     for key, (node, ev) in catalog.items():
         if node['id'] != nid or node.get('selection') != 'primary':
             continue
-        owner_key, _, spec = _resolve(catalog, key)
-        # Include only this proof family's consumers, not global revision/time.
-        consumers = []
-        for candidate, (other, requirement) in catalog.items():
-            if other.get('selection') != 'primary':
-                continue
-            resolved, _, _ = _resolve(catalog, candidate)
-            if resolved == owner_key:
-                ids = requirement['verification']['criteria']
-                consumers.append({'requirement': candidate,
-                                  'description': requirement['description'], 'type': requirement['type'],
-                                  'criteria': [c for c in other['acceptance_criteria'] if c['id'] in ids],
-                                  'intent_claims': [c for c in plan['intent']['success_evidence']
-                                                    if c['id'] in other['source_requirements']]})
+        owner_key, owner, spec = _resolve(catalog, key)
+        # Observation identity follows its producer; consumer acceptance is separate.
+        producer = _claim_descriptor(plan, owner_key, owner, catalog[owner_key][1])
         result.append({'requirement': ev['id'], 'owner': owner_key,
                        'criteria': ev['verification']['criteria'], **{k: copy.deepcopy(v) for k, v in spec.items() if k != 'criteria'},
-                       'contract_sha256': digest({'plan': plan['plan_id'], 'owner': owner_key,
-                                                  'spec': spec, 'consumers': sorted(consumers, key=lambda c: c['requirement'])})})
+                       'contract_sha256': digest({'version': 2, 'plan': plan['plan_id'], 'owner': owner_key,
+                                                  'spec': spec, 'producer': producer})})
     return result
+
+
+def _claim_descriptor(plan: dict, key: str, node: dict, evidence: dict) -> dict:
+    ids = evidence['verification']['criteria']
+    return {'requirement': key, 'description': evidence['description'], 'type': evidence['type'],
+            'criteria': [c for c in node['acceptance_criteria'] if c['id'] in ids],
+            'intent_claims': [c for c in plan['intent']['success_evidence']
+                              if c['id'] in node['source_requirements']]}
+
+
+def _legacy_contract_sha256(plan: dict, owner_key: str) -> str:
+    """Exact 4.0 consumer-scoped digest; never guess equivalence from a hash."""
+    catalog = _catalog(plan)
+    _, _, spec = _resolve(catalog, owner_key)
+    consumers = [_claim_descriptor(plan, key, node, evidence)
+                 for key, (node, evidence) in catalog.items()
+                 if node.get('selection') == 'primary' and _resolve(catalog, key)[0] == owner_key]
+    return digest({'plan': plan['plan_id'], 'owner': owner_key, 'spec': spec,
+                   'consumers': sorted(consumers, key=lambda c: c['requirement'])})
+
+
+def validate_proof_bindings(plan: dict, state: dict) -> list[str]:
+    bindings = state.get('proof_contract_bindings', {})
+    if not isinstance(bindings, dict):
+        return ['state.proof_contract_bindings must be an object']
+    errors = []
+    fields = {'version', 'owner', 'legacy_sha256', 'producer_sha256', 'from_revision', 'to_revision'}
+    for rid, binding in bindings.items():
+        if (not isinstance(rid, str) or not re.fullmatch(r'RUN-[A-F0-9]{32}', rid)
+                or not isinstance(binding, dict) or set(binding) != fields
+                or binding.get('version') != 2
+                or not isinstance(binding.get('owner'), str)
+                or not re.fullmatch(r'[A-Z][A-Z0-9-]*/[A-Z][A-Z0-9-]*', binding['owner'])
+                or any(not isinstance(binding.get(k), str) or not SHA.fullmatch(binding[k])
+                       for k in ('legacy_sha256', 'producer_sha256'))
+                or any(type(binding.get(k)) is not int for k in ('from_revision', 'to_revision'))
+                or not 1 <= binding['from_revision'] < binding['to_revision'] <= plan['revision']
+                or binding['to_revision'] != binding['from_revision'] + 1):
+            errors.append(f'{rid}: invalid guarded proof-contract binding')
+    return errors
+
+
+def replan_proof_bindings(root: Path, old: dict, new: dict, state: dict) -> dict:
+    """Explicit compatibility at guarded replan, not install/read-time migration.
+
+    Bind only existing valid 4.0 runs to an identical producer. Keep observation
+    bytes and IDs untouched. Current inputs/artifacts must pass on both sides.
+    """
+    if old.get('schema_version') != 2 or new.get('schema_version') != 2:
+        return {}
+    bindings = copy.deepcopy(state.get('proof_contract_bindings', {}))
+    new_specs = {spec['owner']: spec for node in new['nodes'] if node['selection'] == 'primary'
+                 for spec in contracts(new, node['id'])}
+    for node in old['nodes']:
+        if node['selection'] != 'primary':
+            continue
+        old_specs = {spec['requirement']: spec for spec in contracts(old, node['id'])}
+        for field in ('last_result', 'last_audit'):
+            payload = state['nodes'][node['id']].get(field)
+            if not isinstance(payload, dict) or not payload:
+                continue
+            try:
+                normalized = normalize_proofs(root, old, state, node['id'], payload)
+            except (VerificationError, OSError):
+                continue
+            for proof in normalized['proofs']:
+                spec, run = old_specs[proof['requirement']], proof['run']
+                target = new_specs.get(spec['owner'])
+                if (target is None or target['contract_sha256'] != spec['contract_sha256']
+                        or run['contract_sha256'] == spec['contract_sha256']
+                        or run['contract_sha256'] != _legacy_contract_sha256(old, spec['owner'])
+                        or run['contract_sha256'] == _legacy_contract_sha256(new, spec['owner'])):
+                    continue
+                try:
+                    if run['inputs_sha256'] != input_snapshot(root, new, target)['sha256']:
+                        continue
+                except (VerificationError, OSError):
+                    continue
+                bindings[run['id']] = {'version': 2, 'owner': spec['owner'],
+                    'legacy_sha256': run['contract_sha256'], 'producer_sha256': target['contract_sha256'],
+                    'from_revision': old['revision'], 'to_revision': new['revision']}
+    return bindings
 
 
 def _input_paths(root: Path, plan: dict, contract: dict, *, require_matches: bool = True) -> set[str]:
@@ -184,10 +255,15 @@ def _input_paths(root: Path, plan: dict, contract: dict, *, require_matches: boo
             raise VerificationError(f'Invalid input pattern: {pattern}') from exc
         for path in candidates:
             rel = path.relative_to(root).as_posix()
-            if (rel == '.git' or rel.startswith(('.git/', '.pyramid/', 'docs/tasks/'))
-                    or any(fnmatch.fnmatchcase(rel, p) for p in outputs)):
+            if rel == '.git' or rel.startswith(('.git/', '.pyramid/', 'docs/tasks/')):
                 continue
             if not path.is_file():
+                continue
+            if any(fnmatch.fnmatchcase(rel, p) for p in outputs):
+                # Whole-repository captures intentionally exclude dedicated staging.
+                # A rooted/specific behavior input must not be silently excluded.
+                if require_matches and (pattern not in {'**', '**/*', '*'} or any(p in {'**', '**/*', '*'} for p in outputs)):
+                    raise VerificationError(f'Verification input {rel} overlaps declared evidence output; narrow the scopes')
                 continue
             if not path.resolve().is_relative_to(root):
                 raise VerificationError(f'Input escapes project: {rel}')
@@ -260,7 +336,7 @@ def query_harness(root: Path, plan: dict, state: dict, nid: str) -> dict:
     for rid, run in known_runs(state).items():
         for spec in specs:
             try:
-                validate_run(root, plan, spec, run)
+                validate_run(root, plan, spec, run, state.get('proof_contract_bindings', {}))
             except (VerificationError, OSError):
                 continue
             reusable.append({'requirement': spec['requirement'], 'reuse_run': rid})
@@ -290,11 +366,17 @@ def _artifact(root: Path, artifact: dict) -> tuple[Path, bytes]:
     return path, data
 
 
-def validate_run(root: Path, plan: dict, spec: dict, run: dict) -> None:
+def validate_run(root: Path, plan: dict, spec: dict, run: dict, bindings: dict | None = None) -> None:
     if not isinstance(run, dict) or set(run) - {'id', 'contract_sha256', 'inputs_sha256', 'environment', 'observations'}:
         raise VerificationError('Malformed proof run')
     if run.get('contract_sha256') != spec['contract_sha256']:
-        raise VerificationError(f"{spec['requirement']}: proof contract changed")
+        binding = (bindings or {}).get(run.get('id'))
+        bound = (isinstance(binding, dict) and binding.get('version') == 2
+                 and binding.get('owner') == spec['owner']
+                 and binding.get('legacy_sha256') == run.get('contract_sha256')
+                 and binding.get('producer_sha256') == spec['contract_sha256'])
+        if not bound and run.get('contract_sha256') != _legacy_contract_sha256(plan, spec['owner']):
+            raise VerificationError(f"{spec['requirement']}: proof contract changed")
     if run.get('inputs_sha256') != input_snapshot(root, plan, spec)['sha256']:
         raise VerificationError(f"{spec['requirement']}: candidate inputs changed; collect fresh proof")
     if run.get('environment') != spec['environment']:
@@ -357,7 +439,7 @@ def normalize_proofs(root: Path, plan: dict, state: dict, nid: str, payload: dic
     for spec in specs:
         entry = by_id[spec['requirement']]
         run = copy.deepcopy(entry.get('run') if 'run' in entry else runs.get(entry['reuse_run']))
-        validate_run(root, plan, spec, run)
+        validate_run(root, plan, spec, run, state.get('proof_contract_bindings', {}))
         # Identity follows observed content; canonical storage paths are excluded.
         material = copy.deepcopy({k: v for k, v in run.items() if k != 'id'})
         for observation in material['observations']:
@@ -440,7 +522,8 @@ def render_guide(plan: dict, nid: str | None = None) -> str:
              '# Development harness', '',
              'Use existing project tools. Implement only missing observation capability before outcome acceptance.',
              'Capture inspect --harness <node> before executing checks. Inspect visual captures, not merely their existence.',
-             'Independent product work may proceed in parallel. Never weaken acceptance to make checks pass.', '']
+             'A missing/failed observation blocks its claim, not independent authorized work. Never weaken acceptance to pass.',
+             'Keep result, evidence and limitations separate. A fresh guard is invocation authority, not reviewed source or host permission.', '']
     if plan.get('schema_version') != 2:
         return '\n'.join(lines + ['Legacy plan: source-bound harness contracts have not been adopted.', ''])
     for node in plan['nodes']:

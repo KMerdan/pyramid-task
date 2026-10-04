@@ -1,0 +1,893 @@
+{
+  "schema": "pyramid-assurance-v1",
+  "plan_id": "PYRAMID-41-PRECISE-PROGRESS-20261004",
+  "baseline_id": "BASELINE-PYRAMID-40",
+  "baseline_revision": 1,
+  "policy": "brownfield",
+  "status": "incomplete",
+  "updated_at": "2026-10-04T08:09:07.261702Z",
+  "updated_by": "codex-pyramid41-audit",
+  "enforce_from_graph_version": 1,
+  "impacts": [
+    {
+      "id": "IMPACT-GRAPH",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-411"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-411/agent-result.json",
+        "proof-output/v4.1/TASK-411/inspection-review.md",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "path": [
+        "Directional edge changes and old/new dependent claims, actual canonical CLI/state transitions."
+      ]
+    },
+    {
+      "id": "IMPACT-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-411"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-411/agent-result.json",
+        "proof-output/v4.1/TASK-411/inspection-review.md",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "path": [
+        "Producer/consumer proof identity, stored observations and stale-source/history refusal."
+      ]
+    },
+    {
+      "id": "IMPACT-GUARDS",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-412"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "path": [
+        "Fresh guard invocation versus immutable reviewed source and independent host authority."
+      ]
+    },
+    {
+      "id": "IMPACT-LANGUAGE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-421"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json"
+      ],
+      "path": [
+        "Precise conditions, minimal journey and selective references without weakened invariants."
+      ]
+    },
+    {
+      "id": "IMPACT-GUIDE",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-421"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json"
+      ],
+      "path": [
+        "Generated task/harness guidance and unchanged canonical semantics."
+      ]
+    },
+    {
+      "id": "IMPACT-LANGUAGE-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-421"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json"
+      ],
+      "path": [
+        "Generated proof instructions retain missing/failed/visual channel boundaries."
+      ]
+    },
+    {
+      "id": "IMPACT-CASES",
+      "asset_id": "ASSET-PACKAGING",
+      "task_ids": [
+        "TASK-422"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json"
+      ],
+      "path": [
+        "Six sanitized matched case families, actual host decisions and honest usage limits."
+      ]
+    },
+    {
+      "id": "IMPACT-FOOTPRINT-CLI",
+      "asset_id": "ASSET-CLI",
+      "task_ids": [
+        "TASK-431"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "path": [
+        "Bounded read-only footprint/detail query and unchanged query defaults."
+      ]
+    },
+    {
+      "id": "IMPACT-FOOTPRINT-GRAPH",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-431"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "path": [
+        "No scan mutations, normal-context history scans or evidence laundering."
+      ]
+    },
+    {
+      "id": "IMPACT-FOOTPRINT-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-431"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "path": [
+        "Declared proof inputs and evidence/source overlap restrictions; preserved references and hashes."
+      ]
+    },
+    {
+      "id": "IMPACT-FOOTPRINT-GUIDE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-431"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "path": [
+        "Inspect guidance distinguishes unknown ownership from retained evidence and authoritative source."
+      ]
+    },
+    {
+      "id": "IMPACT-PACKAGE",
+      "asset_id": "ASSET-PACKAGING",
+      "task_ids": [
+        "TASK-432"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json"
+      ],
+      "path": [
+        "4.1 candidate manifests, joined release docs and isolated two-host qualification."
+      ]
+    },
+    {
+      "id": "IMPACT-PACKAGE-RUNTIME",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-432"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json"
+      ],
+      "path": [
+        "Base-version agreement and no implicit live-plan migration."
+      ]
+    },
+    {
+      "id": "IMPACT-REGRESSION-I1",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-411"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-411/agent-result.json",
+        "proof-output/v4.1/TASK-411/inspection-review.md",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "path": [
+        "Actual regression against baseline and both proof schemas, including negative cases."
+      ]
+    },
+    {
+      "id": "IMPACT-REGRESSION-I2",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-421"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json"
+      ],
+      "path": [
+        "Selective-loading/guidance tests plus actual decision cases; unit tests are not model qualification."
+      ]
+    },
+    {
+      "id": "IMPACT-REGRESSION-I3",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-431",
+        "TASK-432"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/v4.1/candidate-plan.json",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "path": [
+        "No-mutation footprint tests and complete final current regression."
+      ]
+    },
+    {
+      "id": "IMPACT-PACKAGE-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-432"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "high",
+      "evidence": [
+        "proof-output/v4.1/TASK-422/evaluation-rubric.md"
+      ],
+      "path": [
+        "Native Claude qualification lacked exact 4.0 producer proof compatibility; document the existing tested 4.1 rule, without new runtime behavior."
+      ]
+    }
+  ],
+  "inspections": [
+    {
+      "id": "INSPECT-GRAPH",
+      "asset_ids": [
+        "ASSET-GRAPH"
+      ],
+      "task_ids": [
+        "TASK-411"
+      ],
+      "method": "Directional edge changes and old/new dependent claims, actual canonical CLI/state transitions.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "limitations": [
+        "Current local source/CLI coverage, not independent joint or native-host acceptance; actual checks reused after confirming captured inputs and artifacts remain current."
+      ],
+      "performed_at": "2026-10-04T08:08:43Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit",
+      "validated_through": {
+        "TASK-411": "EVENT-20261004T064304076361Z-401035E0"
+      }
+    },
+    {
+      "id": "INSPECT-PROOF",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-411"
+      ],
+      "method": "Producer/consumer proof identity, stored observations and stale-source/history refusal.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "limitations": [
+        "Current local source/CLI coverage, not independent joint or native-host acceptance; actual checks reused after confirming captured inputs and artifacts remain current."
+      ],
+      "performed_at": "2026-10-04T08:08:43Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit",
+      "validated_through": {
+        "TASK-411": "EVENT-20261004T064304076361Z-401035E0"
+      }
+    },
+    {
+      "id": "INSPECT-GUARDS",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-412"
+      ],
+      "method": "Fresh guard invocation versus immutable reviewed source and independent host authority.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "limitations": [
+        "Current local source/CLI coverage, not independent joint or native-host acceptance; actual checks reused after confirming captured inputs and artifacts remain current."
+      ],
+      "performed_at": "2026-10-04T08:08:43Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit",
+      "validated_through": {
+        "TASK-412": "EVENT-20261004T074752736999Z-3D58CAAB"
+      }
+    },
+    {
+      "id": "INSPECT-LANGUAGE",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-421"
+      ],
+      "method": "Precise conditions, minimal journey and selective references without weakened invariants.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "This is a planned post-change inspection, not baseline or future acceptance. Reuse actual current evidence; refresh only the affected inspection set before its consuming audit.",
+        "Implementation result for TASK-412 changed covered assets after this inspection: ASSET-GUIDANCE.",
+        "Replan changed task contracts or graph relations; impact and inspection evidence require review.",
+        "Implementation result for TASK-421 changed covered assets after this inspection: ASSET-GUIDANCE.",
+        "Implementation result for TASK-431 changed covered assets after this inspection: ASSET-GUIDANCE."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-GUIDE",
+      "asset_ids": [
+        "ASSET-GRAPH"
+      ],
+      "task_ids": [
+        "TASK-421"
+      ],
+      "method": "Generated task/harness guidance and unchanged canonical semantics.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "This is a planned post-change inspection, not baseline or future acceptance. Reuse actual current evidence; refresh only the affected inspection set before its consuming audit.",
+        "Replan changed task contracts or graph relations; impact and inspection evidence require review.",
+        "Implementation result for TASK-411 changed covered assets after this inspection: ASSET-GRAPH.",
+        "Implementation result for TASK-421 changed covered assets after this inspection: ASSET-GRAPH.",
+        "Implementation result for TASK-431 changed covered assets after this inspection: ASSET-GRAPH."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-LANGUAGE-PROOF",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-421"
+      ],
+      "method": "Generated proof instructions retain missing/failed/visual channel boundaries.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "This is a planned post-change inspection, not baseline or future acceptance. Reuse actual current evidence; refresh only the affected inspection set before its consuming audit.",
+        "Replan changed task contracts or graph relations; impact and inspection evidence require review.",
+        "Implementation result for TASK-411 changed covered assets after this inspection: ASSET-PROOF.",
+        "Implementation result for TASK-421 changed covered assets after this inspection: ASSET-PROOF.",
+        "Implementation result for TASK-431 changed covered assets after this inspection: ASSET-PROOF."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-CASES",
+      "asset_ids": [
+        "ASSET-PACKAGING"
+      ],
+      "task_ids": [
+        "TASK-422"
+      ],
+      "method": "Six sanitized matched case families, actual host decisions and honest usage limits.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "This is a planned post-change inspection, not baseline or future acceptance. Reuse actual current evidence; refresh only the affected inspection set before its consuming audit.",
+        "Replan changed task contracts or graph relations; impact and inspection evidence require review."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-FOOTPRINT-CLI",
+      "asset_ids": [
+        "ASSET-CLI"
+      ],
+      "task_ids": [
+        "TASK-431"
+      ],
+      "method": "Bounded read-only footprint/detail query and unchanged query defaults.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "limitations": [
+        "Current local source/CLI coverage, not independent joint or native-host acceptance; actual checks reused after confirming captured inputs and artifacts remain current."
+      ],
+      "performed_at": "2026-10-04T08:08:43Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit",
+      "validated_through": {
+        "TASK-431": "EVENT-20261004T080329366364Z-941BC03A"
+      }
+    },
+    {
+      "id": "INSPECT-FOOTPRINT-GRAPH",
+      "asset_ids": [
+        "ASSET-GRAPH"
+      ],
+      "task_ids": [
+        "TASK-431"
+      ],
+      "method": "No scan mutations, normal-context history scans or evidence laundering.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "limitations": [
+        "Current local source/CLI coverage, not independent joint or native-host acceptance; actual checks reused after confirming captured inputs and artifacts remain current."
+      ],
+      "performed_at": "2026-10-04T08:08:43Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit",
+      "validated_through": {
+        "TASK-431": "EVENT-20261004T080329366364Z-941BC03A"
+      }
+    },
+    {
+      "id": "INSPECT-FOOTPRINT-PROOF",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-431"
+      ],
+      "method": "Declared proof inputs and evidence/source overlap restrictions; preserved references and hashes.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "limitations": [
+        "Current local source/CLI coverage, not independent joint or native-host acceptance; actual checks reused after confirming captured inputs and artifacts remain current."
+      ],
+      "performed_at": "2026-10-04T08:08:43Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit",
+      "validated_through": {
+        "TASK-431": "EVENT-20261004T080329366364Z-941BC03A"
+      }
+    },
+    {
+      "id": "INSPECT-FOOTPRINT-GUIDE",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-431"
+      ],
+      "method": "Inspect guidance distinguishes unknown ownership from retained evidence and authoritative source.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "limitations": [
+        "Current local source/CLI coverage, not independent joint or native-host acceptance; actual checks reused after confirming captured inputs and artifacts remain current."
+      ],
+      "performed_at": "2026-10-04T08:08:43Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit",
+      "validated_through": {
+        "TASK-431": "EVENT-20261004T080329366364Z-941BC03A"
+      }
+    },
+    {
+      "id": "INSPECT-PACKAGE",
+      "asset_ids": [
+        "ASSET-PACKAGING"
+      ],
+      "task_ids": [
+        "TASK-432"
+      ],
+      "method": "4.1 candidate manifests, joined release docs and isolated two-host qualification.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "This is a planned post-change inspection, not baseline or future acceptance. Reuse actual current evidence; refresh only the affected inspection set before its consuming audit.",
+        "Replan changed task contracts or graph relations; impact and inspection evidence require review."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-PACKAGE-RUNTIME",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-432"
+      ],
+      "method": "Base-version agreement and no implicit live-plan migration.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "This is a planned post-change inspection, not baseline or future acceptance. Reuse actual current evidence; refresh only the affected inspection set before its consuming audit.",
+        "Replan changed task contracts or graph relations; impact and inspection evidence require review.",
+        "Implementation result for TASK-411 changed covered assets after this inspection: ASSET-PROOF.",
+        "Implementation result for TASK-421 changed covered assets after this inspection: ASSET-PROOF.",
+        "Implementation result for TASK-431 changed covered assets after this inspection: ASSET-PROOF."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-REGRESSION-I1",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-411"
+      ],
+      "method": "Actual regression against baseline and both proof schemas, including negative cases.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-432/final-tests.txt"
+      ],
+      "limitations": [
+        "Current local source/CLI coverage, not independent joint or native-host acceptance; actual checks reused after confirming captured inputs and artifacts remain current."
+      ],
+      "performed_at": "2026-10-04T08:08:43Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit",
+      "validated_through": {
+        "TASK-411": "EVENT-20261004T064304076361Z-401035E0"
+      }
+    },
+    {
+      "id": "INSPECT-REGRESSION-I2",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-421"
+      ],
+      "method": "Selective-loading/guidance tests plus actual decision cases; unit tests are not model qualification.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "This is a planned post-change inspection, not baseline or future acceptance. Reuse actual current evidence; refresh only the affected inspection set before its consuming audit.",
+        "Replan changed task contracts or graph relations; impact and inspection evidence require review.",
+        "Implementation result for TASK-411 changed covered assets after this inspection: ASSET-QUALIFICATION.",
+        "Implementation result for TASK-421 changed covered assets after this inspection: ASSET-QUALIFICATION.",
+        "Implementation result for TASK-431 changed covered assets after this inspection: ASSET-QUALIFICATION."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-REGRESSION-I3",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-431",
+        "TASK-432"
+      ],
+      "method": "No-mutation footprint tests and complete final current regression.",
+      "required": true,
+      "status": "performed",
+      "result": "pass",
+      "sufficiency": "sufficient",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/local-review.md"
+      ],
+      "limitations": [
+        "Current 176-test full regression and no-mutation footprint coverage. Native-host package acceptance is a separate INSPECT-PACKAGE obligation and remains blocked. Refresh this inspection if later implementation changes its frontier."
+      ],
+      "performed_at": "2026-10-04T08:08:43Z",
+      "performed_by": "codex-pyramid41-audit",
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit",
+      "validated_through": {
+        "TASK-431": "EVENT-20261004T080329366364Z-941BC03A"
+      }
+    },
+    {
+      "id": "INSPECT-PACKAGE-GUIDANCE",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-432"
+      ],
+      "method": "Compare shipped producer/legacy-binding description with runtime and native decisions; no broad migration or safety weakening.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Qualification against the repaired frozen instructions remains pending."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    }
+  ],
+  "findings": [],
+  "scope_drift": [],
+  "controls": {
+    "rollback": {
+      "status": "missing",
+      "evidence": [],
+      "rationale": "4.1 source and stored-proof compatibility must demonstrate a recoverable rollback without rewriting history before final closure; baseline source recovery is not that proof."
+    },
+    "monitoring": {
+      "status": "missing",
+      "evidence": [],
+      "rationale": "Use current regression and bounded matched decision/usage observations to qualify 4.1; future monitoring evidence is not yet produced."
+    }
+  },
+  "legacy_bridge": {
+    "required": false,
+    "status": "not-required",
+    "gap_asset_ids": [],
+    "evidence": [],
+    "upgraded_from": null
+  },
+  "stale_reasons": [
+    "Replan changed task contracts or graph relations; impact and inspection evidence require review.",
+    "Implementation for TASK-411 changed assets ASSET-GRAPH, ASSET-PROOF, ASSET-QUALIFICATION; post-change inspection is required.",
+    "Implementation for TASK-412 changed assets ASSET-GUIDANCE; post-change inspection is required.",
+    "Implementation for TASK-421 changed assets ASSET-GRAPH, ASSET-GUIDANCE, ASSET-PROOF, ASSET-QUALIFICATION; post-change inspection is required.",
+    "Implementation for TASK-431 changed assets ASSET-CLI, ASSET-GRAPH, ASSET-GUIDANCE, ASSET-PROOF, ASSET-QUALIFICATION; post-change inspection is required."
+  ]
+}

@@ -1,0 +1,26 @@
+test_active_write_and_generated_output_conflicts_are_rejected (test_efficiency.EfficiencyTests.test_active_write_and_generated_output_conflicts_are_rejected) ... ok
+test_already_covered_scope_needs_no_amendment (test_efficiency.EfficiencyTests.test_already_covered_scope_needs_no_amendment) ... ok
+test_amendment_remains_a_history_turning_point (test_efficiency.EfficiencyTests.test_amendment_remains_a_history_turning_point) ... ok
+test_brownfield_preserves_mapping_but_stales_affected_inspections (test_efficiency.EfficiencyTests.test_brownfield_preserves_mapping_but_stales_affected_inspections) ... ok
+test_brownfield_rejects_unmapped_asset (test_efficiency.EfficiencyTests.test_brownfield_rejects_unmapped_asset) ... ok
+test_cli_amend_and_compact_update (test_efficiency.EfficiencyTests.test_cli_amend_and_compact_update) ... ok
+test_cli_conflicting_output_flags_do_not_mutate (test_efficiency.EfficiencyTests.test_cli_conflicting_output_flags_do_not_mutate) ... ok
+test_compact_brownfield_keeps_assurance_and_unknown_warnings (test_efficiency.EfficiencyTests.test_compact_brownfield_keeps_assurance_and_unknown_warnings) ... ok
+test_compact_is_a_noop_when_projection_would_add_overhead (test_efficiency.EfficiencyTests.test_compact_is_a_noop_when_projection_would_add_overhead) ... ok
+test_compact_keeps_full_packet_when_another_mutation_intervenes (test_efficiency.EfficiencyTests.test_compact_keeps_full_packet_when_another_mutation_intervenes) ... ok
+test_compact_take_keeps_entire_task_contract (test_efficiency.EfficiencyTests.test_compact_take_keeps_entire_task_contract) ... ok
+test_compact_update_retains_safety_and_full_results_stay_on_disk (test_efficiency.EfficiencyTests.test_compact_update_retains_safety_and_full_results_stay_on_disk) ... ok
+test_completed_paused_unowned_and_expired_work_cannot_amend (test_efficiency.EfficiencyTests.test_completed_paused_unowned_and_expired_work_cannot_amend) ... ok
+test_context_only_addition_preserves_inspections (test_efficiency.EfficiencyTests.test_context_only_addition_preserves_inspections) ... ok
+test_identical_projection_compile_keeps_bytes_and_mtimes (test_efficiency.EfficiencyTests.test_identical_projection_compile_keeps_bytes_and_mtimes) ... ok
+test_malformed_amendment_roots_are_rejected_cleanly (test_efficiency.EfficiencyTests.test_malformed_amendment_roots_are_rejected_cleanly) ... ok
+test_preview_is_read_only_and_apply_preserves_contract_ownership_and_history (test_efficiency.EfficiencyTests.test_preview_is_read_only_and_apply_preserves_contract_ownership_and_history) ... ok
+test_preview_token_binds_state_proposal_and_actor (test_efficiency.EfficiencyTests.test_preview_token_binds_state_proposal_and_actor) ... ok
+test_projection_compile_recomputes_and_repairs_changed_content (test_efficiency.EfficiencyTests.test_projection_compile_recomputes_and_repairs_changed_content) ... ok
+test_rejects_semantic_fields_and_malformed_paths_without_mutating (test_efficiency.EfficiencyTests.test_rejects_semantic_fields_and_malformed_paths_without_mutating) ... ok
+test_rejects_symlinks_and_directories (test_efficiency.EfficiencyTests.test_rejects_symlinks_and_directories) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 1.956s
+
+OK

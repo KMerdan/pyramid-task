@@ -1,0 +1,39 @@
+.................................................................................................F............/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/tempfile.py:484: ResourceWarning: Implicitly cleaning up <HTTPError 421: 'Misdirected Request'>
+  _warnings.warn(self.warn_message, ResourceWarning)
+......................................E..........................
+======================================================================
+ERROR: test_amendment_uses_capture_globs_and_exclusions_without_requiring_unbuilt_setup (test_verification.HarnessTests.test_amendment_uses_capture_globs_and_exclusions_without_requiring_unbuilt_setup)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/scripts/pyramid_core.py", line 4289, in amend_task
+    validate_amendment_inputs(paths["root"], candidate, nid, writes)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/scripts/pyramid_verification.py", line 290, in validate_amendment_inputs
+    covered.update(_input_paths(root, plan, contract, require_matches=False))
+                   ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/scripts/pyramid_verification.py", line 263, in _input_paths
+    raise VerificationError(f'Verification input {rel} overlaps declared evidence output; narrow the scopes')
+pyramid_verification.VerificationError: Verification input proof-output/check.txt overlaps declared evidence output; narrow the scopes
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/tests/test_verification.py", line 202, in test_amendment_uses_capture_globs_and_exclusions_without_requiring_unbuilt_setup
+    preview = amend_task(self.root, self.amendment(['inputs/TASK-201.txt']), 'worker')
+  File "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/scripts/pyramid_core.py", line 4291, in amend_task
+    raise PyramidError(str(exc)) from exc
+pyramid_core.PyramidError: Verification input proof-output/check.txt overlaps declared evidence output; narrow the scopes
+
+======================================================================
+FAIL: test_graph_is_published_only_after_other_projections_complete (test_runtime.PyramidRuntimeTests.test_graph_is_published_only_after_other_projections_complete)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/tests/test_runtime.py", line 1263, in test_graph_is_published_only_after_other_projections_complete
+    with self.assertRaisesRegex(OSError, "simulated projection failure"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: OSError not raised
+
+----------------------------------------------------------------------
+Ran 175 tests in 20.799s
+
+FAILED (failures=1, errors=1)

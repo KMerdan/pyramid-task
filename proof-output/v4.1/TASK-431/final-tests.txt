@@ -1,0 +1,10 @@
+test_contract_classes_current_failed_reference_and_unknown_retention (test_artifact_footprint.FootprintTests.test_contract_classes_current_failed_reference_and_unknown_retention) ... ok
+test_evidence_output_cannot_hide_an_actual_proof_input (test_artifact_footprint.FootprintTests.test_evidence_output_cannot_hide_an_actual_proof_input) ... ok
+test_invalid_scan_options_refuse_without_mutating (test_artifact_footprint.FootprintTests.test_invalid_scan_options_refuse_without_mutating) ... ok
+test_public_cli_summary_and_detail_do_not_mutate (test_artifact_footprint.FootprintTests.test_public_cli_summary_and_detail_do_not_mutate) ... ok
+test_scan_is_bounded_and_symlinks_are_not_followed (test_artifact_footprint.FootprintTests.test_scan_is_bounded_and_symlinks_are_not_followed) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.341s
+
+OK

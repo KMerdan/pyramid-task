@@ -1,0 +1,343 @@
+{
+  "schema": "agent-result-v1",
+  "task": "TASK-432",
+  "outcome": "implemented",
+  "changed_files": [
+    "README.md",
+    "CHANGELOG.md",
+    "docs/architecture.md",
+    "plugins/pyramid-task/.codex-plugin/plugin.json",
+    "plugins/pyramid-task/.claude-plugin/plugin.json",
+    "plugins/pyramid-task/scripts/pyramid_assurance.py",
+    "plugins/pyramid-task/references/development-harness.md",
+    "proof-output/v4.1/TASK-432/local-assurance-candidate.json",
+    "proof-output/v4.1/TASK-432/independent-review-trace.json",
+    "proof-output/v4.1/TASK-432/review-package-identity.json",
+    "proof-output/v4.1/TASK-432/guard-caller.py",
+    "proof-output/v4.1/TASK-432/recovery-initial-failure.txt",
+    "proof-output/v4.1/TASK-432/review-evidence-addendum.md",
+    "proof-output/v4.1/TASK-432/guidance-impact.json",
+    "proof-output/v4.1/TASK-432/continuation.md",
+    "proof-output/v4.1/TASK-432/independent-review-final-result.json",
+    "proof-output/v4.1/TASK-432/qualified-test-result.json",
+    "proof-output/v4.1/TASK-432/guidance-amendment.json",
+    "proof-output/v4.1/TASK-432/guard-qualified-result.json",
+    "proof-output/v4.1/TASK-432/current-footprint.json",
+    "proof-output/v4.1/TASK-432/guard-detailed-check.py",
+    "proof-output/v4.1/TASK-432/qualified-validation.txt",
+    "proof-output/v4.1/TASK-432/final-repaired-tests.txt",
+    "proof-output/v4.1/TASK-432/recovery-readable.json",
+    "proof-output/v4.1/TASK-432/recovery-final-result.json",
+    "proof-output/v4.1/TASK-432/independent-review-initial-result.json",
+    "proof-output/v4.1/TASK-432/sanitize-reviews.cjs",
+    "proof-output/v4.1/TASK-432/qualified-test-pre-run.json",
+    "proof-output/v4.1/TASK-432/pre-run-captures.json",
+    "proof-output/v4.1/TASK-432/recovery-detailed-result.json",
+    "proof-output/v4.1/TASK-432/package-identity.cjs",
+    "proof-output/v4.1/TASK-432/local-review.md",
+    "proof-output/v4.1/TASK-432/pre-run-captures-final.json",
+    "proof-output/v4.1/TASK-432/recovery-check.py",
+    "proof-output/v4.1/TASK-432/qualification-handoff.json",
+    "proof-output/v4.1/TASK-432/final-tests.txt",
+    "proof-output/v4.1/TASK-432/recovery-qualified-result.json",
+    "proof-output/v4.1/TASK-432/guard-detailed-result.json",
+    "proof-output/v4.1/TASK-432/qualified-tests.txt",
+    "proof-output/v4.1/TASK-432/focused-review-trace.json",
+    "proof-output/v4.1/TASK-432/join-review.md",
+    "proof-output/v4.1/TASK-432/native-decisions-readable.md",
+    "proof-output/v4.1/TASK-432/package-identity.json",
+    "proof-output/v4.1/TASK-432/recovery-result.json",
+    "proof-output/v4.1/TASK-432/qualification.md",
+    "proof-output/v4.1/TASK-432/repository-validation.txt",
+    "proof-output/v4.1/TASK-432/agent-result.json"
+  ],
+  "changed_assets": [
+    "ASSET-GUIDANCE",
+    "ASSET-PACKAGING",
+    "ASSET-PROOF",
+    "ASSET-QUALIFICATION"
+  ],
+  "change_effect": "mixed",
+  "changes": [
+    {
+      "path": "README.md",
+      "class": "source"
+    },
+    {
+      "path": "CHANGELOG.md",
+      "class": "source"
+    },
+    {
+      "path": "docs/architecture.md",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/.codex-plugin/plugin.json",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/.claude-plugin/plugin.json",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_assurance.py",
+      "class": "source"
+    },
+    {
+      "path": "plugins/pyramid-task/references/development-harness.md",
+      "class": "source"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/local-assurance-candidate.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/independent-review-trace.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/review-package-identity.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/guard-caller.py",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/recovery-initial-failure.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/review-evidence-addendum.md",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/guidance-impact.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/continuation.md",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/independent-review-final-result.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/qualified-test-result.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/guidance-amendment.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/guard-qualified-result.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/current-footprint.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/guard-detailed-check.py",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/qualified-validation.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/final-repaired-tests.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/recovery-readable.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/recovery-final-result.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/independent-review-initial-result.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/sanitize-reviews.cjs",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/qualified-test-pre-run.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/pre-run-captures.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/recovery-detailed-result.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/package-identity.cjs",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/local-review.md",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/pre-run-captures-final.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/recovery-check.py",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/qualification-handoff.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/final-tests.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/recovery-qualified-result.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/guard-detailed-result.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/qualified-tests.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/focused-review-trace.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/join-review.md",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/native-decisions-readable.md",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/package-identity.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/recovery-result.json",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/qualification.md",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/repository-validation.txt",
+      "class": "evidence"
+    },
+    {
+      "path": "proof-output/v4.1/TASK-432/agent-result.json",
+      "class": "evidence"
+    }
+  ],
+  "checks": [
+    {
+      "command": "Current full regression and repository validator; bound command/digest/artifact hashes",
+      "result": "passed"
+    },
+    {
+      "command": "Actual staged two-host discovery/probes, real guard/source and 4.0-to-4.1 recovery joins",
+      "result": "passed"
+    },
+    {
+      "command": "Independent native join review, followed by actual local identity/record condition checks",
+      "result": "passed"
+    }
+  ],
+  "discovered_risks": [
+    "No 4.1 install/publication/deployment performed; user 4.0 caches unchanged. Mixed versions cannot share a rebound active plan.",
+    "Case facts are supplied, not VM/DB/browser/mail product observations. Aggregate candidate input increased; Codex model identifier unknown.",
+    "Existing HTTPError421 ResourceWarning and prompt-only independent-review tool-budget overrun retained. Recovery requires matching source and canonical snapshot."
+  ],
+  "suggested_graph_changes": [],
+  "proofs": [
+    {
+      "requirement": "EV-432",
+      "run": {
+        "contract_sha256": "0d4ec289f0d1c07da6e19299318b59421c30328b523dceb4c0fedc8e6c84dea8",
+        "inputs_sha256": "74eec606d5a431319678f685a6fc377aa3af43e6f21b1b444f412a2f95ca04d7",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "external",
+            "result": "passed",
+            "summary": "Both isolated native skill paths actually loaded the 4.1 package and ran the fixture probe. Actual public CLI guard/producer/recovery checks and independent conditional review joined with current package identity. No user installation or real product/browser acceptance claim.",
+            "reviewer": "native-codex-and-claude; independent-claude-review; reconciled-codex-pyramid41-worker",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-432/qualification.md",
+                "sha256": "27c3323323aca6f8950d7592595688d99062a0ef11b47f2346f75a9471355ed9"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/join-review.md",
+                "sha256": "654b22dba4bfa83411f2043501bdff8063ae25fd9b9e5cb20f1637fa07f5d84e"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/independent-review-final-result.json",
+                "sha256": "ee59428ada162bae6d5621b74fcbf572c360d0a58962f09eae5473d43b8631bd"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/recovery-final-result.json",
+                "sha256": "03b0a43d4bd9d77ab37bc1900bce79eb7ad3a71279b89a6a55b48382162d1dfa"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/guard-qualified-result.json",
+                "sha256": "677fc0ac7f0f2fd876ef0857ffd4b5528d71f3398b8eca1404f159591a728699"
+              }
+            ]
+          },
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "176 actual current tests and 17-skill/31-schema validation passed; exact captures, source/staged/reviewer digests and artifact hashes checked. Read-only bounded footprint has explicit semantic/lock/retention limits. Current docs preserve actual-vs-simulated and mixed-version/recovery boundaries; no savings inferred.",
+            "reviewer": "codex-pyramid41-worker plus independent source/evidence reviewer",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-432/join-review.md",
+                "sha256": "654b22dba4bfa83411f2043501bdff8063ae25fd9b9e5cb20f1637fa07f5d84e"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/qualified-tests.txt",
+                "sha256": "1c9a63bf5110a45acff0699e74b541c234e3d219ed3cbfed527e53c5a80660e1"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/qualified-validation.txt",
+                "sha256": "a1ae9b67ea2ff3d0bf0b54c6ba537f739463a34938b4a39ca0d73b57ab3bb9ab"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/qualified-test-result.json",
+                "sha256": "0b568f4cb94b18e86a2f1e18a54d089a76171c94d20ef82c48a3c18f9e29fc3a"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/review-package-identity.json",
+                "sha256": "fdfe552028a7749d90efb170f3fc8462fe8e013e6be5d07f4e9ca072e1dff037"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/current-footprint.json",
+                "sha256": "4d14992dade1215561881897eaffb61ab00f98df5e049495004ac245bb89e41f"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

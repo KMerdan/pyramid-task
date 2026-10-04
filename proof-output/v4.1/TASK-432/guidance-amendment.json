@@ -1,0 +1,10 @@
+{
+  "schema": "pyramid-amendment-v1",
+  "task": "TASK-432",
+  "reason": "Native candidate evaluation did not establish the exact guarded compatibility rule from existing harness guidance; add the existing harness reference to packaging documentation scope.",
+  "boundary_review": "The edit documents already tested producer identity and explicit legacy bindings only. Existing acceptance/procedure/inputs cover references/*.md and native cases; no runtime behavior, authority, dependency, generated policy or intent changes. Retain blocked/discordant host runs; recapture before rerunning qualification.",
+  "add_write_paths": [
+    "plugins/pyramid-task/references/development-harness.md"
+  ],
+  "add_context_paths": []
+}

@@ -1,0 +1,61 @@
+{
+  "schema": "pyramid-harness-v1",
+  "target": "TASK-412",
+  "mode": "candidate-bound",
+  "contracts": [
+    {
+      "requirement": "EV-412",
+      "owner": "TASK-412/EV-412",
+      "criteria": [
+        "AC-TASK-412-01",
+        "AC-TASK-412-02"
+      ],
+      "method": "review",
+      "procedure": "Review the two-identity recipe against current runtime guards and helper contracts. Retain exact before/after source identity and a bounded review of the stale-authority and permission cases; GATE-419 executes their dynamic join. No new authority handler is invented.",
+      "inputs": [
+        "plugins/pyramid-task/references/agent-contracts.md",
+        "plugins/pyramid-task/references/intra-task-helpers.md",
+        "plugins/pyramid-task/references/development-harness.md",
+        "plugins/pyramid-task/skills/take/SKILL.md",
+        "plugins/pyramid-task/skills/resume/SKILL.md"
+      ],
+      "observations": [
+        "internal"
+      ],
+      "not_applicable": {
+        "external": "Static contract inspection has no product interaction; actual dynamic guard behavior is covered by GATE-419.",
+        "visual": "These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review."
+      },
+      "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+      "contract_sha256": "acf890e363ddf7d2b243d57624654394b95a5c7d7c06bf70f620a2b7e3cb602b"
+    }
+  ],
+  "proof_templates": [
+    {
+      "requirement": "EV-412",
+      "run": {
+        "contract_sha256": "acf890e363ddf7d2b243d57624654394b95a5c7d7c06bf70f620a2b7e3cb602b",
+        "inputs_sha256": "774d744f3eefddc52e0032b69acd706b4dab21d02f45e8a63b768eeb98d9abfb",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "internal",
+            "result": "not-run",
+            "summary": "",
+            "reviewer": "",
+            "artifacts": []
+          }
+        ]
+      }
+    }
+  ],
+  "reusable_proofs": [],
+  "setup_blockers": [],
+  "instruction": "Capture this template BEFORE the checks. Execute or inspect the stated procedure; never invent observations. Source inputs must remain unchanged through submission.",
+  "context": {
+    "id": "CTX-26C1935E37731D5B9D01CB323150B8AF",
+    "plan_id": "PYRAMID-41-PRECISE-PROGRESS-20261004",
+    "plan_revision": 3,
+    "graph_version": 9
+  }
+}

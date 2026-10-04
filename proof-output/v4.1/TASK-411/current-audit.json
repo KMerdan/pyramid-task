@@ -1,0 +1,102 @@
+{
+  "schema": "audit-result-v1",
+  "target": "TASK-411",
+  "result": "pass",
+  "checks": [
+    {
+      "id": "AC-TASK-411-01",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-current.json",
+        "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-4.0.json"
+      ]
+    },
+    {
+      "id": "AC-TASK-411-02",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-current.json",
+        "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-4.0.json"
+      ]
+    },
+    {
+      "id": "AC-TASK-411-03",
+      "result": "passed",
+      "evidence": [
+        "proof-output/v4.1/TASK-432/final-tests.txt",
+        "proof-output/v4.1/TASK-432/local-review.md",
+        "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-current.json",
+        "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-4.0.json"
+      ]
+    }
+  ],
+  "affected_claims": [
+    "TASK-411"
+  ],
+  "recommended_action": "advance",
+  "assurance": {
+    "impact_ids": [
+      "IMPACT-GRAPH",
+      "IMPACT-PROOF",
+      "IMPACT-REGRESSION-I1"
+    ],
+    "inspection_ids": [
+      "INSPECT-GRAPH",
+      "INSPECT-PROOF",
+      "INSPECT-REGRESSION-I1"
+    ],
+    "finding_ids": [],
+    "scope_review": "complete",
+    "limitations": [
+      "Same-session implementer engineering review, not independent joint/native-host qualification."
+    ]
+  },
+  "proofs": [
+    {
+      "requirement": "EV-411",
+      "run": {
+        "contract_sha256": "d9be1502f8d40949bffe089ddbebb3cef7d0cc5f8d949762fefa55518c61a683",
+        "inputs_sha256": "f7c5609bfe2526b6446e75fe90a008dc3d62f55166495e2d16d6c0ec66d9162d",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "external",
+            "result": "passed",
+            "summary": "Actual final-candidate disposable CLI/probe/tree behavior; see transcripts and final regression. No model, browser or production execution inferred.",
+            "reviewer": "Codex same-session engineering review",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-current.json",
+                "sha256": "488f5ba836d18f3c9ba57a4cd7d290d9ca578e5e6e431d7a12ea6e299f2ac00d"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-411/final-candidate/consumer-growth-4.0.json",
+                "sha256": "b9a62bf867e59cdd10c0e41b7adbe11f8c44994f105a15d412ae0d61666d7d58"
+              }
+            ]
+          },
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "Reviewed current source/contracts and actual final tests. Prior failures preserved; host and independent joint acceptance remain separate.",
+            "reviewer": "Codex same-session engineering review",
+            "artifacts": [
+              {
+                "path": "proof-output/v4.1/TASK-432/final-tests.txt",
+                "sha256": "138472806e28df678acf4123613a8b6b639c90d5fb0e0a66429c71e936b01b09"
+              },
+              {
+                "path": "proof-output/v4.1/TASK-432/local-review.md",
+                "sha256": "d36b1c5f1c8df73e87f43d80463692e0bc11e3535490404b4b91aedcaaf8b87d"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+test_new_consumer_does_not_invalidate_legacy_prerequisite (test_runtime.PyramidRuntimeTests.test_new_consumer_does_not_invalidate_legacy_prerequisite) ... ok
+test_consumer_growth_preserves_executed_producer_proof_through_cli (test_verification.HarnessTests.test_consumer_growth_preserves_executed_producer_proof_through_cli)
+Actual CLI/probe processes, source bytes and canonical evidence; no success mock. ... FAIL
+
+======================================================================
+FAIL: test_consumer_growth_preserves_executed_producer_proof_through_cli (test_verification.HarnessTests.test_consumer_growth_preserves_executed_producer_proof_through_cli)
+Actual CLI/probe processes, source bytes and canonical evidence; no success mock.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/tests/test_verification.py", line 372, in test_consumer_growth_preserves_executed_producer_proof_through_cli
+    self.assertNotIn(nid, applied['event']['payload']['invalidated_claims'])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'RESEARCH-101' unexpectedly found in ['CONTRACT-102', 'GATE-290', 'INTENT-001', 'OUTCOME-010', 'RESEARCH-101', 'TASK-201', 'TASK-202']
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.989s
+
+FAILED (failures=1)
+

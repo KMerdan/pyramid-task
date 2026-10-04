@@ -1,0 +1,422 @@
+[
+  {
+    "type": "native-init",
+    "model": "claude-opus-5-5",
+    "plugins": [
+      {
+        "name": "pyramid-task",
+        "path": "/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/package",
+        "source": "pyramid-task@inline",
+        "version": "4.0.0"
+      }
+    ],
+    "inspect_skill_available": true
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01TEsLD3pj13j9wUQM56AyXv",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/request.md"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01LysEv7roM4jZ4eC1r2BYQV",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/facts.md"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01TEsLD3pj13j9wUQM56AyXv",
+        "type": "tool_result",
+        "content": "1\t# Matched pilot request\n2\t\n3\tUse the staged native Pyramid inspect skill to inspect the owned fixture's\n4\tready frontier through the actual selected package runtime. Read facts.md, then\n5\tresolve all six cases. Use the selected package's create/take/audit/replan\n6\tinstructions or source only when relevant; load references on demand.\n7\tDo not read evaluator rubrics or any other run's output.\n8\t\n9\tThis is read-only research, not implementation. Do not claim tasks, write files,\n10\tinstall plugins, launch helpers, retry denied operations or use external tools.\n11\tRun at most eight shell calls and use no more than twelve total tool calls.\n12\tIf a limit prevents a load-bearing check, report it unverified, not passed.\n13\t\n14\tReturn at most 900 words: native skill identity/path and observed fixture result;\n15\tfor each case, concrete next actions, what may/may not be accepted, necessary\n16\tauthority/evidence, and exact consulted source references. Keep actual observed\n17\ttool results separate from supplied fixture facts and unknowns. Do not score\n18\tyourself, estimate tokens, or claim real database/browser execution here.\n19\t"
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01LysEv7roM4jZ4eC1r2BYQV",
+        "type": "tool_result",
+        "content": "1\t# Sanitized decision cases\n2\t\n3\tThese are decision fixtures, not live VM, database, browser or transport results.\n4\tDo not infer a performed product test from a fact supplied here. This checkout\n5\thas one owned disposable example project at fixture/ and the selected source\n6\tpackage at package/. No mutation, installation, agent spawning, external\n7\tmessaging or remote/production operation is authorized.\n8\t\n9\t## CASE-EXTENSION\n10\tA schema-2 provider task has a recorded passing 4.0 proof. A candidate adds a\n11\tnew consumer; provider acceptance, procedure, source, selected path and existing\n12\tprerequisites are unchanged. The parent has a new contribution. Historical run\n13\tbytes must remain intact. Separately, a second candidate changes the provider's\n14\tsource. Decide what may remain current, what needs checking, and what cannot be\n15\taccepted merely from the provider's old status. Consult the selected source if\n16\truntime compatibility is material.\n17\t\n18\t## CASE-GUARD\n19\tA reviewed caller's source includes an old literal task guard. Ownership renewal\n20\tproduces a fresh guard, but no relevant procedure or host authorization changes.\n21\tA helper reviewed the old source snapshot. The caller must make the next guarded\n22\toperation; its current host permission is unchanged. Decide how to integrate a\n23\tfresh guard and what evidence survives a changed caller.\n24\t\n25\t## CASE-BLOCKER\n26\tAn authorized intent promises a user can register and read their profile. VM\n27\tintegration is blocked by a denied host capability; do not retry it or ask for\n28\tthe unchanged permission again. Independent authorized API validation and\n29\tsource work consume no VM state and remain ready. No browser harness exists.\n30\tThe proposed first increment is 'VM initialized + component matrix'; its hard\n31\tstart edge also blocks the independent API task. Decide what to do now and how\n32\tto plan the first demonstrable result and missing harness.\n33\t\n34\t## CASE-REVIEW\n35\tAn unchanged policy already has a current independent agent review. A new turn\n36\tstarts, with no new scope or irreversible effect. A separate proposal would\n37\tdelete the production database; that authority was never granted. Decide which\n38\tactivities require new human input and which reviews can be reused.\n39\t\n40\t## CASE-PROOF\n41\tA prior real disposable database scenario passed; its candidate inputs, runtime\n42\tidentity and recorded artifacts are unchanged. Mail transport was simulated.\n43\tA second run used changed database code. Decide what may be reused, what must\n44\tbe rerun, and which public delivery claim is not established.\n45\t\n46\t## CASE-VISUAL\n47\tAn internal probe passes. A screenshot file exists but nobody has inspected it;\n48\tthe browser tool is currently unavailable. The acceptance includes usability of\n49\tthe rendered registration screen. Decide acceptance status, what evidence is\n50\tmissing and what independent work may continue.\n51\t"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01ERvBiEzzArDLCeeKWmVFrE",
+        "name": "Bash",
+        "input": {
+          "command": "/Users/merdankiji/localGit/pyramid-task/.venv/bin/python package/scripts/pyramid.py inspect --project fixture --ready --json",
+          "description": "Query ready tasks in fixture project"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01ERvBiEzzArDLCeeKWmVFrE",
+        "type": "tool_result",
+        "content": "{\n  \"schema\": \"pyramid-query-v1\",\n  \"query\": \"ready\",\n  \"graph_version\": 1,\n  \"context\": {\n    \"id\": \"CTX-AC0E7E8CE2E54C037F49392083102B1C\",\n    \"plan_id\": \"PLAN-001\",\n    \"plan_revision\": 1,\n    \"graph_version\": 1\n  },\n  \"tasks\": [\n    {\n      \"id\": \"RESEARCH-101\",\n      \"task\": \"RESEARCH-101\",\n      \"title\": \"Validate operation schema stability\",\n      \"kind\": \"research\",\n      \"level\": 2,\n      \"wave\": 0,\n      \"workstream\": \"foundation\",\n      \"availability\": \"ready\",\n      \"execution\": \"planned\",\n      \"verification\": \"unverified\",\n      \"health\": \"clear\",\n      \"owner\": null,\n      \"blocker\": null,\n      \"blocked_by\": [],\n      \"handoff_id\": null,\n      \"mutation_guards\": {\n        \"task\": \"GUARD-TASK-2325E6A69156FE15BA7EB864FB68092E\",\n        \"audit\": \"GUARD-AUDIT-00BBAA0C403F4F43EC2DEA159217FD31\"\n      },\n      \"mutation_guard\": \"GUARD-TASK-2325E6A69156FE15BA7EB864FB68092E\"\n    }\n  ]\n}",
+        "is_error": false
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01NFux9EfUkPGJCVabmzZDho",
+        "name": "Grep",
+        "input": {
+          "pattern": "(?i)(reus|stale|guard|human approval|authori[sz]|simulat|screenshot|inspected|blocked capabil|denied)",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/package/references/development-harness.md",
+          "output_mode": "content",
+          "head_limit": 80
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01NFux9EfUkPGJCVabmzZDho",
+        "type": "tool_result",
+        "content": "3:Use this contract when planning or changing proof, setting up a missing probe, collecting evidence, or recovering stale evidence. The harness grows with the current outcome, not with a tool checklist. `plan.json` owns it; `docs/tasks/DEVELOPMENT_HARNESS.md` and task packets are generated views. Do not maintain a second handwritten acceptance guide in `CLAUDE.md` or `AGENTS.md`; link to the generated view if useful.\n10:4. Reuse the available project-fit browser path: host browser tooling, Chrome DevTools MCP, existing Playwright, or another suitable capture mechanism. Do not install all of them or require a baseline pixel-diff suite. A screenshot must show the intended route, viewport, fixture and candidate; the agent must actually open/view it and record what it observed. DOM text or a saved image's existence is not visual review.\n26:    \"procedure\": \"Use the existing local signup fixture; submit a new account, query its test DB record, and capture and inspect desktop and narrow-screen success/error states. Reuse scripts/check-signup if available; establish it only if needed.\",\n35:[Omitted long matching line]\n40:{\"criteria\": [\"AC-OUTCOME-01\"], \"reuse\": \"TASK-SIGNUP/EV-SIGNUP\"}\n43:Reuse must establish the consumer's actual criterion. New composition, safety or release claims still need their own observation. Reuse references must resolve to a primary requirement and cannot cycle. Separate unrelated proof families to avoid unnecessarily broad invalidation.\n47:1. Read the task packet and use `inspect --harness <node> --json` (with the normal `--project` argument). It returns only that node's contracts, pre-run candidate templates, setup blockers and reusable run references. Prefer a currently valid reusable run when it proves the claim; do not rerun a test solely because another node owns acceptance.\n50:[Omitted long matching line]\n51:5. Stage artifacts outside canonical storage. The normal guarded update/audit ingests them into content-addressed `.pyramid/reports/proof-artifacts/`, deduplicates bytes, and publishes paths with the existing event/head boundary. Do not copy evidence into that directory yourself. Normal task packets carry contracts, not logs, images, historical runs or the full guide.\n52:6. Before audit, use `inspect --audit-readiness <node>`. Missing submitted proof is a blocker, not a demand to repeat a run: query `--harness` for reusable proof. Audit rechecks candidate fingerprints and related prerequisite evidence; closure does the same for all primary claims. Graph mutation guards and source fingerprints have different jobs; retain both.\n54:`RUN-...` identifies observation content, not a process-execution attestation. Hashes establish declared input/artifact identity, not test quality, honest tool execution or unchanged external state. The agent must substantiate those claims. Never claim that the runtime independently judged an image. If environmental state can change independently, capture it through a reproducible local fixture/manifest, refresh that manifest before reuse, and re-observe when identity is uncertain.\n62:| Update / audit | Check source identity, actual observations and artifacts; reuse valid proof rather than duplicating tests |\n71:[Omitted long matching line]\n73:[Omitted long matching line]"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01FFtvKAXJ6mwvte168Zg2rV",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/package/references/development-harness.md",
+          "offset": 28,
+          "limit": 50
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01FFtvKAXJ6mwvte168Zg2rV",
+        "type": "tool_result",
+        "content": {
+          "excerpt": "28\t    \"observations\": [\"external\", \"internal\", \"visual\"],\n29\t    \"not_applicable\": {},\n30\t    \"environment\": \"Local test server built from this candidate; isolated signup fixture; record route, viewport and build identity in evidence\"\n31\t  }\n32\t}\n33\t```\n34\t\n35\tThis is a shape example, not a command or a mandatory stack. Select existing patterns that match the actual repository; every declared input pattern must match files before collection. Include the procedure implementation, behavior-affecting dependencies, fixtures and environment configuration. A `review` may have no repository inputs only for a genuinely non-repository claim; retain the inspected source as an artifact. `method` is `command`, `browser` or `review`; it does not launch a tool automatically.\n36\t\n37\tA gate or parent that needs the **same proof**, not another test execution, declares:\n38\t\n39\t```json\n40\t{\"criteria\": [\"AC-OUTCOME-01\"], \"reuse\": \"TASK-SIGNUP/EV-SIGNUP\"}\n41\t```\n42\t\n43\tReuse must establish the consumer's actual criterion. New composition, safety or release claims still need their own observation. Reuse references must resolve to a primary requirement and cannot cycle. Separate unrelated proof families to avoid unnecessarily broad invalidation.\n44\t\n45\t## Collect and submit\n46\t\n47\t1. Read the task packet and use `inspect --harness <node> --json` (with the normal `--project` argument). It returns only that node's contracts, pre-run candidate templates, setup blockers and reusable run references. Prefer a currently valid reusable run when it proves the claim; do not rerun a test solely because another node owns acceptance.\n48\t2. Capture the template **before** running checks. Resolve any setup blocker, launch/rebuild the actual candidate, perform the procedure, and observe all required channels. For browser or external state, verify the server/build and fixture identity; a repository hash alone does not identify a remote process or database. Record relevant identity in artifacts and observations. A read-only helper can execute or review against an isolated immutable candidate, subject to `intra-task-helpers.md`; revalidate the candidate on join before promoting its result.\n49\t3. Fill each observation with `result: \"passed\"`, a concrete `summary`, the actual `reviewer` (agent/tool identity), and artifact objects containing a project-relative `path` and the file's `sha256`. The template's `not-run` observations cannot pass. Visual observations require a PNG, JPEG or WebP capture **and actual model review**. Use bounded reports, never raw secrets or unbounded logs. Limits are 16 MiB per artifact, 16 artifacts per observation, 32 MiB per run.\n50\t4. Add the resulting template under `proofs` in the normal `agent-result-v1` or `audit-result-v1`. Or use a returned `{\"requirement\":\"EV-ID\",\"reuse_run\":\"RUN-...\"}` reference. The runtime generates check/criterion summaries when omitted or empty; supplied failed checks are never replaced by passing ones. The remaining result fields and brownfield assurance assertion are unchanged. An executable task's passing audit may omit `proofs` to revalidate its last implementation proof; a parent with no implementation submits explicit proof/reuse references.\n51\t5. Stage artifacts outside canonical storage. The normal guarded update/audit ingests them into content-addressed `.pyramid/reports/proof-artifacts/`, deduplicates bytes, and publishes paths with the existing event/head boundary. Do not copy evidence into that directory yourself. Normal task packets carry contracts, not logs, images, historical runs or the full guide.\n52\t6. Before audit, use `inspect --audit-readiness <node>`. Missing submitted proof is a blocker, not a demand to repeat a run: query `--harness` for reusable proof. Audit rechecks candidate fingerprints and related prerequisite evidence; closure does the same for all primary claims. Graph mutation guards and source fingerprints have different jobs; retain both.\n53\t\n54\t`RUN-...` identifies observation ",
+          "truncated": true,
+          "original_chars": 7317,
+          "sha256": "fbd9aa0ee5b587156c9d151b07aec44347c800e7df292a19043a659f46cf2f01"
+        }
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01QdrJEuBuyGffXH1DGNP52d",
+        "name": "Grep",
+        "input": {
+          "pattern": "(?i)(hard start|blocked|denied|harness|first increment|independent|infrastructure)",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/package/references/demonstrable-increments.md",
+          "output_mode": "content",
+          "head_limit": 40
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01QdrJEuBuyGffXH1DGNP52d",
+        "type": "tool_result",
+        "content": "28:- infrastructure: apply in a bounded environment, observe health, and prove rollback;\n79:Expansion preserves the enclosing increment contract. Its internal joint gate proves that the expanded work composes; it does not replace the increment gate unless it independently exercises the complete increment outcome."
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01S3q7zzJH3TyJfHSxrnQWoS",
+        "name": "Grep",
+        "input": {
+          "pattern": "(?i)(guard.*(literal|source|fresh|renew)|review.*(reuse|current|turn)|human.*(approv|input)|irreversible)",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/package/references/agent-contracts.md",
+          "output_mode": "content",
+          "head_limit": 30
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01S3q7zzJH3TyJfHSxrnQWoS",
+        "type": "tool_result",
+        "content": "22:Use `mutation_guards.task` for take, update, and pause, and `mutation_guards.audit` for audit. These guards bind only the task contract, relevant state, baseline, impact map, implementation frontier, and applicable assurance. An unrelated inspection refresh may advance global history without invalidating a worker guard. Continue using graph version plus context ID for topology, lifecycle, full assurance, reset, and restore mutations. Refresh the smallest relevant packet after a scoped conflict.\n48:[Omitted long matching line]\n52:For schema-2 plans, the packet additionally carries a scoped `harness` contract. Read `development-harness.md` for `inspect --harness <id>`, pre-run capture, actual visual review, proof artifacts and run reuse. Add `proofs` to the result below; the old reference-only example is insufficient by itself. Check/acceptance summaries may be omitted or empty when proofs supply them. Raw logs and images are not injected into task packets."
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01StsPqwvVf2sBVgbNffF33f",
+        "name": "Read",
+        "input": {
+          "file_path": "/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/package/references/demonstrable-increments.md",
+          "limit": 45
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01StsPqwvVf2sBVgbNffF33f",
+        "type": "tool_result",
+        "content": {
+          "excerpt": "1\t# Demonstrable Increment Contract\n2\t\n3\tBegin planning from a ladder of usable, testable states rather than from a list of implementation activities. A **demonstrable increment** is the smallest honest project state that an intended actor can use, exercise, inspect, or decide from. For software, prefer a **runnable increment**: the product builds or starts and a meaningful scenario succeeds.\n4\t\n5\tThis is a planning and audit convention over the existing graph contract. It adds no node kind, execution state, or serialized field.\n6\t\n7\t## Terms\n8\t\n9\t- **Current demonstrable baseline**: the latest observed state that can be exercised now, including an honestly recorded non-runnable starting state.\n10\t- **Increment ladder**: the ordered states between that baseline and the final intent.\n11\t- **Increment outcome**: one primary `outcome` node describing a rung in the ladder.\n12\t- **Increment gate**: one primary `audit` node connected from its outcome with `validated-by` and backed by reproducible evidence. The rung is accepted when the gate and then its outcome pass audit.\n13\t- **Inherited proof**: prior increment scenarios that a later gate must repeat or otherwise establish against the current candidate.\n14\t\n15\t`level`, `wave`, and parallel groups keep their existing meanings. A level is distance from the intent. A wave is earliest safe execution time. A parallel group is a disposable conflict-safe scheduling result. None proves a demonstrable increment.\n16\t\n17\t## When to define the ladder\n18\t\n19\tDuring create or new-intent, define the current demonstrable baseline and candidate ladder immediately after normalizing the intent and gathering enough evidence to avoid fictional slices. During replan, preserve verified rungs and revise only the affected current or future portion.\n20\t\n21\tPrefer the smallest sequence in which every rung has distinct actor-visible value or risk-reducing proof. A valid plan may have one increment when no smaller honest state exists. Do not manufacture demos, split one inseparable behavior, or call setup alone an increment.\n22\t\n23\tUse domain-appropriate proof:\n24\t\n25\t- application or game: build or launch plus a meaningful user scenario;\n26\t- API or service: start, health check, and one real request path;\n27\t- library: install or import, executable example, and public-contract tests;\n28\t- infrastructure: apply in a bounded environment, observe health, and prove rollback;\n29\t- data workflow: run against a representative fixture and verify material outputs;\n30\t- research or design: produce evidence or a prototype that resolves a stated decision and changes what work can safely follow;\n31\t- documentation: render the artifact and exercise the user journey it supports.\n32\t\n33\t## Represent the ladder with the current graph\n34\t\n35\t1. Record the current demonstrable baseline, ordered ladder, and rejected slicing alternatives in a selected-path `decision`, supported by plan evidence or the brownfield baseline.\n36\t2. Represent each rung as a primary `outcome`. State the actor-visible capability in its summary, acceptance criteria, and required evidence; do not rely on the word “increment” in its title as proof.\n37\t3. Prefer a cumulative outcome chain: the earlier increment outcome contributes to the next increment outcome, and the final increment outcome contributes to the intent. Attach the implementation, integration, research, contract, and risk-control work that newly establishes each rung with `contributes-to` edges. Shared foundations contribute to the earliest rung that consumes them.\n38\t4. Give every increment outcome its own primary audit node. The outcome points to that node with `validated-by`; the gate depends on all work and evidence needed to exercise the rung.\n39\t5. Order acceptance, not necessarily implementation: each later increment gate has a `validation-requires` dependency on the previous increment outcome. That outcome cannot pass until its own gate passes. Work may start ahead when ordinary gra",
+          "truncated": true,
+          "original_chars": 5188,
+          "sha256": "349cf3162b207d0b6d49fd2a598cb79aeedf8e9d49cd4425d08f81ee2b0a08df"
+        }
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01G6Dak1HxKaSJmfyi1K7ZqS",
+        "name": "Grep",
+        "input": {
+          "pattern": "(?i)(snapshot|guard|stale|revalidat|join)",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/package/references/intra-task-helpers.md",
+          "output_mode": "content",
+          "head_limit": 25
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01G6Dak1HxKaSJmfyi1K7ZqS",
+        "type": "tool_result",
+        "content": "3:Pyramid may use spare host-agent capacity for bounded research, reconnaissance, review, or validation inside one claimed task. These helpers are ephemeral execution aids. They are not graph nodes, parallel-frontier groups, canonical scheduler records, events, owners, mutation guards, or independent completion claims.\n15:- repository-bound work can read an immutable snapshot; and\n16:- the coordinator knows when the result must rejoin.\n20:Do not delegate trivial reads, canonical Pyramid queries or mutations, topology decisions, approval-requiring actions, secret handling, publishing, deployment, or any source edit. A check is not inherently read-only: tests and builds may create caches, coverage, generated output, databases, snapshots, or lockfile changes. Run such commands only in a disposable worktree or sandbox that cannot modify the coordinator's worktree.\n24:`preflight` helpers inspect a stable base snapshot. Their output is advisory and must rejoin before any load-bearing decision it can affect. The coordinator may continue only work that is independent of the open question.\n26:`candidate` helpers inspect a frozen candidate snapshot. Use an immutable Git commit, content hash, or external source-set identifier. If any relevant file changes afterward, the result is stale. Candidate-bound evidence becomes final only when the coordinator confirms that the returned snapshot exactly matches the candidate accepted for the parent task.\n28:Never point a helper at a live tree while another agent is editing it. If the host cannot provide a stable snapshot or isolated command execution, keep repository-bound validation serial.\n32:Validate jobs against `helper-job.schema.json`. Send only the parent task ID, helper purpose, exact snapshot, narrow read scope, linked acceptance criteria, explicit questions, prohibitions, join boundary, and bounded result budget.\n39:  \"task_guard\": \"GUARD-TASK-0123456789ABCDEF0123456789ABCDEF\",\n42:  \"snapshot\": {\n59:  \"join_before\": \"load-bearing-decision\",\n77:  \"task_guard\": \"GUARD-TASK-0123456789ABCDEF0123456789ABCDEF\",\n80:  \"snapshot\": {\n97:  \"stale_if\": [\"The router implementation or fallback tests change.\"],\n108:The task guard in a helper envelope is correlation and freshness context, not mutation authority. Helpers never invoke Pyramid mutations with it.\n110:The coordinator rejects or treats as stale any result whose helper ID, parent task, task guard, phase, or snapshot differs from the job. It also compares the returned guard to the current parent-task guard and enforces the job's finding and evidence budgets. `changed_files` and `changed_assets` must be empty. Reconcile contradictions explicitly and copy only accepted, relevant evidence into the parent `agent-result-v1`.\n112:Raw helpers return `freshness: pending` and `final_evidence_eligible: false`. During reconciliation, the coordinator may mark a completed candidate validation `current` and eligible only after its job identity, task guard, snapshot, budgets, and evidence references match. If the current guard or accepted candidate differs, mark the result stale. Preflight evidence and any result from an older snapshot remain advisory."
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01SamVLSo8urtkL3HBBdR4dJ",
+        "name": "Grep",
+        "input": {
+          "pattern": "(?i)(proof_version|PROOF_VERSION|\"4\\.0\"|harness_version)",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/package/scripts",
+          "output_mode": "content",
+          "head_limit": 20
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_01SamVLSo8urtkL3HBBdR4dJ",
+        "type": "tool_result",
+        "content": "No matches found"
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_011YpNWJMWHsQovQpZBU6sDE",
+        "name": "Grep",
+        "input": {
+          "pattern": "(?i)(__version__\\s*=|\"version\"\\s*:\\s*\"|RUNTIME_VERSION\\s*=|PROOF_SCHEMA|schema.?2)",
+          "path": "/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/package",
+          "output_mode": "content",
+          "glob": "*.{py,json}",
+          "head_limit": 15
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ]
+  },
+  {
+    "type": "user",
+    "content": [
+      {
+        "tool_use_id": "toolu_011YpNWJMWHsQovQpZBU6sDE",
+        "type": "tool_result",
+        "content": "package/scripts/pyramid_assurance.py:11:RUNTIME_VERSION = \"4.0.0\"\npackage/.codex-plugin/plugin.json:3:  \"version\": \"4.0.0\",\npackage/.claude-plugin/plugin.json:3:  \"version\": \"4.0.0\","
+      }
+    ]
+  },
+  {
+    "type": "assistant",
+    "content": []
+  },
+  {
+    "type": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "I ran the one allowed probe and checked the cases against the staged package's references; nothing was changed. All six decisions are below. No tasks were claimed, and no proof was rerun, inspected or accepted. I used 11 tool calls, one of them the allowed shell probe.\n\n## Skill used and what the probe returned\n- **Skill:** `pyramid-task:inspect`, loaded from the staged copy at `/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/package/skills/inspect`, not a global install.\n- **Runtime version:** the staged runtime is 4.0.0 (`package/scripts/pyramid_assurance.py:11`, `package/.claude-plugin/plugin.json:3`).\n- **Probe output:** I ran exactly the allowed `inspect --project fixture --ready --json`. It reports plan `PLAN-001`, revision 1, graph version 1, context `CTX-AC0E7E8C…`. One task is ready: `RESEARCH-101` \"Validate operation schema stability\" (research, level 2, wave 0, foundation). It is planned and unverified, has no owner and no blockers. Its task guard is `GUARD-TASK-2325E6A6…` and its audit guard is `GUARD-AUDIT-00BBAA0C…`.\n- **Not checked:** I didn't run `validate`, `--harness` or `--audit-readiness`, because only one probe was allowed. Graph validity and the state of any proof are unknown.\n\nEverything below is reasoned from the supplied facts and the package text. Nothing was executed.\n\n## CASE-EXTENSION\n- **What can stay current:** the provider's recorded 4.0 proof, for the first candidate (new consumer only). The provider's acceptance, procedure, source and prerequisites are unchanged, and changes outside its declared scope don't invalidate proof. The staged runtime is also 4.0.0, so I see no compatibility issue.\n- **What needs a new check:** the parent's new contribution, meaning the consumer's own criterion and how the pieces fit together. A reuse reference such as `{\"reuse\":\"TASK/EV\"}` only counts if it actually proves the consumer's criterion.\n- **Second candidate (provider source changed):** the provider's proof is out of date for it, along with any proof that depends on it. It needs a fresh observation.\n- **Cannot be accepted:** \"the provider is verified\" as evidence for either candidate on that basis alone. Historical run bytes stay untouched; artifacts are content-addressed and are never edited by hand.\n- **Next actions:** run `inspect --harness <provider> --json` and `--audit-readiness` for each candidate.\n- **Sources:** `development-harness.md:37-43, 47, 52, 69, 71`.\n\n## CASE-GUARD\n- **What to do:** don't edit the source to carry the new guard. The caller should pass the guard returned by the current packet (`mutation_guards.task`) at the moment it runs, and refresh the smallest relevant packet if there's a conflict.\n- **No new human input needed:** the renewal changed no procedure and no host permission.\n- **The helper's review:** it was done against the old source snapshot and the old guard, so it is stale or advisory only. It can't be used as final evidence for the changed caller. A helper's guard is only for correlation and never authorises a change.\n- **What survives:** history and the unaffected proof families. The caller's own source-fingerprinted proof has to be re-observed against the new candidate. Guards and fingerprints do different jobs, so keep both.\n- **Sources:** `agent-contracts.md:22`; `intra-task-helpers.md:24-26, 108-112`; `development-harness.md:52`.\n\n## CASE-BLOCKER\n- **Now:** don't retry the VM step or ask again for the permission that was already denied. Record VM integration as blocked, citing the denied capability. Carry on with the API validation and source work, which don't need the VM.\n- **Planning change:** \"VM initialized + component matrix\" is setup, not an increment. It also has a hard start edge that wrongly holds up the API task. Fix this through `pyramid-task:replan`, with approval: drop that edge and make the first rung something a user can see.\n- **Suggested first rung:** a user registers and reads their profile through a real API request path, proved by start, health check and one real request.\n- **Missing harness:** the browser harness is a gap to build within the rung that first needs it, not something to stand up in advance. VM integration and anything that needs the browser stay unverified until then.\n- **Sources:** `demonstrable-increments.md:3, 21, 26, 36-40`; `development-harness.md:60-61, 73`.\n\n## CASE-REVIEW\n- **Reuse:** the existing independent review of the unchanged policy is still current. A new turn with no new scope or irreversible effect doesn't require new human input.\n- **Needs a human:** the production-database deletion is irreversible, high-impact and was never authorised. It needs an explicit human decision first, and in this pilot it isn't authorised at all.\n- **Sources:** `development-harness.md:73`; `intra-task-helpers.md:20`.\n\n## CASE-PROOF\n- **Reuse:** the disposable-database run, as long as its candidate, runtime identity and artifacts are unchanged and the fixture identity is still reproducible. Before reusing it, refresh the manifest, because a hash doesn't prove that external state is unchanged.\n- **Rerun:** the second candidate, with the changed database code. Its proof is out of date and must be observed fresh.\n- **Not established:** public email delivery. Mail transport was simulated, so the most that can be claimed is \"delivery simulated\".\n- **Sources:** `development-harness.md:48, 54, 69`.\n\n## CASE-VISUAL\n- **Status:** not accepted. Passing the internal probe doesn't cover usability, and a screenshot that exists but hasn't been looked at isn't a visual review.\n- **Missing:** a capture of the right route, viewport, fixture and candidate that an agent has actually opened and recorded observations on. Once the browser tool is back, use the existing browser path; don't install new tools.\n- **Can continue:** independent non-visual work. Keep the visual requirement as a blocker, and don't weaken the acceptance criteria to get it through.\n- **Sources:** `development-harness.md:10, 49, 65`.\n\n## Unknowns\nThe case facts are supplied fixtures, not product tests I observed. The fixture's own harness and proof state, the actual edge structure for the CASE-BLOCKER plan, and whether the graph validates were all left unchecked because of the probe limit."
+      }
+    ]
+  },
+  {
+    "type": "result",
+    "result": "I ran the one allowed probe and checked the cases against the staged package's references; nothing was changed. All six decisions are below. No tasks were claimed, and no proof was rerun, inspected or accepted. I used 11 tool calls, one of them the allowed shell probe.\n\n## Skill used and what the probe returned\n- **Skill:** `pyramid-task:inspect`, loaded from the staged copy at `/private/tmp/pyramid41-hosts.7vw6LI/claude-baseline/package/skills/inspect`, not a global install.\n- **Runtime version:** the staged runtime is 4.0.0 (`package/scripts/pyramid_assurance.py:11`, `package/.claude-plugin/plugin.json:3`).\n- **Probe output:** I ran exactly the allowed `inspect --project fixture --ready --json`. It reports plan `PLAN-001`, revision 1, graph version 1, context `CTX-AC0E7E8C…`. One task is ready: `RESEARCH-101` \"Validate operation schema stability\" (research, level 2, wave 0, foundation). It is planned and unverified, has no owner and no blockers. Its task guard is `GUARD-TASK-2325E6A6…` and its audit guard is `GUARD-AUDIT-00BBAA0C…`.\n- **Not checked:** I didn't run `validate`, `--harness` or `--audit-readiness`, because only one probe was allowed. Graph validity and the state of any proof are unknown.\n\nEverything below is reasoned from the supplied facts and the package text. Nothing was executed.\n\n## CASE-EXTENSION\n- **What can stay current:** the provider's recorded 4.0 proof, for the first candidate (new consumer only). The provider's acceptance, procedure, source and prerequisites are unchanged, and changes outside its declared scope don't invalidate proof. The staged runtime is also 4.0.0, so I see no compatibility issue.\n- **What needs a new check:** the parent's new contribution, meaning the consumer's own criterion and how the pieces fit together. A reuse reference such as `{\"reuse\":\"TASK/EV\"}` only counts if it actually proves the consumer's criterion.\n- **Second candidate (provider source changed):** the provider's proof is out of date for it, along with any proof that depends on it. It needs a fresh observation.\n- **Cannot be accepted:** \"the provider is verified\" as evidence for either candidate on that basis alone. Historical run bytes stay untouched; artifacts are content-addressed and are never edited by hand.\n- **Next actions:** run `inspect --harness <provider> --json` and `--audit-readiness` for each candidate.\n- **Sources:** `development-harness.md:37-43, 47, 52, 69, 71`.\n\n## CASE-GUARD\n- **What to do:** don't edit the source to carry the new guard. The caller should pass the guard returned by the current packet (`mutation_guards.task`) at the moment it runs, and refresh the smallest relevant packet if there's a conflict.\n- **No new human input needed:** the renewal changed no procedure and no host permission.\n- **The helper's review:** it was done against the old source snapshot and the old guard, so it is stale or advisory only. It can't be used as final evidence for the changed caller. A helper's guard is only for correlation and never authorises a change.\n- **What survives:** history and the unaffected proof families. The caller's own source-fingerprinted proof has to be re-observed against the new candidate. Guards and fingerprints do different jobs, so keep both.\n- **Sources:** `agent-contracts.md:22`; `intra-task-helpers.md:24-26, 108-112`; `development-harness.md:52`.\n\n## CASE-BLOCKER\n- **Now:** don't retry the VM step or ask again for the permission that was already denied. Record VM integration as blocked, citing the denied capability. Carry on with the API validation and source work, which don't need the VM.\n- **Planning change:** \"VM initialized + component matrix\" is setup, not an increment. It also has a hard start edge that wrongly holds up the API task. Fix this through `pyramid-task:replan`, with approval: drop that edge and make the first rung something a user can see.\n- **Suggested first rung:** a user registers and reads their profile through a real API request path, proved by start, health check and one real request.\n- **Missing harness:** the browser harness is a gap to build within the rung that first needs it, not something to stand up in advance. VM integration and anything that needs the browser stay unverified until then.\n- **Sources:** `demonstrable-increments.md:3, 21, 26, 36-40`; `development-harness.md:60-61, 73`.\n\n## CASE-REVIEW\n- **Reuse:** the existing independent review of the unchanged policy is still current. A new turn with no new scope or irreversible effect doesn't require new human input.\n- **Needs a human:** the production-database deletion is irreversible, high-impact and was never authorised. It needs an explicit human decision first, and in this pilot it isn't authorised at all.\n- **Sources:** `development-harness.md:73`; `intra-task-helpers.md:20`.\n\n## CASE-PROOF\n- **Reuse:** the disposable-database run, as long as its candidate, runtime identity and artifacts are unchanged and the fixture identity is still reproducible. Before reusing it, refresh the manifest, because a hash doesn't prove that external state is unchanged.\n- **Rerun:** the second candidate, with the changed database code. Its proof is out of date and must be observed fresh.\n- **Not established:** public email delivery. Mail transport was simulated, so the most that can be claimed is \"delivery simulated\".\n- **Sources:** `development-harness.md:48, 54, 69`.\n\n## CASE-VISUAL\n- **Status:** not accepted. Passing the internal probe doesn't cover usability, and a screenshot that exists but hasn't been looked at isn't a visual review.\n- **Missing:** a capture of the right route, viewport, fixture and candidate that an agent has actually opened and recorded observations on. Once the browser tool is back, use the existing browser path; don't install new tools.\n- **Can continue:** independent non-visual work. Keep the visual requirement as a blocker, and don't weaken the acceptance criteria to get it through.\n- **Sources:** `development-harness.md:10, 49, 65`.\n\n## Unknowns\nThe case facts are supplied fixtures, not product tests I observed. The fixture's own harness and proof state, the actual edge structure for the CASE-BLOCKER plan, and whether the graph validates were all left unchecked because of the probe limit.",
+    "usage": {
+      "input_tokens": 12,
+      "cache_creation_input_tokens": 18849,
+      "cache_read_input_tokens": 96197,
+      "output_tokens": 4431,
+      "output_tokens_details": {
+        "thinking_tokens": 467
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 18849,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 2,
+          "output_tokens": 2302,
+          "cache_read_input_tokens": 24160,
+          "cache_creation_input_tokens": 482,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 482
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard",
+      "fallback_credit": null
+    },
+    "modelUsage": {
+      "claude-opus-5-5": {
+        "inputTokens": 12,
+        "outputTokens": 4431,
+        "cacheReadInputTokens": 96197,
+        "cacheCreationInputTokens": 18849,
+        "webSearchRequests": 0,
+        "costUSD": 0.2586994,
+        "contextWindow": 1000000,
+        "maxOutputTokens": 128000,
+        "thinkingTokens": 467,
+        "canonicalModel": "claude-opus-5-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "duration_ms": 45322,
+    "num_turns": 12,
+    "permission_denials": [],
+    "is_error": false
+  }
+]

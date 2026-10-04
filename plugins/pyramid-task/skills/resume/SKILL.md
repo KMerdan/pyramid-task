@@ -38,3 +38,4 @@ python3 ../../scripts/pyramid.py resume \
 - Never edit the immutable handoff record to make it appear current.
 - Do not use `take` on a paused node; resume is the only transition that consumes its active handoff.
 - Resume returns the task to `working`; record completion, blockers, or release later through `pyramid-task:update`.
+- Pass the resumed guard as fresh invocation data; do not rebake it into reviewed executable source. A resumed lease does not renew host authorization or make old proof/helper output current. Use the two-identity recipe in `../../references/agent-contracts.md` when integrating a custom caller.

@@ -55,6 +55,10 @@ Reuse must establish the consumer's actual criterion. New composition, safety or
 
 ## Evolve, recover and retire
 
+Keep fresh task/audit authority outside reviewed procedure source; follow the
+two-identity recipe in `agent-contracts.md`. Renewed authority does not alter the
+source fingerprint, grant host permission or certify an older observation.
+
 | Transition | Required behavior |
 | --- | --- |
 | Create / new intent | Design schema-2 proof with the current outcomes; no speculative future harness |
@@ -67,6 +71,16 @@ Reuse must establish the consumer's actual criterion. New composition, safety or
 | Archive / reset / restore | Proof artifacts follow existing report snapshots; restore evidence history, not confidence in a different working tree; rerun readiness |
 
 Replanning invalidates changed claims, shared proof families, and old/new dependent ancestors while preserving implementation records and unaffected branches. Candidate hashes exclude graph counters and timestamps; unrelated updates do not invalidate proof. Source/dependency changes inside a declared scope do. Evidence-only reports remain excluded from implementation invalidation and must not be verification inputs.
+
+In 4.1, proof identity covers the producer's contract and relevant prerequisites,
+not every incoming consumer. Adding a consumer can preserve unchanged producer
+proof; the consumer and changed parent composition still need their own acceptance.
+Stored 4.0 proof is not automatically current: a guarded replan may add an explicit
+compatibility binding only after checking its exact old contract hash, run identity,
+inputs and artifacts. It does not rewrite observations or migrate on read. Query
+`--harness` and `--audit-readiness`; status or unchanged source alone is insufficient.
+4.0 cannot use that binding. Recovery needs matching runtime and canonical snapshot,
+with later history preserved, not a blind runtime downgrade.
 
 Existing schema-1 plans stay readable/executable in legacy-unbound mode. Adopting bound proof is an explicit complete candidate replan to schema 2; fill the contracts, preview affected claims, and use the usual guarded apply. Do not auto-migrate all projects on plugin install or silently claim old reports were candidate-bound. Downgrading an active schema-2 plan is rejected. Older runtimes reject schema 2 instead of ignoring its proof contract. Snapshot/Observer verification is recorded historical state; `--harness`, `--audit-readiness` and closure verify against the current working tree, which the graph event watcher does not monitor.
 

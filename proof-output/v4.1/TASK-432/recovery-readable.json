@@ -1,0 +1,451 @@
+{
+  "fixture_only": true,
+  "live_downgrade_was_ineligible": true,
+  "matching_snapshot_recovery_ready": true,
+  "original_proof_bytes_unchanged": true,
+  "archive_id_restored": "PLAN-001-R1-G5-20261004T091451Z",
+  "snapshot_file_hashes": {
+    "manifest.json": "6d6c627b7dab8425d6c00c4643963ce4a7f40123d6c32e76a9b8ccb9f2d3e86e",
+    ".pyramid/state.json": "0010b83434037824485cebf51fac1742d541bc7388e1314ef0e53e1aefbf3e75",
+    ".pyramid/plan.json": "8b0eb77e5f17d1fc55049d6f6e9c05bcdf714b8a8548b8833a693560ff463a0f",
+    ".pyramid/project.json": "baa44d82dab402d5b790e9fb43d4d074e55286ae9e6ed26e3820a9b7e77e2cac",
+    ".pyramid/head.json": "fc8281e44fb7e9b5dc1c2a3a1fc8595e001d683ad0d991aaa8d50308c9ab602e",
+    ".pyramid/graph.json": "987b1c7ff186d0fe892633b26e2e853a5bc91ed18d6fe4b26518d0b1439eabfe",
+    ".pyramid/ready.json": "b8546adc07d29dff352d358a5b426897ce4b0ece931559170b03c24eede66059",
+    "docs/tasks/DEVELOPMENT_HARNESS.md": "63239971148e59613a3e3a2177b0c01fb824b9a450f3ed7289ad2a99f7ca33b8",
+    "docs/tasks/README.md": "0b7684e20ce455aea09c2b4502bbe3cfccf0e3543f72630605bbec46b3d229a7",
+    "docs/tasks/INTENT.md": "fe634e8ad7cfab051372d21c7834a87d58a868833ee03f7395f83391acbaeb9d",
+    "docs/tasks/00-foundation/RESEARCH-101-validate-operation-schema-stability.md": "cfc76f1856ac10ef0a192f6ded1aff5a0a4cebd11a7c5dac566c25cd2fcd143b",
+    "docs/tasks/00-foundation/README.md": "770d565f2cb3f3b7e7450205c5008a8d6df0d2d7fd5dc7d69ad8050f404ba64a",
+    "docs/tasks/02-execution/README.md": "2ed9c013519de64590e5baa0e3373001847c82997601e6d082b317b3c88a141c",
+    "docs/tasks/02-execution/TASK-201-implement-safe-executor.md": "455a426c3f9b946d6a1009e2da362b5e9d054eb803b432186c33d1aae5e80c4d",
+    "docs/tasks/nodes/INTENT-001-safe-operation-outcome.md": "c5a32485410bebd9f2cf6d53d2d70310ad7aa2dd82c6e9ea8e41a3a024c70d7e",
+    "docs/tasks/nodes/OUTCOME-010-validated-execution-capability.md": "2a0ad2754c60ccf1cfbe68d7f116dd8f91df44dddf5ed3c8859b6e32a9ab447d",
+    "docs/tasks/01-foundation/CONTRACT-102-define-executor-contract.md": "5728d66edbade75221737c6952d6c3284f0f8d53499fd985142827ec5afb0606",
+    "docs/tasks/01-foundation/README.md": "7bdce5cfd85acee7121014fb79aa292597a67e4049ae8fe83d1894372ac0351b",
+    "docs/tasks/03-audit/README.md": "0e0f3784e8fbe04de56f6fcc6eb550c2855c767bbe4b517c8c19fbbf591b5940",
+    "docs/tasks/03-audit/GATE-290-audit-execution-composition.md": "21d55aab1c3ac30940ae0a1d3fd7ef7a0e7f0d9235864a382e8023000b93cf6d",
+    ".pyramid/history/head.json": "538177a590424360b029ff6f159a2f2a2f20577603e708e6d52dd0586c3f86e4",
+    ".pyramid/history/index.json": "0cfd9cb0a690f9694b243083d4f43637ee87c70b973c87674743560db90dc46c",
+    ".pyramid/events/EVENT-20261004T091450927632Z-3B5180B5.json": "63550a6ff1a7237715b1b70d8b9fe27759fafd0c1c58d18b2b5a0d3c31257b11",
+    ".pyramid/events/EVENT-20261004T091451167350Z-8B9CAC6B.json": "268be556c2a692c5eb7c71cc4d17b86d11d5e0fdd65aec008f40ae0d0db1366e",
+    ".pyramid/events/EVENT-20261004T091451400909Z-7C607FDE.json": "c9d52fa787c625683ad417257344c56d50dba659fce1b2a7e9ec2219aae4e35a",
+    ".pyramid/events/EVENT-20261004T091451283027Z-EFA2F074.json": "21eb6d3e9a4ecb409ce46bdd79f3ec4279b86ab0315c632ddda3243ae44d1fe8",
+    ".pyramid/events/EVENT-20261004T091450794657Z-C6CC1A7E.json": "c5290e83ffbb445ff5b0856ef45b9e9fb84ec8d1345eb597084625935ccb4cb5",
+    ".pyramid/reports/proof-artifacts/30f26740ee603523c49212c48614437f62b2426415966056acec87d5b3f6f08c": "30f26740ee603523c49212c48614437f62b2426415966056acec87d5b3f6f08c",
+    ".pyramid/history/records/CHRONICLE-PLAN-001-4481BFA400-C1.json": "3870576c8a482a8c6460c8ee88adac79ba5ae3b2371a2f4f47957a298b86c85f",
+    ".pyramid/history/records/START-PLAN-001-4481BFA400.json": "930b6add484647531a936bf75bc61ae02367f3a5dc6fdc8c1f86db88ec285865"
+  },
+  "history_record_hashes": {
+    "CHRONICLE-PLAN-001-4481BFA400-C1.json": {
+      "before": "3870576c8a482a8c6460c8ee88adac79ba5ae3b2371a2f4f47957a298b86c85f",
+      "after": "3870576c8a482a8c6460c8ee88adac79ba5ae3b2371a2f4f47957a298b86c85f"
+    },
+    "START-PLAN-001-4481BFA400.json": {
+      "before": "930b6add484647531a936bf75bc61ae02367f3a5dc6fdc8c1f86db88ec285865",
+      "after": "930b6add484647531a936bf75bc61ae02367f3a5dc6fdc8c1f86db88ec285865"
+    },
+    "CHRONICLE-PLAN-001-4481BFA400-C2.json": {
+      "before": "b6e296b6bc19a473b327e66f47be59ba5799a83122c2ffc9ae6f1d4a37a52341",
+      "after": "b6e296b6bc19a473b327e66f47be59ba5799a83122c2ffc9ae6f1d4a37a52341"
+    }
+  },
+  "live_40_validation": {
+    "valid": true,
+    "errors": [],
+    "plan_id": "PLAN-001",
+    "revision": 2,
+    "graph_version": 7,
+    "context": {
+      "id": "CTX-9A624A0D6679BDBC8610419FB82F0F2F",
+      "plan_id": "PLAN-001",
+      "plan_revision": 2,
+      "graph_version": 7
+    },
+    "project_format_version": 3,
+    "mode": "greenfield"
+  },
+  "stale_audit_error": "Invalid harness proof: EVREQ-101-01: candidate inputs changed; collect fresh proof",
+  "original_40_proofs": [
+    {
+      "requirement": "EVREQ-101-01",
+      "run": {
+        "contract_sha256": "a584f37c9a7100a11ae537c0970d1fef5570bf4f7e61a34b4589892250e8468b",
+        "inputs_sha256": "cb49907a402ea0be36d69b1c4ee7ef5fe4dd1b1b9879390c1f8fa2df531f049f",
+        "environment": "Owned disposable process/file fixture.",
+        "observations": [
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "PASS producer",
+            "reviewer": "real-owned-subprocess",
+            "artifacts": [
+              {
+                "path": ".pyramid/reports/proof-artifacts/30f26740ee603523c49212c48614437f62b2426415966056acec87d5b3f6f08c",
+                "sha256": "30f26740ee603523c49212c48614437f62b2426415966056acec87d5b3f6f08c"
+              }
+            ]
+          }
+        ],
+        "id": "RUN-FCB67605DBEF52C6BE9866D939EBB8B0"
+      }
+    }
+  ],
+  "restored_40_proofs": [
+    {
+      "requirement": "EVREQ-101-01",
+      "run": {
+        "contract_sha256": "a584f37c9a7100a11ae537c0970d1fef5570bf4f7e61a34b4589892250e8468b",
+        "inputs_sha256": "cb49907a402ea0be36d69b1c4ee7ef5fe4dd1b1b9879390c1f8fa2df531f049f",
+        "environment": "Owned disposable process/file fixture.",
+        "observations": [
+          {
+            "kind": "internal",
+            "result": "passed",
+            "summary": "PASS producer",
+            "reviewer": "real-owned-subprocess",
+            "artifacts": [
+              {
+                "path": ".pyramid/reports/proof-artifacts/30f26740ee603523c49212c48614437f62b2426415966056acec87d5b3f6f08c",
+                "sha256": "30f26740ee603523c49212c48614437f62b2426415966056acec87d5b3f6f08c"
+              }
+            ]
+          }
+        ],
+        "id": "RUN-FCB67605DBEF52C6BE9866D939EBB8B0"
+      }
+    }
+  ],
+  "newer_history_records_unchanged": 3,
+  "probe_exit_code": 0,
+  "probe_stdout": "PASS producer\n",
+  "cli": [
+    {
+      "runtime": "4.0.0",
+      "args": [
+        "create",
+        "--plan",
+        "/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-g7l176ca/plan.json",
+        "--actor",
+        "recovery-check",
+        "--mode",
+        "greenfield"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "status": "created",
+        "ready": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-g7l176ca/project/.pyramid/ready.json"
+      }
+    },
+    {
+      "runtime": "4.0.0",
+      "args": [
+        "take",
+        "--node",
+        "RESEARCH-101",
+        "--actor",
+        "recovery-check"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "status": "taken"
+      }
+    },
+    {
+      "runtime": "4.0.0",
+      "args": [
+        "inspect",
+        "--harness",
+        "RESEARCH-101"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "proof_templates": [
+          {
+            "requirement": "EVREQ-101-01",
+            "run": {
+              "contract_sha256": "a584f37c9a7100a11ae537c0970d1fef5570bf4f7e61a34b4589892250e8468b",
+              "inputs_sha256": "cb49907a402ea0be36d69b1c4ee7ef5fe4dd1b1b9879390c1f8fa2df531f049f",
+              "environment": "Owned disposable process/file fixture.",
+              "observations": [
+                {
+                  "kind": "internal",
+                  "result": "not-run",
+                  "summary": "",
+                  "reviewer": "",
+                  "artifacts": []
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "runtime": "4.0.0",
+      "args": [
+        "update",
+        "--node",
+        "RESEARCH-101",
+        "--actor",
+        "recovery-check",
+        "--status",
+        "implemented",
+        "--expected-guard",
+        "GUARD-TASK-D424AA262F7A302C94F3583BBEBA344B",
+        "--result",
+        "/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-g7l176ca/result.json"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "status": "implemented"
+      }
+    },
+    {
+      "runtime": "4.0.0",
+      "args": [
+        "audit",
+        "--node",
+        "RESEARCH-101",
+        "--actor",
+        "recovery-review",
+        "--result",
+        "pass",
+        "--evidence",
+        "/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-g7l176ca/audit.json"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "status": "pass"
+      }
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "args": [
+        "archive",
+        "--actor",
+        "recovery-check",
+        "--reason",
+        "Owned matching pre-change recovery snapshot"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "status": "archived",
+        "archive": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-g7l176ca/project/.pyramid/archives/PLAN-001-R1-G5-20261004T091451Z",
+        "archive_id": "PLAN-001-R1-G5-20261004T091451Z"
+      }
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "args": [
+        "restore",
+        "--archive",
+        "PLAN-001-R1-G5-20261004T091451Z",
+        "--actor",
+        "recovery-check",
+        "--reason",
+        "Continue owned fixture from retained pre-change snapshot"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "status": "restored",
+        "ready": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-g7l176ca/project/.pyramid/ready.json",
+        "restored_from": "PLAN-001-R1-G5-20261004T091451Z"
+      }
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "args": [
+        "replan",
+        "--actor",
+        "recovery-check",
+        "--reason",
+        "Owned consumer growth",
+        "--plan",
+        "/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-g7l176ca/candidate.json",
+        "--preview"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "status": "preview"
+      }
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "args": [
+        "replan",
+        "--actor",
+        "recovery-check",
+        "--reason",
+        "Owned consumer growth",
+        "--plan",
+        "/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-g7l176ca/candidate.json",
+        "--apply",
+        "--expected-version",
+        "6",
+        "--expected-context",
+        "CTX-6AE3BC73159C3F1772049E3E6ECB8F8E"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "status": "applied",
+        "ready": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-g7l176ca/project/.pyramid/ready.json"
+      }
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "args": [
+        "inspect",
+        "--audit-readiness",
+        "RESEARCH-101"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "ready": true,
+        "blockers": []
+      }
+    },
+    {
+      "runtime": "4.0.0",
+      "args": [
+        "inspect",
+        "--audit-readiness",
+        "RESEARCH-101"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "ready": false,
+        "blockers": [
+          "RESEARCH-101: EVREQ-101-01: proof contract changed"
+        ]
+      }
+    },
+    {
+      "runtime": "4.0.0",
+      "args": [
+        "validate"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "valid": true
+      }
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "args": [
+        "inspect",
+        "--audit-readiness",
+        "RESEARCH-101"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "ready": false,
+        "blockers": [
+          "RESEARCH-101: EVREQ-101-01: candidate inputs changed; collect fresh proof"
+        ]
+      }
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "args": [
+        "audit",
+        "--node",
+        "RESEARCH-101",
+        "--actor",
+        "recovery-review",
+        "--result",
+        "pass",
+        "--evidence",
+        "/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-g7l176ca/stale-audit.json",
+        "--expected-guard",
+        "GUARD-AUDIT-982C9EF158B2AEB091ECF27E45D0F08B"
+      ],
+      "exit_code": 2,
+      "observed": {
+        "error": "Invalid harness proof: EVREQ-101-01: candidate inputs changed; collect fresh proof"
+      }
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "args": [
+        "inspect",
+        "--audit-readiness",
+        "RESEARCH-101"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "ready": true,
+        "blockers": []
+      }
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "args": [
+        "archive",
+        "--actor",
+        "recovery-check",
+        "--reason",
+        "Retain post-change canonical evidence before matching-snapshot recovery"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "status": "archived",
+        "archive": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-g7l176ca/project/.pyramid/archives/PLAN-001-R2-G8-20261004T091452Z",
+        "archive_id": "PLAN-001-R2-G8-20261004T091452Z"
+      }
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "args": [
+        "restore",
+        "--archive",
+        "PLAN-001-R1-G5-20261004T091451Z",
+        "--actor",
+        "recovery-check",
+        "--reason",
+        "Recover matching 4.0 canonical state; retain newer history"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "status": "restored",
+        "ready": "/private/var/folders/n7/l0kdrhmn7lz3vt69sj82m8rm0000gn/T/pyramid41-recovery-g7l176ca/project/.pyramid/ready.json",
+        "restored_from": "PLAN-001-R1-G5-20261004T091451Z"
+      }
+    },
+    {
+      "runtime": "4.0.0",
+      "args": [
+        "validate"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "valid": true
+      }
+    },
+    {
+      "runtime": "4.0.0",
+      "args": [
+        "inspect",
+        "--audit-readiness",
+        "RESEARCH-101"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "ready": true,
+        "blockers": []
+      }
+    },
+    {
+      "runtime": "4.1.0-candidate",
+      "args": [
+        "history",
+        "--doctor"
+      ],
+      "exit_code": 0,
+      "observed": {
+        "status": "valid"
+      }
+    }
+  ],
+  "projection_limit": "Full CLI output remains in recovery-qualified-result.json; this projection retains exact operation/arguments and consequential fields, not invented checks."
+}

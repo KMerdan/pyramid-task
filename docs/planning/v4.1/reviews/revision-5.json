@@ -1,0 +1,378 @@
+{
+  "schema": "pyramid-plan-review-v1",
+  "review_id": "REVIEW-PYRAMID-41",
+  "stage": "candidate",
+  "outcome": "retained",
+  "source_plan": {
+    "plan_id": "PYRAMID-41-PRECISE-PROGRESS-20261004",
+    "revision": 5,
+    "sha256": "866118361d8e4bf05b3601132c1565a3c3d0b6136925577a35db5c54f00d1a01"
+  },
+  "revised_plan": {
+    "plan_id": "PYRAMID-41-PRECISE-PROGRESS-20261004",
+    "revision": 5,
+    "sha256": "866118361d8e4bf05b3601132c1565a3c3d0b6136925577a35db5c54f00d1a01"
+  },
+  "facts": [
+    {
+      "id": "FACT-BASE",
+      "claim": "Source main and both installed hosts match upstream 3d787c5 (4.0.0); 112 plugin files match per host. The restored baseline passed 160 tests and repository validation.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "docs/planning/v4.1/baseline-checks.json"
+      ],
+      "supports": [
+        "TASK-411",
+        "TASK-432"
+      ],
+      "freshness": "Observed 2026-10-04; unchanged 4.0.0 source"
+    },
+    {
+      "id": "FACT-INVALIDATION",
+      "claim": "replan_project compares all incident edges; contracts() includes all proof consumers. Consumer growth can change a producer's graph or proof identity.",
+      "classification": "observed",
+      "verdict": "qualified",
+      "confidence": "high",
+      "references": [
+        "plugins/pyramid-task/scripts/pyramid_core.py:replan_project; plugins/pyramid-task/scripts/pyramid_verification.py:contracts"
+      ],
+      "supports": [
+        "TASK-411"
+      ],
+      "freshness": "Read upstream 4.0.0 on 2026-10-04; behavior reproduction belongs TASK-411"
+    },
+    {
+      "id": "FACT-SESSIONS",
+      "claim": "Two active sessions exposed guard-literal requalification, excessive harness drift, useful real-DB/delta-review patterns and repeated policy checks; their risks and schemas differ.",
+      "classification": "observed",
+      "verdict": "qualified",
+      "confidence": "medium",
+      "references": [
+        "docs/planning/v4.1/README.md#evidence-and-limits"
+      ],
+      "supports": [
+        "TASK-412",
+        "TASK-421",
+        "TASK-422",
+        "TASK-431"
+      ],
+      "freshness": "Bounded October 4 observations; sanitized mechanism cases, not a causal productivity estimate"
+    },
+    {
+      "id": "FACT-STE",
+      "claim": "STE and normative requirement wording motivate clearer conditions and terminology; token or outcome gains for coding hosts remain unproven.",
+      "classification": "sourced",
+      "verdict": "qualified",
+      "confidence": "medium",
+      "references": [
+        "https://www.asd-ste100.org/about_STE.html; https://www.rfc-editor.org/rfc/rfc8174; https://arxiv.org/abs/2310.11324; https://aclanthology.org/2024.findings-acl.57/"
+      ],
+      "supports": [
+        "TASK-421",
+        "TASK-422"
+      ],
+      "freshness": "Research reviewed 2026-10-04; test transfer in TASK-422"
+    },
+    {
+      "id": "FACT-COST",
+      "claim": "STE-inspired wording has no established token or current-host outcome benefit yet.",
+      "classification": "unknown",
+      "verdict": "qualified",
+      "confidence": "high",
+      "references": [
+        "https://arxiv.org/abs/2310.11324",
+        "docs/planning/v4.1/README.md#i2-controlled-operational-language-not-controlled-reasoning"
+      ],
+      "supports": [
+        "TASK-422"
+      ],
+      "freshness": "2026-10-04; bounded transfer test is planned, not completed."
+    },
+    {
+      "id": "FACT-REPLAN-EFFICIENCY",
+      "claim": "4.0 replan accepts complete candidates and rewrites canonical snapshots plus every task projection. Stable-ID/field candidate assembly and content-equality write checks are the approved design direction, not implemented optimizations or measured token savings.",
+      "classification": "observed",
+      "verdict": "qualified",
+      "confidence": "high",
+      "references": [
+        "plugins/pyramid-task/skills/replan/SKILL.md",
+        "plugins/pyramid-task/scripts/pyramid_core.py:prepare_replan",
+        "plugins/pyramid-task/scripts/pyramid_core.py:_compile_project_locked",
+        "docs/planning/v4.1/README.md#decision-targeted-replanning-not-broad-redrafting"
+      ],
+      "supports": [
+        "TASK-421"
+      ],
+      "freshness": "2026-10-04 revision 4 binds the already approved decision to TASK-421; implementation and measurement remain pending."
+    }
+  ],
+  "findings": [
+    {
+      "id": "REVIEW-COST",
+      "class": "unsupported-claim",
+      "affected_nodes": [
+        "TASK-421",
+        "TASK-422"
+      ],
+      "claim": "Controlled-language text alone cannot promise reduced tokens or better decisions.",
+      "evidence": [
+        "FACT-STE",
+        "FACT-COST"
+      ],
+      "counterevidence": [],
+      "disposition": "rejected",
+      "change": "Retain the candidate's explicit unproven assumption and matched host measurements; no quantitative savings promise.",
+      "rationale": "The profile is a design hypothesis; current-host decisions and actual exposed usage, not file length, establish benefit."
+    },
+    {
+      "id": "REVIEW-COUPLING",
+      "class": "under-decomposition",
+      "affected_nodes": [
+        "TASK-411"
+      ],
+      "claim": "Directional graph invalidation and producer proof identity may be split into independent accepted fixes.",
+      "evidence": [
+        "FACT-INVALIDATION"
+      ],
+      "counterevidence": [],
+      "disposition": "rejected",
+      "change": "Keep one bounded invariant repair covering both layers and negative regressions, not separate falsely complete tasks.",
+      "rationale": "Schema-2 acceptance can remain stale after a graph-only fix; the smallest honest result preserves both graph and proof semantics."
+    },
+    {
+      "id": "REVIEW-SERIALIZATION",
+      "class": "accidental-serialization",
+      "affected_nodes": [
+        "TASK-411",
+        "TASK-412",
+        "TASK-421",
+        "TASK-422",
+        "TASK-431",
+        "TASK-432"
+      ],
+      "claim": "All later-increment work must wait for the preceding increment's acceptance.",
+      "evidence": [
+        "FACT-SESSIONS"
+      ],
+      "counterevidence": [],
+      "disposition": "rejected",
+      "change": "Retain zero hard-start dependencies and actual integration/validation ordering. Runtime write/asset conflicts still constrain scheduling.",
+      "rationale": "Integration depends on produced behavior and acceptance depends on current prior proof; neither requires a manufactured whole-increment start gate."
+    },
+    {
+      "id": "REVIEW-DUPLICATION",
+      "class": "duplicate-evidence",
+      "affected_nodes": [
+        "GATE-429",
+        "GATE-439",
+        "OUTCOME-410",
+        "OUTCOME-420",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "claim": "Cumulative outcome and intent acceptance should rerun unchanged leaf proof separately.",
+      "evidence": [
+        "FACT-BASE",
+        "FACT-INVALIDATION"
+      ],
+      "counterevidence": [],
+      "disposition": "rejected",
+      "change": "Retain primary composition proofs only at three gates and explicit reuse of current preceding/leaf proof.",
+      "rationale": "Reuse does not waive changed-source freshness or new composition; it prevents ceremonial duplicate execution."
+    },
+    {
+      "id": "REVIEW-RETENTION",
+      "class": "speculative-scope",
+      "affected_nodes": [
+        "TASK-431"
+      ],
+      "claim": "A large harness footprint justifies automatic deletion of evidence.",
+      "evidence": [
+        "FACT-SESSIONS"
+      ],
+      "counterevidence": [],
+      "disposition": "rejected",
+      "change": "Retain a bounded read-only preview and explicit ownership unknowns. No GC, history rewrite or source exclusions.",
+      "rationale": "Observed local size is not proof that every artifact is irrelevant or safe to remove."
+    }
+  ],
+  "coverage": [
+    {
+      "requirement": "REQ-410",
+      "before_nodes": [
+        "TASK-411",
+        "TASK-432",
+        "GATE-419",
+        "GATE-429",
+        "GATE-439",
+        "OUTCOME-410",
+        "OUTCOME-420",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "after_nodes": [
+        "TASK-411",
+        "TASK-432",
+        "GATE-419",
+        "GATE-429",
+        "GATE-439",
+        "OUTCOME-410",
+        "OUTCOME-420",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-411",
+      "before_nodes": [
+        "TASK-412",
+        "TASK-432",
+        "GATE-419",
+        "GATE-429",
+        "GATE-439",
+        "OUTCOME-410",
+        "OUTCOME-420",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "after_nodes": [
+        "TASK-412",
+        "TASK-432",
+        "GATE-419",
+        "GATE-429",
+        "GATE-439",
+        "OUTCOME-410",
+        "OUTCOME-420",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-420",
+      "before_nodes": [
+        "TASK-421",
+        "TASK-422",
+        "TASK-432",
+        "GATE-429",
+        "GATE-439",
+        "OUTCOME-420",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "after_nodes": [
+        "TASK-421",
+        "TASK-422",
+        "TASK-432",
+        "GATE-429",
+        "GATE-439",
+        "OUTCOME-420",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-421",
+      "before_nodes": [
+        "TASK-421",
+        "TASK-422",
+        "TASK-432",
+        "GATE-429",
+        "GATE-439",
+        "OUTCOME-420",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "after_nodes": [
+        "TASK-421",
+        "TASK-422",
+        "TASK-432",
+        "GATE-429",
+        "GATE-439",
+        "OUTCOME-420",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-430",
+      "before_nodes": [
+        "TASK-431",
+        "TASK-432",
+        "GATE-439",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "after_nodes": [
+        "TASK-431",
+        "TASK-432",
+        "GATE-439",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-431",
+      "before_nodes": [
+        "TASK-422",
+        "TASK-432",
+        "GATE-429",
+        "GATE-439",
+        "OUTCOME-420",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "after_nodes": [
+        "TASK-422",
+        "TASK-432",
+        "GATE-429",
+        "GATE-439",
+        "OUTCOME-420",
+        "OUTCOME-430",
+        "INTENT-410"
+      ],
+      "status": "preserved"
+    }
+  ],
+  "invariants": {
+    "intent": "preserved",
+    "success_evidence": "preserved",
+    "constraints": "preserved",
+    "non_goals": "preserved",
+    "assurance": "preserved",
+    "audit_closure": "preserved",
+    "execution_safety": "preserved"
+  },
+  "metrics": {
+    "before": {
+      "nodes": 13,
+      "executable_nodes": 9,
+      "edges": 30,
+      "hard_dependencies": 0,
+      "audit_gates": 3
+    },
+    "after": {
+      "nodes": 13,
+      "executable_nodes": 9,
+      "edges": 30,
+      "hard_dependencies": 0,
+      "audit_gates": 3
+    }
+  },
+  "summary": "Revision 5 adds the new maintained operational-language reference to TASK-421's proof inputs. No intent, acceptance or topology changed. All other candidate values and historical proof remain unchanged; this completes source coverage before final collection.",
+  "limitations": [
+    "This review is from the planning agent, not a separately authorized independent sub-agent.",
+    "Behavior defects require actual failing-before reproductions in TASK-411; static source and baseline tests do not supply them.",
+    "Matched host/token qualification, current post-change assurance and release controls are not completed.",
+    "Candidate write scopes bound possible change, not a mandate to edit every matched file; no broad cosmetic rewording is authorized.",
+    "Concrete regression acceptance and ownership for replan-efficiency implementation require a later narrow plan update; this decision does not silently broaden current tasks.",
+    "4.0 conservatively marks the overall brownfield assurance bundle stale on replan even with an empty task delta. No inspection is performed or passed by this planning change; preserve that runtime state rather than editing canonical assurance directly.",
+    "The original candidate review is retained at reviews/revision-1.json with its original file-hash binding."
+  ]
+}

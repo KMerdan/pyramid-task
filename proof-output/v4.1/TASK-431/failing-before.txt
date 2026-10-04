@@ -1,0 +1,50 @@
+test_contract_classes_current_failed_reference_and_unknown_retention (test_artifact_footprint.FootprintTests.test_contract_classes_current_failed_reference_and_unknown_retention) ... ERROR
+test_evidence_output_cannot_hide_an_actual_proof_input (test_artifact_footprint.FootprintTests.test_evidence_output_cannot_hide_an_actual_proof_input) ... FAIL
+test_public_cli_summary_and_detail_do_not_mutate (test_artifact_footprint.FootprintTests.test_public_cli_summary_and_detail_do_not_mutate) ... FAIL
+test_scan_is_bounded_and_symlinks_are_not_followed (test_artifact_footprint.FootprintTests.test_scan_is_bounded_and_symlinks_are_not_followed) ... ERROR
+
+======================================================================
+ERROR: test_contract_classes_current_failed_reference_and_unknown_retention (test_artifact_footprint.FootprintTests.test_contract_classes_current_failed_reference_and_unknown_retention)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/tests/test_artifact_footprint.py", line 53, in test_contract_classes_current_failed_reference_and_unknown_retention
+    from pyramid_assurance import artifact_footprint
+ImportError: cannot import name 'artifact_footprint' from 'pyramid_assurance' (/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/scripts/pyramid_assurance.py)
+
+======================================================================
+ERROR: test_scan_is_bounded_and_symlinks_are_not_followed (test_artifact_footprint.FootprintTests.test_scan_is_bounded_and_symlinks_are_not_followed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/tests/test_artifact_footprint.py", line 78, in test_scan_is_bounded_and_symlinks_are_not_followed
+    from pyramid_assurance import artifact_footprint
+ImportError: cannot import name 'artifact_footprint' from 'pyramid_assurance' (/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/scripts/pyramid_assurance.py)
+
+======================================================================
+FAIL: test_evidence_output_cannot_hide_an_actual_proof_input (test_artifact_footprint.FootprintTests.test_evidence_output_cannot_hide_an_actual_proof_input)
+----------------------------------------------------------------------
+pyramid_verification.VerificationError: No verification inputs match 'inputs/**'; establish the capability before collecting proof
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/tests/test_artifact_footprint.py", line 95, in test_evidence_output_cannot_hide_an_actual_proof_input
+    with self.assertRaisesRegex(VerificationError, 'overlaps declared evidence'):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "overlaps declared evidence" does not match "No verification inputs match 'inputs/**'; establish the capability before collecting proof"
+
+======================================================================
+FAIL: test_public_cli_summary_and_detail_do_not_mutate (test_artifact_footprint.FootprintTests.test_public_cli_summary_and_detail_do_not_mutate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/tests/test_artifact_footprint.py", line 42, in test_public_cli_summary_and_detail_do_not_mutate
+    self.assertEqual(0, proc.returncode, proc.stdout + proc.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 2 : usage: pyramid [-h]
+               {create,new-intent,assess,impact,validate,compile,doctor,inspect,diff,take,pause,resume,update,audit,amend,replan,expand,reopen,close,archive,reset,restore,clean,lifecycle,history,visualize} ...
+pyramid: error: unrecognized arguments: --footprint
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.199s
+
+FAILED (failures=2, errors=2)

@@ -1,0 +1,1332 @@
+{
+  "schema_version": 2,
+  "plan_id": "PYRAMID-41-PRECISE-PROGRESS-20261004",
+  "title": "Pyramid 4.1 — precise progress and bounded context",
+  "revision": 6,
+  "intent": {
+    "id": "INTENT-410",
+    "statement": "Engineers can extend an existing plan, continue authorized independent work and reach a verified small outcome with less avoidable requalification and context overhead while preserving current evidence, authority, visual-review and history boundaries.",
+    "success_evidence": [
+      {
+        "id": "REQ-410",
+        "description": "A new consumer preserves an unchanged prerequisite and its current producer proof; changed provider or composition claims still stale."
+      },
+      {
+        "id": "REQ-411",
+        "description": "Task ownership renewal remains separate from reviewed procedure source and host authorization; stale authority is refused."
+      },
+      {
+        "id": "REQ-420",
+        "description": "Agents distinguish authorization, review, task readiness, audit readiness and verification using a small STE-inspired operational profile."
+      },
+      {
+        "id": "REQ-421",
+        "description": "Planning selects the first honest public journey, minimal nonduplicated harness and justified dependencies; blocked checks do not serialize independent authorized work."
+      },
+      {
+        "id": "REQ-430",
+        "description": "Engineers inspect artifact footprint and source/generated/evidence classification without deletion, evidence laundering or unbounded normal context."
+      },
+      {
+        "id": "REQ-431",
+        "description": "A 4.1 candidate is qualified on both hosts with current inherited regression evidence, bounded matched decision cases and honest usage/qualification limits."
+      }
+    ],
+    "constraints": [
+      "Build on upstream 4.0.0 main at 3d787c5; support Codex and Claude with one base release.",
+      "Keep project format V3 and schema-1 history readable; preserve schema-2 proof and canonical atomicity/guards.",
+      "Use real subprocess/file/state observations for mechanisms; do not treat synthetic passed fixtures, hashes or screenshots as execution/visual judgment.",
+      "No new authority, extra routine human gate, hidden failed evidence, broad generated/evidence exclusions or normal-context history scans."
+    ],
+    "non_goals": [
+      "Automatic compaction or host hooks; persistent scheduler/agent launcher; full STE compliance/dictionary/parser.",
+      "Automatic GC, evidence deletion, history compaction, Git LFS or Observer redesign.",
+      "Changing the two investigated projects, deploying Hemkar, publishing/pushing or installing 4.1 in this planning turn."
+    ],
+    "assumptions": [
+      {
+        "id": "ASM-COST",
+        "statement": "Selective instructions can reduce avoidable context and retries without a critical decision regression; effect size is unknown.",
+        "confidence": "low",
+        "validation_node": "TASK-422"
+      },
+      {
+        "id": "ASM-HOST",
+        "statement": "Current host capabilities can qualify candidate skills in isolated profiles without replacing user installations; blocked support remains a gate blocker.",
+        "confidence": "medium",
+        "validation_node": "TASK-432"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "id": "EV-BASE",
+      "claim": "Source main and both installed hosts match upstream 3d787c5 (4.0.0); 112 plugin files match per host. The restored baseline passed 160 tests and repository validation.",
+      "source": "docs/planning/v4.1/baseline-checks.json",
+      "confidence": "high",
+      "freshness": "Observed 2026-10-04; unchanged 4.0.0 source",
+      "supports": [
+        "TASK-411",
+        "TASK-432"
+      ],
+      "contradicts": []
+    },
+    {
+      "id": "EV-INVALIDATION",
+      "claim": "replan_project compares all incident edges; contracts() includes all proof consumers. Consumer growth can change a producer's graph or proof identity.",
+      "source": "plugins/pyramid-task/scripts/pyramid_core.py:replan_project; plugins/pyramid-task/scripts/pyramid_verification.py:contracts",
+      "confidence": "high",
+      "freshness": "Read upstream 4.0.0 on 2026-10-04; behavior reproduction belongs TASK-411",
+      "supports": [
+        "TASK-411"
+      ],
+      "contradicts": []
+    },
+    {
+      "id": "EV-SESSIONS",
+      "claim": "Two active sessions exposed guard-literal requalification, excessive harness drift, useful real-DB/delta-review patterns and repeated policy checks; their risks and schemas differ.",
+      "source": "docs/planning/v4.1/README.md#evidence-and-limits",
+      "confidence": "medium",
+      "freshness": "Bounded October 4 observations; sanitized mechanism cases, not a causal productivity estimate",
+      "supports": [
+        "TASK-412",
+        "TASK-421",
+        "TASK-422",
+        "TASK-431"
+      ],
+      "contradicts": []
+    },
+    {
+      "id": "EV-STE",
+      "claim": "STE and normative requirement wording motivate clearer conditions and terminology; token or outcome gains for coding hosts remain unproven.",
+      "source": "https://www.asd-ste100.org/about_STE.html; https://www.rfc-editor.org/rfc/rfc8174; https://arxiv.org/abs/2310.11324; https://aclanthology.org/2024.findings-acl.57/",
+      "confidence": "medium",
+      "freshness": "Research reviewed 2026-10-04; test transfer in TASK-422",
+      "supports": [
+        "TASK-421",
+        "TASK-422"
+      ],
+      "contradicts": []
+    },
+    {
+      "id": "EV-REPLAN-EFFICIENCY",
+      "claim": "4.0 replan requires a complete candidate and performs stable-ID comparisons, but canonical snapshots and every task projection are rewritten. Targeted candidate assembly need not redraft unchanged tasks; write counts are not model token counts.",
+      "source": "plugins/pyramid-task/skills/replan/SKILL.md; plugins/pyramid-task/scripts/pyramid_core.py:prepare_replan; plugins/pyramid-task/scripts/pyramid_core.py:write_json; plugins/pyramid-task/scripts/pyramid_core.py:_compile_project_locked",
+      "confidence": "high",
+      "freshness": "Source inspected and design direction approved 2026-10-04; optimization and benefit remain unimplemented/unmeasured",
+      "supports": [],
+      "contradicts": []
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DECISION-REPLAN-EFFICIENCY",
+      "question": "How should 4.1 reduce replan drafting and generated-file churn without weakening canonical safety?",
+      "choice": "Assemble the complete candidate from the current plan using narrowly scoped stable-ID/field changes; preserve untouched content and skip writing generated projections whose bytes are unchanged. Keep full validation and guarded canonical publication.",
+      "alternatives": [
+        "Redraft every task and evidence contract for each replan",
+        "Apply raw line-number edits to canonical JSON",
+        "Add a general patch API, new graph engine or incremental cache before demonstrating a need"
+      ],
+      "rationale": "The 4.0 runtime requires a complete candidate, compares node/edge changes, rewrites canonical snapshots and rebuilds all generated task projections. Full serialization does not require model redrafting. A copied candidate with targeted edits reduces avoidable authoring context; content-equality checks can reduce output writes without trusting stale caches. Preserve full validation, current guards/context, event/head integrity, dependency/proof invalidation and history. This records design direction only: bind concrete implementation scope and regression acceptance in a narrow plan update before implementing this slice. Measure actual decisions/usage and generated-write behavior; do not infer token savings from fewer disk writes.",
+      "evidence": [
+        "EV-REPLAN-EFFICIENCY",
+        "EV-BASE"
+      ]
+    },
+    {
+      "id": "DECISION-LADDER",
+      "question": "What is the smallest useful 4.1 delivery ladder?",
+      "choice": "First preserve exact producer claims, then verify bounded agent decisions, then qualify the joined candidate and read-only footprint reporting.",
+      "alternatives": [
+        "One final gate after all cleanup and platform work",
+        "Language-only shortening",
+        "New authorization/agent orchestration engine"
+      ],
+      "rationale": "The current demonstrable baseline is a working 4.0.0 CLI with 160 tests and matching two-host installs, but consumer-growth false staleness and workflow ambiguity remain. I1 fixes a real public planning path; I2 resolves actual case decisions; I3 adds bounded footprint visibility and candidate qualification. Evidence is inherited at each gate. No setup-only rung or extra final intent gate is needed.",
+      "evidence": [
+        "EV-BASE",
+        "EV-INVALIDATION",
+        "EV-SESSIONS",
+        "EV-STE"
+      ]
+    },
+    {
+      "id": "DECISION-SCOPE",
+      "question": "How much automation and language control belong in 4.1?",
+      "choice": "Small original operational profile, semantic fixes and one optional read-only inspection mode; reuse current runtime, schemas and hosts.",
+      "alternatives": [
+        "Full STE dictionary and stylistic compliance gate",
+        "Automated permissions, source qualification and compaction hooks",
+        "Automatic evidence cleanup and a benchmark service"
+      ],
+      "rationale": "The observed friction is incorrect coupling and repeated decisions, not missing another controller. Preserve human authority and machine-enforced evidence. Test outcome/usage effects rather than infer them from bytes.",
+      "evidence": [
+        "EV-SESSIONS",
+        "EV-STE"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "TASK-411",
+      "kind": "implementation",
+      "title": "Preserve unchanged producer claims when consumers grow",
+      "summary": "Fix directional graph and schema-2 producer proof invalidation with actual positive/negative lifecycle regressions.",
+      "level": 4,
+      "wave": 0,
+      "workstream": "runtime",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-410"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-TASK-411-01",
+          "description": "A real disposable CLI/API reproduction shows the 4.0 consumer-growth failure before repair; schema-1 and schema-2 checks preserve an unchanged provider and current producer proof after the fix."
+        },
+        {
+          "id": "AC-TASK-411-02",
+          "description": "Changed provider contract/source/prerequisite, contribution membership, selection and inherited composition still stale the affected old/new claims; a new consumer is not automatically accepted."
+        },
+        {
+          "id": "AC-TASK-411-03",
+          "description": "Stored 4.0 observations/history remain untouched and honest under any documented compatibility rule; stale guards and failed/unknown proof still refuse acceptance."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-411",
+          "type": "executed-scenario",
+          "description": "Directional replan and producer-freshness regression",
+          "verification": {
+            "criteria": [
+              "AC-TASK-411-01",
+              "AC-TASK-411-02",
+              "AC-TASK-411-03"
+            ],
+            "method": "command",
+            "procedure": "Reproduce consumer growth against the pinned 4.0 baseline in disposable projects, repair the semantic boundary, then run positive and negative graph/proof CLI scenarios with actual files, stored proofs, guards and event heads. Preserve the baseline failure; inspect actual transitions and unchanged history. Do not replace source coverage with status fixtures.",
+            "inputs": [
+              "plugins/pyramid-task/scripts/pyramid_core.py",
+              "plugins/pyramid-task/scripts/pyramid_graph.py",
+              "plugins/pyramid-task/scripts/pyramid_verification.py",
+              "plugins/pyramid-task/tests/test_runtime.py",
+              "plugins/pyramid-task/tests/test_verification.py",
+              "plugins/pyramid-task/schemas/plan.schema.json",
+              "plugins/pyramid-task/schemas/state.schema.json",
+              "plugins/pyramid-task/schemas/agent-result.schema.json"
+            ],
+            "observations": [
+              "external",
+              "internal"
+            ],
+            "not_applicable": {
+              "visual": "These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review."
+            },
+            "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible."
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md",
+          "plugins/pyramid-task/references/graph-contract.md",
+          "plugins/pyramid-task/references/development-harness.md"
+        ],
+        "allowed_write_scope": [
+          "plugins/pyramid-task/scripts/pyramid_core.py",
+          "plugins/pyramid-task/scripts/pyramid_graph.py",
+          "plugins/pyramid-task/scripts/pyramid_verification.py",
+          "plugins/pyramid-task/schemas/*.json",
+          "plugins/pyramid-task/tests/test_runtime.py",
+          "plugins/pyramid-task/tests/test_verification.py",
+          "plugins/pyramid-task/tests/test_replan_semantics.py",
+          "proof-output/v4.1/TASK-411/**"
+        ],
+        "commands": [
+          "PYRAMID_USAGE=off PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s plugins/pyramid-task/tests -p 'test_*.py'"
+        ],
+        "deliverables": [
+          "Fix directional graph and schema-2 producer proof invalidation with actual positive/negative lifecycle regressions."
+        ],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review.",
+          "No broad refactor, implicit proof migration or automatic new-consumer acceptance."
+        ],
+        "effect": "mixed",
+        "evidence_outputs": [
+          "proof-output/v4.1/TASK-411/**"
+        ]
+      }
+    },
+    {
+      "id": "TASK-412",
+      "kind": "contract",
+      "title": "Separate fresh authority from stable procedure source",
+      "summary": "Document a guarded source/authority integration recipe without a new execution or permission engine.",
+      "level": 4,
+      "wave": 0,
+      "workstream": "workflow",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-411"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-TASK-412-01",
+          "description": "The integration recipe passes the fresh task/audit guard as invocation authority separate from immutable reviewed source; renewing a lease alone requires no procedure-source edit."
+        },
+        {
+          "id": "AC-TASK-412-02",
+          "description": "The recipe preserves host permission scope and helper reconciliation; a fresh guard cannot authorize a denied operation or promote stale/unreviewed observations."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-412",
+          "type": "contract-review",
+          "description": "Source/authority integration contract",
+          "verification": {
+            "criteria": [
+              "AC-TASK-412-01",
+              "AC-TASK-412-02"
+            ],
+            "method": "review",
+            "procedure": "Review the two-identity recipe against current runtime guards and helper contracts. Retain exact before/after source identity and a bounded review of the stale-authority and permission cases; GATE-419 executes their dynamic join. No new authority handler is invented.",
+            "inputs": [
+              "plugins/pyramid-task/references/agent-contracts.md",
+              "plugins/pyramid-task/references/intra-task-helpers.md",
+              "plugins/pyramid-task/references/development-harness.md",
+              "plugins/pyramid-task/skills/take/SKILL.md",
+              "plugins/pyramid-task/skills/resume/SKILL.md"
+            ],
+            "observations": [
+              "internal"
+            ],
+            "not_applicable": {
+              "external": "Static contract inspection has no product interaction; actual dynamic guard behavior is covered by GATE-419.",
+              "visual": "These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review."
+            },
+            "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible."
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md",
+          "plugins/pyramid-task/scripts/pyramid_core.py"
+        ],
+        "allowed_write_scope": [
+          "plugins/pyramid-task/references/agent-contracts.md",
+          "plugins/pyramid-task/references/intra-task-helpers.md",
+          "plugins/pyramid-task/references/development-harness.md",
+          "plugins/pyramid-task/skills/take/SKILL.md",
+          "plugins/pyramid-task/skills/resume/SKILL.md",
+          "proof-output/v4.1/TASK-412/**"
+        ],
+        "commands": [],
+        "deliverables": [
+          "Document a guarded source/authority integration recipe without a new execution or permission engine."
+        ],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review.",
+          "No editing another project's caller or overriding helper/host guards."
+        ],
+        "effect": "mixed",
+        "evidence_outputs": [
+          "proof-output/v4.1/TASK-412/**"
+        ]
+      }
+    },
+    {
+      "id": "TASK-421",
+      "kind": "implementation",
+      "title": "Clarify decisions and scope the first real delivery",
+      "summary": "Apply the small operational language profile and selective routing to existing workflows and guidance.",
+      "level": 3,
+      "wave": 2,
+      "workstream": "workflow",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-420",
+        "REQ-421"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-TASK-421-01",
+          "description": "Relevant skill entrypoints, references and generated guidance use stable terms, explicit conditions and requirement levels without new runtime states, a full dictionary or cosmetic replanning of active projects."
+        },
+        {
+          "id": "AC-TASK-421-02",
+          "description": "Create/replan separates real start dependencies from verification/release boundaries, selects the smallest honest public journey, and reuses required probes/visual checks without speculative harness setup or extra routine human approval."
+        },
+        {
+          "id": "AC-TASK-421-03",
+          "description": "Context routing and reports remove repeated unchanged policy/background while preserving every applicable safety, ownership, observation and proof-reuse limit."
+        },
+        {
+          "id": "AC-TASK-421-04",
+          "description": "Targeted stable-ID/field candidate authoring preserves unaffected contracts; generated projections skip byte-identical writes while full current computation, validation and guarded canonical publication remain intact. Actual mtime/content regressions establish disk behavior, not token savings."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-421",
+          "type": "contract-review",
+          "description": "Controlled operational guidance and minimal delivery contract",
+          "verification": {
+            "criteria": [
+              "AC-TASK-421-01",
+              "AC-TASK-421-02",
+              "AC-TASK-421-03",
+              "AC-TASK-421-04"
+            ],
+            "method": "review",
+            "procedure": "Trace revised instructions against the six case families and every affected ownership, permission, acceptance and visual invariant. Inspect selected generated schema-2 guidance from a disposable project. Measure loaded context rather than total repository bytes. TASK-422 supplies actual matched host evidence. Execute current-candidate projection mtime/content regressions; preserve unaffected candidate values and full publication/validation checks. File-write counts do not establish token savings.",
+            "inputs": [
+              "plugins/pyramid-task/skills/create/SKILL.md",
+              "plugins/pyramid-task/skills/take/SKILL.md",
+              "plugins/pyramid-task/skills/audit/SKILL.md",
+              "plugins/pyramid-task/skills/replan/SKILL.md",
+              "plugins/pyramid-task/references/agent-contracts.md",
+              "plugins/pyramid-task/references/development-harness.md",
+              "plugins/pyramid-task/references/demonstrable-increments.md",
+              "plugins/pyramid-task/references/plan-refinement.md",
+              "plugins/pyramid-task/scripts/pyramid_core.py",
+          "plugins/pyramid-task/scripts/pyramid_verification.py",
+          "plugins/pyramid-task/tests/test_efficiency.py",
+          "plugins/pyramid-task/references/operational-language.md"
+            ],
+            "observations": [
+              "internal"
+            ],
+            "not_applicable": {
+              "external": "Static contract inspection has no product interaction; actual dynamic guard behavior is covered by GATE-419.",
+              "visual": "These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review."
+            },
+            "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible."
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md",
+          "plugins/pyramid-task/references/plan-refinement.md",
+          "plugins/pyramid-task/references/development-harness.md"
+        ],
+        "allowed_write_scope": [
+          "plugins/pyramid-task/skills/*/SKILL.md",
+          "plugins/pyramid-task/references/*.md",
+          "plugins/pyramid-task/scripts/pyramid_core.py",
+          "plugins/pyramid-task/scripts/pyramid_verification.py",
+          "plugins/pyramid-task/tests/test_efficiency.py",
+          "proof-output/v4.1/TASK-421/**"
+        ],
+        "commands": [
+          "PYRAMID_USAGE=off PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/validate_repository.py"
+        ],
+        "deliverables": [
+          "Apply the small operational language profile and selective routing to existing workflows and guidance."
+        ],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review.",
+          "No dictionary, wording gate, blanket full-reference load or cosmetic active-plan mutation."
+        ],
+        "effect": "mixed",
+        "evidence_outputs": [
+          "proof-output/v4.1/TASK-421/**"
+        ]
+      }
+    },
+    {
+      "id": "TASK-422",
+      "kind": "integration",
+      "title": "Evaluate actual host decisions and context cost",
+      "summary": "Run a bounded matched two-host pilot on six real failure-mode families using existing host capabilities.",
+      "level": 3,
+      "wave": 2,
+      "workstream": "workflow",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-420",
+        "REQ-421",
+        "REQ-431"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-TASK-422-01",
+          "description": "Actual matched 4.0/candidate cases on Codex and Claude exercise all six sanitized case families with fixed recorded facts/settings/tools and no critical authority/evidence regression."
+        },
+        {
+          "id": "AC-TASK-422-02",
+          "description": "Reports cite actual decisions and tool effects plus usage where exposed; missing/cached/reasoning data is labeled unknown, proxies are labeled, and no end-to-end savings are inferred from wording or one successful self-rating."
+        },
+        {
+          "id": "AC-TASK-422-03",
+          "description": "Evaluation uses existing host capabilities and owned disposable contexts; blocked or discordant runs are preserved, and material failures trigger a minimal profile repair rather than acceptance weakening."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-422",
+          "type": "executed-scenario",
+          "description": "Matched Codex/Claude decision pilot",
+          "verification": {
+            "criteria": [
+              "AC-TASK-422-01",
+              "AC-TASK-422-02",
+              "AC-TASK-422-03"
+            ],
+            "method": "command",
+            "procedure": "Run CASE-EXTENSION, GUARD, BLOCKER, REVIEW, PROOF and VISUAL in matched disposable baseline/candidate contexts for both hosts. Record model/version/settings, selected skill/reference hashes, tool/permission affordances, actual operations/refusals and exposed usage. Reconcile contradictory cases and preserve limitations; no model-only declaration proves correct behavior.",
+            "inputs": [
+              "plugins/pyramid-task/skills/create/SKILL.md",
+              "plugins/pyramid-task/skills/take/SKILL.md",
+              "plugins/pyramid-task/skills/audit/SKILL.md",
+              "plugins/pyramid-task/references/agent-contracts.md",
+              "plugins/pyramid-task/references/development-harness.md",
+              "docs/planning/v4.1/README.md",
+              "plugins/pyramid-task/references/*.md",
+              "docs/planning/v4.1/cases/**"
+            ],
+            "observations": [
+              "external",
+              "internal"
+            ],
+            "not_applicable": {
+              "visual": "These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review."
+            },
+            "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible."
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md",
+          "plugins/pyramid-task/skills/create/SKILL.md",
+          "plugins/pyramid-task/skills/take/SKILL.md",
+          "plugins/pyramid-task/skills/audit/SKILL.md"
+        ],
+        "allowed_write_scope": [
+          "docs/planning/v4.1/cases/**",
+          "proof-output/v4.1/TASK-422/**"
+        ],
+        "commands": [],
+        "deliverables": [
+          "Run a bounded matched two-host pilot on six real failure-mode families using existing host capabilities."
+        ],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review.",
+          "No autonomous agent launcher, new telemetry service, copied private transcripts or savings claimed from proxies."
+        ],
+        "effect": "mixed",
+        "evidence_outputs": [
+          "proof-output/v4.1/TASK-422/**"
+        ]
+      }
+    },
+    {
+      "id": "TASK-431",
+      "kind": "implementation",
+      "title": "Inspect footprint without losing proof",
+      "summary": "Strengthen demonstrable classification boundaries and add a bounded optional read-only footprint preview.",
+      "level": 2,
+      "wave": 4,
+      "workstream": "artifacts",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-430"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-TASK-431-01",
+          "description": "Source, generated candidates, owned transient resources and retained evidence are distinguished using contracts and references; demonstrable source/proof-input overlap cannot be hidden by a broad evidence-output classification."
+        },
+        {
+          "id": "AC-TASK-431-02",
+          "description": "An optional bounded read-only inspect footprint/retention preview reports counts, bytes, proof references and unknown ownership without deleting, relabeling, archiving, expiring or rewriting files."
+        },
+        {
+          "id": "AC-TASK-431-03",
+          "description": "Real temporary-tree/CLI checks prove no mutations, current referenced/failed evidence preservation, bounded normal output and conservative treatment of unknown purpose."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-431",
+          "type": "executed-scenario",
+          "description": "Bounded read-only footprint and classification checks",
+          "verification": {
+            "criteria": [
+              "AC-TASK-431-01",
+              "AC-TASK-431-02",
+              "AC-TASK-431-03"
+            ],
+            "method": "command",
+            "procedure": "Create owned representative temporary trees with source, generated copies, active/failed/current evidence, unknown-purpose files and unsafe output/input overlap. Run actual inspection/validation CLI paths, compare bytes/tree state before and after, verify bounded output and preserved references. Unknown ownership is not delete eligibility.",
+            "inputs": [
+              "plugins/pyramid-task/scripts/pyramid.py",
+              "plugins/pyramid-task/scripts/pyramid_core.py",
+              "plugins/pyramid-task/scripts/pyramid_assurance.py",
+              "plugins/pyramid-task/scripts/pyramid_verification.py",
+              "plugins/pyramid-task/skills/inspect/SKILL.md",
+              "plugins/pyramid-task/schemas/plan.schema.json",
+              "plugins/pyramid-task/tests/test_artifact_footprint.py",
+              "plugins/pyramid-task/tests/test_runtime.py"
+            ],
+            "observations": [
+              "external",
+              "internal"
+            ],
+            "not_applicable": {
+              "visual": "These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review."
+            },
+            "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible."
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md",
+          "plugins/pyramid-task/references/brownfield-assurance.md"
+        ],
+        "allowed_write_scope": [
+          "plugins/pyramid-task/scripts/pyramid.py",
+          "plugins/pyramid-task/scripts/pyramid_core.py",
+          "plugins/pyramid-task/scripts/pyramid_assurance.py",
+          "plugins/pyramid-task/scripts/pyramid_verification.py",
+          "plugins/pyramid-task/schemas/*.json",
+          "plugins/pyramid-task/skills/inspect/SKILL.md",
+          "plugins/pyramid-task/references/brownfield-assurance.md",
+          "plugins/pyramid-task/tests/test_artifact_footprint.py",
+          "plugins/pyramid-task/tests/test_runtime.py",
+          "plugins/pyramid-task/tests/test_verification.py",
+          "proof-output/v4.1/TASK-431/**"
+        ],
+        "commands": [
+          "PYRAMID_USAGE=off PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s plugins/pyramid-task/tests -p 'test_*.py'"
+        ],
+        "deliverables": [
+          "Strengthen demonstrable classification boundaries and add a bounded optional read-only footprint preview."
+        ],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review.",
+          "No deletion/GC, history compaction, extension-only classification or unbounded normal packet scan."
+        ],
+        "effect": "mixed",
+        "evidence_outputs": [
+          "proof-output/v4.1/TASK-431/**"
+        ]
+      }
+    },
+    {
+      "id": "TASK-432",
+      "kind": "integration",
+      "title": "Qualify and document a 4.1 candidate",
+      "summary": "Join the tested mechanisms and guidance into a candidate package with honest two-host and usage qualification.",
+      "level": 2,
+      "wave": 4,
+      "workstream": "workflow",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-410",
+        "REQ-411",
+        "REQ-420",
+        "REQ-421",
+        "REQ-430",
+        "REQ-431"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-TASK-432-01",
+          "description": "The joined candidate passes the full runtime/repository suite and real subprocess scenarios; synthetic evidence fixtures are not reported as agent/browser or real-product validation."
+        },
+        {
+          "id": "AC-TASK-432-02",
+          "description": "Both host candidate packages carry base version 4.1.0 and the tested revision/digest; real skill paths in isolated host profiles are qualified, not inferred from source CLI success."
+        },
+        {
+          "id": "AC-TASK-432-03",
+          "description": "README, architecture, release notes and help match actual behavior and measured limits; current user installations, other projects, remote refs and production are unchanged."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-432",
+          "type": "executed-scenario",
+          "description": "Joined 4.1 qualification and packaging",
+          "verification": {
+            "criteria": [
+              "AC-TASK-432-01",
+              "AC-TASK-432-02",
+              "AC-TASK-432-03"
+            ],
+            "method": "command",
+            "procedure": "Run the full declared regression suite and repository validator with usage collection off. Join I1/I2 and artifact proof, exercise real candidate skill paths in isolated Codex/Claude profiles, record exact candidate/manifests and environment identity, and review documented limits. No installed 4.0 overwrite, commit, publish or deployment is implicit.",
+            "inputs": [
+              "plugins/pyramid-task/scripts/**/*.py",
+              "plugins/pyramid-task/tests/**/*.py",
+              "plugins/pyramid-task/schemas/*.json",
+              "plugins/pyramid-task/.codex-plugin/plugin.json",
+              "plugins/pyramid-task/.claude-plugin/plugin.json",
+              "plugins/pyramid-task/skills/*/SKILL.md",
+              "tools/validate_repository.py",
+              "README.md",
+              "docs/architecture.md",
+              "CHANGELOG.md",
+              "plugins/pyramid-task/references/*.md"
+            ],
+            "observations": [
+              "external",
+              "internal"
+            ],
+            "not_applicable": {
+              "visual": "These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review."
+            },
+            "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible."
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md",
+          "CONTRIBUTING.md",
+          "Makefile"
+        ],
+        "allowed_write_scope": [
+          "README.md",
+          "CHANGELOG.md",
+          "docs/architecture.md",
+          "plugins/pyramid-task/.codex-plugin/plugin.json",
+          "plugins/pyramid-task/.claude-plugin/plugin.json",
+          "plugins/pyramid-task/scripts/pyramid_assurance.py",
+          "proof-output/v4.1/TASK-432/**"
+        ],
+        "commands": [
+          "PYRAMID_USAGE=off PYTHONDONTWRITEBYTECODE=1 .venv/bin/python tools/validate_repository.py",
+          "PYRAMID_USAGE=off PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m unittest discover -s plugins/pyramid-task/tests -p 'test_*.py'"
+        ],
+        "deliverables": [
+          "Join the tested mechanisms and guidance into a candidate package with honest two-host and usage qualification."
+        ],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review.",
+          "No 4.1 installation, commit, push, catalog publication or production change without separate request."
+        ],
+        "effect": "mixed",
+        "evidence_outputs": [
+          "proof-output/v4.1/TASK-432/**"
+        ]
+      }
+    },
+    {
+      "id": "GATE-419",
+      "kind": "audit",
+      "title": "Verify precise extension and guarded execution",
+      "summary": "An engineer extends a plan without restaling an unchanged provider or rebaking procedure source.",
+      "level": 4,
+      "wave": 1,
+      "workstream": "acceptance",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-410",
+        "REQ-411"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-GATE-419-01",
+          "description": "Current joined CLI scenarios preserve the unchanged producer, require new-consumer acceptance, stale changed composition and reject stale authority without editing procedure source."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-GATE-419",
+          "type": "executed-scenario",
+          "description": "Current joined increment scenario",
+          "verification": {
+            "criteria": [
+              "AC-GATE-419-01"
+            ],
+            "method": "command",
+            "procedure": "Independently exercise the public CLI on disposable current candidates: complete a provider, extend with a new consumer, inspect unchanged provider and separately unverified consumer, change a real composition premise, and confirm staleness. Renew ownership as invocation data, compare stable source hashes and refuse stale authority. Reuse task checks when valid; observe only the distinct join.",
+            "inputs": [
+              "plugins/pyramid-task/scripts/pyramid_core.py",
+              "plugins/pyramid-task/scripts/pyramid_graph.py",
+              "plugins/pyramid-task/scripts/pyramid_verification.py",
+              "plugins/pyramid-task/references/agent-contracts.md",
+              "plugins/pyramid-task/references/intra-task-helpers.md",
+              "plugins/pyramid-task/tests/test_runtime.py",
+              "plugins/pyramid-task/tests/test_verification.py"
+            ],
+            "observations": [
+              "external",
+              "internal"
+            ],
+            "not_applicable": {
+              "visual": "These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review."
+            },
+            "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible."
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md"
+        ],
+        "allowed_write_scope": [
+          "proof-output/v4.1/GATE-419/**"
+        ],
+        "commands": [],
+        "deliverables": [
+          "An engineer extends a plan without restaling an unchanged provider or rebaking procedure source."
+        ],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review.",
+          "Use an actual independent reviewer when available and authorized; do not fake independence by renaming the actor."
+        ],
+        "effect": "evidence-only",
+        "evidence_outputs": [
+          "proof-output/v4.1/GATE-419/**"
+        ]
+      }
+    },
+    {
+      "id": "GATE-429",
+      "kind": "audit",
+      "title": "Verify autonomous bounded development decisions",
+      "summary": "The selected skill path resolves the case families without extra routine approval or missing proof.",
+      "level": 3,
+      "wave": 3,
+      "workstream": "acceptance",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-410",
+        "REQ-411",
+        "REQ-420",
+        "REQ-421",
+        "REQ-431"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-GATE-429-01",
+          "description": "Matched actual-host decision cases establish the I2 claims without critical regression; inherited I1 behavior remains current and all claimed cost gains have observed usage support."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-GATE-429",
+          "type": "executed-scenario",
+          "description": "Current joined increment scenario",
+          "verification": {
+            "criteria": [
+              "AC-GATE-429-01"
+            ],
+            "method": "command",
+            "procedure": "Independently join the actual two-host pilot to final instruction/candidate hashes and inspect actual decisions, refusions and usage. Reuse matching runs instead of repeat suites; reject model self-certification and unknown visual proof. Re-establish I1 on the current candidate when relevant inputs changed.",
+            "inputs": [
+              "plugins/pyramid-task/skills/create/SKILL.md",
+              "plugins/pyramid-task/skills/take/SKILL.md",
+              "plugins/pyramid-task/skills/audit/SKILL.md",
+              "plugins/pyramid-task/references/agent-contracts.md",
+              "plugins/pyramid-task/references/development-harness.md",
+              "plugins/pyramid-task/scripts/pyramid_core.py",
+              "plugins/pyramid-task/scripts/pyramid_verification.py",
+              "docs/planning/v4.1/README.md"
+            ],
+            "observations": [
+              "external",
+              "internal"
+            ],
+            "not_applicable": {
+              "visual": "These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review."
+            },
+            "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible."
+          }
+        },
+        {
+          "id": "EV-I1",
+          "type": "inherited-proof",
+          "description": "Inherited I1 proof",
+          "verification": {
+            "criteria": [
+              "AC-GATE-429-01"
+            ],
+            "reuse": "GATE-419/EV-GATE-419"
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md"
+        ],
+        "allowed_write_scope": [
+          "proof-output/v4.1/GATE-429/**"
+        ],
+        "commands": [],
+        "deliverables": [
+          "The selected skill path resolves the case families without extra routine approval or missing proof."
+        ],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review.",
+          "Use an actual independent reviewer when available and authorized; do not fake independence by renaming the actor."
+        ],
+        "effect": "evidence-only",
+        "evidence_outputs": [
+          "proof-output/v4.1/GATE-429/**"
+        ]
+      }
+    },
+    {
+      "id": "GATE-439",
+      "kind": "audit",
+      "title": "Verify bounded qualified 4.1 candidate",
+      "summary": "An engineer has a current two-host candidate and read-only footprint view without losing earlier guarantees.",
+      "level": 2,
+      "wave": 5,
+      "workstream": "acceptance",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-410",
+        "REQ-411",
+        "REQ-420",
+        "REQ-421",
+        "REQ-430",
+        "REQ-431"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-GATE-439-01",
+          "description": "The current candidate composes all six requirements, preserves inherited proof and history, reports footprint without mutation, and has real isolated two-host qualification with honest limits."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-GATE-439",
+          "type": "executed-scenario",
+          "description": "Current joined increment scenario",
+          "verification": {
+            "criteria": [
+              "AC-GATE-439-01"
+            ],
+            "method": "command",
+            "procedure": "Independently join current full-suite, CLI footprint and real two-host candidate observations. Verify packaged source/digests, no user-installation or other-project effects, preserved failed/active evidence, and documented unknown usage. Reuse current I1/I2 observations; refresh only changed proof families.",
+            "inputs": [
+              "plugins/pyramid-task/scripts/**/*.py",
+              "plugins/pyramid-task/tests/**/*.py",
+              "plugins/pyramid-task/.codex-plugin/plugin.json",
+              "plugins/pyramid-task/.claude-plugin/plugin.json",
+              "plugins/pyramid-task/skills/*/SKILL.md",
+              "plugins/pyramid-task/references/*.md",
+              "tools/validate_repository.py",
+              "README.md",
+              "docs/architecture.md",
+              "CHANGELOG.md"
+            ],
+            "observations": [
+              "external",
+              "internal"
+            ],
+            "not_applicable": {
+              "visual": "These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review."
+            },
+            "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible."
+          }
+        },
+        {
+          "id": "EV-I1",
+          "type": "inherited-proof",
+          "description": "Inherited extension proof",
+          "verification": {
+            "criteria": [
+              "AC-GATE-439-01"
+            ],
+            "reuse": "GATE-419/EV-GATE-419"
+          }
+        },
+        {
+          "id": "EV-I2",
+          "type": "inherited-proof",
+          "description": "Inherited decision proof",
+          "verification": {
+            "criteria": [
+              "AC-GATE-439-01"
+            ],
+            "reuse": "GATE-429/EV-GATE-429"
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md"
+        ],
+        "allowed_write_scope": [
+          "proof-output/v4.1/GATE-439/**"
+        ],
+        "commands": [],
+        "deliverables": [
+          "An engineer has a current two-host candidate and read-only footprint view without losing earlier guarantees."
+        ],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review.",
+          "Use an actual independent reviewer when available and authorized; do not fake independence by renaming the actor."
+        ],
+        "effect": "evidence-only",
+        "evidence_outputs": [
+          "proof-output/v4.1/GATE-439/**"
+        ]
+      }
+    },
+    {
+      "id": "OUTCOME-410",
+      "kind": "outcome",
+      "title": "Plans extend without avoidable requalification",
+      "summary": "An engineer adds a consumer while keeping unchanged producer proof and stable guarded procedure source.",
+      "level": 3,
+      "wave": 1,
+      "workstream": "workflow",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-410",
+        "REQ-411"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-OUTCOME-410-01",
+          "description": "An engineer adds a consumer while keeping unchanged producer proof and stable guarded procedure source."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-OUTCOME-410",
+          "type": "inherited-proof",
+          "description": "An engineer adds a consumer while keeping unchanged producer proof and stable guarded procedure source.",
+          "verification": {
+            "criteria": [
+              "AC-OUTCOME-410-01"
+            ],
+            "reuse": "GATE-419/EV-GATE-419"
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md"
+        ],
+        "allowed_write_scope": [],
+        "commands": [],
+        "deliverables": [],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review."
+        ],
+        "evidence_outputs": [
+          "proof-output/v4.1/OUTCOME-410/**"
+        ]
+      }
+    },
+    {
+      "id": "OUTCOME-420",
+      "kind": "outcome",
+      "title": "Agents make bounded development decisions",
+      "summary": "The agent uses precise terms, the first honest journey and minimal current evidence without extra routine sign-off.",
+      "level": 2,
+      "wave": 3,
+      "workstream": "workflow",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-410",
+        "REQ-411",
+        "REQ-420",
+        "REQ-421",
+        "REQ-431"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-OUTCOME-420-01",
+          "description": "The agent uses precise terms, the first honest journey and minimal current evidence without extra routine sign-off."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-OUTCOME-420",
+          "type": "inherited-proof",
+          "description": "The agent uses precise terms, the first honest journey and minimal current evidence without extra routine sign-off.",
+          "verification": {
+            "criteria": [
+              "AC-OUTCOME-420-01"
+            ],
+            "reuse": "GATE-429/EV-GATE-429"
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md"
+        ],
+        "allowed_write_scope": [],
+        "commands": [],
+        "deliverables": [],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review."
+        ],
+        "evidence_outputs": [
+          "proof-output/v4.1/OUTCOME-420/**"
+        ]
+      }
+    },
+    {
+      "id": "OUTCOME-430",
+      "kind": "outcome",
+      "title": "A bounded qualified 4.1 candidate is available",
+      "summary": "The engineer can inspect footprint safely and use a current candidate qualified on both hosts with measured limits.",
+      "level": 1,
+      "wave": 5,
+      "workstream": "workflow",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-410",
+        "REQ-411",
+        "REQ-420",
+        "REQ-421",
+        "REQ-430",
+        "REQ-431"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-OUTCOME-430-01",
+          "description": "The engineer can inspect footprint safely and use a current candidate qualified on both hosts with measured limits."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-OUTCOME-430",
+          "type": "inherited-proof",
+          "description": "The engineer can inspect footprint safely and use a current candidate qualified on both hosts with measured limits.",
+          "verification": {
+            "criteria": [
+              "AC-OUTCOME-430-01"
+            ],
+            "reuse": "GATE-439/EV-GATE-439"
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md"
+        ],
+        "allowed_write_scope": [],
+        "commands": [],
+        "deliverables": [],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review."
+        ],
+        "evidence_outputs": [
+          "proof-output/v4.1/OUTCOME-430/**"
+        ]
+      }
+    },
+    {
+      "id": "INTENT-410",
+      "kind": "intent",
+      "title": "Pyramid 4.1 precise progress and bounded context",
+      "summary": "Engineers reach small verified outcomes with less avoidable requalification and context overhead without weaker safety or evidence.",
+      "level": 0,
+      "wave": 5,
+      "workstream": "workflow",
+      "selection": "primary",
+      "source_requirements": [
+        "REQ-410",
+        "REQ-411",
+        "REQ-420",
+        "REQ-421",
+        "REQ-430",
+        "REQ-431"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "AC-INTENT-410-01",
+          "description": "All six requirements are established by the current final increment and its inherited proof, with no unsupported token or installed-host claim."
+        }
+      ],
+      "required_evidence": [
+        {
+          "id": "EV-FINAL",
+          "type": "inherited-proof",
+          "description": "Final joined candidate proof",
+          "verification": {
+            "criteria": [
+              "AC-INTENT-410-01"
+            ],
+            "reuse": "GATE-439/EV-GATE-439"
+          }
+        }
+      ],
+      "agent": {
+        "required_context": [
+          "docs/planning/v4.1/README.md"
+        ],
+        "allowed_write_scope": [],
+        "commands": [],
+        "deliverables": [],
+        "non_goals": [
+          "Do not weaken authorization, acceptance, proof freshness or independent review."
+        ],
+        "evidence_outputs": [
+          "proof-output/v4.1/INTENT-410/**"
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "OUTCOME-410",
+      "to": "OUTCOME-420",
+      "type": "contributes-to"
+    },
+    {
+      "from": "OUTCOME-420",
+      "to": "OUTCOME-430",
+      "type": "contributes-to"
+    },
+    {
+      "from": "OUTCOME-430",
+      "to": "INTENT-410",
+      "type": "contributes-to"
+    },
+    {
+      "from": "TASK-411",
+      "to": "OUTCOME-410",
+      "type": "contributes-to"
+    },
+    {
+      "from": "GATE-419",
+      "to": "TASK-411",
+      "type": "integration-requires"
+    },
+    {
+      "from": "TASK-412",
+      "to": "OUTCOME-410",
+      "type": "contributes-to"
+    },
+    {
+      "from": "GATE-419",
+      "to": "TASK-412",
+      "type": "integration-requires"
+    },
+    {
+      "from": "GATE-419",
+      "to": "OUTCOME-410",
+      "type": "contributes-to"
+    },
+    {
+      "from": "OUTCOME-410",
+      "to": "GATE-419",
+      "type": "validated-by"
+    },
+    {
+      "from": "TASK-421",
+      "to": "OUTCOME-420",
+      "type": "contributes-to"
+    },
+    {
+      "from": "GATE-429",
+      "to": "TASK-421",
+      "type": "integration-requires"
+    },
+    {
+      "from": "TASK-422",
+      "to": "OUTCOME-420",
+      "type": "contributes-to"
+    },
+    {
+      "from": "GATE-429",
+      "to": "TASK-422",
+      "type": "integration-requires"
+    },
+    {
+      "from": "GATE-429",
+      "to": "OUTCOME-420",
+      "type": "contributes-to"
+    },
+    {
+      "from": "OUTCOME-420",
+      "to": "GATE-429",
+      "type": "validated-by"
+    },
+    {
+      "from": "TASK-431",
+      "to": "OUTCOME-430",
+      "type": "contributes-to"
+    },
+    {
+      "from": "GATE-439",
+      "to": "TASK-431",
+      "type": "integration-requires"
+    },
+    {
+      "from": "TASK-432",
+      "to": "OUTCOME-430",
+      "type": "contributes-to"
+    },
+    {
+      "from": "GATE-439",
+      "to": "TASK-432",
+      "type": "integration-requires"
+    },
+    {
+      "from": "GATE-439",
+      "to": "OUTCOME-430",
+      "type": "contributes-to"
+    },
+    {
+      "from": "OUTCOME-430",
+      "to": "GATE-439",
+      "type": "validated-by"
+    },
+    {
+      "from": "GATE-429",
+      "to": "OUTCOME-410",
+      "type": "validation-requires"
+    },
+    {
+      "from": "GATE-439",
+      "to": "OUTCOME-420",
+      "type": "validation-requires"
+    },
+    {
+      "from": "TASK-421",
+      "to": "TASK-412",
+      "type": "integration-requires"
+    },
+    {
+      "from": "TASK-422",
+      "to": "TASK-421",
+      "type": "integration-requires"
+    },
+    {
+      "from": "TASK-431",
+      "to": "TASK-411",
+      "type": "integration-requires"
+    },
+    {
+      "from": "TASK-432",
+      "to": "TASK-411",
+      "type": "integration-requires"
+    },
+    {
+      "from": "TASK-432",
+      "to": "TASK-421",
+      "type": "integration-requires"
+    },
+    {
+      "from": "TASK-432",
+      "to": "TASK-422",
+      "type": "integration-requires"
+    },
+    {
+      "from": "TASK-432",
+      "to": "TASK-431",
+      "type": "integration-requires"
+    }
+  ]
+}

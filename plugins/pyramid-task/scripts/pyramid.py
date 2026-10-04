@@ -178,6 +178,9 @@ def build_parser() -> argparse.ArgumentParser:
     group.add_argument("--audit-readiness")
     group.add_argument("--harness", help="Show scoped proof contracts, pre-run candidate templates, and reusable runs")
     group.add_argument("--node")
+    group.add_argument("--footprint", action="store_true", help="Bounded read-only artifact counts, bytes and current references; never deletes")
+    inspect.add_argument("--footprint-detail", action="store_true", help="With --footprint, list at most 100 files")
+    inspect.add_argument("--footprint-limit", type=int, default=10000, help="With --footprint, scan at most this many entries (1-100000)")
     inspect.add_argument(
         "--max-agents",
         type=int,
@@ -453,6 +456,9 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             max_agents=args.max_agents,
             audit_readiness=args.audit_readiness,
             harness=args.harness,
+            footprint=args.footprint,
+            footprint_detail=args.footprint_detail,
+            footprint_limit=args.footprint_limit,
             nid=args.node,
         ), 0
     if args.command == "diff":

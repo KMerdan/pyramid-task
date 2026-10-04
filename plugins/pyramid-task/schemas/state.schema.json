@@ -11,6 +11,23 @@
     "context_id": {"type": "string", "pattern": "^CTX-[A-F0-9]{32}$"},
     "created_at": {"type": "string"},
     "updated_at": {"type": "string"},
+    "proof_contract_bindings": {
+      "type": "object",
+      "propertyNames": {"pattern": "^RUN-[A-F0-9]{32}$"},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["version", "owner", "legacy_sha256", "producer_sha256", "from_revision", "to_revision"],
+        "properties": {
+          "version": {"const": 2},
+          "owner": {"type": "string", "pattern": "^[A-Z][A-Z0-9-]*/[A-Z][A-Z0-9-]*$"},
+          "legacy_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "producer_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "from_revision": {"type": "integer", "minimum": 1},
+          "to_revision": {"type": "integer", "minimum": 2}
+        }
+      }
+    },
     "lifecycle": {
       "type": "object",
       "additionalProperties": false,

@@ -2,6 +2,10 @@
 
 Use this contract after drafting a complete candidate graph and before making it canonical. Use the same analysis on an existing graph, but route any canonical topology change through replan. Review a candidate once, then revisit only concrete unresolved findings or affected invariants after a correction. Do not run a second generic review or invent alternatives to fill a template. An eligible task amendment uses its narrow boundary review instead of this whole-plan artifact.
 
+For replan, copy the current complete candidate and change only affected stable
+IDs/fields. Preserve unaffected text and contracts. Full validation still applies;
+do not add raw line-edit canonical mutations or a second plan-patch protocol.
+
 ## Evidence standard
 
 Classify every load-bearing claim as observed, sourced, assumption, or unknown. A fact reference must identify something another agent can inspect: a repository path and symbol, a test or schema, an event or incident, a decision record, or an authoritative external source with a freshness note. Read the referenced material and seek disconfirming evidence. Do not treat tests, documentation, historical plans, generated files, or an agent assertion as automatically current production truth.

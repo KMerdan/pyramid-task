@@ -7,7 +7,36 @@
 
 Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
-Version 4.0.0 adds a local cross-project command usage audit and removes V2/V2.1 migration. The project format remains V3, with 17 skills and 26 CLI commands. Compact-by-default output, guarded task amendments and outcome-scoped development harnesses remain supported. The same `main` branch and versioned source package support Codex and Claude Code.
+The 4.1.0 source candidate preserves unchanged producer proof when a new consumer is added, separates fresh invocation guards from reviewed procedure source, and clarifies authorization, review and verification. It also skips byte-identical projection writes and adds a bounded read-only artifact footprint query. The project format remains V3, with 17 skills and 26 CLI commands. Compact-by-default output, task amendments, usage counters and outcome-scoped harnesses remain supported. Codex and Claude Code share the same `main` source package.
+
+[4.1 development and qualification](docs/planning/v4.1/README.md) records scope, evidence and limitations. A source candidate is not a published or installed release; existing 4.0.0 installations are unchanged. Prompt clarity and fewer writes do not by themselves establish token savings.
+
+The [qualification report](proof-output/v4.1/TASK-432/qualification.md) distinguishes
+real CLI regressions and isolated native-host runs from supplied decision fixtures.
+Read its measured limits before drawing efficiency or installed-release conclusions.
+
+## Precise progress in 4.1
+
+- Adding a consumer does not change its provider's own contract. Changed producer inputs, prerequisites, selected paths and parent composition still require current proof.
+- Store the current task guard in invocation data, not a literal in reviewed executable source. A new guard neither changes source identity nor grants host permission.
+- A blocked check blocks the claim that needs it. Continue other authorized dependency-safe work while retaining the blocker. Routine agent review is not new human authority.
+- Create the smallest complete actor-visible journey first. Add only missing probe or capture capability, before the acceptance that consumes it.
+- Replan by copying the current candidate and editing affected stable IDs/fields. The runtime still computes and validates the complete result; it only skips writes whose projection bytes are identical. Timestamped graph output normally changes.
+
+For artifact size questions, run:
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --footprint --json
+# Explicit detail: at most 100 file rows; scan at most 10,000 entries by default.
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --footprint --footprint-detail --json
+```
+
+This optional metadata scan distinguishes declared proof inputs, evidence, generated output and unknown purpose; it does not run during normal task queries. It reports logical bytes, excluded directories and incomplete scans, not Git/allocated-disk size. Current result/audit references are visible; historical and handoff retention is unknown. It never deletes files or declares evidence disposable. Use explicit proof-input scopes to prevent behavior source from being hidden under evidence-output globs.
+
+Project queries use the existing serialization lock and may create its coordination
+file if missing. Read-only means no semantic state/proof change or cleanup, not a
+guarantee of zero coordination metadata. Mixed 4.0/4.1 hosts must not share an
+actively rebound plan: unchanged installations do not imply mixed-version readiness.
 
 ![Pyramid Task Intent Observer showing outcome progress, an active blocker, recommended action, and intent structure](docs/images/pyramid-task-map.png)
 
@@ -512,7 +541,7 @@ Availability is derived from these dimensions and graph dependencies; agents do 
 plugins/pyramid-task/
 ├── .codex-plugin/plugin.json          Codex manifest
 ├── .claude-plugin/plugin.json         Claude Code manifest
-├── skills/                            Eighteen agent-facing interfaces
+├── skills/                            Seventeen agent-facing interfaces
 ├── scripts/
 │   ├── pyramid.py                     Thin command-line adapter
 │   ├── pyramid_core.py                Transaction and compatibility facade

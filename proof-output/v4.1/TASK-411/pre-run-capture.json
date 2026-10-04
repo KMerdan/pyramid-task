@@ -1,0 +1,72 @@
+{
+  "schema": "pyramid-harness-v1",
+  "target": "TASK-411",
+  "mode": "candidate-bound",
+  "contracts": [
+    {
+      "requirement": "EV-411",
+      "owner": "TASK-411/EV-411",
+      "criteria": [
+        "AC-TASK-411-01",
+        "AC-TASK-411-02",
+        "AC-TASK-411-03"
+      ],
+      "method": "command",
+      "procedure": "Reproduce consumer growth against the pinned 4.0 baseline in disposable projects, repair the semantic boundary, then run positive and negative graph/proof CLI scenarios with actual files, stored proofs, guards and event heads. Preserve the baseline failure; inspect actual transitions and unchanged history. Do not replace source coverage with status fixtures.",
+      "inputs": [
+        "plugins/pyramid-task/scripts/pyramid_core.py",
+        "plugins/pyramid-task/scripts/pyramid_graph.py",
+        "plugins/pyramid-task/scripts/pyramid_verification.py",
+        "plugins/pyramid-task/tests/test_runtime.py",
+        "plugins/pyramid-task/tests/test_verification.py",
+        "plugins/pyramid-task/schemas/plan.schema.json",
+        "plugins/pyramid-task/schemas/state.schema.json",
+        "plugins/pyramid-task/schemas/agent-result.schema.json"
+      ],
+      "observations": [
+        "external",
+        "internal"
+      ],
+      "not_applicable": {
+        "visual": "These claims concern CLI/state and instruction decisions, not a rendered UI. Missing-visual cases must refuse visual acceptance; any later rendered-interface change needs its own capture and actual review."
+      },
+      "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+      "contract_sha256": "d9be1502f8d40949bffe089ddbebb3cef7d0cc5f8d949762fefa55518c61a683"
+    }
+  ],
+  "proof_templates": [
+    {
+      "requirement": "EV-411",
+      "run": {
+        "contract_sha256": "d9be1502f8d40949bffe089ddbebb3cef7d0cc5f8d949762fefa55518c61a683",
+        "inputs_sha256": "2f2d969df137328bfc577850e4ec1963d53e3172614ff9e6c4cf745eb363cab7",
+        "environment": "Disposable local projects and owned test processes; no production, personal credentials or existing installations. Record candidate, runtime, host/model identity when applicable. Failed/not-run observations remain visible.",
+        "observations": [
+          {
+            "kind": "external",
+            "result": "not-run",
+            "summary": "",
+            "reviewer": "",
+            "artifacts": []
+          },
+          {
+            "kind": "internal",
+            "result": "not-run",
+            "summary": "",
+            "reviewer": "",
+            "artifacts": []
+          }
+        ]
+      }
+    }
+  ],
+  "reusable_proofs": [],
+  "setup_blockers": [],
+  "instruction": "Capture this template BEFORE the checks. Execute or inspect the stated procedure; never invent observations. Source inputs must remain unchanged through submission.",
+  "context": {
+    "id": "CTX-0A0F3C248232D3D451196E47631916CE",
+    "plan_id": "PYRAMID-41-PRECISE-PROGRESS-20261004",
+    "plan_revision": 3,
+    "graph_version": 5
+  }
+}

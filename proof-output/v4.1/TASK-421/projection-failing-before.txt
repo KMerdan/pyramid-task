@@ -1,0 +1,19 @@
+test_identical_projection_compile_keeps_bytes_and_mtimes (test_efficiency.EfficiencyTests.test_identical_projection_compile_keeps_bytes_and_mtimes) ... FAIL
+test_projection_compile_recomputes_and_repairs_changed_content (test_efficiency.EfficiencyTests.test_projection_compile_recomputes_and_repairs_changed_content) ... ok
+
+======================================================================
+FAIL: test_identical_projection_compile_keeps_bytes_and_mtimes (test_efficiency.EfficiencyTests.test_identical_projection_compile_keeps_bytes_and_mtimes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/merdankiji/localGit/pyramid-task/plugins/pyramid-task/tests/test_efficiency.py", line 33, in test_identical_projection_compile_keeps_bytes_and_mtimes
+    self.assertEqual(before, {path: (path.read_bytes(), path.stat().st_mtime_ns)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                              for path in projection_paths})
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {Posi[181 chars]:46.857382Z",\n  "graph_version": 2,\n  "conte[29488 chars]000)} != {Posi[181 chars]:46.861746Z",\n  "graph_version": 2,\n  "conte[29488 chars]444)}
+Diff is 883207 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.089s
+
+FAILED (failures=1)

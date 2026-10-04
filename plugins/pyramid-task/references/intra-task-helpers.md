@@ -107,6 +107,11 @@ Validate returned data against `helper-result.schema.json`. A helper reports cla
 
 The task guard in a helper envelope is correlation and freshness context, not mutation authority. Helpers never invoke Pyramid mutations with it.
 
+Keep that correlation data outside reviewed executable source. Follow
+`agent-contracts.md`'s stable-procedure/fresh-invocation recipe. Renewing parent
+authority does not automatically requalify a helper, change its immutable
+snapshot, or grant denied host permissions; reconcile against the current job.
+
 The coordinator rejects or treats as stale any result whose helper ID, parent task, task guard, phase, or snapshot differs from the job. It also compares the returned guard to the current parent-task guard and enforces the job's finding and evidence budgets. `changed_files` and `changed_assets` must be empty. Reconcile contradictions explicitly and copy only accepted, relevant evidence into the parent `agent-result-v1`.
 
 Raw helpers return `freshness: pending` and `final_evidence_eligible: false`. During reconciliation, the coordinator may mark a completed candidate validation `current` and eligible only after its job identity, task guard, snapshot, budgets, and evidence references match. If the current guard or accepted candidate differs, mark the result stale. Preflight evidence and any result from an older snapshot remain advisory.

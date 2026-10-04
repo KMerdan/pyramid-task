@@ -22,6 +22,7 @@ import jsonschema
 
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PLUGIN_ROOT / "scripts"))
+import pyramid_core as core
 
 from pyramid_core import (  # noqa: E402
     PyramidError,
@@ -481,6 +482,62 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertEqual(2, applied["diff"]["to_revision"])
         self.assertNotEqual(original_context, applied["context"]["id"])
         self.assertTrue(validate_project(self.root)["valid"])
+
+    def test_new_consumer_does_not_invalidate_legacy_prerequisite(self) -> None:
+        self.complete_and_audit("RESEARCH-101", ["AC-101-01"])
+        candidate = load_json(self.example)
+        consumer = copy.deepcopy(next(n for n in candidate["nodes"] if n["id"] == "TASK-201"))
+        consumer["id"] = "TASK-202"
+        consumer["acceptance_criteria"] = [{"id": "AC-202-01", "description": "New consumer is independently checked"}]
+        consumer["required_evidence"] = [{"id": "EVREQ-202-01", "type": "test", "description": "New consumer proof"}]
+        candidate["nodes"].append(consumer)
+        candidate["edges"].extend([
+            {"from": "TASK-202", "to": "RESEARCH-101", "type": "requires"},
+            {"from": "TASK-202", "to": "OUTCOME-010", "type": "contributes-to"},
+            {"from": "GATE-290", "to": "TASK-202", "type": "integration-requires"},
+        ])
+        before = copy.deepcopy(load_project(self.root)[2]["nodes"]["RESEARCH-101"])
+        applied = replan_project(self.root, self.write_json("consumer.json", candidate),
+                                 "planner", "Add an independent consumer", True)
+        state = load_project(self.root)[2]
+        self.assertNotIn("RESEARCH-101", applied["event"]["payload"]["invalidated_claims"])
+        self.assertEqual("passed", state["nodes"]["RESEARCH-101"]["verification"])
+        self.assertEqual(before["last_audit"], state["nodes"]["RESEARCH-101"]["last_audit"])
+        self.assertEqual("unverified", state["nodes"]["TASK-202"]["verification"])
+        self.assertTrue(validate_project(self.root)["valid"])
+
+    def test_dependency_and_composition_changes_stale_consumers_not_providers(self) -> None:
+        self.complete_graph()
+        candidate = load_json(self.example)
+        candidate['edges'] = [e for e in candidate['edges']
+                              if not (e['from'] == 'TASK-201' and e['to'] == 'CONTRACT-102')]
+        replan_project(self.root, self.write_json('dependency-change.json', candidate),
+                       'planner', 'Change the consumed prerequisite', True)
+        state = load_project(self.root)[2]
+        self.assertNotEqual('passed', state['nodes']['TASK-201']['verification'])
+        self.assertEqual('passed', state['nodes']['CONTRACT-102']['verification'])
+        self.assertEqual('passed', state['nodes']['RESEARCH-101']['verification'])
+        for nid in ['GATE-290', 'OUTCOME-010', 'INTENT-001']:
+            self.assertNotEqual('passed', state['nodes'][nid]['verification'])
+
+    def test_changed_composition_preserves_a_finished_child(self) -> None:
+        self.complete_graph()
+        candidate = load_json(self.example)
+        # Add independent composition work without changing existing providers.
+        child = copy.deepcopy(next(n for n in candidate['nodes'] if n['id'] == 'RESEARCH-101'))
+        child['id'] = 'RESEARCH-103'
+        child['acceptance_criteria'] = [{'id': 'AC-103-01', 'description': 'New composition branch is checked'}]
+        child['required_evidence'] = [{'id': 'EVREQ-103-01', 'type': 'test', 'description': 'New branch proof'}]
+        candidate['nodes'].append(child)
+        candidate['edges'].extend([
+            {'from': 'RESEARCH-103', 'to': 'OUTCOME-010', 'type': 'contributes-to'},
+            {'from': 'GATE-290', 'to': 'RESEARCH-103', 'type': 'validation-requires'}])
+        replan_project(self.root, self.write_json('composition-change.json', candidate),
+                       'planner', 'Change the outcome composition', True)
+        state = load_project(self.root)[2]
+        self.assertEqual('passed', state['nodes']['RESEARCH-101']['verification'])
+        self.assertNotEqual('passed', state['nodes']['OUTCOME-010']['verification'])
+        self.assertNotEqual('passed', state['nodes']['GATE-290']['verification'])
 
     def test_expand_preview_requires_explicit_approval_and_does_not_mutate(self) -> None:
         preview = expand_project(self.root, self.expansion, "planner", apply=False)
@@ -1196,14 +1253,14 @@ class PyramidRuntimeTests(unittest.TestCase):
     def test_graph_is_published_only_after_other_projections_complete(self) -> None:
         graph_path = self.root / ".pyramid" / "graph.json"
         graph_before = graph_path.read_bytes()
-        original_write_text = Path.write_text
+        original_write_text = core.write_projection_text
 
         def fail_final_readme(path: Path, data: str, *args: object, **kwargs: object) -> int:
             if path.name == "README.md" and "tasks" in path.parts:
                 raise OSError("simulated projection failure")
             return original_write_text(path, data, *args, **kwargs)
 
-        with mock.patch.object(Path, "write_text", new=fail_final_readme):
+        with mock.patch.object(core, "write_projection_text", new=fail_final_readme):
             with self.assertRaisesRegex(OSError, "simulated projection failure"):
                 compile_project(self.root)
         self.assertEqual(graph_before, graph_path.read_bytes())
