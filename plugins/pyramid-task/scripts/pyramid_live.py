@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import threading
 import webbrowser
 from http import HTTPStatus
@@ -19,7 +20,9 @@ from pyramid_core import (
     node_map,
     project_paths,
 )
-from pyramid_visualizer import build_visualization_html, load_visualization_graph, visualization_snapshot
+from pyramid_visualizer import (build_visualization_html, load_visualization_graph,
+                                visualization_snapshot, resolve_snapshot_links,
+                                read_proof_artifact, read_referenced_file)
 from pyramid_history import history_summary
 
 
@@ -46,6 +49,7 @@ class LiveGraphState:
         self._condition = threading.Condition()
         self._stop = threading.Event()
         self._watcher: threading.Thread | None = None
+        resolve_snapshot_links(graph, self.project, self.project / 'index.html')
         self._graph = graph
         self._body = _json_bytes(graph)
         self._etag = _semantic_etag(graph)
@@ -115,9 +119,28 @@ class LiveGraphState:
         if relative_path not in allowed:
             return None
         candidate = (self.project / relative_path).resolve()
-        if not candidate.is_relative_to(self.project) or not candidate.is_file():
+        raw = self.project / relative_path
+        if (not candidate.is_relative_to(self.project) or not candidate.is_file()
+                or any(p.is_symlink() for p in (raw, *raw.parents) if p != self.project)):
             return None
         return candidate
+
+    def artifact(self, sha: str) -> tuple[bytes, str] | None:
+        if not re.fullmatch(r'[0-9a-f]{64}', sha):
+            return None
+        # Only displayed references from the last validated publication grant
+        # access. The request rechecks actual bytes, not cached file trust.
+        reference = None
+        with self._condition:
+            for node in self._graph.get('nodes', []):
+                for record in node.get('proof', {}).get('records', []):
+                    for observation in record['observations']:
+                        candidates = observation['artifacts'] + ([observation['preview']] if observation.get('preview') else [])
+                        for candidate in candidates:
+                            if candidate.get('sha256') == sha:
+                                reference = dict(candidate)
+                                break
+        return read_proof_artifact(self.project, reference) if reference else None
 
     def refresh(self) -> bool:
         signature = self._published_signature()
@@ -161,6 +184,7 @@ class LiveGraphState:
             return False
 
         presentation = visualization_snapshot(candidate)
+        resolve_snapshot_links(presentation, self.project, self.project / 'index.html')
         body = _json_bytes(presentation)
         etag = _semantic_etag(presentation)
         with self._condition:
@@ -247,11 +271,13 @@ def _handler_for(state: LiveGraphState, html: bytes) -> type[BaseHTTPRequestHand
                 "connect-src 'self'; img-src 'self' data:; base-uri 'none'; frame-ancestors 'none'",
             )
 
-        def _send(self, body: bytes, content_type: str, status: HTTPStatus = HTTPStatus.OK) -> None:
+        def _send(self, body: bytes, content_type: str, status: HTTPStatus = HTTPStatus.OK, *, download: bool = False) -> None:
             self.send_response(status)
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-store")
+            if download:
+                self.send_header('Content-Disposition', 'attachment; filename="pyramid-evidence.bin"')
             self._security_headers()
             self.end_headers()
             self.wfile.write(body)
@@ -289,13 +315,25 @@ def _handler_for(state: LiveGraphState, html: bytes) -> type[BaseHTTPRequestHand
             if parsed.path == "/events":
                 self._events()
                 return
+            if parsed.path.startswith('/artifact/'):
+                artifact = state.artifact(unquote(parsed.path[len('/artifact/'):]))
+                if artifact is None:
+                    self._send(b'Artifact unavailable or changed\n', 'text/plain; charset=utf-8', HTTPStatus.NOT_FOUND)
+                    return
+                body, mime = artifact
+                self._send(body, mime, download=not mime.startswith('image/'))
+                return
             if parsed.path.startswith("/project/"):
                 relative = unquote(parsed.path[len("/project/") :])
                 source = state.allowed_source(relative)
                 if source is None:
                     self._send(b"Not found\n", "text/plain; charset=utf-8", HTTPStatus.NOT_FOUND)
                     return
-                self._send(source.read_bytes(), "text/markdown; charset=utf-8")
+                body = read_referenced_file(state.project, relative, 1024 * 1024)
+                if body is None:
+                    self._send(b'Not found\n', 'text/plain; charset=utf-8', HTTPStatus.NOT_FOUND)
+                    return
+                self._send(body, "text/markdown; charset=utf-8")
                 return
             if parsed.path == "/favicon.ico":
                 self._send(b"", "image/x-icon", HTTPStatus.NO_CONTENT)

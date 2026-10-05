@@ -322,9 +322,13 @@ def query_harness(root: Path, plan: dict, state: dict, nid: str) -> dict:
         raise VerificationError(f'Unknown node: {nid}')
     specs = contracts(plan, nid)
     templates, blockers = [], []
+    snapshots = {}
     for spec in specs:
         try:
-            snapshot = input_snapshot(root, plan, spec)
+            key = tuple(spec['inputs'])
+            if key not in snapshots:
+                snapshots[key] = input_snapshot(root, plan, spec)
+            snapshot = snapshots[key]
             templates.append({'requirement': spec['requirement'], 'run': {
                 'contract_sha256': spec['contract_sha256'], 'inputs_sha256': snapshot['sha256'],
                 'environment': spec['environment'], 'observations': [
@@ -335,8 +339,12 @@ def query_harness(root: Path, plan: dict, state: dict, nid: str) -> dict:
     reusable = []
     for rid, run in known_runs(state).items():
         for spec in specs:
+            snapshot = snapshots.get(tuple(spec['inputs']))
+            if snapshot is None:
+                continue
             try:
-                validate_run(root, plan, spec, run, state.get('proof_contract_bindings', {}))
+                validate_run(root, plan, spec, run, state.get('proof_contract_bindings', {}),
+                             _inputs_sha256=snapshot['sha256'])
             except (VerificationError, OSError):
                 continue
             reusable.append({'requirement': spec['requirement'], 'reuse_run': rid})
@@ -366,7 +374,10 @@ def _artifact(root: Path, artifact: dict) -> tuple[Path, bytes]:
     return path, data
 
 
-def validate_run(root: Path, plan: dict, spec: dict, run: dict, bindings: dict | None = None) -> None:
+def validate_run(root: Path, plan: dict, spec: dict, run: dict, bindings: dict | None = None,
+                 *, _inputs_sha256: str | None = None) -> None:
+    # Private read-query reuse only. Submission/readiness callers always take a
+    # fresh snapshot; nothing from CLI/JSON can populate this value.
     if not isinstance(run, dict) or set(run) - {'id', 'contract_sha256', 'inputs_sha256', 'environment', 'observations'}:
         raise VerificationError('Malformed proof run')
     if run.get('contract_sha256') != spec['contract_sha256']:
@@ -377,7 +388,8 @@ def validate_run(root: Path, plan: dict, spec: dict, run: dict, bindings: dict |
                  and binding.get('producer_sha256') == spec['contract_sha256'])
         if not bound and run.get('contract_sha256') != _legacy_contract_sha256(plan, spec['owner']):
             raise VerificationError(f"{spec['requirement']}: proof contract changed")
-    if run.get('inputs_sha256') != input_snapshot(root, plan, spec)['sha256']:
+    current_sha = _inputs_sha256 if _inputs_sha256 is not None else input_snapshot(root, plan, spec)['sha256']
+    if run.get('inputs_sha256') != current_sha:
         raise VerificationError(f"{spec['requirement']}: candidate inputs changed; collect fresh proof")
     if run.get('environment') != spec['environment']:
         raise VerificationError(f"{spec['requirement']}: environment contract mismatch")

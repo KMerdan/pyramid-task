@@ -170,6 +170,10 @@ def build_parser() -> argparse.ArgumentParser:
     group.add_argument("--assurance", action="store_true")
     group.add_argument("--assurance-summary", action="store_true")
     group.add_argument("--assurance-detail", action="store_true")
+    scope = inspect.add_mutually_exclusive_group()
+    scope.add_argument('--assurance-task', help='With --assurance-detail, select a node and its audit coverage')
+    scope.add_argument('--assurance-asset', help='With --assurance-detail, select one asset; retain related task blockers')
+    scope.add_argument('--inspection', help='With --assurance-detail, select one inspection; retain related task blockers')
     group.add_argument(
         "--parallel-ready",
         action="store_true",
@@ -439,6 +443,8 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             "compiled": compile_project(args.project),
         }, 0
     if args.command == "inspect":
+        if args.usage and any(value is not None for value in (args.assurance_task, args.assurance_asset, args.inspection)):
+            raise PyramidError('Assurance selectors require --assurance-detail, not --usage')
         if args.usage:
             result = usage_report(args.command_catalog, days=args.usage_days, detail=not args.compact)
             return result, 1 if result["status"] == "unavailable" else 0
@@ -452,6 +458,9 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             assurance_view=args.assurance,
             assurance_summary_view=args.assurance_summary,
             assurance_detail=args.assurance_detail,
+            assurance_task=args.assurance_task,
+            assurance_asset=args.assurance_asset,
+            inspection=args.inspection,
             parallel_ready=args.parallel_ready,
             max_agents=args.max_agents,
             audit_readiness=args.audit_readiness,

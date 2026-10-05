@@ -2,7 +2,23 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
-## 4.1.0 — unreleased source candidate
+## 4.2.0 — 2026-10-05 (local source candidate)
+
+- Separate recorded acceptance, current proof eligibility and live publication health; correct completed-intent actions and expose bounded claim-linked evidence.
+- Avoid unused graph construction in narrow inspect queries; add selected assurance, invocation-local input hashing and explicit full-response recovery. No persisted validation cache or weaker guards.
+- Clarify routine-query, health-update, proof-reuse and final-validation triggers with original STE-inspired guidance; keep authorization, proposed grants, review and verification separate.
+- Make the Observer decision-centered, responsive and keyboard-operable, with honest dependency/status labels and lazy claim-linked raster evidence. Bound reads, reject symlink/nonregular/FIFO paths and download non-raster evidence as opaque attachments.
+- Add drafting-only `goal-prompt`, adapting to project, phase, harness and confirmed authority. There are 18 skills, still 26 CLI commands and 31 schemas.
+- Retain failed working runs locally; publish bounded summaries. Actual browser/model inspection and independent checks are distinct from contract fixtures. No native token/human-comprehension claim, push, installation upgrade, compaction or cleanup.
+
+See the [improvement index](docs/planning/improvement/README.md). This entry does
+not assert remote publication or a user's installation status.
+
+## 4.1.0 — 2026-10-04 (source published)
+
+Source qualification completed and was pushed to `main` in `58559af`.
+Publication does not update installed plugins or qualify a user's installation;
+see [current context](CONTEXT.md) for status and boundaries.
 
 - Make replan invalidation directional: a new consumer preserves an unchanged provider; changed producer claims, inputs and composition still invalidate affected claims.
 - Bind schema-2 proof to its producer contract rather than all current consumers. Add explicit guarded compatibility bindings for intact recorded 4.0 runs without rewriting observations, artifacts or history. Older runtimes cannot be assumed to understand new binding metadata; recovery must restore matching source and canonical snapshots, not downgrade a live plan blindly.
@@ -11,7 +27,7 @@ All notable changes follow semantic versioning. Serialized task graph and state 
 - Recompute and validate complete projections, but skip byte-identical ready/Markdown writes. Timestamped graph output still changes; no token savings follow from fewer writes.
 - Add optional bounded read-only `inspect --footprint` with logical-byte/count summaries, declared classes, current references, partial-scan limits and unknown ownership. No deletion, GC, extension-only classification or normal-packet scan.
 - Reject rooted/specific proof-input overlap with evidence outputs and repository-wide output globs during capture; keep dedicated staging exclusions for whole-repository captures and amendment coverage.
-- Retain failing attempts and qualify source/runtime and native host paths separately. See the 4.1 planning/evidence index for actual checks and matched pilot limitations; no production, installed-plugin update or publication is implied.
+- Retain failing attempts and qualify source/runtime and native host paths separately. See the 4.1 planning/evidence index for actual checks and matched pilot limitations; qualification does not establish production or installed-plugin acceptance, or measured token savings.
 
 ## 4.0.0
 

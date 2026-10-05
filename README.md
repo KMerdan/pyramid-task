@@ -7,13 +7,38 @@
 
 Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
-The 4.1.0 source candidate preserves unchanged producer proof when a new consumer is added, separates fresh invocation guards from reviewed procedure source, and clarifies authorization, review and verification. It also skips byte-identical projection writes and adds a bounded read-only artifact footprint query. The project format remains V3, with 17 skills and 26 CLI commands. Compact-by-default output, task amendments, usage counters and outcome-scoped harnesses remain supported. Codex and Claude Code share the same `main` source package.
+Pyramid Task 4.2.0 makes status and proof easier to interpret, scopes routine queries, and adds a project-aware continuation-prompt skill. The project format remains V3, with 18 skills, 26 CLI commands and 31 schemas. Compact-by-default output, producer-scoped proof, task amendments, usage counters and outcome-scoped harnesses remain supported. Codex and Claude Code share the same `main` source package.
 
-[4.1 development and qualification](docs/planning/v4.1/README.md) records scope, evidence and limitations. A source candidate is not a published or installed release; existing 4.0.0 installations are unchanged. Prompt clarity and fewer writes do not by themselves establish token savings.
+[Current context](CONTEXT.md) records the dated repository status; the
+[documentation index](docs/README.md) routes readers to each topic owner.
+The [4.2 improvement index](docs/planning/improvement/README.md) owns the A/B/C
+scope, qualification and local integration boundary. Development uses installed
+4.1 as controller while qualifying 4.2 source separately. This delivery does not
+push or update installed plugins. Follow installation instructions after
+publication; no current user-installation version is assumed.
+Prompt clarity and fewer writes do not by themselves establish token savings.
 
-The [qualification report](proof-output/v4.1/TASK-432/qualification.md) distinguishes
+The [4.1 development index](docs/planning/v4.1/README.md) links the completed
+ladder and its evidence. The historical
+[qualification report](proof-output/v4.1/TASK-432/qualification.md) distinguishes
 real CLI regressions and isolated native-host runs from supplied decision fixtures.
+It captures the pre-closure, pre-publication candidate, not current release status.
 Read its measured limits before drawing efficiency or installed-release conclusions.
+
+## Decision-centered progress in 4.2
+
+- Distinguish recorded acceptance, current candidate eligibility and live publication health. The Observer does not watch source files or infer current proof from an old audit.
+- Read selected status, harness and assurance slices. Use `--full` when omissions prevent a decision; retain full validation at trust, recovery and final acceptance boundaries.
+- Lead with last recorded acceptance, next gate, blocking causes and selected-work proof. Claim-linked raster captures use bounded hash-checked reads; other artifacts download without executing HTML.
+- Draft continuation with `pyramid-task:goal-prompt`, adapting to current phase, existing tools and actual authorization. Proposed grants and unknowns stay separate; the skill cannot grant permission or run cleanup.
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --assurance-detail --assurance-task TASK-201 --json
+```
+
+Selected assurance is not an editable bundle. The original STE-inspired trigger
+profile is guidance, not ASD-STE100 compliance or a parser. Measurements report
+bytes and local timings, not model tokens or human comprehension.
 
 ## Precise progress in 4.1
 
@@ -259,7 +284,7 @@ python3 plugins/pyramid-task/scripts/pyramid.py inspect --usage --usage-days 30 
 python3 plugins/pyramid-task/scripts/pyramid.py inspect --usage --usage-days 30 --full --json
 ```
 
-No project is required. The report includes every CLI command, including zero-count commands; compact zero-count rows omit redundant outcome/cost fields. Reading it does not create or update counters. This adds no new skill or top-level command: the current source has 17 skills and 26 CLI commands after removing `upgrade`. Recorded counts for older removed commands remain visible as history, not available operations.
+No project is required. The report includes every CLI command, including zero-count commands; compact zero-count rows omit redundant outcome/cost fields. Reading it does not create or update counters. The audit itself adds no skill or top-level command. Published 4.1 has 17 skills and 26 CLI commands after removing `upgrade`; this improvement candidate adds the drafting-only goal-prompt skill, not a CLI command. Recorded counts for older removed commands remain visible as history, not available operations.
 
 The shared default store is `~/.local/state/pyramid-task/usage.sqlite3` (`$XDG_STATE_HOME/pyramid-task/usage.sqlite3` when configured). Codex and Claude Code aggregate into the same store when they share this location. Use an absolute `PYRAMID_USAGE_DIR` to choose another directory, or `PYRAMID_USAGE=off` to disable collection while retaining readable prior counts. The store is separate from project `.pyramid` artifacts and versioned plugin caches, so project cleanup and plugin updates do not reset it. It is machine-local, not synchronized across devices.
 
@@ -269,7 +294,7 @@ Interpretation limits:
 
 - Collection starts with this implementation; older releases, disabled collection, help/parser errors, Python API calls and the usage report itself are not counted. Do not backfill graph events as if they measured reads or skill invocation.
 - `unfinished` includes running, killed, or completion-recording failures; it does not mean the task failed. Live visualization duration includes the server lifetime. Failure counts refer to CLI exits, not necessarily product defects.
-- CLI usage cannot establish which skill was read or followed. `orchestrate` and `simplify` have no standalone CLI entry point and are explicitly unmeasured, not unused.
+- CLI usage cannot establish which skill was read or followed. `orchestrate`, `simplify` and the candidate `goal-prompt` have no standalone CLI entry point and are explicitly unmeasured, not unused.
 - High counts, repeated failure modes and large output may identify friction to investigate. Low counts may reflect recovery-only commands or the current development phase; historical counts for removed commands do not imply current availability. Counts alone do not justify removing gates, audits or lifecycle protection; bytes and runtime are not model token or latency measurements.
 
 ## Parallel execution with sub-agents
@@ -478,11 +503,20 @@ If the baseline is not known, creation writes a deliberately incomplete placehol
 
 ## Included skills
 
+Version 4.2 adds `pyramid-task:goal-prompt` (18 skills, still 26 CLI
+commands). This is a drafting method, not a new runtime command or an installed
+4.1 capability. Ask: “Use pyramid-task:goal-prompt to draft continuation for this
+project's current intent and existing authorization.” It discovers only relevant
+project/phase/harness facts, keeps proposed grants and unknowns separate, and
+does not execute, approve or clean anything. Browser/guest/artifact modules are
+included only when applicable; a headless project gets no copied VM paragraph.
+
 | Skill | Purpose |
 | --- | --- |
 | `pyramid-task:create` | Clarify intent, define demonstrable increments, compare paths, and create the first graph. |
 | `pyramid-task:simplify` | Fact-check and reduce unjustified graph complexity while preserving real increment, outcome, and assurance boundaries. |
 | `pyramid-task:new-intent` | Safely route a distinct intent through create, archive, and reset. |
+| `pyramid-task:goal-prompt` | Draft safe project-aware continuation from the current intent, harness and actual authority. |
 | `pyramid-task:assess` | Establish or refresh the existing-system baseline. |
 | `pyramid-task:impact` | Map affected assets, inspections, findings, drift, and controls. |
 | `pyramid-task:inspect` | Query status, readiness and audit freshness; analyze the global command usage audit and possible workflow overhead. |
@@ -541,7 +575,7 @@ Availability is derived from these dimensions and graph dependencies; agents do 
 plugins/pyramid-task/
 ├── .codex-plugin/plugin.json          Codex manifest
 ├── .claude-plugin/plugin.json         Claude Code manifest
-├── skills/                            Seventeen agent-facing interfaces
+├── skills/                            Eighteen agent interfaces
 ├── scripts/
 │   ├── pyramid.py                     Thin command-line adapter
 │   ├── pyramid_core.py                Transaction and compatibility facade

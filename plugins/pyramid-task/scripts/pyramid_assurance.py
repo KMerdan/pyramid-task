@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import fnmatch
 import os
 import re
@@ -9,7 +10,7 @@ from typing import Any
 
 
 PROJECT_FORMAT_VERSION = 3
-RUNTIME_VERSION = "4.1.0"
+RUNTIME_VERSION = "4.2.0"
 ID_PATTERN = re.compile(r"^[A-Z][A-Z0-9-]*$")
 ASSET_KINDS = {
     "repository",
@@ -1004,6 +1005,80 @@ def assurance_for_tasks(
         "finding_ids": [item["id"] for item in findings],
         "scope_drift_ids": [item["id"] for item in drift],
         "blockers": blockers,
+    }
+
+
+def scoped_assurance_detail(
+    baseline: dict, assurance: dict, *, task_ids: set[str] | None = None,
+    asset_id: str | None = None, inspection_id: str | None = None,
+    implementation_frontier: dict | None = None,
+) -> dict:
+    """Select records, but retain the real related-task coverage and blockers."""
+    if sum(value is not None for value in (task_ids, asset_id, inspection_id)) != 1:
+        raise ValueError('Exactly one assurance scope is required')
+    assets = {item['id']: item for item in baseline['assets']}
+    inspections = {item['id']: item for item in assurance['inspections']}
+    if asset_id is not None:
+        if not _stable_id(asset_id) or asset_id not in assets:
+            raise ValueError(f'Unknown asset: {asset_id}')
+        selected_assets = {asset_id}
+    elif inspection_id is not None:
+        if not _stable_id(inspection_id) or inspection_id not in inspections:
+            raise ValueError(f'Unknown inspection: {inspection_id}')
+        selected_assets = set(inspections[inspection_id]['asset_ids'])
+    else:
+        selected_assets = _relevant_records(assurance, task_ids)[1]
+    if task_ids is None:
+        # A record can look green while another asset of its consuming task blocks.
+        # Coverage is not narrowed to the displayed asset or inspection.
+        task_ids = {task for item in assurance['impacts']
+                    if item['asset_id'] in selected_assets
+                    and item.get('status') != 'dismissed'
+                    for task in item['task_ids']}
+        task_ids.update(task for item in assurance['inspections']
+                        if selected_assets.intersection(item['asset_ids'])
+                        for task in item['task_ids'])
+    coverage = assurance_for_tasks(
+        baseline, assurance, task_ids, implementation_frontier=implementation_frontier)
+    selected_baseline = {key: copy.deepcopy(value) for key, value in baseline.items()
+                         if key not in {'assets', 'relations'}}
+    selected_baseline['assets'] = [copy.deepcopy(assets[aid]) for aid in sorted(selected_assets)]
+    selected_baseline['relations'] = [
+        copy.deepcopy(item) for item in baseline.get('relations', [])
+        if item.get('from') in selected_assets or item.get('to') in selected_assets]
+    selected_assurance = {key: copy.deepcopy(value) for key, value in assurance.items()
+                          if key not in {'impacts', 'inspections', 'findings', 'scope_drift'}}
+    selected_assurance['impacts'] = [
+        copy.deepcopy(item) for item in assurance['impacts']
+        if item['asset_id'] in selected_assets
+        and (not task_ids or task_ids.intersection(item['task_ids']))]
+    selected_assurance['inspections'] = [
+        copy.deepcopy(item) for item in assurance['inspections']
+        if (item['id'] == inspection_id if inspection_id else
+            selected_assets.intersection(item['asset_ids'])
+            and (not item['task_ids'] or task_ids.intersection(item['task_ids'])))]
+    # Findings/drift affecting related task coverage remain load-bearing even
+    # when their asset is not displayed. Coverage carries exact recovery IDs.
+    selected_assurance['findings'] = [
+        copy.deepcopy(item) for item in assurance['findings']
+        if item['id'] in coverage['finding_ids']
+        or selected_assets.intersection(item['asset_ids'])]
+    selected_assurance['scope_drift'] = [
+        copy.deepcopy(item) for item in assurance['scope_drift']
+        if item['task'] in task_ids]
+    omitted = {
+        'baseline.' + key: len(baseline.get(key, [])) - len(selected_baseline.get(key, []))
+        for key in ('assets', 'relations')}
+    omitted.update({
+        'assurance.' + key: len(assurance.get(key, [])) - len(selected_assurance.get(key, []))
+        for key in ('impacts', 'inspections', 'findings', 'scope_drift')})
+    return {
+        'selection': {'task_ids': sorted(task_ids), 'asset_id': asset_id,
+                      'inspection_id': inspection_id},
+        'coverage': coverage, 'baseline': selected_baseline, 'assurance': selected_assurance,
+        'omitted_record_counts': omitted,
+        'recovery': 'inspect --assurance-detail; inspect --audit-readiness <related-node>',
+        'scope_note': 'Selected records are not audit acceptance. Coverage includes blockers from all assets of related tasks; omitted records remain canonical.',
     }
 
 

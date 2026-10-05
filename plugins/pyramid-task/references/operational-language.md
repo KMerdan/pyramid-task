@@ -18,6 +18,21 @@ Use condition → actor → action → limit for consequential instructions. Pre
 principal action per sentence. Use MUST/MUST NOT for real invariants, SHOULD for
 defaults and MAY for options; these words never override host permissions.
 
+## Decision triggers
+
+| Condition | Agent action and stopping limit |
+| --- | --- |
+| Established project; ordinary status question | Use the smallest native query. Stop relying on a failed validation result. |
+| First trust, recovery, suspected corruption or final acceptance | Run complete `validate`; do not substitute a narrow read for full-chain integrity. |
+| Current claimed task; health-only report | Reuse the packet/guard; no new harness or test solely for health. |
+| New check required | Capture inputs before execution; never recapture afterward to disguise change. |
+| Existing proof proposed for reuse | Check claim, contract, inputs, environment and artifacts; rerun only affected invalid proof. |
+| Guard conflict | Inspect the affected node and reconcile facts before retrying; never silently renew authority. |
+| Missing/new authority or uncertain ownership/isolation | Stop the affected operation and request the exact missing decision; continue independent authorized work. |
+
+Mandatory skill reads, host restrictions and explicit project checks remain
+mandatory. Reuse supporting context only while relevant facts remain current.
+
 Keep observed result, evidence reference and limitation separate. A model claim,
 hash, file, process start or simulated effect is not execution or visual proof.
 Do not label an unknown/failed/missing check passed. Required human decisions

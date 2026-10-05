@@ -1,0 +1,983 @@
+{
+  "schema": "pyramid-assurance-v1",
+  "plan_id": "PYRAMID-DECISION-EFFICIENCY-20261005",
+  "baseline_id": "BASELINE-PYRAMID-40",
+  "baseline_revision": 3,
+  "policy": "brownfield",
+  "status": "incomplete",
+  "updated_at": "2026-10-04T22:34:00Z",
+  "updated_by": "codex-improvement-worker",
+  "enforce_from_graph_version": 1,
+  "impacts": [
+    {
+      "id": "IMPACT-CONTRACT-501-IMPROVEMENT",
+      "asset_id": "ASSET-IMPROVEMENT",
+      "task_ids": [
+        "CONTRACT-501"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "docs/planning/improvement/README.md",
+        "docs/planning/improvement/candidate-plan.json"
+      ],
+      "path": [
+        "CONTRACT-501",
+        "ASSET-IMPROVEMENT"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-511-OBSERVER",
+      "asset_id": "ASSET-OBSERVER",
+      "task_ids": [
+        "TASK-511"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "plugins/pyramid-task/scripts/pyramid_visualizer.py:visualization_snapshot",
+        "plugins/pyramid-task/scripts/pyramid_live.py",
+        "docs/planning/improvement/measurement.md"
+      ],
+      "path": [
+        "TASK-511",
+        "ASSET-OBSERVER"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-511-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-511"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "plugins/pyramid-task/scripts/pyramid_verification.py:contracts",
+        "plugins/pyramid-task/references/development-harness.md"
+      ],
+      "path": [
+        "TASK-511",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-511-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-511"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "docs/planning/v4.1/baseline-checks.json",
+        "CONTRIBUTING.md"
+      ],
+      "path": [
+        "TASK-511",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-521-GRAPH",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-521"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "plugins/pyramid-task/scripts/pyramid_core.py:replan_project",
+        "docs/architecture.md"
+      ],
+      "path": [
+        "TASK-521",
+        "ASSET-GRAPH"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-521-CLI",
+      "asset_id": "ASSET-CLI",
+      "task_ids": [
+        "TASK-521"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "plugins/pyramid-task/scripts/pyramid.py",
+        "README.md"
+      ],
+      "path": [
+        "TASK-521",
+        "ASSET-CLI"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-521-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-521"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "plugins/pyramid-task/scripts/pyramid_verification.py:contracts",
+        "plugins/pyramid-task/references/development-harness.md"
+      ],
+      "path": [
+        "TASK-521",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-521-OUTPUT",
+      "asset_id": "ASSET-OUTPUT",
+      "task_ids": [
+        "TASK-521"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "plugins/pyramid-task/scripts/pyramid_output.py:compact_response"
+      ],
+      "path": [
+        "TASK-521",
+        "ASSET-OUTPUT"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-521-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-521"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "docs/planning/v4.1/baseline-checks.json",
+        "CONTRIBUTING.md"
+      ],
+      "path": [
+        "TASK-521",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-522-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-522"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "plugins/pyramid-task/skills/create/SKILL.md",
+        "plugins/pyramid-task/references/intra-task-helpers.md"
+      ],
+      "path": [
+        "TASK-522",
+        "ASSET-GUIDANCE"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-531-OBSERVER",
+      "asset_id": "ASSET-OBSERVER",
+      "task_ids": [
+        "TASK-531"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "plugins/pyramid-task/scripts/pyramid_visualizer.py:visualization_snapshot",
+        "plugins/pyramid-task/scripts/pyramid_live.py",
+        "docs/planning/improvement/measurement.md"
+      ],
+      "path": [
+        "TASK-531",
+        "ASSET-OBSERVER"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-531-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-531"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "plugins/pyramid-task/scripts/pyramid_verification.py:contracts",
+        "plugins/pyramid-task/references/development-harness.md"
+      ],
+      "path": [
+        "TASK-531",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-531-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-531"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "plugins/pyramid-task/skills/create/SKILL.md",
+        "plugins/pyramid-task/references/intra-task-helpers.md"
+      ],
+      "path": [
+        "TASK-531",
+        "ASSET-GUIDANCE"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-531-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-531"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "docs/planning/v4.1/baseline-checks.json",
+        "CONTRIBUTING.md"
+      ],
+      "path": [
+        "TASK-531",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-541-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-541"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "plugins/pyramid-task/skills/create/SKILL.md",
+        "plugins/pyramid-task/references/intra-task-helpers.md"
+      ],
+      "path": [
+        "TASK-541",
+        "ASSET-GUIDANCE"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-541-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-541"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "docs/planning/v4.1/baseline-checks.json",
+        "CONTRIBUTING.md"
+      ],
+      "path": [
+        "TASK-541",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-541-PACKAGING",
+      "asset_id": "ASSET-PACKAGING",
+      "task_ids": [
+        "TASK-541"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "docs/planning/v4.1/baseline-checks.json",
+        "docs/planning/v4.1/README.md"
+      ],
+      "path": [
+        "TASK-541",
+        "ASSET-PACKAGING"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-551-PACKAGING",
+      "asset_id": "ASSET-PACKAGING",
+      "task_ids": [
+        "TASK-551"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "docs/planning/v4.1/baseline-checks.json",
+        "docs/planning/v4.1/README.md"
+      ],
+      "path": [
+        "TASK-551",
+        "ASSET-PACKAGING"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-551-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-551"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "docs/planning/v4.1/baseline-checks.json",
+        "CONTRIBUTING.md"
+      ],
+      "path": [
+        "TASK-551",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-551-IMPROVEMENT",
+      "asset_id": "ASSET-IMPROVEMENT",
+      "task_ids": [
+        "TASK-551"
+      ],
+      "type": "direct",
+      "status": "confirmed",
+      "confidence": "high",
+      "evidence": [
+        "docs/planning/improvement/candidate-plan.json",
+        "docs/planning/improvement/README.md",
+        "docs/planning/improvement/candidate-plan.json"
+      ],
+      "path": [
+        "TASK-551",
+        "ASSET-IMPROVEMENT"
+      ]
+    }
+  ],
+  "inspections": [
+    {
+      "id": "INSPECT-CONTRACT-501-IMPROVEMENT",
+      "asset_ids": [
+        "ASSET-IMPROVEMENT"
+      ],
+      "task_ids": [
+        "CONTRACT-501"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-511-OBSERVER",
+      "asset_ids": [
+        "ASSET-OBSERVER"
+      ],
+      "task_ids": [
+        "TASK-511"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-511-PROOF",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-511"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-511-QUALIFICATION",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-511"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-521-GRAPH",
+      "asset_ids": [
+        "ASSET-GRAPH"
+      ],
+      "task_ids": [
+        "TASK-521"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-521-CLI",
+      "asset_ids": [
+        "ASSET-CLI"
+      ],
+      "task_ids": [
+        "TASK-521"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-521-PROOF",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-521"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-521-OUTPUT",
+      "asset_ids": [
+        "ASSET-OUTPUT"
+      ],
+      "task_ids": [
+        "TASK-521"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-521-QUALIFICATION",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-521"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-522-GUIDANCE",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-522"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-531-OBSERVER",
+      "asset_ids": [
+        "ASSET-OBSERVER"
+      ],
+      "task_ids": [
+        "TASK-531"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-531-PROOF",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-531"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-531-GUIDANCE",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-531"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-531-QUALIFICATION",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-531"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-541-GUIDANCE",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-541"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-541-QUALIFICATION",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-541"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-541-PACKAGING",
+      "asset_ids": [
+        "ASSET-PACKAGING"
+      ],
+      "task_ids": [
+        "TASK-541"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "pre-audit"
+    },
+    {
+      "id": "INSPECT-TASK-551-PACKAGING",
+      "asset_ids": [
+        "ASSET-PACKAGING"
+      ],
+      "task_ids": [
+        "TASK-551"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "release"
+    },
+    {
+      "id": "INSPECT-TASK-551-QUALIFICATION",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-551"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "release"
+    },
+    {
+      "id": "INSPECT-TASK-551-IMPROVEMENT",
+      "asset_ids": [
+        "ASSET-IMPROVEMENT"
+      ],
+      "task_ids": [
+        "TASK-551"
+      ],
+      "method": "Reuse current candidate-bound task/gate procedure evidence and review actual declared/changed scope; retain limitations.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Not yet performed. Refresh only the consuming pre-audit set after relevant implementations."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "release"
+    }
+  ],
+  "findings": [],
+  "scope_drift": [],
+  "controls": {
+    "rollback": {
+      "status": "ready",
+      "evidence": [
+        "docs/planning/improvement/README.md",
+        "CONTRIBUTING.md"
+      ],
+      "rationale": "Development-only branch, preserved main and current installed 4.1 controller; revert candidate commits or use supported canonical archive/restore, never reset user changes. No release or installed upgrade in this scope."
+    },
+    "monitoring": {
+      "status": "ready",
+      "evidence": [
+        "docs/planning/improvement/README.md"
+      ],
+      "rationale": "At each consuming gate run current harness/audit-readiness and minimal inspection refresh; retain failures and inspect bounded artifact inventory. This is development monitoring, not production observability."
+    }
+  },
+  "legacy_bridge": {
+    "required": false,
+    "status": "not-required",
+    "gap_asset_ids": [],
+    "evidence": [],
+    "upgraded_from": null
+  },
+  "stale_reasons": []
+}

@@ -28,6 +28,14 @@ make check
 
 Keep contract fixtures for fast negative-path coverage, and use executed integration tests where behavior crosses a process or persistence boundary. Do not label synthetic evidence as performed product validation or duplicate checks without a distinct failure mode.
 
+The existing Playwright smoke scripts also exercise rendered fixtures, capture
+loading and owned live publication/recovery. DOM/image-decoding assertions are
+separate from actual model image inspection. Native page zoom uses an owned
+temporary browser profile; CSS zoom alone is not equivalent. FIFO rejection runs
+in a bounded owned child, skipping explicitly where POSIX capability is absent.
+Keep `proof-output/improvement/` local; publish compact summaries under the
+improvement index, not duplicate captures or deletion of failed history.
+
 ## Design invariants
 
 - `.pyramid/plan.json` is canonical topology; generated files are projections.
@@ -56,6 +64,11 @@ Route agents to the smallest query that can answer the question. Do not instruct
 For multi-agent work, give each worker only the selected task packet. Keep topology, lifecycle, shared assurance refreshes, and join audits with one coordinator.
 
 ## Documentation changes
+
+Use the [documentation index](docs/README.md) to find the topic owner. Refresh
+[current context](CONTEXT.md) when durable capability or publication status changes;
+do not use historical planning/evidence snapshots as current status or rewrite
+captured results to describe later events.
 
 Keep the README, published examples, schemas, skill instructions, and runtime help consistent. Documentation must distinguish canonical state, immutable history, and generated projections; distinguish global context from scoped guards; and describe refresh policies as scheduling intent rather than a waiver of audit freshness.
 

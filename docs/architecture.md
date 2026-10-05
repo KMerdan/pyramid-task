@@ -1,5 +1,9 @@
 # Runtime Architecture
 
+This describes the 4.2.0 source candidate. See [current context](../CONTEXT.md)
+for qualification and installation status, and the [documentation index](README.md)
+for topic owners. Version labels below identify feature boundaries, not pending work.
+
 Pyramid separates deterministic state mechanics from agent reasoning. Skills decide how to gather evidence, choose work, and coordinate agents. Python validates contracts, derives state, and commits guarded mutations.
 
 Demonstrable increments follow the same boundary. Creation and replanning reason from the current usable baseline to an ordered ladder of actor-visible outcomes. They encode each rung with existing outcome, audit, and typed-edge primitives. The runtime enforces those graph relations and audit transitions but does not add mutable increment state or reinterpret `wave` as delivery progress.
@@ -52,7 +56,27 @@ The existing update/audit publication imports artifact bytes, updates state and 
 
 Replan preserves implementation history but invalidates changed claims and their dependent closure in both old and new graphs. Relations are directional: a new incoming consumer does not change its provider, while new contributions change their parent. Valid recorded 4.0 runs may receive explicit per-run compatibility bindings only during guarded replan, after checking intact legacy identity, unchanged producer contract, inputs and artifacts. Historical runs are never rewritten. Optional binding metadata stays in existing state, not a new ledger; older runtimes must not be assumed compatible with it. Schema-1 adoption is a guarded replan, not an installation side effect. Project format V3 and state schema 1 remain unchanged; plan schema 2 prevents older runtimes from silently dropping enforcement.
 
-## Bounded change and observation boundary (4.1 candidate)
+## Decision and evidence boundary (4.2.0)
+
+Selected inspect branches reuse one freshly validated canonical bundle and avoid
+unused graph projection. Selected assurance is a loss-aware response, not editable
+state; omissions and full recovery stay explicit. Hashes may be shared within one
+harness invocation, never across invocations. Mutations, readiness, recovery and
+final acceptance retain freshness checks.
+
+The Observer leads with recorded acceptance and the next gate, then selected work,
+blocking causes and evidence. Execution, acceptance, source freshness and connection
+health are independent. No source watcher or readiness guess is added. Preview
+resolution checks content-addressed references, bounded bytes, regular files and
+raster signatures; loopback requests re-read and re-hash bytes. Other evidence is
+an opaque attachment, not an executable HTML page.
+
+`goal-prompt` derives relevant project/phase/harness/authorization facts for a
+reviewable draft. Proposed and unknown permissions stay separate; browser, guest
+or artifact clauses require applicable verified facts. It has no command, runtime
+controller, state store or operational authority.
+
+## Bounded change and observation boundary (4.1.0)
 
 Agents copy the current candidate and edit affected stable IDs/fields rather than redrafting unrelated contracts. The runtime still validates, recomputes and publishes the complete state under the existing lock. Ready/Markdown projections skip byte-identical writes; changed projections publish with atomic replacement, and the graph remains the last publication. Its current timestamp normally changes, so it is not a write-free cache. Canonical writes and event/history semantics are unchanged.
 

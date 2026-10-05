@@ -1,12 +1,37 @@
 # Pyramid 4.1 — precise progress, bounded context
 
-Status: implementation started; 4.1 is not released. Baseline: remote `main` at
-`3d787c5c2038d61f1146f24ba20188bfd18b6495`, version 4.0.0. The local source and
-both installed hosts matched that release before development. Both installed
-plugins remain 4.0.0; this source checkout now contains unqualified 4.1 changes.
-The obsolete 3.7.1 checkout was saved
-outside the repository before removal. This plan does not change installed
-4.0.0 behavior, adopt another project's plan, or authorize a 4.1 installation.
+Development and qualification are complete; 4.1.0 source was committed and pushed
+to `main` as [58559af](https://github.com/KMerdan/pyramid-task/commit/58559afb072f2b9acb4b4d59f3450abc99b7a50b)
+on 2026-10-04. See [current context](../../../CONTEXT.md) for the dated status and
+installation boundary. This page owns the development decisions and evidence
+index, not a second execution ledger.
+
+The sections below retain the original scope and rationale. They are not new
+instructions to implement completed tasks. The initial baseline was 4.0.0 at
+`3d787c5c2038d61f1146f24ba20188bfd18b6495`; the obsolete 3.7.1 checkout was saved
+outside the repository before removal. Publication did not update installed
+plugins, adopt another project's plan or deploy a service.
+
+## Completed ladder and evidence
+
+The local intent closed at revision 7, graph version 58. All six work tasks,
+three gates, three outcomes and the intent passed verification. Use these bounded
+entry points before opening individual traces:
+
+- [Final source qualification](../../../proof-output/v4.1/TASK-432/qualification.md):
+  176 tests, repository validation, real versus synthetic checks and package identity.
+- [Native-host pilot](../../../proof-output/v4.1/TASK-422/summary.md): actual
+  Codex/Claude runs and usage limits; no demonstrated token savings.
+- [Independent join review](../../../proof-output/v4.1/TASK-432/join-review.md):
+  findings, follow-up checks and remaining qualification limits.
+- [Intent audit](../../../proof-output/v4.1/INTENT-410/qualified-audit.json) and
+  [final gate audit](../../../proof-output/v4.1/GATE-439/qualified-audit.json):
+  the recorded acceptance checks before closure.
+
+These are historical observations bound to their recorded source and inputs.
+In particular, the qualification report predates closure and publication; its
+uncommitted-source and pending-gate statements are not current repository status.
+Later documentation edits do not rewrite or extend those proof claims.
 
 ## Intent
 
@@ -16,21 +41,21 @@ context loading. The system must retain real authority boundaries, current
 candidate proof, independent consequential review, visual feedback when the
 claim requires it, and recoverable history.
 
-`candidate-plan.json` is the portable schema-2 plan. The local canonical
+`candidate-plan.json` is the portable revision-6 schema-2 planning snapshot;
+canonical revision 7 added a narrow documentation amendment before closure.
+It is not a completed-state backup. The local canonical
 `.pyramid` and generated `docs/tasks` are ignored development projections, not
 additional checked-in ledgers. `baseline.json`, `assurance.json` and
 `plan-review.json` describe the initial planning state, not successful tests or
 accepted implementation. Only the canonical runtime owns execution status.
 
-Initial validation on 2026-10-04: candidate, baseline, assurance and review schemas
-pass; canonical `doctor` reports healthy at graph version 1. All six work tasks
-are ready to start, not implemented or verified. The runtime identifies TASK-411
-and TASK-412 as a safe first parallel group; no workers have been launched.
-Planned inspections, impact confirmation and final controls correctly remain
-acceptance blockers. Start with TASK-411's failing-before reproduction and
-TASK-412's guard/source integration contract.
+Historical initial validation on 2026-10-04: candidate, baseline, assurance and
+review schemas passed; canonical `doctor` was healthy at graph version 1. All
+six work tasks were then unstarted. Planned inspections, impact confirmation and
+final controls were acceptance blockers at that point; they were subsequently
+completed before closure. This is not the current ready frontier.
 
-## Evidence and limits
+## Baseline findings and limits (4.0, before implementation)
 
 Two active development sessions supplied contrasting patterns. The Desktop
 session repeatedly qualified a risky VM/controller environment; the service
@@ -38,9 +63,9 @@ session separated routine agent review from human authorization and reused
 unchanged tests. Different project risk, age and proof schemas confound direct
 productivity comparisons. Neither observation proves a percentage improvement.
 
-- Confirmed runtime mechanism: `replan_project` compares incoming and outgoing
+- Confirmed 4.0 runtime mechanism: `replan_project` compared incoming and outgoing
   incident edges. Adding a consumer can stale its unchanged prerequisite.
-- Related schema-2 mechanism: `pyramid_verification.contracts` includes all
+- Related 4.0 schema-2 mechanism: `pyramid_verification.contracts` included all
   consumers in a primary proof's digest. Adding a consumer can change existing
   producer proof identity even when the producer's procedure and inputs do not.
   Directional graph invalidation alone therefore needs a proof-freshness check.
@@ -72,9 +97,9 @@ source to reproduce mechanisms.
 Later gates inherit earlier current proof. Their ordering is acceptance ordering,
 not a reason to block independent implementation. Shared source writes remain
 serialized. Current runtime conflict analysis, not equal wave numbers, decides
-whether tasks may execute in parallel. This planning request launches no agents.
+whether tasks may execute in parallel. The original planning turn launched no agents.
 
-## I1: change only the claim that changed
+## I1: original scope — change only the claim that changed
 
 TASK-411 first reproduces the defect against 4.0.0 in disposable projects. Define
 directional edge semantics before editing invalidation. A new consumer does not
@@ -111,15 +136,17 @@ no blanket exception accepts stale helper output.
 - Do not use raw line-number edits or add a general patch API/new graph engine
   merely to express this delta. Fewer disk writes do not establish token savings.
 
-This is a recorded design decision, not implemented behavior. Existing task
-contracts and gates are unchanged. Before implementing this slice, bind its
-concrete ownership and regression acceptance through a narrow plan update.
+This decision was implemented in TASK-421: skills guide targeted candidate
+authoring, and the runtime skips byte-identical ready/Markdown projection writes
+while retaining complete recomputation and validation. The [projection review](../../../proof-output/v4.1/TASK-421/final-review.md)
+and [regression results](../../../proof-output/v4.1/TASK-421/projection-final-tests.txt)
+record the actual behavior; fewer writes do not establish token savings.
 
-Canonical revision/graph version 2 records this decision. The guarded apply
+Historical canonical revision/graph version 2 recorded this decision. The guarded apply
 changed no nodes or edges and invalidated no claims or inspections; all six work
-tasks remain ready and unstarted. The 4.0 runtime still marks the overall assurance
-bundle stale on replan. That conservative status is retained, not edited away;
-future post-change inspections and controls were already pending.
+tasks were then ready and unstarted. The 4.0 runtime marked the overall assurance
+bundle stale on replan. That historical status was retained, not edited away;
+planned post-change inspections and controls were completed later.
 
 Development started after that planning snapshot. Revision 3 adds the serialized
 state schema to TASK-411's proof inputs; its existing acceptance and write scope
@@ -132,13 +159,14 @@ The first implementation slice, TASK-411, passed its scoped audit on 2026-10-04
 at graph version 8. The frozen source passed 168 tests and validation of 17 skills
 and 31 schemas. Real disposable CLI/probe cases establish consumer growth and
 guarded 4.0-proof compatibility; synthetic contract fixtures are labeled as such.
-See `proof-output/v4.1/TASK-411/completion.md` in a development checkout for the
-evidence index. This is a same-session task audit, not independent joint or
-installed-host acceptance. TASK-412, GATE-419 and the remaining ladder are pending;
-overall assurance remains incomplete. Source manifests and installed hosts remain
-4.0.0 until a separately qualified release.
+See the [TASK-411 completion snapshot](../../../proof-output/v4.1/TASK-411/completion.md)
+for that early evidence index. It describes a same-session task audit, not
+independent joint or installed-host acceptance. TASK-412 and the remaining ladder
+were pending at that snapshot; they subsequently passed, including independent
+join qualification and final assurance. Source manifests now declare 4.1.0;
+installed-host status is a separate observation.
 
-## I2: controlled operational language, not controlled reasoning
+## I2: original scope — controlled operational language, not controlled reasoning
 
 Apply a small original, STE-inspired profile to `create`, `take`, `audit`, the
 relevant handoff/replan/helper instructions and generated guidance. Keep one
@@ -206,7 +234,7 @@ length. No critical safety/evidence regression is acceptable. Claim lower token
 cost only if matched observations establish it; otherwise report the result as
 unproven or revise the profile.
 
-## I3: constrain footprint without losing proof
+## I3: original scope — constrain footprint without losing proof
 
 TASK-431 separates authoritative harness source, generated candidates, temporary
 owned runtime resources and retained evidence. Strengthen checks only where the
@@ -232,7 +260,7 @@ validation alone does not qualify an installed host adapter. A missing host is a
 qualification blocker, not a pass. Do not overwrite a user's installed 4.0.0
 plugin to run this qualification.
 
-## Deferred and prohibited scope
+## Deferred scope and original authority boundary
 
 - No new permissions, weakened VM containment, production or credential access.
 - No automatic `/compact`, host hook, persistent scheduler or agent launch system.
@@ -242,7 +270,9 @@ plugin to run this qualification.
 - No copied private evidence, raw auth state, broad trace ingestion or model-time
   telemetry inferred from CLI duration.
 - No automatic migration/rewording of live plans or replacement of their guards.
-- No commit, push, publication, 4.1 installation or deployment in this planning turn.
+- The original planning turn did not authorize commit, push, publication,
+  installation or deployment. The owner later authorized commit and push, which
+  completed in `58559af`; plugin updates remain the owner's separate operation.
 
 ## Research references
 

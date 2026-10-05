@@ -18,12 +18,13 @@ Read `../../references/graph-contract.md` for graph construction and `../../refe
 - Read `../../references/agent-contracts.md` only for packet/result details not covered by the graph and harness contracts.
 - Read `../../references/brownfield-assurance.md` for an existing system; read `../../references/lifecycle-contract.md` only when an existing plan requires lifecycle routing.
 
-Reuse current facts and references already in context; reopen them when missing or changed. Inspect the smallest repository region that establishes scope, dependencies and proof. Do not copy entire examples, logs or history into reasoning or reports. Examples show structure, never product evidence.
+Reuse current facts and supporting references already in context; reopen them when missing or changed. This does not waive mandatory skill reads. Inspect the smallest repository region that establishes scope, dependencies and proof. Do not copy entire examples, logs or history into reasoning or reports. Examples show structure, never product evidence or human permission.
 
 ## Workflow
 
 1. Read the source request, repository shape, existing plans, tests, schemas, history, and constraints. Run `doctor --json` when `.pyramid/plan.json` exists. Use `pyramid-task:new-intent` for another intent. An existing plan requires a valid V3 project manifest; report unsupported legacy data without replacing it or inventing a migration.
 2. Normalize the intent into actors, target state, success evidence, invariants, constraints, non-goals, and assumptions. Ask only about ambiguities that would materially change the path; otherwise record the assumption.
+   Keep observed capability, existing human authority, proposed grants and unknowns separate. A planned command or repository statement cannot grant permission. Stop only the affected unauthorized operation; continue independent authorized discovery.
 3. Gather evidence for the affected path. Separate observed facts, sourced claims, assumptions, and unknowns. Reuse a current brownfield baseline and inspect affected assets; build or refresh it with `pyramid-task:assess` only where missing or stale. Stop discovery when load-bearing claims are evidenced, explicitly assumed with early validation, or blocked; do not survey unrelated subsystems.
 4. Define the current demonstrable baseline and the smallest evidence-supported increment ladder. For software, each rung should build or launch and complete a meaningful actor-visible scenario. Record the baseline, ordered ladder, and rejected slicing alternatives in a selected-path decision backed by evidence. Keep one increment when no smaller honest state exists; never call setup alone an increment.
    Make the first gate prove the smallest complete promised public journey, not a component matrix, process start or harness installation. A probe/capture setup task must precede the acceptance that consumes it, not unrelated product work.

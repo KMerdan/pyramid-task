@@ -10,6 +10,7 @@
     "graph_version": {"type": "integer", "minimum": 1},
     "context": {"type": ["object", "null"]},
     "plan_id": {"type": ["string", "null"]},
+    "verification_scope": {"enum": ["recorded-candidate", "legacy-unbound"]},
     "title": {"type": "string", "minLength": 1},
     "revision": {"type": "integer", "minimum": 1},
     "intent": {
@@ -87,7 +88,27 @@
         "implementation_checks": {"$ref": "#/$defs/counts"},
         "acceptance_checks": {"$ref": "#/$defs/counts"},
         "audit_checks": {"$ref": "#/$defs/counts"},
-        "recommended_action": {"type": ["string", "null"]}
+        "recommended_action": {"type": ["string", "null"]},
+        "current_eligibility": {"const": "not-checked"},
+        "recovery": {"type": "string"},
+        "records": {"type": "array", "maxItems": 8, "items": {"type": "object", "properties": {
+          "observations": {"type": "array", "maxItems": 3, "items": {"type": "object", "properties": {
+            "artifacts": {"type": "array", "maxItems": 4},
+            "preview_candidates": {"type": "array", "maxItems": 16},
+            "visual_candidate_count": {"type": "integer", "minimum": 0, "maximum": 16},
+            "preview": {"type": "object", "required": ["path", "sha256", "status", "href", "mime"], "properties": {
+              "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "status": {"const": "referenced-artifact"},
+              "mime": {"enum": ["image/png", "image/jpeg", "image/webp"]}
+            }}
+          }}}
+        }}},
+        "omitted_records": {"type": "integer", "minimum": 0},
+        "nonpassing_checks": {"type": "array", "maxItems": 8},
+        "omitted_checks": {"type": "integer", "minimum": 0},
+        "omitted_limitations": {"type": "integer", "minimum": 0},
+        "limitations_omitted_chars": {"type": "integer", "minimum": 0},
+        "limitations": {"type": "array", "maxItems": 4, "items": {"type": "string", "maxLength": 1000}}
       }
     },
     "outcome": {
@@ -132,7 +153,8 @@
         "outcomes": {"type": "array", "items": {"$ref": "#/$defs/outcome"}},
         "working": {"type": "array"},
         "attention": {"type": "array"},
-        "recommended": {"type": ["object", "null"]}
+        "recommended": {"type": ["object", "null"]},
+        "lifecycle_action": {"type": ["string", "null"]}
       }
     }
   }

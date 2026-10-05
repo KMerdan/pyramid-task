@@ -1,0 +1,41 @@
+{
+  "schema": "pyramid-new-intent-preview-v1",
+  "status": "preview",
+  "runtime_version": "4.1.0",
+  "mode": "brownfield",
+  "current": {
+    "plan_id": "PYRAMID-41-PRECISE-PROGRESS-20261004",
+    "project_format_version": 3,
+    "lifecycle": "completed",
+    "graph_version": 58,
+    "context": {
+      "id": "CTX-3D3FA8B44F8FCC3BE3CE6D1CC237A382",
+      "plan_id": "PYRAMID-41-PRECISE-PROGRESS-20261004",
+      "plan_revision": 7,
+      "graph_version": 58
+    },
+    "active_claims": [],
+    "plan_sha256": "34a9a624755392fe2749941ae1852defece33f0a23845b9ab423017315ed65ec",
+    "state_sha256": "7f492fccf7d624b682aee4b1fd4da571251caf8bbed6e2997fe275b8c54a9d59"
+  },
+  "candidate": {
+    "plan_id": "PYRAMID-DECISION-EFFICIENCY-20261005",
+    "title": "Pyramid — precise decisions, efficient execution and trustworthy observation",
+    "plan_sha256": "b53ffae58530c316e674b4b09764d198e01a95b006d93cee71cafbce46719af9"
+  },
+  "transition": [
+    "archive",
+    "reset"
+  ],
+  "preserves": [
+    "canonical plan and node history in a restorable archive",
+    "events, reports, dossiers, and completed evidence",
+    "the current brownfield baseline for the next assurance cycle"
+  ],
+  "blockers": [],
+  "warnings": [
+    "Intent history binding is pending: Commit the implementation, ensure the worktree is clean, then bind this chronicle."
+  ],
+  "approval_required": true,
+  "new_intent_sha256": "ca4b88cc7e2344a81d9fe57d0cffc64c294636dee896b12170848dca8a8deed1"
+}

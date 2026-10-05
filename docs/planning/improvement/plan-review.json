@@ -1,0 +1,355 @@
+{
+  "schema": "pyramid-plan-review-v1",
+  "review_id": "REVIEW-IMPROVEMENT-20261005",
+  "stage": "candidate",
+  "outcome": "retained",
+  "source_plan": {
+    "plan_id": "PYRAMID-DECISION-EFFICIENCY-20261005",
+    "revision": 1,
+    "sha256": "b53ffae58530c316e674b4b09764d198e01a95b006d93cee71cafbce46719af9"
+  },
+  "revised_plan": {
+    "plan_id": "PYRAMID-DECISION-EFFICIENCY-20261005",
+    "revision": 1,
+    "sha256": "b53ffae58530c316e674b4b09764d198e01a95b006d93cee71cafbce46719af9"
+  },
+  "facts": [
+    {
+      "id": "REVIEW-FACT-1",
+      "claim": "The exact requested scope includes A/B/C and a dynamic project-aware goal-prompt skill, isolated branch/worktree, installed-4.1 dogfooding and later local merge.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "Owner messages 2026-10-05",
+        "docs/planning/improvement/README.md"
+      ],
+      "supports": [
+        "INTENT-500",
+        "TASK-541",
+        "TASK-551"
+      ],
+      "freshness": "Current owner request; the quoted example is not an operational host/VM grant."
+    },
+    {
+      "id": "REVIEW-FACT-2",
+      "claim": "The rendered current 4.1 Observer drops its recorded-candidate warning, exposes count-only proof detail and recommends a verified task after completion.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "plugins/pyramid-task/scripts/pyramid_visualizer.py:visualization_snapshot, _proof_summary, observer_projection",
+        "Planning-time real 1280/375/320 light and 1280 dark browser inspection, 2026-10-05"
+      ],
+      "supports": [
+        "TASK-511",
+        "TASK-531"
+      ],
+      "freshness": "Source HEAD 58559af and installed renderer matched."
+    },
+    {
+      "id": "REVIEW-FACT-3",
+      "claim": "Current narrow queries construct an unused full graph snapshot and compact output is not universally bounded; standalone validate includes an extra event-chain check.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "plugins/pyramid-task/scripts/pyramid_core.py:inspect_project, load_project, validate_project",
+        "plugins/pyramid-task/scripts/pyramid_output.py:compact_response"
+      ],
+      "supports": [
+        "TASK-521",
+        "TASK-522"
+      ],
+      "freshness": "Observed installed/source 4.1, 2026-10-05."
+    },
+    {
+      "id": "REVIEW-FACT-4",
+      "claim": "Existing baseline assets miss affected read-model/output/planning paths and pending old-chronicle code binding must remain visible across transition.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "Copied completed .pyramid/baseline.json revision 2",
+        "Installed 4.1 doctor and new-intent preview, 2026-10-05"
+      ],
+      "supports": [
+        "CONTRACT-501",
+        "TASK-551"
+      ],
+      "freshness": "Current copied canonical r7/G58; no new claim accepted."
+    },
+    {
+      "id": "REVIEW-FACT-5",
+      "claim": "The previous native pilot cannot establish a controlled-language token benefit; current package tests do not establish visual or model behavior by themselves.",
+      "classification": "observed",
+      "verdict": "qualified",
+      "confidence": "high",
+      "references": [
+        "proof-output/v4.1/TASK-422/summary.md",
+        "CONTRIBUTING.md:Test scope and evidence"
+      ],
+      "supports": [
+        "CONTRACT-501",
+        "TASK-522",
+        "TASK-541",
+        "TASK-551"
+      ],
+      "freshness": "Historical 2026-10-04 pilot; current plan retains its limits."
+    }
+  ],
+  "findings": [
+    {
+      "id": "FIND-MERGE-CYCLE",
+      "class": "unjustified-dependency",
+      "affected_nodes": [
+        "TASK-551",
+        "GATE-540",
+        "INTENT-500"
+      ],
+      "claim": "Actual local merge as a prerequisite of the qualification task would depend on the closure that itself needs this task.",
+      "evidence": [
+        "REVIEW-FACT-1"
+      ],
+      "counterevidence": [],
+      "disposition": "rejected",
+      "change": "Do not introduce that dependency. The frozen candidate proves integration readiness; actual commit/merge follows accepted gates and formal closure, with requalification if source changes.",
+      "rationale": "The saved candidate resolves this boundary and avoids a circular release/acceptance requirement."
+    },
+    {
+      "id": "FIND-NOOP-GENERALITY",
+      "class": "speculative-scope",
+      "affected_nodes": [
+        "TASK-521"
+      ],
+      "claim": "High health-update counts do not establish that unchanged transitions are redundant or safe to suppress.",
+      "evidence": [
+        "REVIEW-FACT-3"
+      ],
+      "counterevidence": [],
+      "disposition": "deferred",
+      "change": "Keep no-op optimization conditional on measured benefit and exact guarded semantics; omit it if unjustified.",
+      "rationale": "Prioritize proven bulk output and unused computation; do not invent an event-semantic change from frequency alone."
+    },
+    {
+      "id": "FIND-SAVINGS-CLAIM",
+      "class": "unsupported-claim",
+      "affected_nodes": [
+        "TASK-522",
+        "TASK-531",
+        "TASK-541",
+        "TASK-551"
+      ],
+      "claim": "A bundled pilot, synthetic pass observation or model visual review cannot prove general token savings, native-host qualification or human comprehension benefit.",
+      "evidence": [
+        "REVIEW-FACT-5"
+      ],
+      "counterevidence": [],
+      "disposition": "rejected",
+      "change": "Report actual separate comparisons and preserve unrun/unknown checks; do not add unsupported benefit or installation claims.",
+      "rationale": "The candidate requires real scoped procedures and explicit evidence limits without an expensive universal benchmarking programme."
+    },
+    {
+      "id": "FIND-SETUP-AS-INCREMENT",
+      "class": "unjustified-gate",
+      "affected_nodes": [
+        "CONTRACT-501",
+        "GATE-510"
+      ],
+      "claim": "Baseline/measurement preparation alone would not deliver the first public outcome.",
+      "evidence": [
+        "REVIEW-FACT-2",
+        "REVIEW-FACT-4"
+      ],
+      "counterevidence": [],
+      "disposition": "rejected",
+      "change": "Keep CONTRACT-501 supporting the real A status/evidence journey; do not make it a separate increment or gate.",
+      "rationale": "A proves engineer-visible behavior; later gates establish meaningful cumulative use and retained safety."
+    }
+  ],
+  "coverage": [
+    {
+      "requirement": "REQ-A",
+      "before_nodes": [
+        "CONTRACT-501",
+        "TASK-511",
+        "TASK-531",
+        "TASK-551",
+        "GATE-510",
+        "GATE-520",
+        "GATE-530",
+        "GATE-540",
+        "OUTCOME-510",
+        "OUTCOME-520",
+        "OUTCOME-530",
+        "OUTCOME-540",
+        "INTENT-500"
+      ],
+      "after_nodes": [
+        "CONTRACT-501",
+        "TASK-511",
+        "TASK-531",
+        "TASK-551",
+        "GATE-510",
+        "GATE-520",
+        "GATE-530",
+        "GATE-540",
+        "OUTCOME-510",
+        "OUTCOME-520",
+        "OUTCOME-530",
+        "OUTCOME-540",
+        "INTENT-500"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-B",
+      "before_nodes": [
+        "CONTRACT-501",
+        "TASK-521",
+        "TASK-522",
+        "TASK-551",
+        "GATE-520",
+        "GATE-530",
+        "GATE-540",
+        "OUTCOME-520",
+        "OUTCOME-530",
+        "OUTCOME-540",
+        "INTENT-500"
+      ],
+      "after_nodes": [
+        "CONTRACT-501",
+        "TASK-521",
+        "TASK-522",
+        "TASK-551",
+        "GATE-520",
+        "GATE-530",
+        "GATE-540",
+        "OUTCOME-520",
+        "OUTCOME-530",
+        "OUTCOME-540",
+        "INTENT-500"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-C",
+      "before_nodes": [
+        "CONTRACT-501",
+        "TASK-531",
+        "TASK-551",
+        "GATE-530",
+        "GATE-540",
+        "OUTCOME-530",
+        "OUTCOME-540",
+        "INTENT-500"
+      ],
+      "after_nodes": [
+        "CONTRACT-501",
+        "TASK-531",
+        "TASK-551",
+        "GATE-530",
+        "GATE-540",
+        "OUTCOME-530",
+        "OUTCOME-540",
+        "INTENT-500"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-D",
+      "before_nodes": [
+        "CONTRACT-501",
+        "TASK-541",
+        "TASK-551",
+        "GATE-540",
+        "OUTCOME-540",
+        "INTENT-500"
+      ],
+      "after_nodes": [
+        "CONTRACT-501",
+        "TASK-541",
+        "TASK-551",
+        "GATE-540",
+        "OUTCOME-540",
+        "INTENT-500"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-Q",
+      "before_nodes": [
+        "CONTRACT-501",
+        "TASK-511",
+        "TASK-521",
+        "TASK-522",
+        "TASK-531",
+        "TASK-541",
+        "TASK-551",
+        "GATE-510",
+        "GATE-520",
+        "GATE-530",
+        "GATE-540",
+        "OUTCOME-510",
+        "OUTCOME-520",
+        "OUTCOME-530",
+        "OUTCOME-540",
+        "INTENT-500"
+      ],
+      "after_nodes": [
+        "CONTRACT-501",
+        "TASK-511",
+        "TASK-521",
+        "TASK-522",
+        "TASK-531",
+        "TASK-541",
+        "TASK-551",
+        "GATE-510",
+        "GATE-520",
+        "GATE-530",
+        "GATE-540",
+        "OUTCOME-510",
+        "OUTCOME-520",
+        "OUTCOME-530",
+        "OUTCOME-540",
+        "INTENT-500"
+      ],
+      "status": "preserved"
+    }
+  ],
+  "invariants": {
+    "intent": "preserved",
+    "success_evidence": "preserved",
+    "constraints": "preserved",
+    "non_goals": "preserved",
+    "assurance": "preserved",
+    "audit_closure": "preserved",
+    "execution_safety": "preserved"
+  },
+  "metrics": {
+    "before": {
+      "nodes": 16,
+      "executable_nodes": 11,
+      "edges": 38,
+      "hard_dependencies": 9,
+      "audit_gates": 4
+    },
+    "after": {
+      "nodes": 16,
+      "executable_nodes": 11,
+      "edges": 38,
+      "hard_dependencies": 9,
+      "audit_gates": 4
+    }
+  },
+  "summary": "Retain the exact 16-node candidate. All five intent requirements trace through executable work, schema-2 proof contracts, four cumulative gates/outcomes and the final intent. Seven work nodes are justified by contract, runtime, guidance, Observer, goal-prompt and qualification boundaries. No gratuitous final intent gate, host framework or command-removal programme is added. Acceptance order does not imply all implementation must be serial; actual execution still obeys conflict analysis and host authorization.",
+  "limitations": [
+    "This review validates a proposed plan, not performed implementation/test/visual/native-host results.",
+    "Existing baseline mappings must be refreshed through assess/impact before brownfield acceptance; new-intent carries baseline but starts fresh assurance.",
+    "The reviewed controller is installed Codex 4.1.0; current Claude installation is not independently asserted.",
+    "Actual native A/B or independent model evaluation requires available authorized tooling and bounded permitted data; no new provider/permission is assumed.",
+    "Human comprehension benefit remains unknown without an actual bounded human comparison.",
+    "Main's carried documentation and any later independent changes must be reconciled before actual local merge.",
+    "Pending old intent exact-code binding remains partial; this plan and branch creation do not repair that history automatically."
+  ]
+}
