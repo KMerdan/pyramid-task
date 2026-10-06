@@ -1,0 +1,41 @@
+{
+  "schema": "pyramid-new-intent-preview-v1",
+  "status": "preview",
+  "runtime_version": "4.1.0",
+  "mode": "brownfield",
+  "current": {
+    "plan_id": "PYRAMID-HUMAN-OBSERVER-20261005",
+    "project_format_version": 3,
+    "lifecycle": "completed",
+    "graph_version": 13,
+    "context": {
+      "id": "CTX-1C2CE4778C69646CF196A8BCBE7E13E1",
+      "plan_id": "PYRAMID-HUMAN-OBSERVER-20261005",
+      "plan_revision": 1,
+      "graph_version": 13
+    },
+    "active_claims": [],
+    "plan_sha256": "e84d75797c4e322166d28276ac60cb38c47e59ee9373ac0b74e56dc01adfc27b",
+    "state_sha256": "2f613c735a2f91bbba12b9541e7a047752632363f5ee2af57315a26b70c97632"
+  },
+  "candidate": {
+    "plan_id": "PYRAMID-DEVELOPMENT-SYSTEM-20261006",
+    "title": "Pyramid — executable, bounded and understandable development",
+    "plan_sha256": "7a530e1bd289cfdaa9c36f10bfaf6c2b39e2d7d7b9e64de9ee94e49cb8ab0529"
+  },
+  "transition": [
+    "archive",
+    "reset"
+  ],
+  "preserves": [
+    "canonical plan and node history in a restorable archive",
+    "events, reports, dossiers, and completed evidence",
+    "the current brownfield baseline for the next assurance cycle"
+  ],
+  "blockers": [],
+  "warnings": [
+    "Intent history binding is pending: Commit the implementation, ensure the worktree is clean, then bind this chronicle."
+  ],
+  "approval_required": true,
+  "new_intent_sha256": "2f2ed653b1fd6124dd915fd93895af373a3e566ea7c01300ab48369fc465125f"
+}

@@ -1,0 +1,684 @@
+{
+  "schema": "pyramid-plan-review-v1",
+  "review_id": "REVIEW-PYRAMID-DEVELOPMENT-SYSTEM-20261006",
+  "stage": "candidate",
+  "outcome": "simplified",
+  "source_plan": {
+    "plan_id": "PYRAMID-DEVELOPMENT-SYSTEM-20261006",
+    "revision": 1,
+    "sha256": "a87af478a19300407227803d322a4acc8600a594b8f6930ef8d7ec5c913c0b29"
+  },
+  "revised_plan": {
+    "plan_id": "PYRAMID-DEVELOPMENT-SYSTEM-20261006",
+    "revision": 2,
+    "sha256": "7a530e1bd289cfdaa9c36f10bfaf6c2b39e2d7d7b9e64de9ee94e49cb8ab0529"
+  },
+  "facts": [
+    {
+      "id": "FACT-801",
+      "claim": "Installed 4.1.0 doctor reports PYRAMID-HUMAN-OBSERVER-20261005 r1/G13 completed, current baseline r4, no active claims; archive/reset preview is available with pending code-binding warning.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "Installed 4.1.0 pyramid.py doctor --project /Users/merdankiji/localGit/pyramid-task --json; observed 2026-10-06"
+      ],
+      "supports": [
+        "CONTRACT-801",
+        "INTENT-800"
+      ],
+      "freshness": "2026-10-06 canonical observation; recheck before activation"
+    },
+    {
+      "id": "FACT-802",
+      "claim": "RUN content identity does not attest process execution or image judgment; normal verification has no process-runner dependency.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "plugins/pyramid-task/references/development-harness.md:55; docs/architecture.md Development harness boundary"
+      ],
+      "supports": [
+        "TASK-811",
+        "TASK-812",
+        "TASK-813"
+      ],
+      "freshness": "Current local source inspected 2026-10-06"
+    },
+    {
+      "id": "FACT-803",
+      "claim": "Compact default output, scoped proof reuse, directional invalidation and Board/Flow are existing capability; improve their integration instead of rebuilding them.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "docs/architecture.md; CONTEXT.md; docs/planning/observer/README.md; plugins/pyramid-task/scripts/pyramid_output.py"
+      ],
+      "supports": [
+        "TASK-821",
+        "TASK-822",
+        "TASK-831"
+      ],
+      "freshness": "Current local source, distinct from installed 4.1.0"
+    },
+    {
+      "id": "FACT-804",
+      "claim": "CLI usage data is not model-token/time accounting; the recorded 4.1 native pilot did not establish savings.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "CONTEXT.md:69; docs/architecture.md Usage measurement boundary"
+      ],
+      "supports": [
+        "TASK-802",
+        "TASK-833"
+      ],
+      "freshness": "Dated native qualification, not a new experiment"
+    },
+    {
+      "id": "FACT-805",
+      "claim": "Existing footprint preview does not certify historical/handoff retention or grant deletion authority.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "plugins/pyramid-task/references/brownfield-assurance.md:65; plugins/pyramid-task/tests/test_artifact_footprint.py"
+      ],
+      "supports": [
+        "TASK-832"
+      ],
+      "freshness": "Current source inspected 2026-10-06"
+    },
+    {
+      "id": "FACT-806",
+      "claim": "The agreed discussion requires seven integrated capability areas, real verification, project-fit probes/visual feedback and first-principles control of complexity.",
+      "classification": "sourced",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "User discussion in this thread, including the seven-capability proposal and request to generate an intent/tasks"
+      ],
+      "supports": [
+        "INTENT-800"
+      ],
+      "freshness": "2026-10-06 user scope; generation does not authorize implementation"
+    },
+    {
+      "id": "FACT-807",
+      "claim": "New native accounting, engineer participation, receipt provenance integration and narrow baseline mapping are not yet qualified. CONTRACT-801/TASK-802 establish them before their required acceptance, not by assumption.",
+      "classification": "unknown",
+      "verdict": "qualified",
+      "confidence": "low",
+      "references": [
+        "candidate-plan.json:intent.assumptions",
+        "assurance-draft.json:inspections.limitations"
+      ],
+      "supports": [
+        "CONTRACT-801",
+        "TASK-802",
+        "TASK-833"
+      ],
+      "freshness": "2026-10-06 planning limit; not implemented evidence"
+    },
+    {
+      "id": "FACT-808",
+      "claim": "The saved local 30-day audit contains 5,693 CLI calls recorded 2026-09-27 through 2026-10-05; inspect accounts for 3,381 calls and 311,370,545 of 495,155,935 stdout bytes. Seven current CLI commands have zero recorded calls; source skill execution and direct APIs are not counted.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "usage-audit-30d.json; observed 2026-10-06"
+      ],
+      "supports": [
+        "CONTRACT-801",
+        "TASK-802",
+        "TASK-821",
+        "TASK-824",
+        "TASK-833"
+      ],
+      "freshness": "Dated aggregate snapshot of versions 4.0.0/4.1.0; not current 4.2.0 performance or project-specific attribution."
+    },
+    {
+      "id": "FACT-809",
+      "claim": "Current dirty source contains 12 Python script modules with 13,210 lines; core has 6,031 lines/131 functions and mixes storage, validation, projections, task/topology lifecycle and queries. History has 1,718 lines, visualizer 1,643 and assurance 1,143; equal and unequal schema definitions coexist.",
+      "classification": "observed",
+      "verdict": "confirmed",
+      "confidence": "high",
+      "references": [
+        "source-inventory.json; architecture-and-usage-review.md; inspected source symbols and schema comparisons 2026-10-06"
+      ],
+      "supports": [
+        "CONTRACT-801",
+        "TASK-841",
+        "TASK-842",
+        "TASK-843",
+        "TASK-813",
+        "TASK-831"
+      ],
+      "freshness": "Exact dirty-source file digests recorded; line counts are diagnosis, not coupling or token proof."
+    }
+  ],
+  "findings": [
+    {
+      "id": "FINDING-801",
+      "class": "duplicate-work",
+      "affected_nodes": [
+        "TASK-821",
+        "TASK-831"
+      ],
+      "claim": "Rebuilding compact defaults or Board/Flow would duplicate delivered source capability.",
+      "evidence": [
+        "FACT-803"
+      ],
+      "counterevidence": [
+        "FACT-802",
+        "FACT-806"
+      ],
+      "disposition": "rejected",
+      "change": "Retain existing output/observer modules; extend their execution, context and freshness semantics only.",
+      "rationale": "The real gap is integration and decision correctness, not a missing board or compact switch."
+    },
+    {
+      "id": "FINDING-802",
+      "class": "unjustified-dependency",
+      "affected_nodes": [
+        "TASK-821",
+        "TASK-822",
+        "TASK-823",
+        "TASK-831",
+        "TASK-832"
+      ],
+      "claim": "Requiring GATE-810/OUTCOME-810 before independent later implementation would serialize work without consumed artifacts.",
+      "evidence": [
+        "FACT-806"
+      ],
+      "counterevidence": [
+        "FACT-802"
+      ],
+      "disposition": "rejected",
+      "change": "Use the shared interface contract as the hard dependency and integration-requires for actual composition; order cumulative acceptance at gates.",
+      "rationale": "Implementation, verification and delivery are different constraints. Shared core/CLI edits still have one integration owner."
+    },
+    {
+      "id": "FINDING-803",
+      "class": "duplicate-evidence",
+      "affected_nodes": [
+        "GATE-810",
+        "GATE-820",
+        "GATE-830",
+        "INTENT-800"
+      ],
+      "claim": "A fourth final gate or per-task full-suite rerun would duplicate cumulative proof.",
+      "evidence": [
+        "FACT-803",
+        "FACT-806"
+      ],
+      "counterevidence": [
+        "FACT-802"
+      ],
+      "disposition": "rejected",
+      "change": "Final intent reuses GATE-830; later gates refresh inherited proof only where current inputs or new composition require it. Available commands are not a mandatory checklist.",
+      "rationale": "All requirements are covered at the final cumulative boundary; source/permission freshness checks remain mandatory."
+    },
+    {
+      "id": "FINDING-804",
+      "class": "unsupported-claim",
+      "affected_nodes": [
+        "TASK-802",
+        "TASK-833"
+      ],
+      "claim": "This planning session cannot establish native host interfaces, actual savings, independent-review provenance or human comprehension.",
+      "evidence": [
+        "FACT-804",
+        "FACT-807"
+      ],
+      "counterevidence": [
+        "FACT-806"
+      ],
+      "disposition": "deferred",
+      "change": "Validate availability early, preregister measurements and keep missing required evidence blocking final acceptance; no fixture or stdout proxy substitutes.",
+      "rationale": "These are explicit qualification tasks, not unearned plan facts. Future authority requirements cannot be granted by this candidate."
+    },
+    {
+      "id": "FINDING-805",
+      "class": "ambiguous-acceptance",
+      "affected_nodes": [
+        "CONTRACT-801",
+        "TASK-811",
+        "TASK-812",
+        "TASK-832"
+      ],
+      "claim": "Hashes, registry entries and inventory alone do not prove execution, permission or deletion eligibility.",
+      "evidence": [
+        "FACT-802",
+        "FACT-805"
+      ],
+      "counterevidence": [
+        "FACT-806"
+      ],
+      "disposition": "rejected",
+      "change": "Separate instrumentation provenance from semantic truth and host permission; test forged/stale/unknown-owner cases and independently review consequential boundaries.",
+      "rationale": "Local receipts must disclose their trust limit; cleanup and retries require exact ownership/reference/process checks."
+    },
+    {
+      "id": "FINDING-806",
+      "class": "unsupported-claim",
+      "affected_nodes": [
+        "CONTRACT-801"
+      ],
+      "claim": "Current seven coarse asset locators do not yet cover all proposed new modules and planning paths.",
+      "evidence": [
+        "FACT-801",
+        "FACT-807"
+      ],
+      "counterevidence": [
+        "FACT-803"
+      ],
+      "disposition": "deferred",
+      "change": "Keep assurance as incomplete hypotheses; assess and narrow assets through canonical interfaces in CONTRACT-801 before source work and real parallel scheduling.",
+      "rationale": "Do not label a new module mapped or an inspection performed based solely on this generated draft; existing baseline/history remains preserved."
+    },
+    {
+      "id": "FINDING-807",
+      "class": "under-decomposition",
+      "affected_nodes": [
+        "CONTRACT-801",
+        "TASK-841",
+        "TASK-842",
+        "TASK-843",
+        "TASK-813",
+        "TASK-831"
+      ],
+      "claim": "Adding system behavior to the mixed 6,031-line core without an ownership/extraction contract would amplify maintenance and context cost; mechanically splitting files would not resolve authority boundaries.",
+      "evidence": [
+        "FACT-809"
+      ],
+      "counterevidence": [
+        "FACT-803"
+      ],
+      "disposition": "applied",
+      "change": "Add three responsibility-bound extraction tasks, extend existing CLI/Observer owners, preserve facades/serialized contracts and keep the original three cumulative gates. Limit initial schema edits to observed duplicate domains; qualify offline consumers.",
+      "rationale": "These tasks protect separate publication, behavior and serialized-compatibility boundaries. Node growth is corrective decomposition, not a claim of runtime complexity or token savings."
+    },
+    {
+      "id": "FINDING-808",
+      "class": "unsupported-claim",
+      "affected_nodes": [
+        "TASK-821",
+        "TASK-824",
+        "TASK-833"
+      ],
+      "claim": "Zero command counters cannot establish absent skill/API usage, equivalence or safe removability; aggregate size/version differences cannot establish current-source model savings.",
+      "evidence": [
+        "FACT-808",
+        "FACT-804"
+      ],
+      "counterevidence": [
+        "FACT-806"
+      ],
+      "disposition": "applied",
+      "change": "Include all-command/all-skill scenario dispositions; retain recovery capability and simplify default routing first. Matched current-source evaluations and actual host accounting establish benefits; proposed deletion without equivalence remains deferred.",
+      "rationale": "Rare recovery has asymmetric loss prevention; direct APIs and agent-only skills are unmeasured. Historical high-output modes are targets for qualification, not current-source bug verdicts."
+    },
+    {
+      "id": "FINDING-809",
+      "class": "unjustified-dependency",
+      "affected_nodes": [
+        "TASK-841",
+        "TASK-842",
+        "TASK-843",
+        "TASK-813",
+        "TASK-824"
+      ],
+      "claim": "Extraction integration needs a real consumed store/use-case interface, but a global schema write scope or whole-refactor acceptance dependency would unnecessarily serialize independent work.",
+      "evidence": [
+        "FACT-809"
+      ],
+      "counterevidence": [
+        "FACT-807"
+      ],
+      "disposition": "applied",
+      "change": "Use TASK-841 → TASK-842 → TASK-813 as the consumed interface chain, integration-requires for schema composition, and six explicit schema edits rather than every schema. Recompute changed waves and hypothetical scheduling; preserve conservative shared-helper/schema conflicts until supported mapping is narrowed.",
+      "rationale": "Disjoint feature modules keep the common contract as their start dependency. Safe concurrency is not inferred from levels or an old batch ID."
+    }
+  ],
+  "coverage": [
+    {
+      "requirement": "REQ-801",
+      "before_nodes": [
+        "INTENT-800",
+        "CONTRACT-801",
+        "TASK-813",
+        "TASK-824",
+        "TASK-834",
+        "TASK-833",
+        "GATE-810",
+        "OUTCOME-810",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "after_nodes": [
+        "INTENT-800",
+        "CONTRACT-801",
+        "TASK-813",
+        "TASK-824",
+        "TASK-834",
+        "TASK-833",
+        "GATE-810",
+        "OUTCOME-810",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-802",
+      "before_nodes": [
+        "INTENT-800",
+        "CONTRACT-801",
+        "TASK-802",
+        "TASK-811",
+        "TASK-812",
+        "TASK-813",
+        "TASK-824",
+        "TASK-834",
+        "TASK-833",
+        "GATE-810",
+        "OUTCOME-810",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "after_nodes": [
+        "INTENT-800",
+        "CONTRACT-801",
+        "TASK-802",
+        "TASK-811",
+        "TASK-812",
+        "TASK-813",
+        "TASK-824",
+        "TASK-834",
+        "TASK-833",
+        "GATE-810",
+        "OUTCOME-810",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-803",
+      "before_nodes": [
+        "INTENT-800",
+        "TASK-821",
+        "TASK-824",
+        "TASK-834",
+        "TASK-833",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "after_nodes": [
+        "INTENT-800",
+        "TASK-821",
+        "TASK-824",
+        "TASK-834",
+        "TASK-833",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-804",
+      "before_nodes": [
+        "INTENT-800",
+        "TASK-822",
+        "TASK-824",
+        "TASK-834",
+        "TASK-833",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "after_nodes": [
+        "INTENT-800",
+        "TASK-822",
+        "TASK-824",
+        "TASK-834",
+        "TASK-833",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-805",
+      "before_nodes": [
+        "INTENT-800",
+        "TASK-823",
+        "TASK-824",
+        "TASK-834",
+        "TASK-833",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "after_nodes": [
+        "INTENT-800",
+        "TASK-823",
+        "TASK-824",
+        "TASK-834",
+        "TASK-833",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-806",
+      "before_nodes": [
+        "INTENT-800",
+        "TASK-831",
+        "TASK-834",
+        "TASK-833",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "after_nodes": [
+        "INTENT-800",
+        "TASK-831",
+        "TASK-834",
+        "TASK-833",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-807",
+      "before_nodes": [
+        "INTENT-800",
+        "TASK-832",
+        "TASK-834",
+        "TASK-833",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "after_nodes": [
+        "INTENT-800",
+        "TASK-832",
+        "TASK-834",
+        "TASK-833",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-808",
+      "before_nodes": [
+        "INTENT-800",
+        "CONTRACT-801",
+        "TASK-802",
+        "TASK-833",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "after_nodes": [
+        "INTENT-800",
+        "CONTRACT-801",
+        "TASK-802",
+        "TASK-833",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "status": "preserved"
+    },
+    {
+      "requirement": "REQ-809",
+      "before_nodes": [
+        "INTENT-800",
+        "CONTRACT-801",
+        "TASK-802",
+        "TASK-811",
+        "TASK-812",
+        "TASK-813",
+        "TASK-821",
+        "TASK-822",
+        "TASK-823",
+        "TASK-824",
+        "TASK-831",
+        "TASK-832",
+        "TASK-834",
+        "TASK-833",
+        "GATE-810",
+        "OUTCOME-810",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "after_nodes": [
+        "INTENT-800",
+        "CONTRACT-801",
+        "TASK-802",
+        "TASK-811",
+        "TASK-812",
+        "TASK-841",
+        "TASK-842",
+        "TASK-843",
+        "TASK-813",
+        "TASK-821",
+        "TASK-822",
+        "TASK-823",
+        "TASK-824",
+        "TASK-831",
+        "TASK-832",
+        "TASK-834",
+        "TASK-833",
+        "GATE-810",
+        "OUTCOME-810",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "status": "strengthened"
+    },
+    {
+      "requirement": "REQ-810",
+      "before_nodes": [],
+      "after_nodes": [
+        "INTENT-800",
+        "CONTRACT-801",
+        "TASK-802",
+        "TASK-841",
+        "TASK-842",
+        "TASK-843",
+        "TASK-813",
+        "TASK-831",
+        "TASK-834",
+        "TASK-833",
+        "GATE-810",
+        "OUTCOME-810",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "status": "strengthened"
+    },
+    {
+      "requirement": "REQ-811",
+      "before_nodes": [],
+      "after_nodes": [
+        "INTENT-800",
+        "CONTRACT-801",
+        "TASK-802",
+        "TASK-821",
+        "TASK-824",
+        "TASK-834",
+        "TASK-833",
+        "GATE-820",
+        "OUTCOME-820",
+        "GATE-830",
+        "OUTCOME-830"
+      ],
+      "status": "strengthened"
+    }
+  ],
+  "invariants": {
+    "intent": "preserved",
+    "success_evidence": "strengthened",
+    "constraints": "strengthened",
+    "non_goals": "preserved",
+    "assurance": "strengthened",
+    "audit_closure": "strengthened",
+    "execution_safety": "preserved"
+  },
+  "metrics": {
+    "before": {
+      "nodes": 20,
+      "executable_nodes": 16,
+      "edges": 63,
+      "hard_dependencies": 13,
+      "audit_gates": 3
+    },
+    "after": {
+      "nodes": 23,
+      "executable_nodes": 19,
+      "edges": 76,
+      "hard_dependencies": 18,
+      "audit_gates": 3
+    }
+  },
+  "summary": "Refine the user-approved full-system scope with three responsibility-bound architecture/schema tasks: 16 work nodes, 3 cumulative gates and 11 intent requirements. Preserve the original requirement/constraint/non-goal contract while adding user-requested maintainability and scenario-based surface justification. Reuse the actual CLI audit and exact source inventory; no canonical transition, implementation, deletion, claim or qualification pass is implied.",
+  "limitations": [
+    "Single-coordinator semantic planning review; not an independently dispatched reviewer or executed product qualification.",
+    "Plan/schema/graph validation can establish structural legality, not task correctness or achievable token savings.",
+    "Source remains dirty and pending history code binding; no commit, installation or publication is implied.",
+    "Assurance draft contains planned hypotheses only; new paths and narrow ownership must be assessed before application. The draft is not automatically imported by new-intent.",
+    "Representative real host and consented engineer evaluation need qualified interfaces, available observations and applicable authority. Required unknowns remain blockers, not passed.",
+    "Usage is daily local aggregation across projects and recorded 4.0/4.1 versions; no project/sequence/skill or direct-API attribution, no causal waste estimate and no current 4.2 savings verdict.",
+    "Schema comparisons confirm selected equal/unequal definitions, not all 31 domains' equivalence; CONTRACT-801/TASK-843 complete the ownership and offline-consumer matrix.",
+    "Hypothetical scheduling keeps TASK-841/TASK-843 serial under coarse draft asset inspection assumptions and actual shared helper-schema writes; no current canonical batch or permission is created."
+  ]
+}

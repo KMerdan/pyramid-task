@@ -1,0 +1,1656 @@
+{
+  "schema": "pyramid-assurance-v1",
+  "plan_id": "PYRAMID-DEVELOPMENT-SYSTEM-20261006",
+  "baseline_id": "BASELINE-PYRAMID-40",
+  "baseline_revision": 4,
+  "policy": "brownfield",
+  "status": "incomplete",
+  "updated_at": "2026-10-06",
+  "updated_by": "codex-development-system-planner",
+  "enforce_from_graph_version": 1,
+  "impacts": [
+    {
+      "id": "IMPACT-CONTRACT-801-ASSET-PACKAGING",
+      "asset_id": "ASSET-PACKAGING",
+      "task_ids": [
+        "CONTRACT-801"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:CONTRACT-801.agent.allowed_write_scope"
+      ],
+      "path": [
+        "CONTRACT-801",
+        "ASSET-PACKAGING"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-802-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-802"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-802.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-802",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-802-ASSET-PACKAGING",
+      "asset_id": "ASSET-PACKAGING",
+      "task_ids": [
+        "TASK-802"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-802.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-802",
+        "ASSET-PACKAGING"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-811-ASSET-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-811"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-811.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-811",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-811-ASSET-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-811"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-811.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-811",
+        "ASSET-GUIDANCE"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-811-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-811"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-811.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-811",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-812-ASSET-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-812"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-812.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-812",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-812-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-812"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-812.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-812",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-813-ASSET-CLI",
+      "asset_id": "ASSET-CLI",
+      "task_ids": [
+        "TASK-813"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-813.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-813",
+        "ASSET-CLI"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-813-ASSET-GRAPH",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-813"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-813.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-813",
+        "ASSET-GRAPH"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-813-ASSET-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-813"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-813.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-813",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-813-ASSET-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-813"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-813.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-813",
+        "ASSET-GUIDANCE"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-813-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-813"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-813.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-813",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-821-ASSET-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-821"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-821.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-821",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-821-ASSET-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-821"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-821.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-821",
+        "ASSET-GUIDANCE"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-821-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-821"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-821.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-821",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-822-ASSET-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-822"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-822.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-822",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-822-ASSET-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-822"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-822.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-822",
+        "ASSET-GUIDANCE"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-822-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-822"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-822.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-822",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-823-ASSET-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-823"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-823.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-823",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-823-ASSET-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-823"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-823.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-823",
+        "ASSET-GUIDANCE"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-823-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-823"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-823.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-823",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-824-ASSET-CLI",
+      "asset_id": "ASSET-CLI",
+      "task_ids": [
+        "TASK-824"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-824.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-824",
+        "ASSET-CLI"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-824-ASSET-GRAPH",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-824"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-824.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-824",
+        "ASSET-GRAPH"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-824-ASSET-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-824"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-824.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-824",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-824-ASSET-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-824"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-824.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-824",
+        "ASSET-GUIDANCE"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-824-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-824"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-824.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-824",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-831-ASSET-OBSERVER",
+      "asset_id": "ASSET-OBSERVER",
+      "task_ids": [
+        "TASK-831"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-831.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-831",
+        "ASSET-OBSERVER"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-831-ASSET-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-831"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-831.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-831",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-831-ASSET-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-831"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-831.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-831",
+        "ASSET-GUIDANCE"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-831-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-831"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-831.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-831",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-832-ASSET-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-832"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-832.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-832",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-832-ASSET-GUIDANCE",
+      "asset_id": "ASSET-GUIDANCE",
+      "task_ids": [
+        "TASK-832"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-832.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-832",
+        "ASSET-GUIDANCE"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-832-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-832"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-832.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-832",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-834-ASSET-CLI",
+      "asset_id": "ASSET-CLI",
+      "task_ids": [
+        "TASK-834"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-834.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-834",
+        "ASSET-CLI"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-834-ASSET-GRAPH",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-834"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-834.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-834",
+        "ASSET-GRAPH"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-834-ASSET-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-834"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-834.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-834",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-834-ASSET-OBSERVER",
+      "asset_id": "ASSET-OBSERVER",
+      "task_ids": [
+        "TASK-834"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-834.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-834",
+        "ASSET-OBSERVER"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-834-ASSET-PACKAGING",
+      "asset_id": "ASSET-PACKAGING",
+      "task_ids": [
+        "TASK-834"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-834.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-834",
+        "ASSET-PACKAGING"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-834-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-834"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-834.agent.allowed_write_scope"
+      ],
+      "path": [
+        "TASK-834",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-841-ASSET-GRAPH",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-841"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-841.agent.allowed_write_scope",
+        "architecture-and-usage-review.md"
+      ],
+      "path": [
+        "TASK-841",
+        "ASSET-GRAPH"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-841-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-841"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-841.agent.allowed_write_scope",
+        "architecture-and-usage-review.md"
+      ],
+      "path": [
+        "TASK-841",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-842-ASSET-GRAPH",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-842"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-842.agent.allowed_write_scope",
+        "architecture-and-usage-review.md"
+      ],
+      "path": [
+        "TASK-842",
+        "ASSET-GRAPH"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-842-ASSET-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-842"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-842.agent.allowed_write_scope",
+        "architecture-and-usage-review.md"
+      ],
+      "path": [
+        "TASK-842",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-842-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-842"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-842.agent.allowed_write_scope",
+        "architecture-and-usage-review.md"
+      ],
+      "path": [
+        "TASK-842",
+        "ASSET-QUALIFICATION"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-843-ASSET-GRAPH",
+      "asset_id": "ASSET-GRAPH",
+      "task_ids": [
+        "TASK-843"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-843.agent.allowed_write_scope",
+        "architecture-and-usage-review.md"
+      ],
+      "path": [
+        "TASK-843",
+        "ASSET-GRAPH"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-843-ASSET-PROOF",
+      "asset_id": "ASSET-PROOF",
+      "task_ids": [
+        "TASK-843"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-843.agent.allowed_write_scope",
+        "architecture-and-usage-review.md"
+      ],
+      "path": [
+        "TASK-843",
+        "ASSET-PROOF"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-843-ASSET-PACKAGING",
+      "asset_id": "ASSET-PACKAGING",
+      "task_ids": [
+        "TASK-843"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-843.agent.allowed_write_scope",
+        "architecture-and-usage-review.md"
+      ],
+      "path": [
+        "TASK-843",
+        "ASSET-PACKAGING"
+      ]
+    },
+    {
+      "id": "IMPACT-TASK-843-ASSET-QUALIFICATION",
+      "asset_id": "ASSET-QUALIFICATION",
+      "task_ids": [
+        "TASK-843"
+      ],
+      "type": "direct",
+      "status": "hypothesis",
+      "confidence": "medium",
+      "evidence": [
+        "candidate-plan.json:TASK-843.agent.allowed_write_scope",
+        "architecture-and-usage-review.md"
+      ],
+      "path": [
+        "TASK-843",
+        "ASSET-QUALIFICATION"
+      ]
+    }
+  ],
+  "inspections": [
+    {
+      "id": "INSPECT-ASSET-PACKAGING-W0",
+      "asset_ids": [
+        "ASSET-PACKAGING"
+      ],
+      "task_ids": [
+        "CONTRACT-801"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-QUALIFICATION-W1",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-802",
+        "TASK-811",
+        "TASK-812",
+        "TASK-821",
+        "TASK-822",
+        "TASK-823",
+        "TASK-831",
+        "TASK-832"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-PACKAGING-W1",
+      "asset_ids": [
+        "ASSET-PACKAGING"
+      ],
+      "task_ids": [
+        "TASK-802"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-PROOF-W1",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-811",
+        "TASK-812",
+        "TASK-821",
+        "TASK-822",
+        "TASK-823",
+        "TASK-831",
+        "TASK-832"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-GUIDANCE-W1",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-811",
+        "TASK-821",
+        "TASK-822",
+        "TASK-823",
+        "TASK-831",
+        "TASK-832"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-CLI-W4",
+      "asset_ids": [
+        "ASSET-CLI"
+      ],
+      "task_ids": [
+        "TASK-824"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-CLI-W3",
+      "asset_ids": [
+        "ASSET-CLI"
+      ],
+      "task_ids": [
+        "TASK-813"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-GRAPH-W4",
+      "asset_ids": [
+        "ASSET-GRAPH"
+      ],
+      "task_ids": [
+        "TASK-824"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-GRAPH-W3",
+      "asset_ids": [
+        "ASSET-GRAPH"
+      ],
+      "task_ids": [
+        "TASK-813"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-PROOF-W4",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-824"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-PROOF-W3",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-813"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-GUIDANCE-W4",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-824"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-GUIDANCE-W3",
+      "asset_ids": [
+        "ASSET-GUIDANCE"
+      ],
+      "task_ids": [
+        "TASK-813"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-QUALIFICATION-W4",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-824"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-QUALIFICATION-W3",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-813"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-OBSERVER-W1",
+      "asset_ids": [
+        "ASSET-OBSERVER"
+      ],
+      "task_ids": [
+        "TASK-831"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-CLI-W5",
+      "asset_ids": [
+        "ASSET-CLI"
+      ],
+      "task_ids": [
+        "TASK-834"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-GRAPH-W5",
+      "asset_ids": [
+        "ASSET-GRAPH"
+      ],
+      "task_ids": [
+        "TASK-834"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-PROOF-W5",
+      "asset_ids": [
+        "ASSET-PROOF"
+      ],
+      "task_ids": [
+        "TASK-834"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-OBSERVER-W5",
+      "asset_ids": [
+        "ASSET-OBSERVER"
+      ],
+      "task_ids": [
+        "TASK-834"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-PACKAGING-W5",
+      "asset_ids": [
+        "ASSET-PACKAGING"
+      ],
+      "task_ids": [
+        "TASK-834"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-ASSET-QUALIFICATION-W5",
+      "asset_ids": [
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-834"
+      ],
+      "method": "Inspect only the declared paths and relevant contracts/tests for this asset and implementation wave; reconcile actual source/generated/evidence changes and refresh at the consuming audit frontier. Shared coarse legacy asset coverage must be narrowed by CONTRACT-801 before real parallel scheduling.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-TASK-841-BOUNDARY",
+      "asset_ids": [
+        "ASSET-GRAPH",
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-841"
+      ],
+      "method": "Review only this extraction/contract owner's declared inputs and actual changed semantics, then refresh at its consuming integration frontier. Reuse the affected existing tests; this inspection record is not a separate mandatory execution. Narrow legacy asset locators in CONTRACT-801 before real use.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-TASK-842-BOUNDARY",
+      "asset_ids": [
+        "ASSET-GRAPH",
+        "ASSET-PROOF",
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-842"
+      ],
+      "method": "Review only this extraction/contract owner's declared inputs and actual changed semantics, then refresh at its consuming integration frontier. Reuse the affected existing tests; this inspection record is not a separate mandatory execution. Narrow legacy asset locators in CONTRACT-801 before real use.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    },
+    {
+      "id": "INSPECT-TASK-843-BOUNDARY",
+      "asset_ids": [
+        "ASSET-GRAPH",
+        "ASSET-PROOF",
+        "ASSET-PACKAGING",
+        "ASSET-QUALIFICATION"
+      ],
+      "task_ids": [
+        "TASK-843"
+      ],
+      "method": "Review only this extraction/contract owner's declared inputs and actual changed semantics, then refresh at its consuming integration frontier. Reuse the affected existing tests; this inspection record is not a separate mandatory execution. Narrow legacy asset locators in CONTRACT-801 before real use.",
+      "required": true,
+      "status": "planned",
+      "result": "not-run",
+      "sufficiency": "unknown",
+      "evidence": [],
+      "limitations": [
+        "Draft scheduling/impact hypothesis, not a performed inspection or passing evidence.",
+        "Existing baseline locators do not yet include new modules/planning paths. CONTRACT-801 must extend or split these asset boundaries through assess and impact; revalidate this draft before application."
+      ],
+      "performed_at": null,
+      "performed_by": null,
+      "invalidated_by": [
+        "source",
+        "generated",
+        "runtime",
+        "configuration",
+        "unknown"
+      ],
+      "refresh_policy": "per-wave",
+      "validated_through": {}
+    }
+  ],
+  "findings": [],
+  "scope_drift": [],
+  "controls": {
+    "rollback": {
+      "status": "missing",
+      "evidence": [],
+      "rationale": "CONTRACT-801 must register owned source/fixture recovery and restore tests without resetting the dirty user checkout; no rollback performed during planning."
+    },
+    "monitoring": {
+      "status": "missing",
+      "evidence": [],
+      "rationale": "CONTRACT-801/TASK-802 register correctness, execution, authority, context and artifact monitoring; this draft contains no observed control results."
+    }
+  },
+  "legacy_bridge": {
+    "required": false,
+    "status": "not-required",
+    "gap_asset_ids": [],
+    "evidence": [],
+    "upgraded_from": null
+  },
+  "stale_reasons": [
+    "Candidate only; new-intent starts a fresh canonical assurance bundle. This draft must be refined and explicitly applied with the carried current baseline after activation; never copy it over canonical state.",
+    "Revision-2 adds runtime extraction/schema ownership and expands CLI/Observer/skill routing scopes. All mappings remain hypotheses; CONTRACT-801 must update exact locators and planned refresh sets before canonical use. Do not copy revision-1 hypothetical parallel groups."
+  ]
+}

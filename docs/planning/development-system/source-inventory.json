@@ -1,0 +1,473 @@
+{
+  "observed_on": "2026-10-06",
+  "source": "local dirty 4.2.0 candidate; not installed runtime",
+  "modules": [
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid.py",
+      "sha256": "2bc6b7a69882f212d220e0f3b75f8070b125cb28ea1a1f9306a4238c8d719e66",
+      "lines": 677,
+      "functions": 9,
+      "imports": [
+        "pyramid_assurance",
+        "pyramid_core",
+        "pyramid_live",
+        "pyramid_output",
+        "pyramid_usage",
+        "pyramid_visualizer"
+      ],
+      "largest_functions": [
+        {
+          "name": "build_parser",
+          "line": 82,
+          "lines": 289
+        },
+        {
+          "name": "run",
+          "line": 379,
+          "lines": 243
+        },
+        {
+          "name": "main",
+          "line": 624,
+          "lines": 50
+        }
+      ]
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_amendment.py",
+      "sha256": "1b7fbdfdeb2901381d7a4567ab970c42a91e39558f81e62cc4d8f2574e2975a5",
+      "lines": 42,
+      "functions": 1,
+      "imports": [],
+      "largest_functions": [
+        {
+          "name": "prepare_amendment",
+          "line": 9,
+          "lines": 34
+        }
+      ]
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_assurance.py",
+      "sha256": "607ac837971cb508c2251b6ffa91bebf4fbc5215c30e3a234ead520b7882d93f",
+      "lines": 1143,
+      "functions": 23,
+      "imports": [],
+      "largest_functions": [
+        {
+          "name": "validate_assurance",
+          "line": 437,
+          "lines": 284
+        },
+        {
+          "name": "artifact_footprint",
+          "line": 58,
+          "lines": 110
+        },
+        {
+          "name": "assurance_blockers",
+          "line": 736,
+          "lines": 106
+        }
+      ]
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_core.py",
+      "sha256": "1f79cf7943aca25ba89a667f86761cff32e7493f1d159dff494b4c2ee1cb16c6",
+      "lines": 6031,
+      "functions": 131,
+      "imports": [
+        "pyramid_amendment",
+        "pyramid_assurance",
+        "pyramid_graph",
+        "pyramid_history",
+        "pyramid_parallel",
+        "pyramid_verification"
+      ],
+      "largest_functions": [
+        {
+          "name": "validate_plan",
+          "line": 1185,
+          "lines": 369
+        },
+        {
+          "name": "inspect_project",
+          "line": 5758,
+          "lines": 248
+        },
+        {
+          "name": "_expansion_errors",
+          "line": 3888,
+          "lines": 184
+        }
+      ]
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_graph.py",
+      "sha256": "546b909b2c0a5b6b47db1ba8ef1de9398dc1137c9ed9952fe5538ebacb7987f5",
+      "lines": 131,
+      "functions": 6,
+      "imports": [],
+      "largest_functions": [
+        {
+          "name": "availability",
+          "line": 109,
+          "lines": 23
+        },
+        {
+          "name": "start_blockers",
+          "line": 96,
+          "lines": 11
+        },
+        {
+          "name": "claim_relations",
+          "line": 84,
+          "lines": 10
+        }
+      ]
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_history.py",
+      "sha256": "033da957daa49a1fa986c676cfc5c6fbfdda78ac85f88c9280ff12688f3e4263",
+      "lines": 1718,
+      "functions": 44,
+      "imports": [],
+      "largest_functions": [
+        {
+          "name": "record_intent_chronicle",
+          "line": 1232,
+          "lines": 197
+        },
+        {
+          "name": "_record_validation_errors",
+          "line": 205,
+          "lines": 162
+        },
+        {
+          "name": "_committed_history_validation_errors",
+          "line": 756,
+          "lines": 120
+        }
+      ]
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_live.py",
+      "sha256": "4846513cdf0c41309a1395712791769ad463a16a1093268f6f690127c02b1e96",
+      "lines": 430,
+      "functions": 28,
+      "imports": [
+        "pyramid_core",
+        "pyramid_history",
+        "pyramid_visualizer"
+      ],
+      "largest_functions": [
+        {
+          "name": "_handler_for",
+          "line": 251,
+          "lines": 121
+        },
+        {
+          "name": "refresh",
+          "line": 145,
+          "lines": 74
+        },
+        {
+          "name": "do_GET",
+          "line": 285,
+          "lines": 57
+        }
+      ]
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_output.py",
+      "sha256": "629d6fa7a59e87df9ac8ea7caa6340c25fe3cfc2881baf9495a2f9a3c5b6bbac",
+      "lines": 75,
+      "functions": 1,
+      "imports": [],
+      "largest_functions": [
+        {
+          "name": "compact_response",
+          "line": 9,
+          "lines": 67
+        }
+      ]
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_parallel.py",
+      "sha256": "3474e25133ca17248c4c8a32a663a791dd9fe683b02073fdee7c874d03a3bbaf",
+      "lines": 555,
+      "functions": 20,
+      "imports": [
+        "pyramid_graph"
+      ],
+      "largest_functions": [
+        {
+          "name": "build_parallel_frontier",
+          "line": 336,
+          "lines": 220
+        },
+        {
+          "name": "_pair_analysis",
+          "line": 195,
+          "lines": 57
+        },
+        {
+          "name": "_dependency_index",
+          "line": 143,
+          "lines": 33
+        }
+      ]
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_usage.py",
+      "sha256": "c1f1cadd22bbed1ff3f963d438c5493d37f58ee252ecf91eb0d92c6dc165833b",
+      "lines": 205,
+      "functions": 10,
+      "imports": [],
+      "largest_functions": [
+        {
+          "name": "usage_report",
+          "line": 145,
+          "lines": 61
+        },
+        {
+          "name": "start",
+          "line": 69,
+          "lines": 42
+        },
+        {
+          "name": "finish",
+          "line": 112,
+          "lines": 16
+        }
+      ]
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_verification.py",
+      "sha256": "1864feeaf20583258ede03e1eff10daf968da37e28af1cb5a46028b10770b793",
+      "lines": 560,
+      "functions": 24,
+      "imports": [],
+      "largest_functions": [
+        {
+          "name": "validate_contracts",
+          "line": 71,
+          "lines": 64
+        },
+        {
+          "name": "normalize_proofs",
+          "line": 425,
+          "lines": 59
+        },
+        {
+          "name": "validate_run",
+          "line": 377,
+          "lines": 46
+        }
+      ]
+    },
+    {
+      "path": "plugins/pyramid-task/scripts/pyramid_visualizer.py",
+      "sha256": "ee6cb31799dd25a077950d383cd52293147393e0fcb8f979461bcb863c3879e3",
+      "lines": 1643,
+      "functions": 17,
+      "imports": [
+        "pyramid_core"
+      ],
+      "largest_functions": [
+        {
+          "name": "observer_projection",
+          "line": 214,
+          "lines": 213
+        },
+        {
+          "name": "visualization_snapshot",
+          "line": 1489,
+          "lines": 75
+        },
+        {
+          "name": "_proof_summary",
+          "line": 112,
+          "lines": 61
+        }
+      ]
+    }
+  ],
+  "schemas": [
+    {
+      "path": "plugins/pyramid-task/schemas/agent-result.schema.json",
+      "sha256": "088847d0f4f28ea959e7f20542a4c0df17b2013df56967b32dca1de79f1517aa",
+      "lines": 264
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/agent-status.schema.json",
+      "sha256": "963f184e2c92e5f0a552bd873b9007d27eff7c0bb224ef0c11acfcbae7a0cef5",
+      "lines": 22
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/amendment.schema.json",
+      "sha256": "bf4b760fc2b580f5a5888c51b621b84ff13922ddc8597c150db0d708720d69c1",
+      "lines": 20
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/archive-manifest.schema.json",
+      "sha256": "fdc4200c42aefdc1209092e9920bc94fca503bad25e1c6564940055ebe4f0f53",
+      "lines": 23
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/assurance.schema.json",
+      "sha256": "262e010f3413926cda48765bb2668ae0a59af3f016593a5ead53ac3989a18319",
+      "lines": 112
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/audit-result.schema.json",
+      "sha256": "89ceea2dcf1828e5948882f5bb6d1498b432116562aec206ebfae7361f7755be",
+      "lines": 253
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/baseline.schema.json",
+      "sha256": "51df1771e5d7b596435ea757b945b828f6e7f668333d11f5491c16e0c7231fd9",
+      "lines": 66
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/change-dossier.schema.json",
+      "sha256": "610e73c63b395f5289ba0d9634a3c74788f65e8eca70d3d8b782a3ef06447c12",
+      "lines": 92
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/code-binding.schema.json",
+      "sha256": "5bda1618f1124f333642db65d914642177a2f97483a133c677a65b715be945e6",
+      "lines": 24
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/event-reference.schema.json",
+      "sha256": "568211169af667bebd122eafcdb36fe5ed9d8e5d5f29c322862d36d4925a9425",
+      "lines": 16
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/event.schema.json",
+      "sha256": "713a88284a1e0b0ad16a42ea771c163870543bad8752c6d0b5ad97f9e8182737",
+      "lines": 33
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/expansion-proposal.schema.json",
+      "sha256": "4677df338ce70e59f04fc47d87afd9fdc3c5b990d6b9c26d48c97ff259c8cc01",
+      "lines": 202
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/final-report.schema.json",
+      "sha256": "c808b5bf2f67e71d112cc36aa6e8a772096e920d236aec7bf3816ba8c9bb22ec",
+      "lines": 24
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/handoff-draft.schema.json",
+      "sha256": "0a4a8e330fdb5ebedc6691af1da933203044fa14c1cb098f400888fd2b306dad",
+      "lines": 57
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/handoff.schema.json",
+      "sha256": "6f0ae07f672ab01f60739ed51148511bacda8072c5142b3208227286de065b8a",
+      "lines": 45
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/head.schema.json",
+      "sha256": "ad68828cf4b3f132515b48f160d9aca2fb4e1fe0502e615892282cc8c37be3a6",
+      "lines": 49
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/helper-job.schema.json",
+      "sha256": "4ab98269663518f9d25f4c7dace03f847e9cf28823e078b0f4405b612960c8e8",
+      "lines": 125
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/helper-result.schema.json",
+      "sha256": "0c04ca92195587e8656dc947cd0103ee93356fe8b73ec619235fa6d7bb94208c",
+      "lines": 155
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/history-head.schema.json",
+      "sha256": "4eba263cda4cfb168f3de2c9cc58aee45deb0ef8b0f855aee2c4fc603f181958",
+      "lines": 30
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/history-index.schema.json",
+      "sha256": "b346a03550e6b952f672e1d84c783bfc654040487fcc90b81e0d8f6929d7f0a9",
+      "lines": 15
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/history-transaction.schema.json",
+      "sha256": "c8a46b9c3db4932c96c66e88db5991ac4cc63cd49e1a08079e12dcb8d701b6c6",
+      "lines": 66
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/intent-chronicle.schema.json",
+      "sha256": "cb54692a0e881628d2599223ce84d99e76e17c631201b26cc7461a6522c58324",
+      "lines": 59
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/intent-start.schema.json",
+      "sha256": "6d6ce6563630fe8deb887790ed33589cc26c62d52d161a2d5afe7b7ec01afb90",
+      "lines": 38
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/new-intent-preview.schema.json",
+      "sha256": "50e334d9223a4f9be970bc9424404371b66a69e11c446d69849dd52ba1f490f9",
+      "lines": 86
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/parallel-frontier.schema.json",
+      "sha256": "44641dd43a8a4339e5781465da2a663fcd8f496ee08f650d0f38ddac569ebad7",
+      "lines": 197
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/plan-review.schema.json",
+      "sha256": "86e585b36f3501eb8af14c23c9968306b1a7590551693e45ec6c09264480564a",
+      "lines": 152
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/plan.schema.json",
+      "sha256": "57fae4c53c0021b3b12342b00905b6afc7c7302584279290a38b8536f8ac70a5",
+      "lines": 603
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/project.schema.json",
+      "sha256": "034bf6a103a5c66fc60d941e92364c4444636b30192c20a61c35a6ccdf8dd23e",
+      "lines": 37
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/state.schema.json",
+      "sha256": "a679f313d1ab6823a90e794c3d1ba5513c37efb1247a791b5b52251601544b2d",
+      "lines": 76
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/usage-report.schema.json",
+      "sha256": "6fd790dc1038d59673d79d3386870a9aadf47fd8d2bdaef2e7e448a747c7219f",
+      "lines": 52
+    },
+    {
+      "path": "plugins/pyramid-task/schemas/visualization.schema.json",
+      "sha256": "d2ae2abd8005b433d549da8835b6381cdc1748a1ac60516f7accd453311bff55",
+      "lines": 174
+    }
+  ],
+  "skills": [
+    "assess",
+    "audit",
+    "create",
+    "expand",
+    "goal-prompt",
+    "history",
+    "impact",
+    "inspect",
+    "lifecycle",
+    "new-intent",
+    "orchestrate",
+    "pause",
+    "replan",
+    "resume",
+    "simplify",
+    "take",
+    "update",
+    "visualize"
+  ]
+}

@@ -13,6 +13,7 @@
 | Trace the 4.1 decisions and actual qualification | [4.1 development index](planning/v4.1/README.md) |
 | Understand A/B/C, goal prompt and 4.2 qualification | [Improvement index](planning/improvement/README.md) |
 | Draft continuation without granting authority | [Goal-prompt skill](../plugins/pyramid-task/skills/goal-prompt/SKILL.md) |
+| Review the next development-system intent and Exact Context requirements | [Candidate r3 planning record](planning/development-system/README.md) |
 
 ## Topic owners
 
