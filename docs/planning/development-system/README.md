@@ -1,10 +1,10 @@
 # Pyramid 开发系统改进 — 候选 intent r3
 
-日期：2026-10-06。对象：**Standalone Pyramid Skill**，`/Users/merdankiji/localGit/pyramid-task`；authority：`local-canonical`。不是 Hemkar Service/CLI/Skill 的计划。
+日期：2026-10-06。对象：**Standalone Pyramid Skill**；当前开发分支 `dev/improvement`，worktree `/Users/merdankiji/localGit/pyramid-task-improvement`；authority：`local-canonical`。不是 Hemkar Service/CLI/Skill 的计划。`main` 保留正式 4.1，全部改善完成后才进行获准的 release integration。见 [分支与历史证据边界](branch-policy.md)。
 
 本包是用户要求生成并补充的候选，未领取、实现或验收。规划生成时 canonical 是已完成的 `PYRAMID-HUMAN-OBSERVER-20261005` r1/G13；保留 dirty 源码、pending code binding 和 baseline r4。未改 canonical plan/state，未执行 archive/reset、安装、部署或清理。用户随后授权提交和推送本规划记录；Git 发布不激活候选，也不授予实施或安装权限。
 
-本目录是可提交的规划快照，不是新执行 worktree 或第二份 canonical。以下 Git、版本、路径和转换 hash 均为生成时观察；激活前必须重新检查、preview 并取得确切批准。主 checkout 为 `/Users/merdankiji/localGit/pyramid-task`；上一轮已完成的 `dev/improvement` worktree 保留在 `/Users/merdankiji/localGit/pyramid-task-improvement`，本次没有重用其旧 canonical。
+本目录是可提交的规划快照，不是第二份 canonical。以下诊断、版本与转换 hash 是在原主 checkout `/Users/merdankiji/localGit/pyramid-task` 生成时的观察；分支修正后它们不是当前开发 worktree 的激活材料。必须在 `dev/improvement` 重新检查其 canonical、baseline 和候选，再 preview 并取得确切批准。没有把原主 checkout 的 `.pyramid` 复制到开发 worktree，也没有激活候选。
 
 ## Intent 与范围
 

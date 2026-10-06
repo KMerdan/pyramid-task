@@ -8,7 +8,7 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent
-SOURCE = Path("/Users/merdankiji/localGit/pyramid-task")
+SOURCE = ROOT.parents[2]
 INSTALLED = Path("/Users/merdankiji/.codex/plugins/cache/kmerdan-skills/pyramid-task/4.1.0")
 before_path = ROOT / "candidate-plan.r2.json"
 after_path = ROOT / "candidate-plan.json"
