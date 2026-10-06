@@ -41,15 +41,13 @@ Keep recommendations read-only: do not change the workflow, disable collection o
 ## Workflow
 
 1. Locate `<project-root>/.pyramid/plan.json`.
-2. Establish integrity with `validate` when first trusting this project, after recovery, when corruption is suspected, or at a final acceptance boundary:
+2. Run validation before relying on derived state:
 
 ```bash
 python3 ../../scripts/pyramid.py validate --project <project-root> --json
 ```
 
-For ordinary reads of an established project, use the selected query directly. Each query still validates canonical plan/state, assurance, handoffs, head and intent history; it does not replace `validate`'s full event-chain check. Surface any failure and stop relying on that result. Do not repeat full validation before every healthy read. Explicit project/host validation requirements still apply.
-
-3. Use the smallest query that answers the request. Output is compact by default; request `--full` only when missing detail changes the decision:
+3. Use the smallest query that answers the request:
 
 ```bash
 python3 ../../scripts/pyramid.py inspect --project <project-root> --summary --json
@@ -63,14 +61,11 @@ python3 ../../scripts/pyramid.py inspect --project <project-root> --node TASK-20
 python3 ../../scripts/pyramid.py inspect --project <project-root> --assurance-summary --json
 python3 ../../scripts/pyramid.py inspect --project <project-root> --assurance --json
 python3 ../../scripts/pyramid.py inspect --project <project-root> --assurance-detail --json
-python3 ../../scripts/pyramid.py inspect --project <project-root> --assurance-detail --assurance-task TASK-203 --json
-python3 ../../scripts/pyramid.py inspect --project <project-root> --assurance-detail --assurance-asset ASSET-API --json
-python3 ../../scripts/pyramid.py inspect --project <project-root> --assurance-detail --inspection INSPECTION-API --json
 python3 ../../scripts/pyramid.py diff --project <project-root> --from-version <version> --json
 python3 ../../scripts/pyramid.py lifecycle --project <project-root> --json
 ```
 
-Use one assurance selector for a record question; selectors require `--assurance-detail` and cannot combine. They retain related-task blockers but return a partial record view, not an editable canonical bundle or audit acceptance. Recover the complete bundle with unscoped `--assurance-detail` when assembling an impact candidate. Use `diff --detail` only when compact changed-field summaries are insufficient. Use the returned task or audit mutation guard for scoped work; reserve the global context identity for topology, lifecycle, and full assurance mutations.
+Use `--assurance-detail` only for individual assurance records and `diff --detail` only when compact changed-field summaries are insufficient. Use the returned task or audit mutation guard for scoped work; reserve the global context identity for topology, lifecycle, and full assurance mutations.
 
 Use `--parallel-ready` when the question is which ready tasks can safely run together. Its groups are derived from the current wave, dependency, write/generated scope, asset, inspection-policy, and drift state; they are not stored graph versions. Route actual multi-agent execution through `pyramid-task:orchestrate`.
 

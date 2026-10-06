@@ -35,8 +35,7 @@ Use `mutation_guards.task` for take, update, and pause, and `mutation_guards.aud
 | Explain a prior intent or code path | `history --intent <id>` or `history --path <path>` |
 | Build bounded reproduction context | `history --replay <id>` |
 | Diagnose interrupted intent history | `history --doctor` |
-| Review one assurance scope | `inspect --assurance-detail --assurance-task <id>` (or `--assurance-asset` / `--inspection`) |
-| Assemble a complete assurance candidate | unscoped `inspect --assurance-detail` |
+| Reconcile assurance records | `inspect --assurance-detail` |
 
 Current-plan mutation history is stored as one hash-linked file per mutation under `.pyramid/events/`; it is not appended to the task packet or stored as a version array in the current graph JSON. Cross-intent causal history is stored separately under `.pyramid/history/` and queried through `history`. Do not read either record directory directly for normal work.
 
@@ -45,10 +44,6 @@ CLI output is compact by default: duplicate event before/after snapshots become 
 For additive implementation-file/context discoveries inside an unchanged working task, read `task-amendments.md`. `amend` constructs the candidate internally, preserves ownership, emits a new guard, and records the reviewed delta. It does not approve semantic scope expansion or pass an audit.
 
 If projection metadata would make a response larger, the default returns it unchanged. Consumers must read `schema`/`response_format`, not assume every response contains an `agent-status-v1` packet or event reference. `--full` disables the output projection but does not expand the selected query: use `diff --detail` or `inspect --assurance-detail` for those additional scopes.
-
-For selected `inspect --node`, compact harness contracts may omit procedure/input patterns with an explicit **summary-only; not a run template** label. Scope, criteria, authority and channels remain; recover details with `--node <id> --full` or capture with `--harness <id>`. Compact `--harness` may omit identical scalar identity/environment values only when the complete proof template retains them. Take/resume remain complete. No projection changes canonical/API records or integrity validation.
-
-Assurance selectors retain complete related-task coverage, material findings/drift and controls, plus omission counts and recovery. They select displayed records, not audit authority. Use native readiness for acceptance; never save a selected partial view as a complete canonical bundle.
 
 ## Stable procedure, fresh invocation authority
 

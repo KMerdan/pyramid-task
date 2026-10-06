@@ -24,13 +24,6 @@ The first screen must answer these questions in order:
 
 Use plain human titles and causal summaries. A count is secondary context, not the story. Keep task IDs, raw enum values, graph version, plan revision, edge types, and record IDs in a technical disclosure or graph detail.
 
-Lead with last recorded acceptance and the next named gate; keep counts secondary.
-Show issue cause, affected outcome and indicated response together. Do not infer
-a human approval request from a blocked/inspection status; preserve any actual
-recorded authority need. Selected detail precedes the full tree in DOM/reading
-order, including narrow screens. Outcome order is presentation, not a serial
-dependency: no unconditional connecting arrows; show declared dependency labels.
-
 ## Required interactions
 
 - Select a node and show its title, purpose, kind, path selection, execution, verification, health, availability, and active or latest handoff identity.
@@ -64,31 +57,6 @@ Use visual hierarchy from general to specific: intent and proof, delivery path, 
 - Show a runnable or demonstrable claim only when the plan defines that outcome and its gate has passed. If the plan lacks an explicit outcome ladder, say so instead of deriving increments from waves.
 - Do not reconstruct a red-green-refactor timeline unless canonical events actually record those transitions. Never infer test-driven activity from file names or a final green suite.
 
-## Bounded evidence access
-
-Show recorded verification separately from **current eligibility: not checked**.
-The view does not hash working-tree inputs; use native `--harness` and
-`--audit-readiness` for current eligibility. Prefer the latest recorded audit
-before implementation evidence; collapse additional records, not failed/not-run
-checks or limitations. Display omitted counts and full recovery pointers.
-
-For a visual observation, select the first valid imported PNG/JPEG/WebP capture,
-including one after the four displayed artifact references. Show one lazy-loaded
-preview with its exact claim, candidate scope and reviewer; open the original
-for detail. This is a documented ordering rule, not a model judgment that this
-is the best capture. Do not embed raw logs, unlimited images or private profiles.
-Additional evidence remains in canonical records; previews do not authorize cleanup.
-
-Snapshot links are checked at rendering, not a guarantee against later filesystem
-changes. Live `/artifact/<sha256>` serves only referenced CAS artifacts from the
-last validated publication; recheck bounded regular-file bytes and SHA at each
-request without following file/directory links. Raster captures may render inline;
-other content downloads as opaque bytes, never active HTML/SVG. Missing, changed,
-unsupported or unreadable evidence stays unavailable. Safe descriptor-relative
-no-follow opens require host support; do not relax this boundary on another OS.
-Resolve references only at publications/requests, never scan working-tree inputs
-or artifact roots on every idle poll.
-
 The browser is read-only. Actions that claim, pause, resume, update, audit, expand, or replan must call their authoritative interface rather than modifying local presentation state.
 
 ## Live runtime
@@ -98,7 +66,6 @@ The browser is read-only. Actions that claim, pause, resume, update, audit, expa
 - Use a loopback-only server and reject non-local HTTP Host headers. Expose the current graph through a no-store JSON endpoint and notify clients through a reconnecting event stream.
 - After an atomic publication, detect a change within the configured polling interval (250 milliseconds by default). Notify the browser of graph data only when the slim visualization payload changes semantically; generated timestamps and agent-only fields must not cause a rerender. Actual paint time also includes the local request and render round trip.
 - Preserve view, filter, overlay, selection, and zoom-compatible browser state across ordinary updates. If a selected node disappears after expansion, replan, reset, or restore, select the recommended current node.
-- Preserve existing proof disclosure and keyboard focus when its control still exists; reject out-of-order responses within the same intent. Do not confuse connection/publication health with task health or current proof eligibility.
 - Retain the last valid graph when publication validation fails and show the failure as connection health, not as task health.
 - Coalesce rapid publications when necessary, but never replace a newer graph with an older graph version.
 - Keep self-contained snapshot rendering available for archives, sharing, and environments where a local server cannot run.

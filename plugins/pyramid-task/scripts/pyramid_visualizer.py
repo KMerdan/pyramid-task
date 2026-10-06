@@ -1,15 +1,11 @@
 from __future__ import annotations
 
 import copy
-import hashlib
 import json
 import os
-import re
-import stat
 import tempfile
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote
 
 from pyramid_core import (
     compile_and_load_graph,
@@ -49,110 +45,11 @@ def _check_counts(records: Any) -> dict[str, int]:
     return counts
 
 
-def _artifact_reference(artifact: Any) -> dict[str, str]:
-    """Expose only imported, content-addressed references, never supplied URLs."""
-    if not isinstance(artifact, dict):
-        return {"status": "unsafe-reference"}
-    sha = artifact.get("sha256")
-    if not isinstance(sha, str) or not re.fullmatch(r"[0-9a-f]{64}", sha):
-        return {"status": "unsafe-reference"}
-    path = f".pyramid/reports/proof-artifacts/{sha}"
-    if artifact.get("path") != path:
-        return {"status": "unsafe-reference"}
-    return {"path": path, "sha256": sha, "status": "not-checked"}
-
-
-def read_referenced_file(root: Path, relative: str, limit: int, *, prefix: int | None = None) -> bytes | None:
-    """Bounded regular-file read anchored to directory FDs, with no symlink following."""
-    parts = Path(relative).parts
-    if not parts or Path(relative).is_absolute() or any(p in {'.', '..'} for p in parts):
-        return None
-    if not all(hasattr(os, name) for name in ('O_NOFOLLOW', 'O_NONBLOCK')) or os.open not in os.supports_dir_fd:
-        return None  # Fail closed on hosts without this safe open primitive.
-    handles: list[int] = []
-    try:
-        directory_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
-        handles.append(os.open(root.resolve(), directory_flags))
-        for part in parts[:-1]:
-            handles.append(os.open(part, directory_flags, dir_fd=handles[-1]))
-        handles.append(os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=handles[-1]))
-        info = os.fstat(handles[-1])
-        if not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= limit:
-            return None
-        with os.fdopen(os.dup(handles[-1]), 'rb') as stream:
-            data = stream.read(prefix if prefix is not None else limit + 1)
-        return data if prefix is not None or len(data) == info.st_size else None
-    except (OSError, ValueError):
-        return None
-    finally:
-        for handle in reversed(handles):
-            os.close(handle)
-
-
-def capture_mime(data: bytes) -> str | None:
-    if data.startswith(b'\x89PNG\r\n\x1a\n'):
-        return 'image/png'
-    if data.startswith(b'\xff\xd8\xff'):
-        return 'image/jpeg'
-    if data.startswith(b'RIFF') and data[8:12] == b'WEBP':
-        return 'image/webp'
-    return None
-
-
-def read_proof_artifact(root: Path, artifact: dict[str, Any]) -> tuple[bytes, str] | None:
-    reference = _artifact_reference(artifact)
-    if reference.get('status') != 'not-checked':
-        return None
-    data = read_referenced_file(root, reference['path'], 16 * 1024 * 1024)
-    if data is None or hashlib.sha256(data).hexdigest() != reference['sha256']:
-        return None
-    return data, capture_mime(data) or 'application/octet-stream'
-
-
 def _proof_summary(node: dict[str, Any]) -> dict[str, Any]:
     state = node.get("state", {})
     result = state.get("last_result") if isinstance(state.get("last_result"), dict) else {}
     audit = state.get("last_audit") if isinstance(state.get("last_audit"), dict) else {}
     acceptance = result.get("acceptance_evidence") if isinstance(result, dict) else []
-    records = []
-    seen = set()
-    for origin, payload in (("audit", audit), ("implementation", result)):
-        for proof in payload.get("proofs", []):
-            run = proof.get("run", {})
-            identity = (proof.get("requirement"), run.get("id"))
-            if identity in seen:
-                continue
-            seen.add(identity)
-            if len(records) >= 8:
-                continue
-            observations = []
-            for observation in run.get("observations", [])[:3]:
-                artifacts = observation.get("artifacts", [])
-                observations.append({
-                    "kind": observation.get("kind"), "result": observation.get("result"),
-                    "summary": str(observation.get("summary", ""))[:1000],
-                    "summary_omitted_chars": max(0, len(str(observation.get("summary", ""))) - 1000),
-                    "reviewer": str(observation.get("reviewer", ""))[:200],
-                    "reviewer_omitted_chars": max(0, len(str(observation.get("reviewer", ""))) - 200),
-                    "artifacts": [_artifact_reference(a) for a in artifacts[:4]],
-                    "omitted_artifacts": max(0, len(artifacts) - 4),
-                    # Imported CAS names have no extension. Resolve one actual
-                    # image lazily at publication, including captures after slot 4.
-                    "preview_candidates": [_artifact_reference(a) for a in artifacts[:16]] if observation.get('kind') == 'visual' else [],
-                })
-            requirement = proof.get("requirement")
-            declaration = next((e for e in node.get("required_evidence", []) if e.get("id") == requirement), {})
-            records.append({
-                "requirement": requirement, "run_id": run.get("id"), "recorded_by": origin,
-                "criteria": declaration.get("verification", {}).get("criteria", []),
-                "contract_sha256": run.get("contract_sha256"), "inputs_sha256": run.get("inputs_sha256"),
-                "environment": str(run.get("environment", ""))[:1000],
-                "environment_omitted_chars": max(0, len(str(run.get("environment", ""))) - 1000),
-                "observations": observations,
-            })
-    checks = [{"origin": origin, "id": c.get("id", c.get("criterion", c.get("command"))),
-               "result": c.get("result")} for origin, payload in (("audit", audit), ("implementation", result))
-              for c in payload.get("checks", []) if c.get("result") != "passed"]
     return {
         "verification": state.get("verification", "unverified"),
         "updated_at": state.get("updated_at"),
@@ -160,15 +57,6 @@ def _proof_summary(node: dict[str, Any]) -> dict[str, Any]:
         "acceptance_checks": _check_counts(acceptance),
         "audit_checks": _check_counts(audit.get("checks")),
         "recommended_action": audit.get("recommended_action"),
-        "current_eligibility": "not-checked",
-        "recovery": f"Full records: .pyramid/state.json → nodes.{node['id']}.last_result / last_audit. Current eligibility: inspect --harness {node['id']}; inspect --audit-readiness {node['id']}",
-        "records": records,
-        "omitted_records": max(0, len(seen) - len(records)),
-        "nonpassing_checks": checks[:8],
-        "omitted_checks": max(0, len(checks) - 8),
-        "limitations": [str(v)[:1000] for v in audit.get("assurance", {}).get("limitations", [])[:4]],
-        "omitted_limitations": max(0, len(audit.get("assurance", {}).get("limitations", [])) - 4),
-        "limitations_omitted_chars": sum(max(0, len(str(v)) - 1000) for v in audit.get("assurance", {}).get("limitations", [])[:4]),
     }
 
 
@@ -315,11 +203,9 @@ def observer_projection(graph: dict[str, Any], nodes: list[dict[str, Any]]) -> d
             )
 
     priority = {"needs-rework": 0, "working": 1, "ready": 2, "paused": 3, "blocked": 4, "locked": 5}
-    executable = [node for node in primary if node.get("kind") in EXECUTABLE_NODE_KINDS
-                  and node.get("availability") in priority]
-    active = graph.get("lifecycle", {}).get("status") == "active"
+    executable = [node for node in primary if node.get("kind") in EXECUTABLE_NODE_KINDS]
     recommended = min(
-        executable if active else [],
+        executable or primary or nodes,
         key=lambda node: (
             priority.get(node.get("availability"), 9),
             node.get("wave", 0),
@@ -353,15 +239,6 @@ def observer_projection(graph: dict[str, Any], nodes: list[dict[str, Any]]) -> d
         }
     else:
         recommended_view = None
-
-    if not active:
-        lifecycle_action = "Inspect recorded history; start a new intent only when requested." if graph.get("lifecycle", {}).get("status") == "completed" else "Inspect archived history; restore only through the lifecycle interface."
-    elif intent.get("state", {}).get("verification") == "passed":
-        lifecycle_action = "Intent acceptance is recorded. Inspect lifecycle and close the assured intent."
-    elif not executable:
-        lifecycle_action = "No executable task is ready. Inspect the next parent audit or its blockers."
-    else:
-        lifecycle_action = None
 
     assurance = graph.get("assurance", {}).get("summary") if graph.get("assurance") else None
     if assurance and (
@@ -422,7 +299,6 @@ def observer_projection(graph: dict[str, Any], nodes: list[dict[str, Any]]) -> d
             ),
         ),
         "recommended": recommended_view,
-        "lifecycle_action": lifecycle_action,
     }
 
 
@@ -478,8 +354,6 @@ HTML_TEMPLATE = r"""<!doctype html>
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 system-ui, sans-serif; }
-  a { color: var(--focus); }
-  :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
   main { max-width: 1500px; margin: 0 auto; padding: 18px; }
   h1 { margin: 0 0 4px; font-size: 1.35rem; font-weight: 600; }
   .meta { color: var(--muted); margin-bottom: 10px; }
@@ -489,8 +363,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .surface-switch button { border-color: transparent; background: transparent; }
   .surface-switch button[aria-pressed="true"] { background: var(--bg); border-color: var(--border); box-shadow: none; }
   .observer { display: grid; gap: 14px; }
-  .observer-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .observer-counts { grid-column: 1 / -1; color: var(--muted); font-size: .84rem; }
+  .observer-summary { display: grid; grid-template-columns: 1.2fr 1.2fr .8fr; gap: 10px; }
   .story-card, .observer-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 11px; }
   .story-card { min-height: 132px; padding: 15px; }
   .story-card .eyebrow, .observer-panel .eyebrow { color: var(--muted); font-size: .75rem; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; }
@@ -498,11 +371,12 @@ HTML_TEMPLATE = r"""<!doctype html>
   .story-card p, .observer-panel p { margin: 5px 0; }
   .story-card.verified { border-color: var(--verified); }
   .story-card.attention { border-color: var(--blocked); }
-  .observer-panel { padding: 15px; min-width: 0; overflow-wrap: anywhere; }
+  .observer-panel { padding: 15px; min-width: 0; }
   .observer-panel > h2 { margin-top: 0; }
-  .proof-record { overflow-wrap: anywhere; min-width: 0; }
   .outcome-path { display: flex; gap: 8px; align-items: stretch; overflow-x: auto; padding: 3px 2px 8px; }
   .outcome-step { position: relative; flex: 1 0 210px; max-width: 340px; min-height: 122px; padding: 12px; text-align: left; border-radius: 9px; }
+  .outcome-step::after { content: '→'; position: absolute; right: -10px; top: 48%; color: var(--muted); z-index: 2; }
+  .outcome-step:last-child::after { content: ''; }
   .outcome-step strong { display: block; margin: 5px 0; }
   .outcome-step small { color: var(--muted); }
   .outcome-step.verified { border-color: var(--verified); }
@@ -518,10 +392,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .semantic-item.work { border-left: 4px solid var(--working); }
   .recommended-action { border-left: 4px solid var(--ready); padding: 10px 12px; background: var(--bg); border-radius: 8px; }
   .recommended-action strong { display: block; margin: 3px 0; }
-  .observer-lower { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 10px; align-items: start; }
-  .evidence-capture { margin: 12px 0; }
-  .evidence-capture img { display: block; width: 100%; max-height: 320px; aspect-ratio: 16 / 10; object-fit: contain; background: var(--bg); border: 1px solid var(--border); border-radius: 7px; }
-  .evidence-capture figcaption { color: var(--muted); font-size: .82rem; }
+  .observer-lower { display: grid; grid-template-columns: minmax(300px, .9fr) minmax(380px, 1.1fr); gap: 10px; align-items: start; }
   .history-view { display: grid; gap: 12px; }
   .history-intro { max-width: 880px; color: var(--muted); }
   .history-timeline { display: grid; gap: 10px; }
@@ -545,7 +416,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .tree-node:hover, .tree-node.selected { border-color: var(--focus); background: var(--bg); }
   .tree-node .tree-status { float: right; color: var(--muted); font-size: .78rem; }
   .proof-status { display: inline-flex; padding: 3px 7px; border: 1px solid var(--border); border-radius: 999px; color: var(--muted); font-size: .78rem; }
-  .proof-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin: 10px 0; overflow-wrap: anywhere; }
+  .proof-grid { display: grid; grid-template-columns: repeat(3, minmax(90px, 1fr)); gap: 7px; margin: 10px 0; }
   .proof-metric { padding: 8px; background: var(--bg); border-radius: 7px; }
   .proof-metric strong { display: block; font-size: 1rem; }
   .proof-metric span { color: var(--muted); font-size: .76rem; }
@@ -576,7 +447,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; margin-bottom: 12px; }
   .group { display: flex; gap: 6px; flex-wrap: wrap; }
   .group[hidden] { display: none; }
-  button, select { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--muted); border-radius: 7px; padding: 7px 10px; }
+  button, select { font: inherit; color: var(--fg); background: var(--panel); border: 1px solid var(--border); border-radius: 7px; padding: 7px 10px; }
   button { cursor: pointer; }
   button[aria-pressed="true"] { border-color: var(--focus); box-shadow: 0 0 0 2px color-mix(in srgb, var(--focus) 30%, transparent); }
   label { display: grid; gap: 3px; color: var(--muted); font-size: .82rem; }
@@ -630,7 +501,7 @@ HTML_TEMPLATE = r"""<!doctype html>
   @keyframes node-change { 0%, 30% { filter: drop-shadow(0 0 9px var(--focus)); transform: scale(1.28); transform-origin: center; } 100% { filter: none; transform: scale(1); } }
   @media (max-width: 1080px) { .overview { grid-template-columns: repeat(3, minmax(92px, 1fr)); } }
   @media (max-width: 920px) { .layout, .observer-summary, .observer-columns, .observer-lower, .history-card { grid-template-columns: 1fr; } .detail { position: static; } }
-  @media (max-width: 620px) { main { padding: 12px; } .proof-grid { grid-template-columns: 1fr; } .proof-metric { display: flex; align-items: baseline; gap: 10px; } .overview { grid-template-columns: repeat(2, minmax(92px, 1fr)); } .recommended { grid-column: 1 / -1; } .surface-switch { display: flex; flex-wrap: wrap; } .surface-switch button { flex: 1; } }
+  @media (max-width: 620px) { .overview { grid-template-columns: repeat(2, minmax(92px, 1fr)); } .recommended { grid-column: 1 / -1; } .surface-switch { display: flex; } .surface-switch button { flex: 1; } }
   @media (prefers-reduced-motion: no-preference) { .node, .edge { transition: opacity .18s, transform .18s; } }
   @media (prefers-reduced-motion: reduce) { .node.changed .mark { animation: none; } }
 </style>
@@ -649,8 +520,8 @@ HTML_TEMPLATE = r"""<!doctype html>
   <section class="observer" id="observer-view" aria-label="Intent observer dashboard">
     <section class="observer-summary" id="observer-summary" aria-label="Intent progress summary"></section>
     <section class="observer-panel" aria-labelledby="outcome-path-title">
-      <div class="eyebrow">Acceptance boundaries</div>
-      <h2 id="outcome-path-title">Outcomes toward the intent</h2>
+      <div class="eyebrow">Delivery path</div>
+      <h2 id="outcome-path-title">Verified outcomes toward the intent</h2>
       <div class="outcome-path" id="outcome-path"></div>
     </section>
     <section class="observer-columns" aria-label="Current execution picture">
@@ -668,11 +539,11 @@ HTML_TEMPLATE = r"""<!doctype html>
       </article>
     </section>
     <section class="observer-lower">
-      <article class="observer-panel" id="observer-detail" aria-live="polite"></article>
       <article class="observer-panel">
         <div class="eyebrow">Structure</div><h2>How the intent is organized</h2>
         <ul class="structure-tree" id="structure-tree"></ul>
       </article>
+      <article class="observer-panel" id="observer-detail" aria-live="polite"></article>
     </section>
   </section>
   <section class="history-view" id="history-view" aria-label="Intent history observer" hidden>
@@ -781,7 +652,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     if (recommendedId && graph.nodes.some(node => node.id === recommendedId)) {
       return graph.nodes.find(node => node.id === recommendedId);
     }
-    const priorities = graph.lifecycle?.status === 'active' ? ['working', 'needs-rework', 'ready', 'paused', 'blocked', 'locked'] : [];
+    const priorities = ['working', 'needs-rework', 'ready', 'paused', 'blocked', 'locked'];
     for (const availability of priorities) {
       const match = graph.nodes.find(node => node.availability === availability && node.selection === 'primary');
       if (match) return match;
@@ -796,8 +667,6 @@ HTML_TEMPLATE = r"""<!doctype html>
       'blocked': 'Blocked', 'locked': 'Waiting', 'implemented': 'Awaiting audit',
       'planned': 'Planned', 'pending': 'Pending', 'passed': 'Passed', 'failed': 'Failed',
       'unverified': 'Not yet verified'
-      , 'not-checked': 'Not checked against current source', 'not-run': 'Not run',
-      'unsafe-reference': 'Unsafe reference withheld', 'missing-or-changed': 'Artifact missing or changed'
     })[status] || String(status || 'Unknown').replaceAll('-', ' ');
   }
   function targetText(item) {
@@ -808,7 +677,6 @@ HTML_TEMPLATE = r"""<!doctype html>
     if (!observer) return;
     const last = observer.last_verified;
     const next = observer.next_outcome;
-    const nextGate = next?.gate ? nodeById.get(next.gate.id) : null;
     observerSummary.innerHTML = `
       <article class="story-card ${last ? 'verified' : ''}">
         <div class="eyebrow">Last proven</div>
@@ -821,18 +689,21 @@ HTML_TEMPLATE = r"""<!doctype html>
         <div class="eyebrow">Next proof</div>
         <h2>${next ? esc(next.title) : observer.intent.verified ? 'Intent is verified' : 'No outcome milestone is declared'}</h2>
         <p>${next ? esc(next.gate?.summary || 'This outcome has no explicit audit gate.') : observer.intent.verified ? 'The final intent and its required evidence have passed.' : 'Inspect the plan structure and add outcome gates when a runnable ladder is intended.'}</p>
-        ${nextGate ? `<p><strong>Gate:</strong> ${esc(nextGate.title)} · ${esc(statusLabel(nextGate.availability))}</p>${nextGate.blocked_by?.length ? `<p><strong>Recorded prerequisites:</strong> ${nextGate.blocked_by.map(id => esc(nodeById.get(id)?.title || id)).join('; ')}</p>` : ''}` : ''}
         ${next ? `<span class="proof-status">${esc(statusLabel(next.status))}</span>` : ''}
       </article>
-      <div class="observer-counts">${esc(observer.progress.label)} · ${observer.progress.working} working · ${observer.progress.ready} ready · ${observer.progress.attention} need attention. Recorded counts, not current-source proof or an estimated percentage.</div>`;
+      <article class="story-card ${observer.progress.attention ? 'attention' : ''}">
+        <div class="eyebrow">Current picture</div>
+        <h2>${esc(observer.progress.label)}</h2>
+        <p>${observer.progress.working} actively working · ${observer.progress.ready} ready · ${observer.progress.attention} need attention</p>
+        <small>Evidence-backed counts; no estimated completion percentage.</small>
+      </article>`;
 
     const stages = observer.outcomes || [];
     outcomePath.innerHTML = stages.length ? stages.map((stage, index) => `
       <button type="button" class="outcome-step ${esc(stage.status)}" data-node-id="${esc(stage.id)}">
-        <small>Outcome · ${esc(statusLabel(stage.status))}</small>
+        <small>Outcome ${index + 1} · ${esc(statusLabel(stage.status))}</small>
         <strong>${esc(stage.title)}</strong>
         <span>${stage.gate ? `Proof: ${esc(statusLabel(stage.gate.verification || stage.gate.availability))}` : 'Proof gate missing'}</span>
-        <span>${(nodeById.get(stage.id)?.dependencies || []).filter(d => nodeById.get(d.id)?.kind === 'outcome').map(d => `Dependency: ${esc(d.title || nodeById.get(d.id).title)}`).join('; ')}</span>
       </button>`).join('') + `
       <button type="button" class="outcome-step ${observer.intent.verified ? 'verified' : 'planned'}" data-node-id="${esc(observer.intent.id)}">
         <small>Final intent · ${observer.intent.verified ? 'Verified' : 'Not yet verified'}</small>
@@ -851,7 +722,6 @@ HTML_TEMPLATE = r"""<!doctype html>
       ${item.id === 'CHANGE-ASSURANCE' ? '<div' : `<button type="button" data-node-id="${esc(item.id)}"`} class="semantic-item issue">
         <strong>${esc(item.type)} · ${esc(item.title)}</strong>
         <span>${esc(item.reason)}</span>
-        <p><strong>Impact:</strong> ${targetText(item)}. <strong>Response:</strong> ${esc(item.next_action)}</p>
       ${item.id === 'CHANGE-ASSURANCE' ? '</div>' : '</button>'}`).join('') : '<p class="empty-state">No failed proof, blocker, risk, or paused handoff is recorded.</p>';
 
     const recommended = observer.recommended;
@@ -862,7 +732,7 @@ HTML_TEMPLATE = r"""<!doctype html>
         <p>${esc(recommended.reason)}</p>
         <span>${targetText(recommended)}</span>
         <p><button type="button" data-node-id="${esc(recommended.id)}">Inspect task</button></p>
-      </div>` : `<p class="empty-state">${esc(observer.lifecycle_action || 'No next action is available from the current graph.')}</p>`;
+      </div>` : '<p class="empty-state">No next action is available from the current graph.</p>';
 
     renderStructure();
     renderObserverDetail();
@@ -937,7 +807,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     const audit = proof.audit_checks || {passed: 0, failed: 0, total: 0};
     const sourceHref = node.source_path && liveMode
       ? `/project/${node.source_path.split('/').map(encodeURIComponent).join('/')}`
-      : node.source_href || '';
+      : node.source_path ? `../${node.source_path}` : '';
     const stageGate = stage?.gate;
     observerDetail.innerHTML = `
       <div class="eyebrow">Selected work</div>
@@ -946,16 +816,11 @@ HTML_TEMPLATE = r"""<!doctype html>
       <p>${esc(node.summary)}</p>
       <p><strong>Why it matters:</strong> ${target ? `supports ${esc(target.title)}` : node.id === data.intent.id ? 'this is the final intent' : 'supports the intent path'}</p>
       ${node.state.blocker ? `<p><strong>Issue:</strong> ${esc(node.state.blocker)}</p>` : ''}
-      <p><strong>Execution:</strong> ${esc(node.state.execution === 'implemented' ? 'Implemented' : statusLabel(node.state.execution))} · <strong>Owner:</strong> ${esc(node.state.owner || 'No active owner')} · <strong>Health:</strong> ${esc(statusLabel(node.state.health))}</p>
       <div class="proof-grid">
         <div class="proof-metric"><strong>${implementation.passed}/${implementation.total}</strong><span>implementation checks</span></div>
         <div class="proof-metric"><strong>${acceptance.passed}/${acceptance.total}</strong><span>acceptance checks</span></div>
         <div class="proof-metric"><strong>${audit.passed}/${audit.total}</strong><span>audit checks</span></div>
       </div>
-      <h3>Recorded proof</h3>
-      <p>Recorded acceptance: ${esc(statusLabel(proof.verification))}. Current proof eligibility: ${esc(statusLabel(proof.current_eligibility))}.</p>
-      ${renderProof(node)}
-      ${stageGate ? `<h3>Gate proof · ${esc(stageGate.title)}</h3>${renderProof(nodeById.get(stageGate.id))}` : ''}
       <strong>Definition of done for this work</strong>
       ${list(node.acceptance_criteria, item => esc(item.description))}
       <strong>Required proof</strong>
@@ -968,35 +833,6 @@ HTML_TEMPLATE = r"""<!doctype html>
         <dt>Execution</dt><dd>${esc(node.state.execution)}</dd><dt>Verification</dt><dd>${esc(node.state.verification)}</dd>
         <dt>Graph</dt><dd>revision ${data.revision} · version ${data.graph_version}</dd></dl>
       </details>`;
-    observerDetail.querySelectorAll('.evidence-capture img').forEach(image => image.addEventListener('error', () => {
-      image.hidden = true;
-      image.closest('figure').querySelector('figcaption').textContent = 'Referenced capture unavailable or changed. Recover the recorded evidence; this is not current-source proof.';
-    }));
-  }
-  function renderProof(node) {
-    const proof = node?.proof || {};
-    const records = proof.records || [];
-    const href = artifact => liveMode ? `/artifact/${artifact.sha256}` : artifact.href;
-    return (records.length ? records.map((record, index) => `
-      <details class="technical-details proof-record" data-proof-id="${esc(node.id + ':' + record.requirement + ':' + record.run_id)}" ${index === 0 ? 'open' : ''}>
-        <summary>${record.recorded_by === 'audit' ? 'Recorded audit' : 'Implementation record'} · ${esc(record.requirement)}${index ? ' · additional evidence' : ''}</summary>
-        <p>Run: <code>${esc(record.run_id)}</code> · recorded by ${esc(record.recorded_by)}</p>
-        <p>Claims: ${esc((record.criteria || []).join(', ') || 'See required proof contract')}</p>
-        <p>Candidate inputs: <code>${esc(record.inputs_sha256)}</code></p>
-        <p>Scope: ${esc(record.environment)}</p>
-        ${record.environment_omitted_chars ? '<p>Scope text shortened; inspect the full recorded run below.</p>' : ''}
-        ${record.observations.map(obs => `<section class="proof-observation">
-          <h4>${esc(obs.kind)} · ${esc(statusLabel(obs.result))}</h4>
-          <p>${esc(obs.summary)}</p><small>Reviewed by ${esc(obs.reviewer)}</small>
-          ${obs.preview ? `<figure class="evidence-capture"><a href="${esc(href(obs.preview))}" target="_blank" rel="noopener"><img src="${esc(href(obs.preview))}" loading="lazy" decoding="async" alt="Recorded visual evidence for ${esc(record.requirement)}; open full capture for detail"></a><figcaption>First valid capture from this claim's visual observation. Recorded candidate only; scope and reviewer above. <a href="${esc(href(obs.preview))}" target="_blank" rel="noopener">Open full capture</a></figcaption></figure>` : obs.visual_candidate_count ? '<p>Capture preview unavailable; recover the full recorded evidence below.</p>' : ''}
-          <details class="technical-details"><summary>Artifact references (${obs.artifacts.length} shown${obs.omitted_artifacts ? ', more in full record' : ''})</summary><ul>${obs.artifacts.map(a => `<li>${a.href ? `<a href="${esc(href(a))}" ${a.mime?.startsWith('image/') ? 'target="_blank" rel="noopener"' : 'download="pyramid-evidence.bin"'}>${a.mime?.startsWith('image/') ? 'Open' : 'Download'} referenced artifact</a>` : esc(statusLabel(a.status))}${a.sha256 ? ` · <code>${esc(a.sha256)}</code>` : ''}</li>`).join('')}</ul></details>
-          ${obs.omitted_artifacts || obs.summary_omitted_chars || obs.reviewer_omitted_chars ? '<p>Additional metadata omitted. Recover the full recorded run through the canonical query below.</p>' : ''}
-        </section>`).join('')}
-      </details>`).join('') : '<p>No candidate-bound proof run is recorded here. Check the required proof; legacy check counts are not a bound run.</p>')
-      + (proof.nonpassing_checks || []).map(c => `<p>${esc(c.origin)} · ${esc(c.id)}: ${esc(statusLabel(c.result))}</p>`).join('')
-      + (proof.limitations || []).map(l => `<p>Limitation: ${esc(l)}</p>`).join('')
-      + `<p>Full evidence and current eligibility: <code>${esc(proof.recovery || '')}</code></p>`
-      + (proof.omitted_records || proof.omitted_checks || proof.omitted_limitations || proof.limitations_omitted_chars ? '<p>Additional records or limitations omitted; use the full canonical record.</p>' : '');
   }
   function renderOverview() {
     const count = status => data.nodes.filter(node => {
@@ -1056,12 +892,6 @@ HTML_TEMPLATE = r"""<!doctype html>
     renderHistory();
   }
   function applyData(nextData) {
-    if (nextData.plan_id === data.plan_id && nextData.graph_version < data.graph_version) return;
-    const active = document.activeElement;
-    const activeScope = active?.parentElement?.closest('[id]')?.id;
-    const activeProof = active?.closest('[data-proof-id]');
-    const summaryIndex = activeProof ? [...activeProof.querySelectorAll('summary')].indexOf(active) : -1;
-    const disclosure = new Map([...document.querySelectorAll('[data-proof-id]')].map(el => [el.dataset.proofId, el.open]));
     const previous = nodeById;
     changedNodeIds = new Set(nextData.nodes.filter(node => {
       const before = previous.get(node.id);
@@ -1073,19 +903,6 @@ HTML_TEMPLATE = r"""<!doctype html>
     if (!data.assurance) overlay = 'none';
     syncChrome();
     render();
-    document.querySelectorAll('[data-proof-id]').forEach(el => {
-      if (disclosure.has(el.dataset.proofId)) el.open = disclosure.get(el.dataset.proofId);
-    });
-    if (active && !active.isConnected) {
-      let replacement = active.id ? document.getElementById(active.id) : null;
-      if (!replacement && activeProof && summaryIndex >= 0) {
-        replacement = document.querySelector(`[data-proof-id="${CSS.escape(activeProof.dataset.proofId)}"]`)?.querySelectorAll('summary')[summaryIndex];
-      }
-      if (!replacement && active.dataset.nodeId && activeScope) {
-        replacement = document.getElementById(activeScope)?.querySelector(`[data-node-id="${CSS.escape(active.dataset.nodeId)}"]`);
-      }
-      replacement?.focus({preventScroll: true});
-    }
     window.setTimeout(() => changedNodeIds.clear(), 1600);
   }
   function starPoints(cx, cy, outer, inner) {
@@ -1271,7 +1088,7 @@ HTML_TEMPLATE = r"""<!doctype html>
     if (!node) return;
     const sourceHref = node.source_path && liveMode
       ? `/project/${node.source_path.split('/').map(encodeURIComponent).join('/')}`
-      : node.source_href || '';
+      : node.source_path ? `../${node.source_path}` : '';
     const source = sourceHref ? `<a href="${esc(sourceHref)}">Open generated task</a>` : '';
     const assurance = node.assurance;
     const pause = node.state.execution === 'paused' ? `
@@ -1445,7 +1262,6 @@ def visualization_snapshot(graph: dict[str, Any]) -> dict[str, Any]:
         "required_evidence",
         "assurance",
         "source_path",
-        "source_href",
     )
     state_fields = (
         "execution",
@@ -1485,7 +1301,6 @@ def visualization_snapshot(graph: dict[str, Any]) -> dict[str, Any]:
             "success_evidence": graph["intent"].get("success_evidence", []),
         },
         "lifecycle": graph["lifecycle"],
-        "verification_scope": graph.get("verification_scope", "legacy-unbound"),
         "summary": graph["summary"],
         "nodes": nodes,
         "edges": graph["edges"],
@@ -1515,43 +1330,6 @@ def load_visualization_graph(project: str | Path) -> dict[str, Any]:
     return visualization_snapshot(graph)
 
 
-def resolve_snapshot_links(graph: dict[str, Any], project: Path, destination: Path) -> None:
-    """Resolve imported proof lazily at render time, never grant arbitrary file access."""
-    root = project.resolve()
-    destination = destination.resolve()
-    checked: dict[str, dict[str, str]] = {}
-    def resolve(artifact: dict[str, Any]) -> dict[str, str]:
-        relative = artifact.get('path')
-        if artifact.get('status') != 'not-checked':
-            return artifact
-        if relative not in checked:
-            read = read_proof_artifact(root, artifact)
-            checked[relative] = ({'status': 'referenced-artifact', 'href': quote(os.path.relpath(root / relative, destination.parent), safe='/'), 'mime': read[1]}
-                                 if read else {'status': 'missing-or-changed'})
-        return {**artifact, **checked[relative]}
-    for node in graph["nodes"]:
-        source = node.get("source_path")
-        if isinstance(source, str) and source.startswith("docs/tasks/") and ".." not in Path(source).parts:
-            path = root / source
-            if path.is_file() and path.resolve().is_relative_to(root) and not any(p.is_symlink() for p in (path, *path.parents) if p != root):
-                node["source_href"] = quote(os.path.relpath(path, destination.parent), safe="/")
-        for record in node["proof"]["records"]:
-            for observation in record["observations"]:
-                candidates = observation.pop('preview_candidates', [])
-                observation['visual_candidate_count'] = len(candidates)
-                for candidate in candidates:
-                    if candidate.get('status') != 'not-checked':
-                        continue
-                    header = read_referenced_file(root, candidate['path'], 16 * 1024 * 1024, prefix=32)
-                    if header is not None and capture_mime(header):
-                        image = resolve(candidate)
-                        if image.get('status') == 'referenced-artifact':
-                            observation['preview'] = image
-                            break
-                for artifact in observation["artifacts"]:
-                    artifact.update(resolve(artifact))
-
-
 def build_visualization_html(graph: dict[str, Any], *, live: bool = False) -> str:
     graph_json = json.dumps(graph, ensure_ascii=False).replace("</", "<\\/")
     return (
@@ -1564,9 +1342,8 @@ def build_visualization_html(graph: dict[str, Any], *, live: bool = False) -> st
 def render_visualization(project: str | Path, output: str | Path | None = None) -> dict[str, Any]:
     paths = project_paths(project)
     graph = load_visualization_graph(project)
-    destination = Path(output).expanduser().resolve() if output else paths["html"]
-    resolve_snapshot_links(graph, paths["root"], destination)
     html = build_visualization_html(graph)
+    destination = Path(output).expanduser().resolve() if output else paths["html"]
     write_text_atomic(destination, html)
     return {
         "status": "rendered",

@@ -19,6 +19,3 @@ test-results/
 # Runtime state belongs to projects using the plugin, never this repository.
 .pyramid/
 docs/tasks/
-
-# Local working runs; publish bounded summaries, not duplicate captures.
-proof-output/improvement/

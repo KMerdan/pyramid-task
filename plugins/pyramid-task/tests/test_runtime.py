@@ -62,28 +62,11 @@ from pyramid_core import (  # noqa: E402
     validate_project,
 )
 from pyramid_live import LiveGraphState, LiveVisualizationServer  # noqa: E402
-from pyramid_visualizer import (load_visualization_graph, render_visualization, visualization_snapshot,
-                                resolve_snapshot_links)  # noqa: E402
+from pyramid_visualizer import load_visualization_graph, render_visualization  # noqa: E402
 import pyramid_history  # noqa: E402
 
 
 class PyramidRuntimeTests(unittest.TestCase):
-    @unittest.skipUnless(hasattr(os, 'mkfifo') and hasattr(os, 'O_NONBLOCK'), 'POSIX nonblocking FIFO required')
-    def test_referenced_fifo_is_rejected_without_blocking(self):
-        # Actual reader, owned child: a blocking open fails this bounded check.
-        with tempfile.TemporaryDirectory(prefix='pyramid-fifo-') as directory:
-            root = Path(directory)
-            os.mkfifo(root / 'not-a-file')
-            script = (
-                "import sys; sys.path.insert(0, sys.argv[1]); "
-                "from pathlib import Path; "
-                "from pyramid_visualizer import read_referenced_file; "
-                "assert read_referenced_file(Path(sys.argv[2]), 'not-a-file', 1024) is None"
-            )
-            result = subprocess.run([sys.executable, '-c', script, str(PLUGIN_ROOT / 'scripts'),
-                                     str(root)], capture_output=True, text=True, timeout=2)
-            self.assertEqual(0, result.returncode, result.stderr)
-
     def setUp(self) -> None:
         usage = mock.patch.dict(os.environ, {'PYRAMID_USAGE': 'off'})
         usage.start()
@@ -727,74 +710,6 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertEqual("Blocked", issue["type"])
         self.assertEqual("Repository evidence is incomplete.", issue["reason"])
         self.assertEqual("needs-attention", blocked["next_outcome"]["status"])
-
-    def test_observer_completed_and_archived_do_not_recommend_verified_work(self) -> None:
-        self.complete_graph()
-        active = load_visualization_graph(self.root)
-        self.assertIsNone(active['observer']['recommended'])
-        self.assertIn('close', active['observer']['lifecycle_action'])
-        close_project(self.root, 'owner')
-        completed = load_visualization_graph(self.root)
-        self.assertIsNone(completed['observer']['recommended'])
-        self.assertIn('new intent', completed['observer']['lifecycle_action'])
-        archive_project(self.root, 'owner', reason='Owned lifecycle fixture')
-        archived = load_visualization_graph(self.root)
-        self.assertIsNone(archived['observer']['recommended'])
-        self.assertIn('restore', archived['observer']['lifecycle_action'])
-
-    def test_observer_proof_projection_is_bounded_and_links_are_safe(self) -> None:
-        # Deliberately synthetic projection data tests the view contract, not acceptance.
-        graph = load_json(self.root / '.pyramid/graph.json')
-        graph['verification_scope'] = 'recorded-candidate'
-        node = next(n for n in graph['nodes'] if n['id'] == 'TASK-201')
-        content = b'bounded observed fixture report'
-        sha = hashlib.sha256(content).hexdigest()
-        directory = self.root / '.pyramid/reports/proof-artifacts'
-        directory.mkdir(parents=True, exist_ok=True)
-        artifact = directory / sha
-        artifact.write_bytes(content)
-        unsafe = {'path': '../../personal.txt', 'sha256': sha}
-        observation = {'kind': 'internal', 'result': 'passed', 'summary': 'fixture ' * 250,
-                       'reviewer': 'projection-fixture' * 50, 'artifacts': [
-                           {'path': artifact.relative_to(self.root).as_posix(), 'sha256': sha}, unsafe]}
-        node['state']['last_result'] = {'proofs': [{'requirement': 'EVREQ-201-01', 'run': {
-            'id': 'RUN-FIXTURE', 'contract_sha256': sha, 'inputs_sha256': sha,
-            'environment': 'Synthetic view test, not executed outcome proof' * 50, 'observations': [observation]}}]}
-        node['state']['last_audit'] = {'assurance': {'limitations': ['long limitation ' * 100] * 5}}
-        snapshot = visualization_snapshot(graph)
-        proof = next(n for n in snapshot['nodes'] if n['id'] == 'TASK-201')['proof']
-        self.assertEqual('recorded-candidate', snapshot['verification_scope'])
-        self.assertEqual('not-checked', proof['current_eligibility'])
-        obs = proof['records'][0]['observations'][0]
-        self.assertEqual(1000, len(obs['summary']))
-        self.assertGreater(obs['summary_omitted_chars'], 0)
-        self.assertGreater(obs['reviewer_omitted_chars'], 0)
-        self.assertGreater(proof['records'][0]['environment_omitted_chars'], 0)
-        self.assertEqual(1, proof['omitted_limitations'])
-        self.assertGreater(proof['limitations_omitted_chars'], 0)
-        self.assertEqual({'status': 'unsafe-reference'}, obs['artifacts'][1])
-        self.assertNotIn('personal.txt', json.dumps(snapshot))
-        output = Path(self.temp.name) / 'custom/output.html'
-        resolve_snapshot_links(snapshot, self.root, output)
-        self.assertEqual('referenced-artifact', obs['artifacts'][0]['status'])
-        self.assertEqual(artifact.resolve(), (output.parent.resolve() / obs['artifacts'][0]['href']).resolve())
-        self.assertEqual('not-checked', proof['current_eligibility'])
-        artifact.write_bytes(b'changed content')
-        changed = visualization_snapshot(graph)
-        resolve_snapshot_links(changed, self.root, output)
-        rejected = next(n for n in changed['nodes'] if n['id'] == 'TASK-201')['proof']['records'][0]['observations'][0]['artifacts'][0]
-        self.assertEqual('missing-or-changed', rejected['status'])
-        self.assertNotIn('href', rejected)
-        artifact.unlink()
-        outside = Path(self.temp.name) / 'outside.txt'
-        outside.write_bytes(content)
-        artifact.symlink_to(outside)
-        linked = visualization_snapshot(graph)
-        resolve_snapshot_links(linked, self.root, output)
-        rejected = next(n for n in linked['nodes'] if n['id'] == 'TASK-201')['proof']['records'][0]['observations'][0]['artifacts'][0]
-        self.assertEqual('missing-or-changed', rejected['status'])
-        self.assertNotIn('href', rejected)
-        jsonschema.validate(linked, load_json(PLUGIN_ROOT / 'schemas/visualization.schema.json'))
 
     def test_live_graph_follows_complete_publications_and_keeps_last_valid_snapshot(self) -> None:
         graph = load_visualization_graph(self.root)

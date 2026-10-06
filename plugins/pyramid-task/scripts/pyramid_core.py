@@ -25,7 +25,6 @@ from pyramid_assurance import (
     artifact_footprint,
     assurance_blockers,
     assurance_for_tasks,
-    scoped_assurance_detail,
     assurance_summary,
     default_assurance,
     default_baseline,
@@ -206,8 +205,6 @@ def load_assurance_bundle(
 def assurance_validation_errors(
     paths: dict[str, Path],
     plan: dict[str, Any],
-    *,
-    _bundle_out: list | None = None,
 ) -> list[str]:
     errors: list[str] = []
     try:
@@ -228,8 +225,6 @@ def assurance_validation_errors(
             errors.extend(validate_assurance(assurance, plan=plan, baseline=baseline))
     elif baseline is not None or assurance is not None:
         errors.append("greenfield projects cannot contain baseline or assurance state")
-    if not errors and _bundle_out is not None:
-        _bundle_out.append((manifest, baseline, assurance))
     return errors
 
 
@@ -1660,7 +1655,7 @@ def validate_state(plan: dict[str, Any], state: dict[str, Any]) -> list[str]:
     return errors
 
 
-def load_project(project: str | Path, check: bool = True, *, _bundle_out: list | None = None) -> tuple[dict[str, Path], dict[str, Any], dict[str, Any]]:
+def load_project(project: str | Path, check: bool = True) -> tuple[dict[str, Path], dict[str, Any], dict[str, Any]]:
     paths = project_paths(project)
     plan = load_json(paths["plan"])
     state = load_json(paths["state"])
@@ -1668,7 +1663,7 @@ def load_project(project: str | Path, check: bool = True, *, _bundle_out: list |
         errors = (
             validate_plan(plan)
             + validate_state(plan, state)
-            + assurance_validation_errors(paths, plan, _bundle_out=_bundle_out)
+            + assurance_validation_errors(paths, plan)
             + handoff_validation_errors(paths, plan, state)
             + head_validation_errors(paths, plan, state)
             + history_validation_errors(paths["meta"])
@@ -5766,9 +5761,6 @@ def inspect_project(
     assurance_view: bool = False,
     assurance_summary_view: bool = False,
     assurance_detail: bool = False,
-    assurance_task: str | None = None,
-    assurance_asset: str | None = None,
-    inspection: str | None = None,
     parallel_ready: bool = False,
     max_agents: int = 4,
     audit_readiness: str | None = None,
@@ -5780,16 +5772,8 @@ def inspect_project(
 ) -> dict[str, Any]:
     if not footprint and (footprint_detail or footprint_limit != 10000):
         raise PyramidError('footprint detail/limit require --footprint')
-    selectors = [value for value in (assurance_task, assurance_asset, inspection) if value is not None]
-    if selectors and (not assurance_detail or len(selectors) != 1):
-        raise PyramidError('Exactly one assurance selector requires --assurance-detail')
-    if any(not isinstance(value, str) or not ID_PATTERN.fullmatch(value) for value in selectors):
-        raise PyramidError('Malformed assurance selector; use a canonical ID, not a path')
-    bundle: list = []
-    paths, plan, state = load_project(project, _bundle_out=bundle)
-    # Reuse only the bundle actually read and validated in this invocation.
-    # The fallback supports callers that substitute a loader; never saved trust.
-    manifest, baseline, assurance = bundle[0] if bundle else load_assurance_bundle(paths, plan)
+    paths, plan, state = load_project(project)
+    manifest, baseline, assurance = load_assurance_bundle(paths, plan)
     if footprint:
         try:
             return {**artifact_footprint(paths['root'], plan, state, baseline,
@@ -5797,19 +5781,18 @@ def inspect_project(
                     'context': context_identity(plan, state)}
         except (ValueError, OSError) as exc:
             raise PyramidError(str(exc)) from exc
+    frontier = implementation_frontier(paths)
+    snapshot = graph_snapshot(
+        plan, state, baseline, assurance, manifest, frontier
+    )
     context = context_identity(plan, state)
     if harness:
         try:
             return {**query_harness(paths["root"], plan, state, harness), "context": context}
         except (VerificationError, OSError) as exc:
             raise PyramidError(str(exc)) from exc
-    frontier = implementation_frontier(paths)
     if assurance_view or assurance_summary_view or assurance_detail:
-        if assurance_task is not None and assurance_task not in node_map(plan):
-            raise PyramidError(f'Unknown node: {assurance_task}')
         if baseline is None or assurance is None:
-            if selectors:
-                raise PyramidError('Assurance selectors require a brownfield assurance bundle')
             return {
                 "schema": "pyramid-assurance-query-v1",
                 "mode": manifest.get("mode") if manifest else "legacy",
@@ -5817,20 +5800,6 @@ def inspect_project(
                 "assurance": None,
                 "message": "This project has no brownfield assurance bundle.",
             }
-        if selectors:
-            try:
-                selected = scoped_assurance_detail(
-                    baseline, assurance,
-                    task_ids=_covered_assurance_tasks(plan, node_map(plan)[assurance_task]) if assurance_task else None,
-                    asset_id=assurance_asset, inspection_id=inspection,
-                    implementation_frontier=frontier,
-                )
-            except ValueError as exc:
-                raise PyramidError(str(exc)) from exc
-            return {'schema': 'pyramid-assurance-query-v1',
-                    'mode': manifest.get('mode') if manifest else 'brownfield',
-                    'graph_version': state['graph_version'], 'context': context,
-                    **selected}
         result = {
             "schema": "pyramid-assurance-query-v1",
             "mode": manifest.get("mode") if manifest else "brownfield",
@@ -5971,7 +5940,6 @@ def inspect_project(
             "context": context,
             "nodes": nodes,
         }
-    snapshot = graph_snapshot(plan, state, baseline, assurance, manifest, frontier)
     return {
         "schema": "pyramid-summary-v1",
         "plan_id": plan["plan_id"],

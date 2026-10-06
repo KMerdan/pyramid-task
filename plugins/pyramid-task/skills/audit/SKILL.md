@@ -14,8 +14,8 @@ For a schema-2 plan, read `../../references/development-harness.md` and use `ins
 ## Workflow
 
 1. Inspect `--audit-readiness <target>` first. It returns the same freshness blockers enforced by audit, the minimal inspection refresh set, and an `audit_guard`. Determine whether the target is an implementation, internal joint gate, demonstrable-increment gate, outcome, or intent; load related nodes only when that claim requires them.
-2. In brownfield mode, inspect the covered task/asset records and related finding/drift blockers, rollback, monitoring and legacy-bridge controls. Compare predicted scope with the worker's actual changed files and assets. Use scoped assurance detail for review; assemble a complete bundle only for a canonical impact change.
-3. Execute or inspect every required check. Reuse current claim-matching evidence; a new turn, task owner or report directory alone does not require another run. Before new checks, capture the current harness template. For an increment gate, establish constructability, entry, the promised meaningful scenario, inherited prior scenarios against the current candidate, applicable safety and recovery, and reproduction details. Seek disconfirming evidence for load-bearing claims, composition edges, compatibility, recovery, and operational behavior.
+2. In brownfield mode, inspect canonical impact, inspection, finding, drift, rollback, monitoring, and legacy-bridge records. Compare predicted scope with the worker's actual changed files and assets.
+3. Execute or inspect every required check. For an increment gate, establish constructability, entry, the promised meaningful scenario, inherited prior scenarios against the current candidate, applicable safety and recovery, and reproduction details. Seek disconfirming evidence for load-bearing claims, composition edges, compatibility, recovery, and operational behavior.
 4. Create an `audit-result-v1` JSON file with per-check results and evidence references. For brownfield pass, add an `assurance` assertion naming every reviewed impact, inspection, and finding ID, a complete scope review, and limitations.
 5. Submit the result:
 

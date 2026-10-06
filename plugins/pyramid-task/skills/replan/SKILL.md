@@ -28,7 +28,7 @@ Read `../../references/development-harness.md` when changing proof or adopting i
 python3 ../../scripts/pyramid.py replan --project <project-root> --plan <candidate-plan.json> --actor <actor> --reason <reason> --preview --json
 ```
 
-8. Report the material delta, invalidations and next action; reference the review artifact instead of repeating it. Obtain direction before a material intent change or scope expansion. Do not ask again for unchanged authority already granted. Stop refinement once coverage, evidence and safety are adequate; another pass needs a concrete unresolved finding. Supporting-context reuse never waives mandatory skill reads or candidate validation.
+8. Report the material delta, invalidations and next action; reference the review artifact instead of repeating it. Obtain direction before a material intent change or scope expansion. Stop refinement once coverage, evidence and safety are adequate; another pass needs a concrete unresolved finding.
 9. Apply the approved revision. Brownfield replan stales affected inspections and assurance; run `pyramid-task:impact` to map new and changed tasks before their audits:
 
 ```bash

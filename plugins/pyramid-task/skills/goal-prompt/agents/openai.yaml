@@ -1,4 +1,0 @@
-interface:
-  display_name: "Draft Pyramid Goal Prompt"
-  short_description: "Tailor safe continuation to the current project."
-  default_prompt: "Use $goal-prompt to draft a concise continuation prompt for this project's current intent, harness and actual authorization boundaries."
