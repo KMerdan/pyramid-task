@@ -9,6 +9,8 @@ Create a plan only after the intended final state is clear enough to test. Begin
 
 Read `../../references/development-harness.md` while defining proof. Create schema-2 plans with minimal outcome-scoped external, internal and applicable visual observations; reuse current tools and checks and add only missing capability before acceptance. Use `../../assets/example-harness-plan.json` for the current contract; the schema-1 example covers unbound verification within V3, not V2 project support.
 
+Choose input scope together with the procedure's command and dependencies. Avoid whole-package globs when narrower complete coverage is established. Once a plan exists, use `inspect --proof-analysis <node>` for overlap and optional source facts when useful; read `../../references/proof-analysis.md` for limitations. Keep shared inputs affecting the claim. Do not require a scan on every task or use a downstream regression gate to justify dropping unknown dependencies.
+
 ## Context routing
 
 Read `../../references/graph-contract.md` for graph construction and `../../references/plan-refinement.md` when the candidate is ready for review. Together with the harness contract above, these are the core planning references; do not preload all workflows.

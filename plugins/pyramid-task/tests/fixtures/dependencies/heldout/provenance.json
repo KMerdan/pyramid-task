@@ -1,0 +1,58 @@
+[
+  {
+    "path": "js/utils.js",
+    "url": "https://raw.githubusercontent.com/facebook/react/b618bbb4422693bbb8d387180687b3f510300f42/scripts/rollup/utils.js",
+    "revision": "b618bbb4422693bbb8d387180687b3f510300f42",
+    "sha256": "5ce3a2bf34e472814309247a50d716286e72331689f715aeac9f47308248efe6",
+    "license": "react-LICENSE"
+  },
+  {
+    "path": "jsx/method.jsx",
+    "url": "https://raw.githubusercontent.com/facebook/react/b618bbb4422693bbb8d387180687b3f510300f42/compiler/packages/babel-plugin-react-compiler/src/__tests__/fixtures/compiler/infer-nested-object-method.jsx",
+    "revision": "b618bbb4422693bbb8d387180687b3f510300f42",
+    "sha256": "e7113dc21b71c0c8b76b9da3091c2d782bf87f6c3e475a8e87f3087b0259469a",
+    "license": "react-LICENSE"
+  },
+  {
+    "path": "ts/parse-preset-input.ts",
+    "url": "https://raw.githubusercontent.com/shadcn-ui/ui/6ea090075cd537d3b792c6c1a625e2448b6ede26/apps/v4/app/(app)/(create)/lib/parse-preset-input.ts",
+    "revision": "6ea090075cd537d3b792c6c1a625e2448b6ede26",
+    "sha256": "24864ce5ae30ded8270a78cfafbb7af4aa2e708c52faf65c977505e257b27bf6",
+    "license": "ui-LICENSE"
+  },
+  {
+    "path": "ts/parse-preset-input.test.ts",
+    "url": "https://raw.githubusercontent.com/shadcn-ui/ui/6ea090075cd537d3b792c6c1a625e2448b6ede26/apps/v4/app/(app)/(create)/lib/parse-preset-input.test.ts",
+    "revision": "6ea090075cd537d3b792c6c1a625e2448b6ede26",
+    "sha256": "08fb50675e30352c633b7e55f1529351a32a826a09addb9544b0899f6aa0b7a2",
+    "license": "ui-LICENSE"
+  },
+  {
+    "path": "tsx/button.tsx",
+    "url": "https://raw.githubusercontent.com/shadcn-ui/ui/6ea090075cd537d3b792c6c1a625e2448b6ede26/apps/v4/registry/new-york-v4/ui/button.tsx",
+    "revision": "6ea090075cd537d3b792c6c1a625e2448b6ede26",
+    "sha256": "79dd6f75f8136394442202d6b8b922fb269eaad0a5dba579397c9d5b41f893bb",
+    "license": "ui-LICENSE"
+  },
+  {
+    "path": "rust/src/csharp.rs",
+    "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/language/src/csharp.rs",
+    "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+    "sha256": "5869efa13302d38f0682ad1193ef292594be2c85f0451b9e06024c0e93d42d2d",
+    "license": "ast-LICENSE"
+  },
+  {
+    "path": "rust/src/lib.rs",
+    "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/language/src/lib.rs",
+    "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+    "sha256": "2acd2d4e0cbd567853fbae347cb2299b8625fb0823d3fd145789a0cd92c56f67",
+    "license": "ast-LICENSE"
+  },
+  {
+    "path": "rust/Cargo.toml",
+    "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/language/Cargo.toml",
+    "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+    "sha256": "66a9dce6061c22e2bca08cbf23e097df55f8916c691754c1210661f4ffb35c27",
+    "license": "ast-LICENSE"
+  }
+]

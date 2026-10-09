@@ -1,0 +1,721 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "pyramid-dependency-analysis-v1"
+    },
+    "provider": {
+      "enum": [
+        "python",
+        "ast-grep"
+      ]
+    },
+    "provider_version": {
+      "type": "string"
+    },
+    "requested_provider": {
+      "enum": [
+        "auto",
+        "python",
+        "ast-grep"
+      ]
+    },
+    "cache": {
+      "const": "disabled"
+    },
+    "identity_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    },
+    "scan": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "complete": {
+          "type": "boolean"
+        },
+        "requested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scanned": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "language": {
+                "enum": [
+                  "JS",
+                  "JSX",
+                  "TS",
+                  "TSX",
+                  "Rust",
+                  "Python"
+                ]
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "file",
+              "language",
+              "sha256"
+            ]
+          }
+        },
+        "skipped": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "file",
+              "reason"
+            ]
+          }
+        },
+        "truncated": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "complete",
+        "requested",
+        "scanned",
+        "skipped",
+        "truncated"
+      ]
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "language": {
+            "enum": [
+              "JS",
+              "JSX",
+              "TS",
+              "TSX",
+              "Rust",
+              "Python"
+            ]
+          },
+          "kind": {
+            "type": "string"
+          },
+          "specifier": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "column": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "context": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "source",
+          "language",
+          "kind",
+          "specifier",
+          "line",
+          "column"
+        ]
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "language": {
+            "enum": [
+              "JS",
+              "JSX",
+              "TS",
+              "TSX",
+              "Rust",
+              "Python"
+            ]
+          },
+          "kind": {
+            "type": "string"
+          },
+          "target": {
+            "type": "string"
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "source",
+          "language",
+          "kind",
+          "target",
+          "line"
+        ]
+      }
+    },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "type": "string"
+          },
+          "language": {
+            "enum": [
+              "JS",
+              "JSX",
+              "TS",
+              "TSX",
+              "Rust",
+              "Python"
+            ]
+          },
+          "line": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "reason": {
+            "type": "string"
+          },
+          "specifier": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "language",
+          "line",
+          "reason"
+        ]
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "failure": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      }
+    },
+    "scope_removal_authorized": {
+      "const": false
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "provider",
+    "provider_version",
+    "requested_provider",
+    "cache",
+    "identity_sha256",
+    "inputs",
+    "scan",
+    "references",
+    "edges",
+    "unresolved",
+    "diagnostics",
+    "scope_removal_authorized",
+    "limitations"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/dependency-analysis.schema.json",
+  "title": "Advisory dependency analysis",
+  "$defs": {
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": "pyramid-dependency-metrics-v1"
+        },
+        "corpus": {
+          "type": "string"
+        },
+        "corpus_kind": {
+          "enum": [
+            "basic",
+            "held-out"
+          ]
+        },
+        "manifest_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "provenance": {
+          "type": "object"
+        },
+        "provider": {
+          "enum": [
+            "python",
+            "ast-grep"
+          ]
+        },
+        "provider_version": {
+          "type": "string"
+        },
+        "cache": {
+          "const": "disabled"
+        },
+        "duration_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "languages": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "JS",
+              "JSX",
+              "TS",
+              "TSX",
+              "Rust",
+              "Python"
+            ]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "files": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "syntax_families": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "unresolved": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "extraction": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "tp": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "fp": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "fn": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "precision": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "recall": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "false_positives": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": [
+                          "string",
+                          "integer"
+                        ]
+                      }
+                    }
+                  },
+                  "false_negatives": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": [
+                          "string",
+                          "integer"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "tp",
+                  "fp",
+                  "fn",
+                  "precision",
+                  "recall",
+                  "false_positives",
+                  "false_negatives"
+                ]
+              },
+              "resolution": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "tp": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "fp": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "fn": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "precision": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "recall": {
+                    "type": [
+                      "number",
+                      "null"
+                    ],
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "false_positives": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": [
+                          "string",
+                          "integer"
+                        ]
+                      }
+                    }
+                  },
+                  "false_negatives": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": [
+                          "string",
+                          "integer"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "tp",
+                  "fp",
+                  "fn",
+                  "precision",
+                  "recall",
+                  "false_positives",
+                  "false_negatives"
+                ]
+              },
+              "families": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "extraction": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "tp": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "fp": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "fn": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "precision": {
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "recall": {
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "false_positives": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": [
+                                "string",
+                                "integer"
+                              ]
+                            }
+                          }
+                        },
+                        "false_negatives": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": [
+                                "string",
+                                "integer"
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "tp",
+                        "fp",
+                        "fn",
+                        "precision",
+                        "recall",
+                        "false_positives",
+                        "false_negatives"
+                      ]
+                    },
+                    "resolution": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "tp": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "fp": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "fn": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "precision": {
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "recall": {
+                          "type": [
+                            "number",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "false_positives": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": [
+                                "string",
+                                "integer"
+                              ]
+                            }
+                          }
+                        },
+                        "false_negatives": {
+                          "type": "array",
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": [
+                                "string",
+                                "integer"
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "tp",
+                        "fp",
+                        "fn",
+                        "precision",
+                        "recall",
+                        "false_positives",
+                        "false_negatives"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "extraction",
+                    "resolution"
+                  ]
+                }
+              },
+              "unknown_detection": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "expected": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "detected": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "missing": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": [
+                          "string",
+                          "integer"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "expected",
+                  "detected",
+                  "missing"
+                ]
+              }
+            },
+            "required": [
+              "files",
+              "syntax_families",
+              "unresolved",
+              "extraction",
+              "resolution",
+              "families",
+              "unknown_detection"
+            ]
+          }
+        },
+        "analysis": {
+          "$ref": "#"
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "schema",
+        "corpus",
+        "corpus_kind",
+        "manifest_sha256",
+        "provenance",
+        "provider",
+        "provider_version",
+        "cache",
+        "duration_seconds",
+        "languages",
+        "analysis",
+        "limitations"
+      ]
+    }
+  }
+}

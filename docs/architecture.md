@@ -10,6 +10,19 @@ Intra-task helper delegation follows that boundary too. Skills decide when spare
 
 ## Current module boundaries
 
+`pyramid_proof_analysis.py` projects declared producer families, write overlap,
+current proof blockers and reuse through existing verification primitives. It
+does not execute procedures or change contracts. The opt-in
+`pyramid_dependencies.py` adapter owns filesystem snapshots and bounded optional
+ast-grep execution on explicit request. Python is the default without executable
+discovery; its stdlib lexer/AST and resolver return advisory facts with
+unknowns. Rust file ownership follows a bounded tree of declared modules,
+including inline declarations; supporting files participate in derived identity.
+It abstains on ambiguous/re-exported ownership instead of inferring modules from
+filenames. `pyramid_benchmark.py` scores independent hash-bound manifests. These
+outputs have schemas but no canonical ledger, cache authority or scope-removal
+permission. Normal inspect queries do not discover or launch an extractor.
+
 ```mermaid
 flowchart LR
     H["Codex or Claude Code"] --> K["Skills and references"]

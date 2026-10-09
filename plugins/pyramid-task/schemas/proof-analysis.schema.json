@@ -1,0 +1,554 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "pyramid-proof-analysis-v1"
+    },
+    "target": {
+      "type": "string"
+    },
+    "mode": {
+      "enum": [
+        "candidate-bound",
+        "legacy-unbound"
+      ]
+    },
+    "proofs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string"
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "file_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "truncated": {
+            "type": "boolean"
+          },
+          "consumers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "node": {
+                  "type": "string"
+                },
+                "requirement": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "node",
+                "requirement"
+              ]
+            }
+          },
+          "write_overlap": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "node": {
+                  "type": "string"
+                },
+                "files": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "file_count": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "truncated": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "node",
+                "files",
+                "file_count",
+                "truncated"
+              ]
+            }
+          },
+          "review_reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "inputs",
+          "file_count",
+          "files",
+          "truncated",
+          "consumers",
+          "write_overlap",
+          "review_reason"
+        ]
+      }
+    },
+    "shared_inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "proof_families": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "path",
+          "proof_families"
+        ]
+      }
+    },
+    "reusable_proofs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "requirement": {
+            "type": "string"
+          },
+          "reuse_run": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "requirement",
+          "reuse_run"
+        ]
+      }
+    },
+    "setup_blockers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "scope_failures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "reason"
+        ]
+      }
+    },
+    "scan": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "complete": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "proof_families": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "complete",
+        "limit",
+        "proof_families"
+      ]
+    },
+    "scope_removal_authorized": {
+      "const": false
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "const": "pyramid-dependency-analysis-v1"
+        },
+        "provider": {
+          "enum": [
+            "python",
+            "ast-grep"
+          ]
+        },
+        "provider_version": {
+          "type": "string"
+        },
+        "requested_provider": {
+          "enum": [
+            "auto",
+            "python",
+            "ast-grep"
+          ]
+        },
+        "cache": {
+          "const": "disabled"
+        },
+        "identity_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "inputs": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "scan": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "complete": {
+              "type": "boolean"
+            },
+            "requested": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "scanned": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "file": {
+                    "type": "string"
+                  },
+                  "language": {
+                    "enum": [
+                      "JS",
+                      "JSX",
+                      "TS",
+                      "TSX",
+                      "Rust",
+                      "Python"
+                    ]
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "file",
+                  "language",
+                  "sha256"
+                ]
+              }
+            },
+            "skipped": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "file": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file",
+                  "reason"
+                ]
+              }
+            },
+            "truncated": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "complete",
+            "requested",
+            "scanned",
+            "skipped",
+            "truncated"
+          ]
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "language": {
+                "enum": [
+                  "JS",
+                  "JSX",
+                  "TS",
+                  "TSX",
+                  "Rust",
+                  "Python"
+                ]
+              },
+              "kind": {
+                "type": "string"
+              },
+              "specifier": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "column": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "context": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "source",
+              "language",
+              "kind",
+              "specifier",
+              "line",
+              "column"
+            ]
+          }
+        },
+        "edges": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "language": {
+                "enum": [
+                  "JS",
+                  "JSX",
+                  "TS",
+                  "TSX",
+                  "Rust",
+                  "Python"
+                ]
+              },
+              "kind": {
+                "type": "string"
+              },
+              "target": {
+                "type": "string"
+              },
+              "line": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "source",
+              "language",
+              "kind",
+              "target",
+              "line"
+            ]
+          }
+        },
+        "unresolved": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "language": {
+                "enum": [
+                  "JS",
+                  "JSX",
+                  "TS",
+                  "TSX",
+                  "Rust",
+                  "Python"
+                ]
+              },
+              "line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "reason": {
+                "type": "string"
+              },
+              "specifier": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source",
+              "language",
+              "line",
+              "reason"
+            ]
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "reason": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "file": {
+                "type": "string"
+              },
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "failure": {
+                "type": "string"
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "reason"
+            ]
+          }
+        },
+        "scope_removal_authorized": {
+          "const": false
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "schema",
+        "provider",
+        "provider_version",
+        "requested_provider",
+        "cache",
+        "identity_sha256",
+        "inputs",
+        "scan",
+        "references",
+        "edges",
+        "unresolved",
+        "diagnostics",
+        "scope_removal_authorized",
+        "limitations"
+      ]
+    },
+    "dependencies_outside_inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "current_proof": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "ready",
+        "blockers"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "candidate-bound",
+            "legacy-unbound"
+          ]
+        },
+        "ready": {
+          "type": "boolean"
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "target",
+    "mode",
+    "proofs",
+    "shared_inputs",
+    "reusable_proofs",
+    "setup_blockers",
+    "scope_failures",
+    "scan",
+    "scope_removal_authorized",
+    "limitations",
+    "current_proof"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.codex/pyramid-task/proof-analysis.schema.json",
+  "title": "Read-only proof footprint analysis"
+}

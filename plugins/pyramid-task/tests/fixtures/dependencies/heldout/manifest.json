@@ -1,0 +1,289 @@
+{
+  "schema": "pyramid-dependency-corpus-v1",
+  "name": "public-source-pilot-v1",
+  "kind": "held-out",
+  "provenance": {
+    "annotation": "Manually read source and module ownership before scoring; ast-grep output is not ground truth.",
+    "frozen": "2026-10-09",
+    "sources": [
+      {
+        "path": "js/utils.js",
+        "url": "https://raw.githubusercontent.com/facebook/react/b618bbb4422693bbb8d387180687b3f510300f42/scripts/rollup/utils.js",
+        "revision": "b618bbb4422693bbb8d387180687b3f510300f42",
+        "sha256": "5ce3a2bf34e472814309247a50d716286e72331689f715aeac9f47308248efe6",
+        "license": "react-LICENSE"
+      },
+      {
+        "path": "jsx/method.jsx",
+        "url": "https://raw.githubusercontent.com/facebook/react/b618bbb4422693bbb8d387180687b3f510300f42/compiler/packages/babel-plugin-react-compiler/src/__tests__/fixtures/compiler/infer-nested-object-method.jsx",
+        "revision": "b618bbb4422693bbb8d387180687b3f510300f42",
+        "sha256": "e7113dc21b71c0c8b76b9da3091c2d782bf87f6c3e475a8e87f3087b0259469a",
+        "license": "react-LICENSE"
+      },
+      {
+        "path": "ts/parse-preset-input.ts",
+        "url": "https://raw.githubusercontent.com/shadcn-ui/ui/6ea090075cd537d3b792c6c1a625e2448b6ede26/apps/v4/app/(app)/(create)/lib/parse-preset-input.ts",
+        "revision": "6ea090075cd537d3b792c6c1a625e2448b6ede26",
+        "sha256": "24864ce5ae30ded8270a78cfafbb7af4aa2e708c52faf65c977505e257b27bf6",
+        "license": "ui-LICENSE"
+      },
+      {
+        "path": "ts/parse-preset-input.test.ts",
+        "url": "https://raw.githubusercontent.com/shadcn-ui/ui/6ea090075cd537d3b792c6c1a625e2448b6ede26/apps/v4/app/(app)/(create)/lib/parse-preset-input.test.ts",
+        "revision": "6ea090075cd537d3b792c6c1a625e2448b6ede26",
+        "sha256": "08fb50675e30352c633b7e55f1529351a32a826a09addb9544b0899f6aa0b7a2",
+        "license": "ui-LICENSE"
+      },
+      {
+        "path": "tsx/button.tsx",
+        "url": "https://raw.githubusercontent.com/shadcn-ui/ui/6ea090075cd537d3b792c6c1a625e2448b6ede26/apps/v4/registry/new-york-v4/ui/button.tsx",
+        "revision": "6ea090075cd537d3b792c6c1a625e2448b6ede26",
+        "sha256": "79dd6f75f8136394442202d6b8b922fb269eaad0a5dba579397c9d5b41f893bb",
+        "license": "ui-LICENSE"
+      },
+      {
+        "path": "rust/src/csharp.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/language/src/csharp.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "5869efa13302d38f0682ad1193ef292594be2c85f0451b9e06024c0e93d42d2d",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/src/lib.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/language/src/lib.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "2acd2d4e0cbd567853fbae347cb2299b8625fb0823d3fd145789a0cd92c56f67",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/Cargo.toml",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/language/Cargo.toml",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "66a9dce6061c22e2bca08cbf23e097df55f8916c691754c1210661f4ffb35c27",
+        "license": "ast-LICENSE"
+      }
+    ],
+    "limitations": [
+      "Six scanned files from three MIT projects; convenience pilot, not representative sampling.",
+      "Supporting Rust lib.rs is retained for gold inline module ownership but excluded from scanned membership.",
+      "External npm and stdlib references have no local target; resolution gold contains only known project-local targets.",
+      "No broad release accuracy threshold agreed; metrics qualify advisory reporting only."
+    ],
+    "annotation_corrections": [
+      "Before final qualification, source line-number review corrected JSX expression from line 14 to 13; Rust use from 20 to 19, macro from 27 to 26, and TSX attribute expressions to lines 57/58. No dependency target, source membership or parser rule changed in response to held-out mismatches."
+    ]
+  },
+  "files": [
+    {
+      "path": "js/utils.js",
+      "sha256": "5ce3a2bf34e472814309247a50d716286e72331689f715aeac9f47308248efe6",
+      "language": "JS",
+      "family": "real-commonjs",
+      "expected_references": [
+        {
+          "source": "js/utils.js",
+          "kind": "require",
+          "specifier": "ncp",
+          "line": 3
+        },
+        {
+          "source": "js/utils.js",
+          "kind": "require",
+          "specifier": "path",
+          "line": 4
+        },
+        {
+          "source": "js/utils.js",
+          "kind": "require",
+          "specifier": "mkdirp",
+          "line": 5
+        },
+        {
+          "source": "js/utils.js",
+          "kind": "require",
+          "specifier": "rimraf",
+          "line": 6
+        },
+        {
+          "source": "js/utils.js",
+          "kind": "require",
+          "specifier": "child_process",
+          "line": 7
+        },
+        {
+          "source": "js/utils.js",
+          "kind": "require",
+          "specifier": "targz",
+          "line": 8
+        }
+      ],
+      "expected_edges": [],
+      "expected_unresolved": []
+    },
+    {
+      "path": "jsx/method.jsx",
+      "sha256": "e7113dc21b71c0c8b76b9da3091c2d782bf87f6c3e475a8e87f3087b0259469a",
+      "language": "JSX",
+      "family": "real-jsx",
+      "expected_references": [
+        {
+          "source": "jsx/method.jsx",
+          "kind": "import",
+          "specifier": "shared-runtime",
+          "line": 3
+        }
+      ],
+      "expected_edges": [],
+      "expected_unresolved": [
+        {
+          "reason": "jsx-expression-unresolved",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "path": "ts/parse-preset-input.ts",
+      "sha256": "24864ce5ae30ded8270a78cfafbb7af4aa2e708c52faf65c977505e257b27bf6",
+      "language": "TS",
+      "family": "real-import-and-test",
+      "expected_references": [
+        {
+          "source": "ts/parse-preset-input.ts",
+          "kind": "import",
+          "specifier": "shadcn/preset",
+          "line": 1
+        }
+      ],
+      "expected_edges": [],
+      "expected_unresolved": []
+    },
+    {
+      "path": "ts/parse-preset-input.test.ts",
+      "sha256": "08fb50675e30352c633b7e55f1529351a32a826a09addb9544b0899f6aa0b7a2",
+      "language": "TS",
+      "family": "real-import-and-test",
+      "expected_references": [
+        {
+          "source": "ts/parse-preset-input.test.ts",
+          "kind": "import",
+          "specifier": "vitest",
+          "line": 1
+        },
+        {
+          "source": "ts/parse-preset-input.test.ts",
+          "kind": "import",
+          "specifier": "./parse-preset-input",
+          "line": 3
+        }
+      ],
+      "expected_edges": [
+        {
+          "source": "ts/parse-preset-input.test.ts",
+          "kind": "import",
+          "target": "ts/parse-preset-input.ts",
+          "line": 3
+        }
+      ],
+      "expected_unresolved": []
+    },
+    {
+      "path": "tsx/button.tsx",
+      "sha256": "79dd6f75f8136394442202d6b8b922fb269eaad0a5dba579397c9d5b41f893bb",
+      "language": "TSX",
+      "family": "real-component",
+      "expected_references": [
+        {
+          "source": "tsx/button.tsx",
+          "kind": "import",
+          "specifier": "react",
+          "line": 1
+        },
+        {
+          "source": "tsx/button.tsx",
+          "kind": "import",
+          "specifier": "class-variance-authority",
+          "line": 2
+        },
+        {
+          "source": "tsx/button.tsx",
+          "kind": "import",
+          "specifier": "cn",
+          "line": 3
+        },
+        {
+          "source": "tsx/button.tsx",
+          "kind": "import",
+          "specifier": "radix-ui",
+          "line": 4
+        }
+      ],
+      "expected_edges": [],
+      "expected_unresolved": [
+        {
+          "reason": "jsx-expression-unresolved",
+          "line": 57
+        },
+        {
+          "reason": "jsx-expression-unresolved",
+          "line": 58
+        }
+      ]
+    },
+    {
+      "path": "rust/src/csharp.rs",
+      "sha256": "5869efa13302d38f0682ad1193ef292594be2c85f0451b9e06024c0e93d42d2d",
+      "language": "Rust",
+      "family": "real-inline-module-symbols",
+      "expected_references": [
+        {
+          "source": "rust/src/csharp.rs",
+          "kind": "use",
+          "specifier": "super::*",
+          "line": 3
+        },
+        {
+          "source": "rust/src/csharp.rs",
+          "kind": "use",
+          "specifier": "crate::test::test_match_lang",
+          "line": 6
+        },
+        {
+          "source": "rust/src/csharp.rs",
+          "kind": "use",
+          "specifier": "crate::test::test_replace_lang",
+          "line": 19
+        }
+      ],
+      "expected_edges": [
+        {
+          "source": "rust/src/csharp.rs",
+          "kind": "use",
+          "target": "rust/src/lib.rs",
+          "line": 3
+        },
+        {
+          "source": "rust/src/csharp.rs",
+          "kind": "use",
+          "target": "rust/src/lib.rs",
+          "line": 6
+        },
+        {
+          "source": "rust/src/csharp.rs",
+          "kind": "use",
+          "target": "rust/src/lib.rs",
+          "line": 19
+        }
+      ],
+      "expected_unresolved": [
+        {
+          "reason": "conditional-compilation",
+          "line": 1
+        },
+        {
+          "reason": "unexpanded-macro",
+          "line": 26
+        }
+      ]
+    }
+  ]
+}

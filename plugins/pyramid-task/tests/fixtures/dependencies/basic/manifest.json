@@ -1,0 +1,439 @@
+{
+  "schema": "pyramid-dependency-corpus-v1",
+  "name": "independent-basic-v1",
+  "kind": "basic",
+  "provenance": {
+    "annotation": "Manually authored references and targets before extractor scoring; not generated from ast-grep.",
+    "frozen": "2026-10-09",
+    "license": "Repository license"
+  },
+  "files": [
+    {
+      "path": "js/main.js",
+      "sha256": "e198da30c7eac2ee7bfdf1122c5197eb0ef1c2bf9d4bbdcf31fa8820f6777150",
+      "language": "JS",
+      "family": "static-reexport-require-dynamic",
+      "expected_references": [
+        {
+          "source": "js/main.js",
+          "kind": "import",
+          "specifier": "./side.js",
+          "line": 1
+        },
+        {
+          "source": "js/main.js",
+          "kind": "import",
+          "specifier": "./dep.js",
+          "line": 2
+        },
+        {
+          "source": "js/main.js",
+          "kind": "export",
+          "specifier": "./dep.js",
+          "line": 3
+        },
+        {
+          "source": "js/main.js",
+          "kind": "require",
+          "specifier": "./dep.js",
+          "line": 4
+        },
+        {
+          "source": "js/main.js",
+          "kind": "dynamic-import",
+          "specifier": "./dep.js",
+          "line": 5
+        }
+      ],
+      "expected_edges": [
+        {
+          "source": "js/main.js",
+          "kind": "import",
+          "target": "js/side.js",
+          "line": 1
+        },
+        {
+          "source": "js/main.js",
+          "kind": "import",
+          "target": "js/dep.js",
+          "line": 2
+        },
+        {
+          "source": "js/main.js",
+          "kind": "export",
+          "target": "js/dep.js",
+          "line": 3
+        },
+        {
+          "source": "js/main.js",
+          "kind": "require",
+          "target": "js/dep.js",
+          "line": 4
+        },
+        {
+          "source": "js/main.js",
+          "kind": "dynamic-import",
+          "target": "js/dep.js",
+          "line": 5
+        }
+      ],
+      "expected_unresolved": [
+        {
+          "reason": "computed-module-path",
+          "line": 9
+        }
+      ]
+    },
+    {
+      "path": "js/dep.js",
+      "sha256": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29",
+      "language": "JS",
+      "family": "static-reexport-require-dynamic",
+      "expected_references": [],
+      "expected_edges": [],
+      "expected_unresolved": []
+    },
+    {
+      "path": "js/side.js",
+      "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+      "language": "JS",
+      "family": "static-reexport-require-dynamic",
+      "expected_references": [],
+      "expected_edges": [],
+      "expected_unresolved": []
+    },
+    {
+      "path": "jsx/main.jsx",
+      "sha256": "9101b502812e4711edff4f4b719a1d54c9a8aa2c4ede466204ff4a028312bd7c",
+      "language": "JSX",
+      "family": "static-markup-and-unknown",
+      "expected_references": [
+        {
+          "source": "jsx/main.jsx",
+          "kind": "import",
+          "specifier": "./widget.jsx",
+          "line": 1
+        },
+        {
+          "source": "jsx/main.jsx",
+          "kind": "export",
+          "specifier": "./widget.jsx",
+          "line": 2
+        }
+      ],
+      "expected_edges": [
+        {
+          "source": "jsx/main.jsx",
+          "kind": "import",
+          "target": "jsx/widget.jsx",
+          "line": 1
+        },
+        {
+          "source": "jsx/main.jsx",
+          "kind": "export",
+          "target": "jsx/widget.jsx",
+          "line": 2
+        }
+      ],
+      "expected_unresolved": [
+        {
+          "reason": "jsx-expression-unresolved",
+          "line": 4
+        }
+      ]
+    },
+    {
+      "path": "jsx/widget.jsx",
+      "sha256": "85c00c4fd68cf54e92d24e5fbb4742ea2e895e13ec7b352a9ff04ec147542eaa",
+      "language": "JSX",
+      "family": "static-markup-and-unknown",
+      "expected_references": [],
+      "expected_edges": [],
+      "expected_unresolved": []
+    },
+    {
+      "path": "ts/main.ts",
+      "sha256": "97c4c30cb107a92070fa9fa24a70b83c93c611611dd3610d6c8ccf7f9d9fec35",
+      "language": "TS",
+      "family": "types-aliases-js-extension",
+      "expected_references": [
+        {
+          "source": "ts/main.ts",
+          "kind": "type-import",
+          "specifier": "@local/model",
+          "line": 1
+        },
+        {
+          "source": "ts/main.ts",
+          "kind": "import",
+          "specifier": "./dep.js",
+          "line": 2
+        },
+        {
+          "source": "ts/main.ts",
+          "kind": "export",
+          "specifier": "@local/model",
+          "line": 3
+        },
+        {
+          "source": "ts/main.ts",
+          "kind": "dynamic-import",
+          "specifier": "./dep.js",
+          "line": 4
+        }
+      ],
+      "expected_edges": [
+        {
+          "source": "ts/main.ts",
+          "kind": "type-import",
+          "target": "ts/model.ts",
+          "line": 1
+        },
+        {
+          "source": "ts/main.ts",
+          "kind": "import",
+          "target": "ts/dep.ts",
+          "line": 2
+        },
+        {
+          "source": "ts/main.ts",
+          "kind": "export",
+          "target": "ts/model.ts",
+          "line": 3
+        },
+        {
+          "source": "ts/main.ts",
+          "kind": "dynamic-import",
+          "target": "ts/dep.ts",
+          "line": 4
+        }
+      ],
+      "expected_unresolved": []
+    },
+    {
+      "path": "ts/model.ts",
+      "sha256": "6e71d2884c0ad120f17838ccc0fb30fc5f4e494cc74530a3899e4767aba35db8",
+      "language": "TS",
+      "family": "types-aliases-js-extension",
+      "expected_references": [],
+      "expected_edges": [],
+      "expected_unresolved": []
+    },
+    {
+      "path": "ts/dep.ts",
+      "sha256": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29",
+      "language": "TS",
+      "family": "types-aliases-js-extension",
+      "expected_references": [],
+      "expected_edges": [],
+      "expected_unresolved": []
+    },
+    {
+      "path": "tsx/main.tsx",
+      "sha256": "be8c161c90edbb52f73f95b6572f86c192ecdad5410d98bca4aeccb77915f613",
+      "language": "TSX",
+      "family": "types-and-markup",
+      "expected_references": [
+        {
+          "source": "tsx/main.tsx",
+          "kind": "type-import",
+          "specifier": "../ts/model",
+          "line": 1
+        },
+        {
+          "source": "tsx/main.tsx",
+          "kind": "import",
+          "specifier": "../jsx/widget.jsx",
+          "line": 2
+        },
+        {
+          "source": "tsx/main.tsx",
+          "kind": "export",
+          "specifier": "../jsx/widget.jsx",
+          "line": 3
+        }
+      ],
+      "expected_edges": [
+        {
+          "source": "tsx/main.tsx",
+          "kind": "type-import",
+          "target": "ts/model.ts",
+          "line": 1
+        },
+        {
+          "source": "tsx/main.tsx",
+          "kind": "import",
+          "target": "jsx/widget.jsx",
+          "line": 2
+        },
+        {
+          "source": "tsx/main.tsx",
+          "kind": "export",
+          "target": "jsx/widget.jsx",
+          "line": 3
+        }
+      ],
+      "expected_unresolved": []
+    },
+    {
+      "path": "rust/src/main.rs",
+      "sha256": "ef13d8e10c829d25f5efdd3867c2136bbc082f6579b267bfb41515d54bc09a4c",
+      "language": "Rust",
+      "family": "modules-use-path-include-conditional",
+      "expected_references": [
+        {
+          "source": "rust/src/main.rs",
+          "kind": "mod",
+          "specifier": "model",
+          "line": 1
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "use",
+          "specifier": "crate::model",
+          "line": 2
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "use",
+          "specifier": "crate::model::Thing",
+          "line": 2
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "path",
+          "specifier": "alt.rs",
+          "line": 4
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "include",
+          "specifier": "../README.txt",
+          "line": 6
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "mod",
+          "specifier": "optional",
+          "line": 9
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "mod",
+          "specifier": "child",
+          "line": 11
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "use",
+          "specifier": "crate::model::Thing",
+          "line": 11
+        }
+      ],
+      "expected_edges": [
+        {
+          "source": "rust/src/main.rs",
+          "kind": "mod",
+          "target": "rust/src/model.rs",
+          "line": 1
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "use",
+          "target": "rust/src/model.rs",
+          "line": 2
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "use",
+          "target": "rust/src/model.rs",
+          "line": 2
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "path",
+          "target": "rust/src/alt.rs",
+          "line": 4
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "include",
+          "target": "rust/README.txt",
+          "line": 6
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "mod",
+          "target": "rust/src/optional.rs",
+          "line": 9
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "mod",
+          "target": "rust/src/nested/child.rs",
+          "line": 11
+        },
+        {
+          "source": "rust/src/main.rs",
+          "kind": "use",
+          "target": "rust/src/model.rs",
+          "line": 11
+        }
+      ],
+      "expected_unresolved": [
+        {
+          "reason": "conditional-compilation",
+          "line": 8
+        },
+        {
+          "reason": "computed-include-path",
+          "line": 10
+        },
+        {
+          "reason": "unexpanded-macro",
+          "line": 10
+        },
+        {
+          "reason": "inline-module-context",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "path": "rust/src/model.rs",
+      "sha256": "c3497a98e17edcd17cc41251aa7934d282600f0f0382781c5f630cbad2ee8361",
+      "language": "Rust",
+      "family": "modules-use-path-include-conditional",
+      "expected_references": [],
+      "expected_edges": [],
+      "expected_unresolved": []
+    },
+    {
+      "path": "rust/src/alt.rs",
+      "sha256": "3e9ffebab4e4f57e1ef27214df16aa1dea9a6a5b474f889f4ff39dcafd5a50a4",
+      "language": "Rust",
+      "family": "modules-use-path-include-conditional",
+      "expected_references": [],
+      "expected_edges": [],
+      "expected_unresolved": []
+    },
+    {
+      "path": "rust/src/optional.rs",
+      "sha256": "3e9ffebab4e4f57e1ef27214df16aa1dea9a6a5b474f889f4ff39dcafd5a50a4",
+      "language": "Rust",
+      "family": "modules-use-path-include-conditional",
+      "expected_references": [],
+      "expected_edges": [],
+      "expected_unresolved": []
+    },
+    {
+      "path": "rust/src/nested/child.rs",
+      "sha256": "3e9ffebab4e4f57e1ef27214df16aa1dea9a6a5b474f889f4ff39dcafd5a50a4",
+      "language": "Rust",
+      "family": "modules-use-path-include-conditional",
+      "expected_references": [],
+      "expected_edges": [],
+      "expected_unresolved": []
+    }
+  ]
+}

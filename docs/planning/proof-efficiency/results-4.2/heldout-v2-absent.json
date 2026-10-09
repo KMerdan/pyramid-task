@@ -1,0 +1,808 @@
+{
+  "schema": "pyramid-dependency-metrics-v1",
+  "corpus": "public-source-followup-v2",
+  "corpus_kind": "held-out",
+  "manifest_sha256": "3e54279fa2ea1eb2f6dc83190e8afbb55a6e719b415057ff8b2e0f952ee19bcd",
+  "provenance": {
+    "frozen": "2026-10-09",
+    "annotation": "Manually reviewed declarations and supporting module ownership before any v2 extractor scoring. Old pilot is now regression data, not held-out data.",
+    "sources": [
+      {
+        "path": "js/changed.js",
+        "url": "https://raw.githubusercontent.com/facebook/react/b618bbb4422693bbb8d387180687b3f510300f42/scripts/shared/listChangedFiles.js",
+        "revision": "b618bbb4422693bbb8d387180687b3f510300f42",
+        "sha256": "1ab4725574d062520feb1f78673601a427e3780692969758bd9752508e32759b",
+        "license": "react-LICENSE"
+      },
+      {
+        "path": "jsx/hook.jsx",
+        "url": "https://raw.githubusercontent.com/facebook/react/b618bbb4422693bbb8d387180687b3f510300f42/compiler/packages/babel-plugin-react-compiler/src/__tests__/fixtures/compiler/error.hook-call-freezes-captured-memberexpr.jsx",
+        "revision": "b618bbb4422693bbb8d387180687b3f510300f42",
+        "sha256": "01c01d8c6a3cc6c601ecaaa50ca522b6923849e239be116ec640fe7fe2a409f9",
+        "license": "react-LICENSE"
+      },
+      {
+        "path": "ts/preset-query.ts",
+        "url": "https://raw.githubusercontent.com/shadcn-ui/ui/6ea090075cd537d3b792c6c1a625e2448b6ede26/apps/v4/app/(app)/(create)/lib/preset-query.ts",
+        "revision": "6ea090075cd537d3b792c6c1a625e2448b6ede26",
+        "sha256": "bbc22d9d012c6ec9314920248f31eaf38d285b66dfc3dc4e79f6a87f037147eb",
+        "license": "ui-LICENSE"
+      },
+      {
+        "path": "ts/preset-query.test.ts",
+        "url": "https://raw.githubusercontent.com/shadcn-ui/ui/6ea090075cd537d3b792c6c1a625e2448b6ede26/apps/v4/app/(app)/(create)/lib/preset-query.test.ts",
+        "revision": "6ea090075cd537d3b792c6c1a625e2448b6ede26",
+        "sha256": "8aa560ab05610bf3f974f7dce5f263e1973782a6e94d5e877d01ca608ad191c8",
+        "license": "ui-LICENSE"
+      },
+      {
+        "path": "tsx/separator.tsx",
+        "url": "https://raw.githubusercontent.com/shadcn-ui/ui/6ea090075cd537d3b792c6c1a625e2448b6ede26/apps/v4/registry/new-york-v4/ui/separator.tsx",
+        "revision": "6ea090075cd537d3b792c6c1a625e2448b6ede26",
+        "sha256": "ad7d5403fe337160e41dbf04147896e448ae3a747b8d06660d627d74d60021bc",
+        "license": "ui-LICENSE"
+      },
+      {
+        "path": "rust/src/lib.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/src/lib.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "ef5c86bc62f63b53efc3e2fad74edb161ad932379a3b38126a69b778a5ee039a",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/src/matcher/text.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/src/matcher/text.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "4b74a81f38d7572d22426ebaebba580c764ab320d9624dc33ed28f743e028643",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/src/matcher.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/src/matcher.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "f1ff20caa243196b7c7d326279faaf55fbd6bc848e09554f3421a939a24a9813",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/src/meta_var.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/src/meta_var.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "e900e0c7894bef99e262028e30c9efd6b960ec7d6c9844232155bda11ae53603",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/src/node.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/src/node.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "4934e758f81ffce32cd8def2e0d51e2be9c582333776efe5f16f3a0eea8198f7",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/src/source.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/src/source.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "25ea43fe7355c99006a76a042892ae7dfb030d2b06000bafc8764d42019d61a7",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/Cargo.toml",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/Cargo.toml",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "13057e0ed61129fad7367fa3a1f6a41899f68cc1a477cb68c5ea03aaee68e0d7",
+        "license": "ast-LICENSE"
+      }
+    ],
+    "limitations": [
+      "Six new scanned files, same three MIT upstream projects/revisions; small convenience follow-up, not representative sampling or independent annotators.",
+      "Rust gold follows re-export targets to source.rs/Doc and node.rs/Node, even when the analyzer abstains. All known local target FN remain in the denominator.",
+      "External npm/std references have no local target in this snapshot. The TS registry alias target is not annotated; absent config and unknown target are recorded separately.",
+      "Supporting Rust crate files are hashed/retained but excluded from scanned membership; partial snapshot omits unneeded modules.",
+      "Targets/annotations were frozen before scoring; tuning against new mismatches requires another held-out set."
+    ]
+  },
+  "provider": "python",
+  "provider_version": "3",
+  "cache": "disabled",
+  "duration_seconds": 0.0296301669877721,
+  "languages": {
+    "JS": {
+      "files": 1,
+      "syntax_families": [
+        "fresh-commonjs"
+      ],
+      "unresolved": 1,
+      "extraction": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "resolution": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": null,
+        "recall": null,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "families": {
+        "fresh-commonjs": {
+          "extraction": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          },
+          "resolution": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "false_positives": [],
+            "false_negatives": []
+          }
+        }
+      },
+      "unknown_detection": {
+        "expected": 0,
+        "detected": 0,
+        "missing": []
+      }
+    },
+    "JSX": {
+      "files": 1,
+      "syntax_families": [
+        "fresh-jsx-hook"
+      ],
+      "unresolved": 2,
+      "extraction": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "resolution": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": null,
+        "recall": null,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "families": {
+        "fresh-jsx-hook": {
+          "extraction": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          },
+          "resolution": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "false_positives": [],
+            "false_negatives": []
+          }
+        }
+      },
+      "unknown_detection": {
+        "expected": 1,
+        "detected": 1,
+        "missing": []
+      }
+    },
+    "Rust": {
+      "files": 1,
+      "syntax_families": [
+        "fresh-parent-symbol-and-reexports"
+      ],
+      "unresolved": 9,
+      "extraction": {
+        "tp": 9,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "resolution": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 2,
+        "precision": 1.0,
+        "recall": 0.5,
+        "false_positives": [],
+        "false_negatives": [
+          [
+            "rust/src/matcher/text.rs",
+            "use",
+            "rust/src/node.rs",
+            3
+          ],
+          [
+            "rust/src/matcher/text.rs",
+            "use",
+            "rust/src/source.rs",
+            2
+          ]
+        ]
+      },
+      "families": {
+        "fresh-parent-symbol-and-reexports": {
+          "extraction": {
+            "tp": 9,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          },
+          "resolution": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 2,
+            "precision": 1.0,
+            "recall": 0.5,
+            "false_positives": [],
+            "false_negatives": [
+              [
+                "rust/src/matcher/text.rs",
+                "use",
+                "rust/src/node.rs",
+                3
+              ],
+              [
+                "rust/src/matcher/text.rs",
+                "use",
+                "rust/src/source.rs",
+                2
+              ]
+            ]
+          }
+        }
+      },
+      "unknown_detection": {
+        "expected": 2,
+        "detected": 2,
+        "missing": []
+      }
+    },
+    "TS": {
+      "files": 2,
+      "syntax_families": [
+        "fresh-type-and-relative-imports"
+      ],
+      "unresolved": 3,
+      "extraction": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "resolution": {
+        "tp": 1,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "families": {
+        "fresh-type-and-relative-imports": {
+          "extraction": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          },
+          "resolution": {
+            "tp": 1,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          }
+        }
+      },
+      "unknown_detection": {
+        "expected": 1,
+        "detected": 1,
+        "missing": []
+      }
+    },
+    "TSX": {
+      "files": 1,
+      "syntax_families": [
+        "fresh-component"
+      ],
+      "unresolved": 9,
+      "extraction": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "resolution": {
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "precision": null,
+        "recall": null,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "families": {
+        "fresh-component": {
+          "extraction": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          },
+          "resolution": {
+            "tp": 0,
+            "fp": 0,
+            "fn": 0,
+            "precision": null,
+            "recall": null,
+            "false_positives": [],
+            "false_negatives": []
+          }
+        }
+      },
+      "unknown_detection": {
+        "expected": 4,
+        "detected": 4,
+        "missing": []
+      }
+    }
+  },
+  "analysis": {
+    "schema": "pyramid-dependency-analysis-v1",
+    "provider": "python",
+    "provider_version": "3",
+    "requested_provider": "auto",
+    "cache": "disabled",
+    "identity_sha256": "44179e2e6fed99cc644d66f746bb59749cd0308d6a0d6ed5bc79d9f40958403c",
+    "inputs": {
+      "rust/Cargo.toml": "13057e0ed61129fad7367fa3a1f6a41899f68cc1a477cb68c5ea03aaee68e0d7",
+      "js/changed.js": "1ab4725574d062520feb1f78673601a427e3780692969758bd9752508e32759b",
+      "jsx/hook.jsx": "01c01d8c6a3cc6c601ecaaa50ca522b6923849e239be116ec640fe7fe2a409f9",
+      "rust/src/matcher/text.rs": "4b74a81f38d7572d22426ebaebba580c764ab320d9624dc33ed28f743e028643",
+      "rust/src/lib.rs": "ef5c86bc62f63b53efc3e2fad74edb161ad932379a3b38126a69b778a5ee039a",
+      "rust/src/matcher.rs": "f1ff20caa243196b7c7d326279faaf55fbd6bc848e09554f3421a939a24a9813",
+      "rust/src/meta_var.rs": "e900e0c7894bef99e262028e30c9efd6b960ec7d6c9844232155bda11ae53603",
+      "rust/src/source.rs": "25ea43fe7355c99006a76a042892ae7dfb030d2b06000bafc8764d42019d61a7",
+      "rust/src/node.rs": "4934e758f81ffce32cd8def2e0d51e2be9c582333776efe5f16f3a0eea8198f7",
+      "ts/preset-query.test.ts": "8aa560ab05610bf3f974f7dce5f263e1973782a6e94d5e877d01ca608ad191c8",
+      "ts/preset-query.ts": "bbc22d9d012c6ec9314920248f31eaf38d285b66dfc3dc4e79f6a87f037147eb",
+      "tsx/separator.tsx": "ad7d5403fe337160e41dbf04147896e448ae3a747b8d06660d627d74d60021bc"
+    },
+    "scan": {
+      "complete": true,
+      "requested": 6,
+      "scanned": [
+        {
+          "file": "js/changed.js",
+          "language": "JS",
+          "sha256": "1ab4725574d062520feb1f78673601a427e3780692969758bd9752508e32759b"
+        },
+        {
+          "file": "jsx/hook.jsx",
+          "language": "JSX",
+          "sha256": "01c01d8c6a3cc6c601ecaaa50ca522b6923849e239be116ec640fe7fe2a409f9"
+        },
+        {
+          "file": "rust/src/matcher/text.rs",
+          "language": "Rust",
+          "sha256": "4b74a81f38d7572d22426ebaebba580c764ab320d9624dc33ed28f743e028643"
+        },
+        {
+          "file": "ts/preset-query.test.ts",
+          "language": "TS",
+          "sha256": "8aa560ab05610bf3f974f7dce5f263e1973782a6e94d5e877d01ca608ad191c8"
+        },
+        {
+          "file": "ts/preset-query.ts",
+          "language": "TS",
+          "sha256": "bbc22d9d012c6ec9314920248f31eaf38d285b66dfc3dc4e79f6a87f037147eb"
+        },
+        {
+          "file": "tsx/separator.tsx",
+          "language": "TSX",
+          "sha256": "ad7d5403fe337160e41dbf04147896e448ae3a747b8d06660d627d74d60021bc"
+        }
+      ],
+      "skipped": [],
+      "truncated": 0
+    },
+    "references": [
+      {
+        "source": "js/changed.js",
+        "language": "JS",
+        "kind": "require",
+        "specifier": "child_process",
+        "line": 9,
+        "column": 22
+      },
+      {
+        "source": "jsx/hook.jsx",
+        "language": "JSX",
+        "kind": "import",
+        "specifier": "shared-runtime",
+        "line": 2,
+        "column": 1
+      },
+      {
+        "source": "rust/src/matcher/text.rs",
+        "language": "Rust",
+        "kind": "use",
+        "specifier": "super::Matcher",
+        "line": 1,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/matcher/text.rs",
+        "language": "Rust",
+        "kind": "use",
+        "specifier": "crate::Doc",
+        "line": 2,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/matcher/text.rs",
+        "language": "Rust",
+        "kind": "use",
+        "specifier": "crate::Node",
+        "line": 3,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/matcher/text.rs",
+        "language": "Rust",
+        "kind": "use",
+        "specifier": "crate::meta_var::MetaVarEnv",
+        "line": 4,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/matcher/text.rs",
+        "language": "Rust",
+        "kind": "use",
+        "specifier": "bit_set::BitSet",
+        "line": 6,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/matcher/text.rs",
+        "language": "Rust",
+        "kind": "use",
+        "specifier": "regex::Error",
+        "line": 7,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/matcher/text.rs",
+        "language": "Rust",
+        "kind": "use",
+        "specifier": "regex::Regex",
+        "line": 7,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/matcher/text.rs",
+        "language": "Rust",
+        "kind": "use",
+        "specifier": "thiserror::Error",
+        "line": 8,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/matcher/text.rs",
+        "language": "Rust",
+        "kind": "use",
+        "specifier": "std::borrow::Cow",
+        "line": 10,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "ts/preset-query.test.ts",
+        "language": "TS",
+        "kind": "import",
+        "specifier": "vitest",
+        "line": 1,
+        "column": 1
+      },
+      {
+        "source": "ts/preset-query.test.ts",
+        "language": "TS",
+        "kind": "import",
+        "specifier": "./preset-query",
+        "line": 3,
+        "column": 1
+      },
+      {
+        "source": "ts/preset-query.ts",
+        "language": "TS",
+        "kind": "import",
+        "specifier": "shadcn/preset",
+        "line": 1,
+        "column": 1
+      },
+      {
+        "source": "ts/preset-query.ts",
+        "language": "TS",
+        "kind": "import",
+        "specifier": "@/registry/config",
+        "line": 3,
+        "column": 1
+      },
+      {
+        "source": "tsx/separator.tsx",
+        "language": "TSX",
+        "kind": "import",
+        "specifier": "react",
+        "line": 3,
+        "column": 1
+      },
+      {
+        "source": "tsx/separator.tsx",
+        "language": "TSX",
+        "kind": "import",
+        "specifier": "cn",
+        "line": 4,
+        "column": 1
+      },
+      {
+        "source": "tsx/separator.tsx",
+        "language": "TSX",
+        "kind": "import",
+        "specifier": "radix-ui",
+        "line": 5,
+        "column": 1
+      }
+    ],
+    "edges": [
+      {
+        "source": "rust/src/matcher/text.rs",
+        "target": "rust/src/matcher.rs",
+        "kind": "use",
+        "line": 1,
+        "language": "Rust"
+      },
+      {
+        "source": "rust/src/matcher/text.rs",
+        "target": "rust/src/meta_var.rs",
+        "kind": "use",
+        "line": 4,
+        "language": "Rust"
+      },
+      {
+        "source": "ts/preset-query.test.ts",
+        "target": "ts/preset-query.ts",
+        "kind": "import",
+        "line": 3,
+        "language": "TS"
+      }
+    ],
+    "unresolved": [
+      {
+        "language": "JS",
+        "line": 9,
+        "reason": "external-or-unresolved-module",
+        "source": "js/changed.js",
+        "specifier": "child_process"
+      },
+      {
+        "language": "JSX",
+        "line": 2,
+        "reason": "external-or-unresolved-module",
+        "source": "jsx/hook.jsx",
+        "specifier": "shared-runtime"
+      },
+      {
+        "language": "JSX",
+        "line": 14,
+        "reason": "jsx-expression-unresolved",
+        "source": "jsx/hook.jsx"
+      },
+      {
+        "language": "Rust",
+        "line": 2,
+        "reason": "rust-module-ownership-unresolved",
+        "source": "rust/src/matcher/text.rs",
+        "specifier": "crate::Doc"
+      },
+      {
+        "language": "Rust",
+        "line": 3,
+        "reason": "rust-module-ownership-unresolved",
+        "source": "rust/src/matcher/text.rs",
+        "specifier": "crate::Node"
+      },
+      {
+        "language": "Rust",
+        "line": 6,
+        "reason": "rust-module-ownership-unresolved",
+        "source": "rust/src/matcher/text.rs",
+        "specifier": "bit_set::BitSet"
+      },
+      {
+        "language": "Rust",
+        "line": 7,
+        "reason": "rust-module-ownership-unresolved",
+        "source": "rust/src/matcher/text.rs",
+        "specifier": "regex::Error"
+      },
+      {
+        "language": "Rust",
+        "line": 7,
+        "reason": "rust-module-ownership-unresolved",
+        "source": "rust/src/matcher/text.rs",
+        "specifier": "regex::Regex"
+      },
+      {
+        "language": "Rust",
+        "line": 8,
+        "reason": "rust-module-ownership-unresolved",
+        "source": "rust/src/matcher/text.rs",
+        "specifier": "thiserror::Error"
+      },
+      {
+        "language": "Rust",
+        "line": 10,
+        "reason": "rust-module-ownership-unresolved",
+        "source": "rust/src/matcher/text.rs",
+        "specifier": "std::borrow::Cow"
+      },
+      {
+        "language": "Rust",
+        "line": 12,
+        "reason": "unexpanded-attribute",
+        "source": "rust/src/matcher/text.rs"
+      },
+      {
+        "language": "Rust",
+        "line": 18,
+        "reason": "unexpanded-attribute",
+        "source": "rust/src/matcher/text.rs"
+      },
+      {
+        "language": "TS",
+        "line": 1,
+        "reason": "external-or-unresolved-module",
+        "source": "ts/preset-query.test.ts",
+        "specifier": "vitest"
+      },
+      {
+        "language": "TS",
+        "line": 1,
+        "reason": "external-or-unresolved-module",
+        "source": "ts/preset-query.ts",
+        "specifier": "shadcn/preset"
+      },
+      {
+        "language": "TS",
+        "line": 3,
+        "reason": "external-or-unresolved-module",
+        "source": "ts/preset-query.ts",
+        "specifier": "@/registry/config"
+      },
+      {
+        "language": "TSX",
+        "line": 3,
+        "reason": "external-or-unresolved-module",
+        "source": "tsx/separator.tsx",
+        "specifier": "react"
+      },
+      {
+        "language": "TSX",
+        "line": 4,
+        "reason": "external-or-unresolved-module",
+        "source": "tsx/separator.tsx",
+        "specifier": "cn"
+      },
+      {
+        "language": "TSX",
+        "line": 5,
+        "reason": "external-or-unresolved-module",
+        "source": "tsx/separator.tsx",
+        "specifier": "radix-ui"
+      },
+      {
+        "language": "TSX",
+        "line": 12,
+        "reason": "jsx-expression-unresolved",
+        "source": "tsx/separator.tsx"
+      },
+      {
+        "language": "TSX",
+        "line": 16,
+        "reason": "jsx-expression-unresolved",
+        "source": "tsx/separator.tsx"
+      },
+      {
+        "language": "TSX",
+        "line": 17,
+        "reason": "jsx-expression-unresolved",
+        "source": "tsx/separator.tsx"
+      },
+      {
+        "language": "TSX",
+        "line": 18,
+        "reason": "jsx-expression-unresolved",
+        "source": "tsx/separator.tsx"
+      },
+      {
+        "language": "TSX",
+        "line": 22,
+        "reason": "jsx-expression-unresolved",
+        "source": "tsx/separator.tsx"
+      },
+      {
+        "language": "TSX",
+        "line": 27,
+        "reason": "jsx-expression-unresolved",
+        "source": "tsx/separator.tsx"
+      }
+    ],
+    "diagnostics": [
+      {
+        "reason": "ast-grep-unavailable"
+      }
+    ],
+    "scope_removal_authorized": false,
+    "limitations": [
+      "Syntax references are advisory; dependency and semantic completeness are not certified.",
+      "External modules, conditional compilation and generated relationships require review."
+    ]
+  },
+  "limitations": [
+    "Accuracy describes this frozen corpus; unsupported and unresolved targets remain visible.",
+    "No arbitrary real-corpus release threshold or automatic scope-removal authority."
+  ]
+}

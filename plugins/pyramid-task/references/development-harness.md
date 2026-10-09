@@ -4,6 +4,15 @@ Use this contract when planning or changing proof, setting up a missing probe, c
 
 ## Plan the smallest sufficient proof
 
+Define commands and inputs together. Wide package globs can invalidate many
+producers during unrelated implementation; do not narrow inputs while leaving
+a whole-package procedure unchanged. Keep real shared dependencies and unknown
+relationships covered. For producer/write overlap and optional source facts, use
+`inspect --proof-analysis <node>` and read `proof-analysis.md`. This projection
+has measured limitations and cannot authorize input removal. Inspection refresh
+labels do not waive asset/frontier staleness. Use guarded contract changes and
+fresh affected proof; measure workflow savings separately.
+
 1. Inspect the actual project phase, existing tests, launch commands, browser tools, data fixtures, logs and probes. Identify the claims and failure modes of the next outcome, including inherited behavior it can affect.
 2. Map those claims to existing procedures first. One well-chosen run may cover several criteria, tasks, an outcome and an inspection. Do not add a unit, integration, browser and visual-regression test for the same claim by default. Different observations of one run are not separate test suites.
 3. Choose external, internal and visual observations by the claim. Inspect relevant internal invariants—not every variable or table. A visible interface normally needs a real rendered capture and model inspection; API/DB success alone cannot establish layout, clipping, readability, overlays or error presentation. A documentation/layout outcome may also need visual inspection. Explain genuinely inapplicable channels rather than forcing a fake UI onto a headless outcome.

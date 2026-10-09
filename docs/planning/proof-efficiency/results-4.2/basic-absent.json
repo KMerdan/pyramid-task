@@ -1,0 +1,780 @@
+{
+  "schema": "pyramid-dependency-metrics-v1",
+  "corpus": "independent-basic-v1",
+  "corpus_kind": "basic",
+  "manifest_sha256": "45bb73c781b71b6c6fddc22b9d2cf111ec6a8a91d07371b915ce7c36c403cdcf",
+  "provenance": {
+    "annotation": "Manually authored references and targets before extractor scoring; not generated from ast-grep.",
+    "frozen": "2026-10-09",
+    "license": "Repository license"
+  },
+  "provider": "python",
+  "provider_version": "3",
+  "cache": "disabled",
+  "duration_seconds": 0.011987666992354207,
+  "languages": {
+    "JS": {
+      "files": 3,
+      "syntax_families": [
+        "static-reexport-require-dynamic"
+      ],
+      "unresolved": 1,
+      "extraction": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "resolution": {
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "families": {
+        "static-reexport-require-dynamic": {
+          "extraction": {
+            "tp": 5,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          },
+          "resolution": {
+            "tp": 5,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          }
+        }
+      },
+      "unknown_detection": {
+        "expected": 1,
+        "detected": 1,
+        "missing": []
+      }
+    },
+    "JSX": {
+      "files": 2,
+      "syntax_families": [
+        "static-markup-and-unknown"
+      ],
+      "unresolved": 1,
+      "extraction": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "resolution": {
+        "tp": 2,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "families": {
+        "static-markup-and-unknown": {
+          "extraction": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          },
+          "resolution": {
+            "tp": 2,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          }
+        }
+      },
+      "unknown_detection": {
+        "expected": 1,
+        "detected": 1,
+        "missing": []
+      }
+    },
+    "Rust": {
+      "files": 5,
+      "syntax_families": [
+        "modules-use-path-include-conditional"
+      ],
+      "unresolved": 4,
+      "extraction": {
+        "tp": 8,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "resolution": {
+        "tp": 7,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "families": {
+        "modules-use-path-include-conditional": {
+          "extraction": {
+            "tp": 8,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          },
+          "resolution": {
+            "tp": 7,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          }
+        }
+      },
+      "unknown_detection": {
+        "expected": 4,
+        "detected": 4,
+        "missing": []
+      }
+    },
+    "TS": {
+      "files": 3,
+      "syntax_families": [
+        "types-aliases-js-extension"
+      ],
+      "unresolved": 0,
+      "extraction": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "resolution": {
+        "tp": 4,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "families": {
+        "types-aliases-js-extension": {
+          "extraction": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          },
+          "resolution": {
+            "tp": 4,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          }
+        }
+      },
+      "unknown_detection": {
+        "expected": 0,
+        "detected": 0,
+        "missing": []
+      }
+    },
+    "TSX": {
+      "files": 1,
+      "syntax_families": [
+        "types-and-markup"
+      ],
+      "unresolved": 0,
+      "extraction": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "resolution": {
+        "tp": 3,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "false_positives": [],
+        "false_negatives": []
+      },
+      "families": {
+        "types-and-markup": {
+          "extraction": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          },
+          "resolution": {
+            "tp": 3,
+            "fp": 0,
+            "fn": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "false_positives": [],
+            "false_negatives": []
+          }
+        }
+      },
+      "unknown_detection": {
+        "expected": 0,
+        "detected": 0,
+        "missing": []
+      }
+    }
+  },
+  "analysis": {
+    "schema": "pyramid-dependency-analysis-v1",
+    "provider": "python",
+    "provider_version": "3",
+    "requested_provider": "auto",
+    "cache": "disabled",
+    "identity_sha256": "a4a3325a9c15424ffdc7f26d2ebb2dbc1e0fc2cc9f4d7ea49a69db2e0fd504fd",
+    "inputs": {
+      "rust/Cargo.toml": "f852fa93d7f50427556649e9b207b2bcc0adf35e1d35b8e71e6f9b821be36758",
+      "tsconfig.json": "fbc15dedd19811966f0faaa6b349bde676413a40b59aac678fbc4bd0da3388d1",
+      "js/dep.js": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29",
+      "js/main.js": "e198da30c7eac2ee7bfdf1122c5197eb0ef1c2bf9d4bbdcf31fa8820f6777150",
+      "js/side.js": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+      "jsx/main.jsx": "9101b502812e4711edff4f4b719a1d54c9a8aa2c4ede466204ff4a028312bd7c",
+      "jsx/widget.jsx": "85c00c4fd68cf54e92d24e5fbb4742ea2e895e13ec7b352a9ff04ec147542eaa",
+      "rust/src/alt.rs": "3e9ffebab4e4f57e1ef27214df16aa1dea9a6a5b474f889f4ff39dcafd5a50a4",
+      "rust/src/main.rs": "ef13d8e10c829d25f5efdd3867c2136bbc082f6579b267bfb41515d54bc09a4c",
+      "rust/src/model.rs": "c3497a98e17edcd17cc41251aa7934d282600f0f0382781c5f630cbad2ee8361",
+      "rust/src/optional.rs": "3e9ffebab4e4f57e1ef27214df16aa1dea9a6a5b474f889f4ff39dcafd5a50a4",
+      "rust/src/nested/child.rs": "3e9ffebab4e4f57e1ef27214df16aa1dea9a6a5b474f889f4ff39dcafd5a50a4",
+      "rust/README.txt": "79d7edeee2288554298c546e89ac200ccf581c6c3f5e8fa043f72f381b567683",
+      "ts/dep.ts": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29",
+      "ts/main.ts": "97c4c30cb107a92070fa9fa24a70b83c93c611611dd3610d6c8ccf7f9d9fec35",
+      "ts/model.ts": "6e71d2884c0ad120f17838ccc0fb30fc5f4e494cc74530a3899e4767aba35db8",
+      "tsx/main.tsx": "be8c161c90edbb52f73f95b6572f86c192ecdad5410d98bca4aeccb77915f613"
+    },
+    "scan": {
+      "complete": true,
+      "requested": 14,
+      "scanned": [
+        {
+          "file": "js/dep.js",
+          "language": "JS",
+          "sha256": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29"
+        },
+        {
+          "file": "js/main.js",
+          "language": "JS",
+          "sha256": "e198da30c7eac2ee7bfdf1122c5197eb0ef1c2bf9d4bbdcf31fa8820f6777150"
+        },
+        {
+          "file": "js/side.js",
+          "language": "JS",
+          "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
+        },
+        {
+          "file": "jsx/main.jsx",
+          "language": "JSX",
+          "sha256": "9101b502812e4711edff4f4b719a1d54c9a8aa2c4ede466204ff4a028312bd7c"
+        },
+        {
+          "file": "jsx/widget.jsx",
+          "language": "JSX",
+          "sha256": "85c00c4fd68cf54e92d24e5fbb4742ea2e895e13ec7b352a9ff04ec147542eaa"
+        },
+        {
+          "file": "rust/src/alt.rs",
+          "language": "Rust",
+          "sha256": "3e9ffebab4e4f57e1ef27214df16aa1dea9a6a5b474f889f4ff39dcafd5a50a4"
+        },
+        {
+          "file": "rust/src/main.rs",
+          "language": "Rust",
+          "sha256": "ef13d8e10c829d25f5efdd3867c2136bbc082f6579b267bfb41515d54bc09a4c"
+        },
+        {
+          "file": "rust/src/model.rs",
+          "language": "Rust",
+          "sha256": "c3497a98e17edcd17cc41251aa7934d282600f0f0382781c5f630cbad2ee8361"
+        },
+        {
+          "file": "rust/src/nested/child.rs",
+          "language": "Rust",
+          "sha256": "3e9ffebab4e4f57e1ef27214df16aa1dea9a6a5b474f889f4ff39dcafd5a50a4"
+        },
+        {
+          "file": "rust/src/optional.rs",
+          "language": "Rust",
+          "sha256": "3e9ffebab4e4f57e1ef27214df16aa1dea9a6a5b474f889f4ff39dcafd5a50a4"
+        },
+        {
+          "file": "ts/dep.ts",
+          "language": "TS",
+          "sha256": "5d8f65d2774e206bc9f7a7a4ad39ca2dc563b5c31e46ab57ef4874961237ce29"
+        },
+        {
+          "file": "ts/main.ts",
+          "language": "TS",
+          "sha256": "97c4c30cb107a92070fa9fa24a70b83c93c611611dd3610d6c8ccf7f9d9fec35"
+        },
+        {
+          "file": "ts/model.ts",
+          "language": "TS",
+          "sha256": "6e71d2884c0ad120f17838ccc0fb30fc5f4e494cc74530a3899e4767aba35db8"
+        },
+        {
+          "file": "tsx/main.tsx",
+          "language": "TSX",
+          "sha256": "be8c161c90edbb52f73f95b6572f86c192ecdad5410d98bca4aeccb77915f613"
+        }
+      ],
+      "skipped": [],
+      "truncated": 0
+    },
+    "references": [
+      {
+        "source": "js/main.js",
+        "language": "JS",
+        "kind": "import",
+        "specifier": "./side.js",
+        "line": 1,
+        "column": 1
+      },
+      {
+        "source": "js/main.js",
+        "language": "JS",
+        "kind": "import",
+        "specifier": "./dep.js",
+        "line": 2,
+        "column": 1
+      },
+      {
+        "source": "js/main.js",
+        "language": "JS",
+        "kind": "export",
+        "specifier": "./dep.js",
+        "line": 3,
+        "column": 1
+      },
+      {
+        "source": "js/main.js",
+        "language": "JS",
+        "kind": "require",
+        "specifier": "./dep.js",
+        "line": 4,
+        "column": 13
+      },
+      {
+        "source": "js/main.js",
+        "language": "JS",
+        "kind": "dynamic-import",
+        "specifier": "./dep.js",
+        "line": 5,
+        "column": 13
+      },
+      {
+        "source": "jsx/main.jsx",
+        "language": "JSX",
+        "kind": "import",
+        "specifier": "./widget.jsx",
+        "line": 1,
+        "column": 1
+      },
+      {
+        "source": "jsx/main.jsx",
+        "language": "JSX",
+        "kind": "export",
+        "specifier": "./widget.jsx",
+        "line": 2,
+        "column": 1
+      },
+      {
+        "source": "rust/src/main.rs",
+        "language": "Rust",
+        "kind": "mod",
+        "specifier": "model",
+        "line": 1,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/main.rs",
+        "language": "Rust",
+        "kind": "use",
+        "specifier": "crate::model",
+        "line": 2,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/main.rs",
+        "language": "Rust",
+        "kind": "use",
+        "specifier": "crate::model::Thing",
+        "line": 2,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/main.rs",
+        "language": "Rust",
+        "kind": "path",
+        "specifier": "alt.rs",
+        "line": 4,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/main.rs",
+        "language": "Rust",
+        "kind": "include",
+        "specifier": "../README.txt",
+        "line": 6,
+        "column": 19,
+        "context": []
+      },
+      {
+        "source": "rust/src/main.rs",
+        "language": "Rust",
+        "kind": "mod",
+        "specifier": "optional",
+        "line": 9,
+        "column": 1,
+        "context": []
+      },
+      {
+        "source": "rust/src/main.rs",
+        "language": "Rust",
+        "kind": "mod",
+        "specifier": "child",
+        "line": 11,
+        "column": 14,
+        "context": [
+          "nested"
+        ]
+      },
+      {
+        "source": "rust/src/main.rs",
+        "language": "Rust",
+        "kind": "use",
+        "specifier": "crate::model::Thing",
+        "line": 11,
+        "column": 25,
+        "context": [
+          "nested"
+        ]
+      },
+      {
+        "source": "ts/main.ts",
+        "language": "TS",
+        "kind": "type-import",
+        "specifier": "@local/model",
+        "line": 1,
+        "column": 1
+      },
+      {
+        "source": "ts/main.ts",
+        "language": "TS",
+        "kind": "import",
+        "specifier": "./dep.js",
+        "line": 2,
+        "column": 1
+      },
+      {
+        "source": "ts/main.ts",
+        "language": "TS",
+        "kind": "export",
+        "specifier": "@local/model",
+        "line": 3,
+        "column": 1
+      },
+      {
+        "source": "ts/main.ts",
+        "language": "TS",
+        "kind": "dynamic-import",
+        "specifier": "./dep.js",
+        "line": 4,
+        "column": 14
+      },
+      {
+        "source": "tsx/main.tsx",
+        "language": "TSX",
+        "kind": "type-import",
+        "specifier": "../ts/model",
+        "line": 1,
+        "column": 1
+      },
+      {
+        "source": "tsx/main.tsx",
+        "language": "TSX",
+        "kind": "import",
+        "specifier": "../jsx/widget.jsx",
+        "line": 2,
+        "column": 1
+      },
+      {
+        "source": "tsx/main.tsx",
+        "language": "TSX",
+        "kind": "export",
+        "specifier": "../jsx/widget.jsx",
+        "line": 3,
+        "column": 1
+      }
+    ],
+    "edges": [
+      {
+        "source": "js/main.js",
+        "target": "js/side.js",
+        "kind": "import",
+        "line": 1,
+        "language": "JS"
+      },
+      {
+        "source": "js/main.js",
+        "target": "js/dep.js",
+        "kind": "import",
+        "line": 2,
+        "language": "JS"
+      },
+      {
+        "source": "js/main.js",
+        "target": "js/dep.js",
+        "kind": "export",
+        "line": 3,
+        "language": "JS"
+      },
+      {
+        "source": "js/main.js",
+        "target": "js/dep.js",
+        "kind": "require",
+        "line": 4,
+        "language": "JS"
+      },
+      {
+        "source": "js/main.js",
+        "target": "js/dep.js",
+        "kind": "dynamic-import",
+        "line": 5,
+        "language": "JS"
+      },
+      {
+        "source": "jsx/main.jsx",
+        "target": "jsx/widget.jsx",
+        "kind": "import",
+        "line": 1,
+        "language": "JSX"
+      },
+      {
+        "source": "jsx/main.jsx",
+        "target": "jsx/widget.jsx",
+        "kind": "export",
+        "line": 2,
+        "language": "JSX"
+      },
+      {
+        "source": "rust/src/main.rs",
+        "target": "rust/src/model.rs",
+        "kind": "mod",
+        "line": 1,
+        "language": "Rust"
+      },
+      {
+        "source": "rust/src/main.rs",
+        "target": "rust/src/model.rs",
+        "kind": "use",
+        "line": 2,
+        "language": "Rust"
+      },
+      {
+        "source": "rust/src/main.rs",
+        "target": "rust/src/model.rs",
+        "kind": "use",
+        "line": 2,
+        "language": "Rust"
+      },
+      {
+        "source": "rust/src/main.rs",
+        "target": "rust/src/alt.rs",
+        "kind": "path",
+        "line": 4,
+        "language": "Rust"
+      },
+      {
+        "source": "rust/src/main.rs",
+        "target": "rust/README.txt",
+        "kind": "include",
+        "line": 6,
+        "language": "Rust"
+      },
+      {
+        "source": "rust/src/main.rs",
+        "target": "rust/src/optional.rs",
+        "kind": "mod",
+        "line": 9,
+        "language": "Rust"
+      },
+      {
+        "source": "rust/src/main.rs",
+        "target": "rust/src/nested/child.rs",
+        "kind": "mod",
+        "line": 11,
+        "language": "Rust"
+      },
+      {
+        "source": "rust/src/main.rs",
+        "target": "rust/src/model.rs",
+        "kind": "use",
+        "line": 11,
+        "language": "Rust"
+      },
+      {
+        "source": "ts/main.ts",
+        "target": "ts/model.ts",
+        "kind": "type-import",
+        "line": 1,
+        "language": "TS"
+      },
+      {
+        "source": "ts/main.ts",
+        "target": "ts/dep.ts",
+        "kind": "import",
+        "line": 2,
+        "language": "TS"
+      },
+      {
+        "source": "ts/main.ts",
+        "target": "ts/model.ts",
+        "kind": "export",
+        "line": 3,
+        "language": "TS"
+      },
+      {
+        "source": "ts/main.ts",
+        "target": "ts/dep.ts",
+        "kind": "dynamic-import",
+        "line": 4,
+        "language": "TS"
+      },
+      {
+        "source": "tsx/main.tsx",
+        "target": "ts/model.ts",
+        "kind": "type-import",
+        "line": 1,
+        "language": "TSX"
+      },
+      {
+        "source": "tsx/main.tsx",
+        "target": "jsx/widget.jsx",
+        "kind": "import",
+        "line": 2,
+        "language": "TSX"
+      },
+      {
+        "source": "tsx/main.tsx",
+        "target": "jsx/widget.jsx",
+        "kind": "export",
+        "line": 3,
+        "language": "TSX"
+      }
+    ],
+    "unresolved": [
+      {
+        "language": "JS",
+        "line": 9,
+        "reason": "computed-module-path",
+        "source": "js/main.js"
+      },
+      {
+        "language": "JSX",
+        "line": 4,
+        "reason": "jsx-expression-unresolved",
+        "source": "jsx/main.jsx"
+      },
+      {
+        "language": "Rust",
+        "line": 1,
+        "reason": "inline-module-context",
+        "source": "rust/src/main.rs"
+      },
+      {
+        "language": "Rust",
+        "line": 8,
+        "reason": "conditional-compilation",
+        "source": "rust/src/main.rs"
+      },
+      {
+        "language": "Rust",
+        "line": 10,
+        "reason": "computed-include-path",
+        "source": "rust/src/main.rs"
+      },
+      {
+        "language": "Rust",
+        "line": 10,
+        "reason": "unexpanded-macro",
+        "source": "rust/src/main.rs"
+      }
+    ],
+    "diagnostics": [
+      {
+        "reason": "ast-grep-unavailable"
+      }
+    ],
+    "scope_removal_authorized": false,
+    "limitations": [
+      "Syntax references are advisory; dependency and semantic completeness are not certified.",
+      "External modules, conditional compilation and generated relationships require review."
+    ]
+  },
+  "limitations": [
+    "Accuracy describes this frozen corpus; unsupported and unresolved targets remain visible.",
+    "No arbitrary real-corpus release threshold or automatic scope-removal authority."
+  ]
+}

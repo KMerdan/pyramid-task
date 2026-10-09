@@ -37,6 +37,7 @@ from pyramid_core import (
     take_task,
     update_task,
     validate_project,
+    load_project,
 )
 from pyramid_live import LiveVisualizationServer
 from pyramid_visualizer import render_visualization
@@ -177,6 +178,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     group.add_argument("--audit-readiness")
     group.add_argument("--harness", help="Show scoped proof contracts, pre-run candidate templates, and reusable runs")
+    group.add_argument("--proof-analysis", metavar="NODE", help="Explain proof input overlap and reuse without changing authority")
     group.add_argument("--node")
     group.add_argument("--footprint", action="store_true", help="Bounded read-only artifact counts, bytes and current references; never deletes")
     inspect.add_argument("--footprint-detail", action="store_true", help="With --footprint, list at most 100 files")
@@ -188,6 +190,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Maximum coordinator plus sub-agents in one parallel batch",
     )
     inspect.add_argument("--usage-days", type=int, help="Limit --usage to the last N UTC calendar days")
+    inspect.add_argument("--source-dependencies", action="store_true", help="With --proof-analysis, extract advisory JS/TS/Rust/Python dependencies")
+    inspect.add_argument("--analysis-provider", choices=["auto", "python", "ast-grep"], default="python", help="Python by default without tool discovery; explicitly choose ast-grep or auto for optional AST extraction")
+    inspect.add_argument("--analysis-limit", type=int, default=1000, help="Bound proof detail and source analysis to 1-10000 files")
     add_json(inspect)
 
     diff = sub.add_parser("diff", help="Show compact event changes between graph versions")
@@ -439,6 +444,22 @@ def run(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             "compiled": compile_project(args.project),
         }, 0
     if args.command == "inspect":
+        if args.source_dependencies and not args.proof_analysis:
+            raise PyramidError("--source-dependencies requires --proof-analysis")
+        if args.analysis_provider != "python" and not args.source_dependencies:
+            raise PyramidError("--analysis-provider requires --source-dependencies")
+        if args.proof_analysis:
+            from pyramid_proof_analysis import analyze_proofs, attach_dependencies
+            paths, plan, state = load_project(args.project)
+            try:
+                result = analyze_proofs(paths["root"], plan, state, args.proof_analysis, limit=args.analysis_limit)
+                if args.source_dependencies:
+                    from pyramid_dependencies import LANGUAGES, analyze_dependencies
+                    files = {path for proof in result["proofs"] for path in proof["files"] if Path(path).suffix in LANGUAGES}
+                    result = attach_dependencies(result, analyze_dependencies(paths["root"], files, provider=args.analysis_provider, limit=args.analysis_limit))
+                return result, 0
+            except ValueError as exc:
+                raise PyramidError(str(exc)) from exc
         if args.usage:
             result = usage_report(args.command_catalog, days=args.usage_days, detail=not args.compact)
             return result, 1 if result["status"] == "unavailable" else 0

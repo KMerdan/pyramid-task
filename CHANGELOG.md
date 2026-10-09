@@ -2,6 +2,14 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## 4.2.0 — 2026-10-09
+
+- Add opt-in read-only `inspect --proof-analysis <node>` for producer proof families, existing input files, declared write overlap, shared inputs, current blockers and reusable runs. Preserve all proof fingerprints, audit and inspection obligations.
+- Add optional `--source-dependencies` with JS, JSX, TS, TSX and Rust references, bounded file resolution, source/configuration identity and explicit uncertainty. Rust ownership follows declared modules and inline namespace symbols; re-export and macro semantics remain limited.
+- Use the Python standard-library analyzer by default without discovering external tools. ast-grep is not an installation dependency; explicit `--analysis-provider ast-grep` or `auto` retains optional AST extraction and diagnosed fallback.
+- Publish hash-bound fixture and public-source scores, with actual absent-tool subprocess qualification and explicit AST comparison. The fresh Rust pilot retains 2 resolution misses (50% recall); sample accuracy and scan duration do not establish project-wide accuracy or development-time savings.
+- Route proof-cost questions through inspect and plan proof commands/inputs together. Advisory output never authorizes scope removal or skipped checks. Keep matching Codex/Claude manifests and runtime at 4.2.0; no schema migration, installed-plugin update or service deployment is included.
+
 ## 4.1.0 — unreleased source candidate
 
 - Make replan invalidation directional: a new consumer preserves an unchanged provider; changed producer claims, inputs and composition still invalidate affected claims.

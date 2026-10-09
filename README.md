@@ -7,13 +7,11 @@
 
 Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
-The 4.1.0 source candidate preserves unchanged producer proof when a new consumer is added, separates fresh invocation guards from reviewed procedure source, and clarifies authorization, review and verification. It also skips byte-identical projection writes and adds a bounded read-only artifact footprint query. The project format remains V3, with 17 skills and 26 CLI commands. Compact-by-default output, task amendments, usage counters and outcome-scoped harnesses remain supported. Codex and Claude Code share the same `main` source package.
+Version 4.2.0 adds optional read-only proof analysis: inspect producer input footprint, declared write overlap, current proof blockers and reusable evidence. Dependency facts cover JS, JSX, TS, TSX and Rust through Python by default, without discovering or requiring ast-grep. Explicit optional AST extraction remains available. Analysis never changes proof inputs or waives checks. The project format remains V3, with 17 skills and 26 CLI commands. Codex and Claude Code share the same `main` source package.
 
-[4.1 development and qualification](docs/planning/v4.1/README.md) records scope, evidence and limitations. A source candidate is not a published or installed release; existing 4.0.0 installations are unchanged. Prompt clarity and fewer writes do not by themselves establish token savings.
+[4.2 qualification](docs/planning/proof-efficiency/qualification-4.2.md) records measured no-tool and optional AST results. The small fresh Rust pilot has 50% file-resolution recall; no automatic input removal or end-to-end speedup is qualified. Publishing a version does not update existing installations or migrate plans.
 
-The [qualification report](proof-output/v4.1/TASK-432/qualification.md) distinguishes
-real CLI regressions and isolated native-host runs from supplied decision fixtures.
-Read its measured limits before drawing efficiency or installed-release conclusions.
+The earlier [4.1 development records](docs/planning/v4.1/README.md) describe inherited producer-proof reuse, invocation guards, byte-identical projection writes and artifact footprint analysis. Those records are historical source qualification, not evidence of 4.2 installed-host behavior or token savings.
 
 ## Precise progress in 4.1
 
@@ -392,6 +390,7 @@ python3 plugins/pyramid-task/scripts/pyramid.py visualize \
 ## Install
 
 Requirements: Codex or Claude Code with plugin support, plus Python 3.10 or newer.
+Proof/dependency analysis needs no extra package or ast-grep installation.
 
 ### Codex
 
@@ -582,3 +581,25 @@ Maintainers can read [docs/architecture.md](docs/architecture.md) for module bou
 MIT © 2026 Dr. Merdan Bay. See [LICENSE](LICENSE).
 
 Pyramid Task is an independent open-source project and is not affiliated with or endorsed by OpenAI.
+
+## Proof analysis
+
+Optional read-only analysis explains producer input footprint, declared write
+overlap, current invalidation blockers and reusable runs. Source dependency facts
+use Python by default with explicit unknowns and no executable discovery.
+Use `--analysis-provider ast-grep` or `auto` to request optional AST extraction
+with visible Python fallback. Ordinary queries do not scan source.
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --proof-analysis TASK-201 --json
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --proof-analysis TASK-201 --source-dependencies --json
+python3 plugins/pyramid-task/scripts/pyramid_benchmark.py --manifest plugins/pyramid-task/tests/fixtures/dependencies/basic/manifest.json
+```
+
+Read [provider and accuracy limits](plugins/pyramid-task/references/proof-analysis.md)
+and [acceptance requirements](docs/planning/proof-efficiency/acceptance.md). The
+actual no-tool subprocess is covered by the regression suite. Independent basic
+fixtures have zero FP/FN. Rust parent/inline-module ownership gaps from v1 are
+fixed; a new source pilot still has 2 re-export resolution FN (50% recall). Read
+[4.2 qualification](docs/planning/proof-efficiency/qualification-4.2.md).
+No automatic contraction or project-wide speedup is qualified.

@@ -1,0 +1,340 @@
+{
+  "schema": "pyramid-dependency-corpus-v1",
+  "name": "public-source-followup-v2",
+  "kind": "held-out",
+  "provenance": {
+    "frozen": "2026-10-09",
+    "annotation": "Manually reviewed declarations and supporting module ownership before any v2 extractor scoring. Old pilot is now regression data, not held-out data.",
+    "sources": [
+      {
+        "path": "js/changed.js",
+        "url": "https://raw.githubusercontent.com/facebook/react/b618bbb4422693bbb8d387180687b3f510300f42/scripts/shared/listChangedFiles.js",
+        "revision": "b618bbb4422693bbb8d387180687b3f510300f42",
+        "sha256": "1ab4725574d062520feb1f78673601a427e3780692969758bd9752508e32759b",
+        "license": "react-LICENSE"
+      },
+      {
+        "path": "jsx/hook.jsx",
+        "url": "https://raw.githubusercontent.com/facebook/react/b618bbb4422693bbb8d387180687b3f510300f42/compiler/packages/babel-plugin-react-compiler/src/__tests__/fixtures/compiler/error.hook-call-freezes-captured-memberexpr.jsx",
+        "revision": "b618bbb4422693bbb8d387180687b3f510300f42",
+        "sha256": "01c01d8c6a3cc6c601ecaaa50ca522b6923849e239be116ec640fe7fe2a409f9",
+        "license": "react-LICENSE"
+      },
+      {
+        "path": "ts/preset-query.ts",
+        "url": "https://raw.githubusercontent.com/shadcn-ui/ui/6ea090075cd537d3b792c6c1a625e2448b6ede26/apps/v4/app/(app)/(create)/lib/preset-query.ts",
+        "revision": "6ea090075cd537d3b792c6c1a625e2448b6ede26",
+        "sha256": "bbc22d9d012c6ec9314920248f31eaf38d285b66dfc3dc4e79f6a87f037147eb",
+        "license": "ui-LICENSE"
+      },
+      {
+        "path": "ts/preset-query.test.ts",
+        "url": "https://raw.githubusercontent.com/shadcn-ui/ui/6ea090075cd537d3b792c6c1a625e2448b6ede26/apps/v4/app/(app)/(create)/lib/preset-query.test.ts",
+        "revision": "6ea090075cd537d3b792c6c1a625e2448b6ede26",
+        "sha256": "8aa560ab05610bf3f974f7dce5f263e1973782a6e94d5e877d01ca608ad191c8",
+        "license": "ui-LICENSE"
+      },
+      {
+        "path": "tsx/separator.tsx",
+        "url": "https://raw.githubusercontent.com/shadcn-ui/ui/6ea090075cd537d3b792c6c1a625e2448b6ede26/apps/v4/registry/new-york-v4/ui/separator.tsx",
+        "revision": "6ea090075cd537d3b792c6c1a625e2448b6ede26",
+        "sha256": "ad7d5403fe337160e41dbf04147896e448ae3a747b8d06660d627d74d60021bc",
+        "license": "ui-LICENSE"
+      },
+      {
+        "path": "rust/src/lib.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/src/lib.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "ef5c86bc62f63b53efc3e2fad74edb161ad932379a3b38126a69b778a5ee039a",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/src/matcher/text.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/src/matcher/text.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "4b74a81f38d7572d22426ebaebba580c764ab320d9624dc33ed28f743e028643",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/src/matcher.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/src/matcher.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "f1ff20caa243196b7c7d326279faaf55fbd6bc848e09554f3421a939a24a9813",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/src/meta_var.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/src/meta_var.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "e900e0c7894bef99e262028e30c9efd6b960ec7d6c9844232155bda11ae53603",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/src/node.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/src/node.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "4934e758f81ffce32cd8def2e0d51e2be9c582333776efe5f16f3a0eea8198f7",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/src/source.rs",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/src/source.rs",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "25ea43fe7355c99006a76a042892ae7dfb030d2b06000bafc8764d42019d61a7",
+        "license": "ast-LICENSE"
+      },
+      {
+        "path": "rust/Cargo.toml",
+        "url": "https://raw.githubusercontent.com/ast-grep/ast-grep/6f59168e67d4a5df69532fc51e81304a8cfddfe6/crates/core/Cargo.toml",
+        "revision": "6f59168e67d4a5df69532fc51e81304a8cfddfe6",
+        "sha256": "13057e0ed61129fad7367fa3a1f6a41899f68cc1a477cb68c5ea03aaee68e0d7",
+        "license": "ast-LICENSE"
+      }
+    ],
+    "limitations": [
+      "Six new scanned files, same three MIT upstream projects/revisions; small convenience follow-up, not representative sampling or independent annotators.",
+      "Rust gold follows re-export targets to source.rs/Doc and node.rs/Node, even when the analyzer abstains. All known local target FN remain in the denominator.",
+      "External npm/std references have no local target in this snapshot. The TS registry alias target is not annotated; absent config and unknown target are recorded separately.",
+      "Supporting Rust crate files are hashed/retained but excluded from scanned membership; partial snapshot omits unneeded modules.",
+      "Targets/annotations were frozen before scoring; tuning against new mismatches requires another held-out set."
+    ]
+  },
+  "files": [
+    {
+      "path": "js/changed.js",
+      "sha256": "1ab4725574d062520feb1f78673601a427e3780692969758bd9752508e32759b",
+      "language": "JS",
+      "family": "fresh-commonjs",
+      "expected_references": [
+        {
+          "source": "js/changed.js",
+          "kind": "require",
+          "specifier": "child_process",
+          "line": 9
+        }
+      ],
+      "expected_edges": [],
+      "expected_unresolved": []
+    },
+    {
+      "path": "jsx/hook.jsx",
+      "sha256": "01c01d8c6a3cc6c601ecaaa50ca522b6923849e239be116ec640fe7fe2a409f9",
+      "language": "JSX",
+      "family": "fresh-jsx-hook",
+      "expected_references": [
+        {
+          "source": "jsx/hook.jsx",
+          "kind": "import",
+          "specifier": "shared-runtime",
+          "line": 2
+        }
+      ],
+      "expected_edges": [],
+      "expected_unresolved": [
+        {
+          "reason": "jsx-expression-unresolved",
+          "line": 14
+        }
+      ]
+    },
+    {
+      "path": "ts/preset-query.ts",
+      "sha256": "bbc22d9d012c6ec9314920248f31eaf38d285b66dfc3dc4e79f6a87f037147eb",
+      "language": "TS",
+      "family": "fresh-type-and-relative-imports",
+      "expected_references": [
+        {
+          "source": "ts/preset-query.ts",
+          "kind": "import",
+          "specifier": "shadcn/preset",
+          "line": 1
+        },
+        {
+          "source": "ts/preset-query.ts",
+          "kind": "import",
+          "specifier": "@/registry/config",
+          "line": 3
+        }
+      ],
+      "expected_edges": [],
+      "expected_unresolved": [
+        {
+          "reason": "external-or-unresolved-module",
+          "line": 3
+        }
+      ]
+    },
+    {
+      "path": "ts/preset-query.test.ts",
+      "sha256": "8aa560ab05610bf3f974f7dce5f263e1973782a6e94d5e877d01ca608ad191c8",
+      "language": "TS",
+      "family": "fresh-type-and-relative-imports",
+      "expected_references": [
+        {
+          "source": "ts/preset-query.test.ts",
+          "kind": "import",
+          "specifier": "vitest",
+          "line": 1
+        },
+        {
+          "source": "ts/preset-query.test.ts",
+          "kind": "import",
+          "specifier": "./preset-query",
+          "line": 3
+        }
+      ],
+      "expected_edges": [
+        {
+          "source": "ts/preset-query.test.ts",
+          "kind": "import",
+          "target": "ts/preset-query.ts",
+          "line": 3
+        }
+      ],
+      "expected_unresolved": []
+    },
+    {
+      "path": "tsx/separator.tsx",
+      "sha256": "ad7d5403fe337160e41dbf04147896e448ae3a747b8d06660d627d74d60021bc",
+      "language": "TSX",
+      "family": "fresh-component",
+      "expected_references": [
+        {
+          "source": "tsx/separator.tsx",
+          "kind": "import",
+          "specifier": "react",
+          "line": 3
+        },
+        {
+          "source": "tsx/separator.tsx",
+          "kind": "import",
+          "specifier": "cn",
+          "line": 4
+        },
+        {
+          "source": "tsx/separator.tsx",
+          "kind": "import",
+          "specifier": "radix-ui",
+          "line": 5
+        }
+      ],
+      "expected_edges": [],
+      "expected_unresolved": [
+        {
+          "reason": "jsx-expression-unresolved",
+          "line": 16
+        },
+        {
+          "reason": "jsx-expression-unresolved",
+          "line": 17
+        },
+        {
+          "reason": "jsx-expression-unresolved",
+          "line": 18
+        },
+        {
+          "reason": "jsx-expression-unresolved",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "path": "rust/src/matcher/text.rs",
+      "sha256": "4b74a81f38d7572d22426ebaebba580c764ab320d9624dc33ed28f743e028643",
+      "language": "Rust",
+      "family": "fresh-parent-symbol-and-reexports",
+      "expected_references": [
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "specifier": "super::Matcher",
+          "line": 1
+        },
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "specifier": "crate::Doc",
+          "line": 2
+        },
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "specifier": "crate::Node",
+          "line": 3
+        },
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "specifier": "crate::meta_var::MetaVarEnv",
+          "line": 4
+        },
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "specifier": "bit_set::BitSet",
+          "line": 6
+        },
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "specifier": "regex::Error",
+          "line": 7
+        },
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "specifier": "regex::Regex",
+          "line": 7
+        },
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "specifier": "thiserror::Error",
+          "line": 8
+        },
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "specifier": "std::borrow::Cow",
+          "line": 10
+        }
+      ],
+      "expected_edges": [
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "target": "rust/src/matcher.rs",
+          "line": 1
+        },
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "target": "rust/src/source.rs",
+          "line": 2
+        },
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "target": "rust/src/node.rs",
+          "line": 3
+        },
+        {
+          "source": "rust/src/matcher/text.rs",
+          "kind": "use",
+          "target": "rust/src/meta_var.rs",
+          "line": 4
+        }
+      ],
+      "expected_unresolved": [
+        {
+          "reason": "unexpanded-attribute",
+          "line": 12
+        },
+        {
+          "reason": "unexpanded-attribute",
+          "line": 18
+        }
+      ]
+    }
+  ]
+}

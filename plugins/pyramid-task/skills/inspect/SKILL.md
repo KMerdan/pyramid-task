@@ -9,6 +9,8 @@ Start with the smallest runtime query. Route cross-intent causality, path/commit
 
 For proof collection or reuse, query `inspect --harness <node> --json`. It returns scoped contracts, pre-run candidate templates, setup blockers and reusable runs without executing tools or writing state. Consult `../../references/development-harness.md` when interpreting or changing proof. Recorded verification in the Observer is historical; audit readiness checks the current declared inputs.
 
+For repeated proof or broad-input cost, use `inspect --project <root> --proof-analysis <node> --json`. Add `--source-dependencies` only when source relationships inform scope review. Read `../../references/proof-analysis.md` for providers, bounds, fallback accuracy and limitations. Check uncertainty and current proof blockers; never use this projection to waive required inputs or inspections. Normal inspection does not launch the extractor.
+
 ## Inspect artifact footprint
 
 For artifact size/retention questions, use `inspect --project <root> --footprint --json`.
