@@ -5,7 +5,7 @@ description: Inspect Pyramid status, readiness, evidence gaps or task details, a
 
 # Inspect a Pyramid Task Plan
 
-Start with the smallest runtime query. Route cross-intent causality, path/commit provenance, and replay questions to `pyramid-task:history`. Load `../../references/demonstrable-increments.md` only for delivery or increment progress, `../../references/graph-contract.md` only for topology, `../../references/agent-contracts.md` only for one detailed node, `../../references/handoff-contract.md` only for paused work, `../../references/brownfield-assurance.md` only when assurance is present, and `../../references/lifecycle-contract.md` only for lifecycle questions.
+Start with the smallest runtime query. Execute the bundled CLI without preloading its Python implementation; resolve its path from this skill's directory and pass the explicit project root. Route cross-intent causality, path/commit provenance, and replay questions to `pyramid-task:history`. Load `../../references/demonstrable-increments.md` only for delivery or increment progress, `../../references/graph-contract.md` only for topology, `../../references/agent-contracts.md` only for one detailed node, `../../references/handoff-contract.md` only for paused work, `../../references/brownfield-assurance.md` only when assurance is present, and `../../references/lifecycle-contract.md` only for lifecycle questions.
 
 For proof collection or reuse, query `inspect --harness <node> --json`. It returns scoped contracts, pre-run candidate templates, setup blockers and reusable runs without executing tools or writing state. Consult `../../references/development-harness.md` when interpreting or changing proof. Recorded verification in the Observer is historical; audit readiness checks the current declared inputs.
 
@@ -43,7 +43,7 @@ Keep recommendations read-only: do not change the workflow, disable collection o
 ## Workflow
 
 1. Locate `<project-root>/.pyramid/plan.json`.
-2. Run validation before relying on derived state:
+2. Run validation before relying on derived state. Reuse an existing result for the same canonical context; a repeated status request alone does not require another validation:
 
 ```bash
 python3 ../../scripts/pyramid.py validate --project <project-root> --json

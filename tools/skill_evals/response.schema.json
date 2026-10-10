@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["primary_skill", "next_action", "helper", "reasoning", "limitations"],
+  "properties": {
+    "primary_skill": {"type": "string"},
+    "next_action": {"enum": ["claim", "bounded-helper", "review-new-snapshot", "serial-work", "usage-query", "resume", "preview-new-intent", "amend", "review-proof-scope", "refresh-inspections", "source-analysis", "parallel-query"]},
+    "helper": {"enum": ["none", "serial", "consider-preflight", "consider-candidate"]},
+    "reasoning": {"type": "string"},
+    "limitations": {"type": "string"}
+  }
+}

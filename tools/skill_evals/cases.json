@@ -1,0 +1,83 @@
+{
+  "schema": "pyramid-skill-decision-cases-v2",
+  "scope": "Synthetic read-only routing and decision probes, not task execution or canonical acceptance.",
+  "cases": [
+    {
+      "id": "small-fix",
+      "prompt": "项目有一个 ready 的 TASK-203：修改一个已知函数的边界条件，目标、文件、对应测试和依赖都明确。用户授权实现，但未授权协作。只分析开始实现前应该怎么做，不要领取或修改。",
+      "skills": ["take"], "action": "claim", "helper": "none", "helper_aliases": ["serial"],
+      "rubric": ["Select one ready task using its current scoped guard.", "Read only relevant context; a trivial read does not need helper contracts."]
+    },
+    {
+      "id": "helper-preflight",
+      "prompt": "你已领取 TASK-203。路由修复还需要查清已有 fallback/retry 的依赖和测试；这是独立问题，可在你整理不相关验收映射时研究。用户明确授权只读 helper；有一个空闲 slot、冻结的 base snapshot 和隔离目录。预计调查需 15 分钟，协作成本约 2 分钟。只分析工作安排，不实际启动 agent。",
+      "skills": ["take", "orchestrate"], "action": "bounded-helper", "helper": "consider-preflight",
+      "required_reads": ["references/intra-task-helpers.md"],
+      "rubric": ["Consider a useful preflight helper and read its contract before choosing.", "Bound the question/read scope and join before its load-bearing decision.", "Preserve authorization, spare capacity and immutable snapshot requirements."]
+    },
+    {
+      "id": "helper-candidate",
+      "prompt": "TASK-203 的候选已冻结为 snapshot-A。用户授权独立只读评审，有空闲 slot 和隔离环境。评审期间相关源码又变成 snapshot-B，parent lease 也刷新了。只分析是否值得安排评审，以及 A 的结果能否作为 B 的最终证据；不要启动 agent。",
+      "skills": ["take", "audit", "orchestrate"], "action": "review-new-snapshot", "helper": "consider-candidate",
+      "required_reads": ["references/intra-task-helpers.md"],
+      "rubric": ["Consider candidate review only on a frozen accepted snapshot.", "A's affected evidence is stale for B; a renewed guard does not refresh source evidence."]
+    },
+    {
+      "id": "helper-serial",
+      "prompt": "TASK-203 已领取，需要找出某个模块的依赖，但用户没有授权额外 agent，所有 slot 已占用，也没有冻结快照。当前授权允许你自己串行研究。只分析下一步，不发起协作。",
+      "skills": ["take"], "action": "serial-work", "helper": "serial", "helper_aliases": ["none"],
+      "rubric": ["Do not spawn or treat useful research as delegation authority.", "Continue authorized serial work rather than block the task."]
+    },
+    {
+      "id": "usage-audit",
+      "prompt": "请分析 Pyramid 命令使用审计：哪些命令频繁、开销可能在哪里？这是使用记录分析，不是验收某个实现，不领取任务，也不修改计划。只给出应选技能和最小下一步。",
+      "skills": ["inspect"], "action": "usage-query", "helper": "none",
+      "rubric": ["Use inspect's usage analysis, not task audit or take.", "Keep usage analysis read-only and distinguish counts from elapsed runtime."]
+    },
+    {
+      "id": "paused-work",
+      "prompt": "我要继续 paused 的 TASK-203，已有 canonical handoff。只说明下一步该用哪个接口以及要检查什么，不实际领取或写状态。",
+      "skills": ["resume"], "action": "resume", "helper": "none",
+      "rubric": ["Resume via the canonical handoff and check freshness/ownership.", "Do not take a paused task."]
+    },
+    {
+      "id": "existing-new-intent",
+      "prompt": "现有 Pyramid 项目上一个 intent 已完成。我想开始一个全新的 feature，但要保留旧历史和 baseline。尚未批准任何转换预演。只说明安全下一步，不重置或覆盖。",
+      "skills": ["new-intent"], "action": "preview-new-intent", "helper": "none",
+      "rubric": ["Preview the new-intent transition and retain history/baseline.", "Apply only the exact approved preview; do not use create to overwrite."]
+    },
+    {
+      "id": "additive-amendment",
+      "prompt": "TASK-203 已领取，目标、验收和依赖不变。实现时才发现需要多改一个文件 src/router/options.ts，当前写入范围没包含它。只判断开始写之前的最小合法动作，不自行改 plan。",
+      "skills": ["take", "replan"], "action": "amend", "helper": "none",
+      "required_reads": ["references/task-amendments.md"],
+      "rubric": ["Check amend eligibility and use a guarded additive amendment before writing outside scope.", "Do not use amendment for semantic scope expansion or acceptance."]
+    },
+    {
+      "id": "shared-proof-input",
+      "prompt": "为减少祖先证明失效，我们把一个 JS/TS 源文件拆成了几个模块。任务测试仍直接导入 shared/schema.ts，但 source dependency 分析没提到这条 edge。有人建议删除 schema proof input，靠后续 gate 全量测试。只分析该建议和下一步，不收窄合同。",
+      "skills": ["inspect", "replan"], "action": "review-proof-scope", "helper": "none",
+      "required_reads": ["references/proof-analysis.md"],
+      "rubric": ["Keep a real shared schema dependency despite a missing extracted edge.", "Review command and input scope together; a downstream suite cannot alone justify removal."]
+    },
+    {
+      "id": "stale-per-wave",
+      "prompt": "现在准备验收 TASK-203。其 inspection 的 refresh_policy 是 per-wave，但当前 audit-readiness 明确列出 INSPECTION-007 stale 并要求刷新。只判断能否 pass 和最小下一步，不执行 audit。",
+      "skills": ["audit"], "action": "refresh-inspections", "helper": "none",
+      "rubric": ["Refresh the exact required inspection set before passing.", "A scheduling label does not waive current readiness blockers."]
+    },
+    {
+      "id": "no-ast-grep",
+      "prompt": "我要对 JS/TS 和 Rust proof inputs 做只读 source dependency 分析。这台机器没有 ast-grep 或 sg。只说明可用 provider、显式 auto 的回退和精度限制，不安装依赖。",
+      "skills": ["inspect"], "action": "source-analysis", "helper": "none",
+      "required_reads": ["references/proof-analysis.md"],
+      "rubric": ["Python is the default; explicit auto can fall back with diagnostics.", "Retain unresolved/unknown dependencies; do not equate scan completion with semantic completeness."]
+    },
+    {
+      "id": "parallel-analysis-only",
+      "prompt": "看看 ready 的任务哪些可以并行，有哪些写入和资源冲突。当前只授权分析，不授权启动 worker、领取或实现。只说明应选技能和查询方式。",
+      "skills": ["orchestrate", "inspect"], "action": "parallel-query", "helper": "none",
+      "rubric": ["Query safe groups and conflicts read-only.", "Analysis permission is not authorization to launch graph workers or helpers."]
+    }
+  ]
+}

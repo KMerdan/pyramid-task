@@ -10,15 +10,12 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import unquote, urlparse
 
-from pyramid_core import (
-    PyramidError,
-    graph_snapshot,
-    load_assurance_bundle,
-    load_project,
-    node_doc_path,
-    node_map,
-    project_paths,
-)
+from pyramid_errors import PyramidError
+from pyramid_queries import runtime_snapshot as graph_snapshot
+from pyramid_storage import load_project, load_assurance_bundle
+from pyramid_projection import node_doc_path
+from pyramid_graph import node_map
+from pyramid_files import project_paths
 from pyramid_visualizer import build_visualization_html, load_visualization_graph, visualization_snapshot
 from pyramid_history import history_summary
 

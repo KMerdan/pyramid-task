@@ -1,3 +1,7 @@
+"""History ledger I/O, append/repair durability and source/Git capture.
+
+Pure contracts/models are re-exported; _write_json and _now remain fault seams.
+"""
 from __future__ import annotations
 
 import copy
@@ -13,103 +17,12 @@ from pathlib import Path
 from typing import Any
 
 
-class HistoryError(RuntimeError):
-    pass
-
-
-SHA256_PATTERN = re.compile(r"^[a-f0-9]{64}$")
-GIT_OBJECT_PATTERN = re.compile(r"^[a-f0-9]{40,64}$")
-RECORD_ID_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9-]*$")
-
-START_FIELDS = {
-    "schema",
-    "record_id",
-    "record_type",
-    "plan_id",
-    "plan_revision",
-    "title",
-    "recorded_at",
-    "recorded_by",
-    "capture_quality",
-    "parents",
-    "transition",
-    "intent",
-    "starting_plan",
-    "starting_state",
-    "source_snapshot",
-    "limitations",
-}
-CHRONICLE_FIELDS = {
-    "schema",
-    "record_id",
-    "record_type",
-    "chronicle_id",
-    "plan_id",
-    "plan_revision",
-    "graph_version",
-    "title",
-    "recorded_at",
-    "recorded_by",
-    "outcome",
-    "reason",
-    "parents",
-    "previous_chronicle",
-    "start_record",
-    "start_snapshot",
-    "end_snapshot",
-    "intent",
-    "ending_plan",
-    "journey",
-    "change_bindings",
-    "provenance_coverage",
-    "replay",
-    "report",
-    "change_dossier",
-    "closing_event",
-    "human_story",
-}
-BINDING_FIELDS = {
-    "schema",
-    "record_id",
-    "record_type",
-    "plan_id",
-    "chronicle_id",
-    "recorded_at",
-    "recorded_by",
-    "commit",
-    "tree",
-    "clean",
-    "start_commit",
-    "material_files",
-    "provenance_status",
-    "replay_fidelity",
-}
-RECORD_FIELDS = {
-    "intent-start": START_FIELDS,
-    "intent-chronicle": CHRONICLE_FIELDS,
-    "code-binding": BINDING_FIELDS,
-}
-HEAD_FIELDS = {"schema", "updated_at", "entries", "chain_sha256"}
-ENTRY_FIELDS = {
-    "record_id",
-    "record_type",
-    "plan_id",
-    "recorded_at",
-    "path",
-    "sha256",
-    "previous_chain_sha256",
-}
-
+from pyramid_history_contracts import (HistoryError, SHA256_PATTERN, GIT_OBJECT_PATTERN, RECORD_ID_PATTERN, START_FIELDS, CHRONICLE_FIELDS, BINDING_FIELDS, RECORD_FIELDS, HEAD_FIELDS, ENTRY_FIELDS, _canonical_sha256, _serialized_json, _string_list, _nonempty_string, _snapshot_errors, _record_validation_errors, _slug, _record_id, _transaction_validation_errors, _git_object_or_none, _record_link_errors, _replay_evidence_gaps)
+from pyramid_history_model import _change_bindings, _journey, _effective_chronicle
+import pyramid_history_model as _history_model
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-
-
-def _canonical_sha256(value: Any) -> str:
-    material = json.dumps(
-        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-    ).encode("utf-8")
-    return hashlib.sha256(material).hexdigest()
 
 
 def _file_sha256(path: Path) -> str:
@@ -118,12 +31,6 @@ def _file_sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(65536), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def _serialized_json(value: Any) -> bytes:
-    return (
-        json.dumps(value, indent=2, ensure_ascii=False, sort_keys=False) + "\n"
-    ).encode("utf-8")
 
 
 def _sync_directory(path: Path) -> None:
@@ -180,203 +87,6 @@ def history_paths(meta: Path) -> dict[str, Path]:
     }
 
 
-def _string_list(value: Any) -> bool:
-    return isinstance(value, list) and all(isinstance(item, str) for item in value)
-
-
-def _nonempty_string(value: Any) -> bool:
-    return isinstance(value, str) and bool(value.strip())
-
-
-def _snapshot_errors(snapshot: Any, label: str) -> list[str]:
-    if not isinstance(snapshot, dict):
-        return [f"{label} must be an object"]
-    required = {"captured_at", "git", "runtime"}
-    errors = [f"{label} is missing {field}" for field in sorted(required - set(snapshot))]
-    if not _nonempty_string(snapshot.get("captured_at")):
-        errors.append(f"{label}.captured_at must be a non-empty string")
-    if not isinstance(snapshot.get("git"), dict):
-        errors.append(f"{label}.git must be an object")
-    if not isinstance(snapshot.get("runtime"), dict):
-        errors.append(f"{label}.runtime must be an object")
-    return errors
-
-
-def _record_validation_errors(record: Any) -> list[str]:
-    if not isinstance(record, dict):
-        return ["history record must be an object"]
-    record_id = record.get("record_id")
-    record_type = record.get("record_type")
-    prefix = str(record_id or "history record")
-    fields = RECORD_FIELDS.get(record_type)
-    if fields is None:
-        return [f"{prefix}: invalid record_type"]
-    errors = [f"{prefix}: missing {field}" for field in sorted(fields - set(record))]
-    errors.extend(
-        f"{prefix}: unexpected field {field}" for field in sorted(set(record) - fields)
-    )
-    if not isinstance(record_id, str) or not RECORD_ID_PATTERN.fullmatch(record_id):
-        errors.append(f"{prefix}: invalid record_id")
-    for field in ("plan_id", "recorded_at", "recorded_by"):
-        if not _nonempty_string(record.get(field)):
-            errors.append(f"{prefix}: {field} must be a non-empty string")
-
-    if record_type == "intent-start":
-        if record.get("schema") != "pyramid-intent-start-v1":
-            errors.append(f"{prefix}: invalid intent-start schema")
-        if not isinstance(record.get("plan_revision"), int) or record["plan_revision"] < 1:
-            errors.append(f"{prefix}: plan_revision must be a positive integer")
-        if not _nonempty_string(record.get("title")):
-            errors.append(f"{prefix}: title must be a non-empty string")
-        if record.get("capture_quality") not in {"at-intent-start", "late-partial"}:
-            errors.append(f"{prefix}: invalid capture_quality")
-        if not isinstance(record.get("parents"), list) or not all(
-            isinstance(item, dict) and _nonempty_string(item.get("chronicle_id"))
-            for item in record.get("parents", [])
-        ):
-            errors.append(f"{prefix}: parents must contain chronicle references")
-        if record.get("transition") is not None and not isinstance(record.get("transition"), dict):
-            errors.append(f"{prefix}: transition must be an object or null")
-        for field in ("intent", "starting_plan", "starting_state"):
-            if not isinstance(record.get(field), dict):
-                errors.append(f"{prefix}: {field} must be an object")
-        errors.extend(_snapshot_errors(record.get("source_snapshot"), f"{prefix}.source_snapshot"))
-        if not _string_list(record.get("limitations")):
-            errors.append(f"{prefix}: limitations must be a string array")
-
-    elif record_type == "intent-chronicle":
-        if record.get("schema") != "pyramid-intent-chronicle-v1":
-            errors.append(f"{prefix}: invalid intent-chronicle schema")
-        if record.get("chronicle_id") != record_id:
-            errors.append(f"{prefix}: chronicle_id must equal record_id")
-        for field in ("plan_revision", "graph_version"):
-            if not isinstance(record.get(field), int) or record[field] < 1:
-                errors.append(f"{prefix}: {field} must be a positive integer")
-        if not _nonempty_string(record.get("title")):
-            errors.append(f"{prefix}: title must be a non-empty string")
-        if record.get("outcome") not in {"completed", "archived-incomplete"}:
-            errors.append(f"{prefix}: invalid outcome")
-        if record.get("reason") is not None and not isinstance(record.get("reason"), str):
-            errors.append(f"{prefix}: reason must be a string or null")
-        if not isinstance(record.get("parents"), list):
-            errors.append(f"{prefix}: parents must be an array")
-        if record.get("previous_chronicle") is not None and not _nonempty_string(
-            record.get("previous_chronicle")
-        ):
-            errors.append(f"{prefix}: previous_chronicle must be a string or null")
-        start_record = record.get("start_record")
-        if not isinstance(start_record, dict) or not _nonempty_string(start_record.get("record_id")) or not SHA256_PATTERN.fullmatch(str(start_record.get("sha256", ""))):
-            errors.append(f"{prefix}: start_record must contain a record_id and SHA-256")
-        errors.extend(_snapshot_errors(record.get("start_snapshot"), f"{prefix}.start_snapshot"))
-        errors.extend(_snapshot_errors(record.get("end_snapshot"), f"{prefix}.end_snapshot"))
-        for field in ("intent", "ending_plan", "journey", "closing_event", "human_story"):
-            if not isinstance(record.get(field), dict):
-                errors.append(f"{prefix}: {field} must be an object")
-        if not isinstance(record.get("change_bindings"), list) or not all(
-            isinstance(item, dict) for item in record.get("change_bindings", [])
-        ):
-            errors.append(f"{prefix}: change_bindings must contain objects")
-        coverage = record.get("provenance_coverage")
-        if not isinstance(coverage, dict) or coverage.get("status") not in {
-            "complete",
-            "partial",
-            "unavailable",
-        }:
-            errors.append(f"{prefix}: invalid provenance_coverage")
-        elif any(
-            not _string_list(coverage.get(field))
-            for field in (
-                "material_files",
-                "declared_files",
-                "unbound_files",
-                "unobserved_declared_files",
-            )
-        ):
-            errors.append(f"{prefix}: provenance coverage paths must be string arrays")
-        replay = record.get("replay")
-        if not isinstance(replay, dict) or replay.get("fidelity") not in {
-            "artifact-identical",
-            "behaviorally-equivalent",
-            "partial",
-        }:
-            errors.append(f"{prefix}: invalid replay contract")
-        else:
-            commands = replay.get("commands")
-            if not isinstance(commands, list):
-                errors.append(f"{prefix}: replay commands are invalid")
-            elif not all(
-                isinstance(item, dict)
-                and set(item) == {"task", "command", "recorded_result"}
-                and _nonempty_string(item.get("task"))
-                and _nonempty_string(item.get("command"))
-                and item.get("recorded_result") in {"passed", "failed", "not-run"}
-                for item in commands
-            ):
-                errors.append(f"{prefix}: replay commands are invalid")
-            if not _string_list(replay.get("limitations")):
-                errors.append(f"{prefix}: replay limitations must be a string array")
-            for field in ("start_commit", "end_commit"):
-                value = replay.get(field)
-                if value is not None and not GIT_OBJECT_PATTERN.fullmatch(str(value)):
-                    errors.append(f"{prefix}: replay {field} must be a Git object ID or null")
-            if replay.get("fidelity") == "behaviorally-equivalent":
-                evidence_gaps = _replay_evidence_gaps(record.get("change_bindings", []))
-                if (
-                    not isinstance(coverage, dict)
-                    or coverage.get("status") != "complete"
-                    or not record.get("change_bindings")
-                    or evidence_gaps
-                ):
-                    errors.append(
-                        f"{prefix}: behaviorally-equivalent replay requires complete provenance, passed commands, and acceptance evidence"
-                    )
-            if replay.get("fidelity") == "artifact-identical" and (
-                not isinstance(coverage, dict)
-                or coverage.get("status") != "complete"
-                or not replay.get("start_commit")
-                or not replay.get("end_commit")
-                or replay.get("start_commit") == replay.get("end_commit")
-            ):
-                errors.append(
-                    f"{prefix}: artifact-identical replay requires a complete distinct Git commit range"
-                )
-        for field in ("report", "change_dossier"):
-            if record.get(field) is not None and not isinstance(record.get(field), dict):
-                errors.append(f"{prefix}: {field} must be an object or null")
-
-    elif record_type == "code-binding":
-        if record.get("schema") != "pyramid-code-binding-v1":
-            errors.append(f"{prefix}: invalid code-binding schema")
-        if not _nonempty_string(record.get("chronicle_id")):
-            errors.append(f"{prefix}: chronicle_id must be a non-empty string")
-        for field in ("commit", "start_commit"):
-            if not GIT_OBJECT_PATTERN.fullmatch(str(record.get(field, ""))):
-                errors.append(f"{prefix}: {field} must be a Git object ID")
-        tree = record.get("tree")
-        if tree is not None and not GIT_OBJECT_PATTERN.fullmatch(str(tree)):
-            errors.append(f"{prefix}: tree must be a Git object ID or null")
-        if record.get("clean") is not True:
-            errors.append(f"{prefix}: clean must be true")
-        if not _string_list(record.get("material_files")):
-            errors.append(f"{prefix}: material_files must be a string array")
-        if record.get("provenance_status") != "complete":
-            errors.append(f"{prefix}: provenance_status must be complete")
-        if record.get("replay_fidelity") != "artifact-identical":
-            errors.append(f"{prefix}: replay_fidelity must be artifact-identical")
-    return errors
-
-
-def _slug(value: str) -> str:
-    slug = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
-    return slug or "intent"
-
-
-def _record_id(kind: str, plan_id: str, ordinal: int = 1) -> str:
-    identity = hashlib.sha256(plan_id.encode("utf-8")).hexdigest()[:10].upper()
-    suffix = f"-C{ordinal}" if kind == "CHRONICLE" else ""
-    return f"{kind}-{_slug(plan_id).upper()}-{identity}{suffix}"
-
-
 def _head(paths: dict[str, Path]) -> dict[str, Any]:
     if not paths["head"].exists():
         return {
@@ -386,106 +96,6 @@ def _head(paths: dict[str, Path]) -> dict[str, Any]:
             "chain_sha256": None,
         }
     return _load_json(paths["head"])
-
-
-def _transaction_validation_errors(transaction: Any) -> list[str]:
-    if not isinstance(transaction, dict):
-        return ["history transaction must be an object"]
-    required = {
-        "schema",
-        "operation",
-        "prepared_at",
-        "record",
-        "record_sha256",
-        "entry",
-        "previous_chain_sha256",
-        "next_head",
-    }
-    errors = [
-        f"history transaction is missing {field}"
-        for field in sorted(required - set(transaction))
-    ]
-    errors.extend(
-        f"history transaction has unexpected field {field}"
-        for field in sorted(set(transaction) - required)
-    )
-    if transaction.get("schema") != "pyramid-history-transaction-v1":
-        errors.append("history transaction schema must be pyramid-history-transaction-v1")
-    if transaction.get("operation") != "append":
-        errors.append("history transaction operation must be append")
-    if not _nonempty_string(transaction.get("prepared_at")):
-        errors.append("history transaction prepared_at must be a non-empty string")
-    record = transaction.get("record")
-    errors.extend(_record_validation_errors(record))
-    expected_record_sha = hashlib.sha256(_serialized_json(record)).hexdigest()
-    if transaction.get("record_sha256") != expected_record_sha:
-        errors.append("history transaction record SHA-256 does not match its payload")
-    if not SHA256_PATTERN.fullmatch(str(transaction.get("record_sha256", ""))):
-        errors.append("history transaction record_sha256 must be a SHA-256")
-    predecessor = transaction.get("previous_chain_sha256")
-    if predecessor is not None and not SHA256_PATTERN.fullmatch(str(predecessor)):
-        errors.append("history transaction previous_chain_sha256 must be a SHA-256 or null")
-    entry = transaction.get("entry")
-    if not isinstance(entry, dict):
-        errors.append("history transaction entry must be an object")
-    elif isinstance(record, dict):
-        errors.extend(
-            f"history transaction entry is missing {field}"
-            for field in sorted(ENTRY_FIELDS - set(entry))
-        )
-        errors.extend(
-            f"history transaction entry has unexpected field {field}"
-            for field in sorted(set(entry) - ENTRY_FIELDS)
-        )
-        if entry.get("record_id") != record.get("record_id"):
-            errors.append("history transaction entry record_id does not match its record")
-        for field in ("record_type", "plan_id", "recorded_at"):
-            if entry.get(field) != record.get(field):
-                errors.append(
-                    f"history transaction entry {field} does not match its record"
-                )
-        relative = entry.get("path")
-        expected_path = f"records/{record.get('record_id')}.json"
-        if (
-            not isinstance(relative, str)
-            or Path(relative).is_absolute()
-            or ".." in Path(relative).parts
-            or relative != expected_path
-        ):
-            errors.append("history transaction entry path is invalid")
-        if entry.get("sha256") != expected_record_sha:
-            errors.append("history transaction entry SHA-256 does not match its record")
-        if entry.get("previous_chain_sha256") != transaction.get(
-            "previous_chain_sha256"
-        ):
-            errors.append("history transaction predecessor does not match its entry")
-    next_head = transaction.get("next_head")
-    if not isinstance(next_head, dict):
-        errors.append("history transaction next_head must be an object")
-    elif isinstance(entry, dict):
-        errors.extend(
-            f"history transaction next_head is missing {field}"
-            for field in sorted(HEAD_FIELDS - set(next_head))
-        )
-        errors.extend(
-            f"history transaction next_head has unexpected field {field}"
-            for field in sorted(set(next_head) - HEAD_FIELDS)
-        )
-        if next_head.get("schema") != "pyramid-history-head-v1":
-            errors.append("history transaction next_head schema is invalid")
-        if isinstance(record, dict) and next_head.get("updated_at") != record.get(
-            "recorded_at"
-        ):
-            errors.append("history transaction next_head updated_at does not match its record")
-        entries = next_head.get("entries")
-        if not isinstance(entries, list) or not entries or entries[-1] != entry:
-            errors.append("history transaction next_head does not end with its entry")
-        expected_chain = _canonical_sha256(
-            {"previous": transaction.get("previous_chain_sha256"), "entry": entry}
-        )
-        if next_head.get("chain_sha256") != expected_chain:
-            errors.append("history transaction next_head chain identity is invalid")
-    return errors
 
 
 def _clear_transaction(paths: dict[str, Path]) -> None:
@@ -560,17 +170,6 @@ def _append_record(meta: Path, record: dict[str, Any]) -> dict[str, Any]:
     return record
 
 
-def _git_object_or_none(value: Any) -> str | None:
-    """A Git object ID, or None when the value is missing or not one.
-
-    Older captures stored a symbolic ref such as "HEAD" when the repository had
-    no commits yet. Recording that as a commit would assert a provenance the
-    intent never had, so an unusable value becomes None: the schema permits it
-    and replay fidelity degrades to partial on its own.
-    """
-    return str(value) if value is not None and GIT_OBJECT_PATTERN.fullmatch(str(value)) else None
-
-
 def _git(root: Path, *arguments: str) -> tuple[bool, str]:
     try:
         result = subprocess.run(
@@ -643,100 +242,6 @@ def _records(meta: Path) -> list[dict[str, Any]]:
         if path.exists():
             records.append(_load_json(path))
     return records
-
-
-def _record_link_errors(records: list[dict[str, Any]]) -> list[str]:
-    errors: list[str] = []
-    positions: dict[str, int] = {}
-    records_by_id: dict[str, dict[str, Any]] = {}
-    starts_by_plan: dict[str, list[str]] = {}
-    for position, record in enumerate(records):
-        record_id = record.get("record_id")
-        if not isinstance(record_id, str):
-            continue
-        if record_id in positions:
-            errors.append(f"history repeats record_id {record_id}")
-            continue
-        positions[record_id] = position
-        records_by_id[record_id] = record
-        if record.get("record_type") == "intent-start":
-            starts_by_plan.setdefault(str(record.get("plan_id")), []).append(record_id)
-
-    for plan_id, starts in starts_by_plan.items():
-        if len(starts) != 1:
-            errors.append(
-                f"plan {plan_id} has {len(starts)} intent-start records; exactly one is required"
-            )
-
-    def earlier_chronicle(reference: Any, owner: str, relationship: str) -> dict[str, Any] | None:
-        if not isinstance(reference, str) or not reference:
-            errors.append(f"{owner}: {relationship} must reference an earlier chronicle")
-            return None
-        target = records_by_id.get(reference)
-        if target is None or target.get("record_type") != "intent-chronicle":
-            errors.append(f"{owner}: {relationship} references unknown chronicle {reference}")
-            return None
-        if positions[reference] >= positions.get(owner, len(records)):
-            errors.append(f"{owner}: {relationship} must reference an earlier chronicle")
-            return None
-        return target
-
-    for record in records:
-        record_id = record.get("record_id")
-        if not isinstance(record_id, str) or record_id not in positions:
-            continue
-        record_type = record.get("record_type")
-        plan_id = record.get("plan_id")
-        if record_type == "intent-start":
-            for parent in record.get("parents", []) if isinstance(record.get("parents"), list) else []:
-                if isinstance(parent, dict):
-                    earlier_chronicle(parent.get("chronicle_id"), record_id, "parent")
-        elif record_type == "intent-chronicle":
-            starts = starts_by_plan.get(str(plan_id), [])
-            if len(starts) != 1:
-                errors.append(f"{record_id}: plan must have exactly one intent-start record")
-            start_reference = record.get("start_record", {})
-            start_id = (
-                start_reference.get("record_id")
-                if isinstance(start_reference, dict)
-                else None
-            )
-            start = records_by_id.get(str(start_id))
-            if (
-                start is None
-                or start.get("record_type") != "intent-start"
-                or start.get("plan_id") != plan_id
-            ):
-                errors.append(
-                    f"{record_id}: start_record must reference the intent-start for plan {plan_id}"
-                )
-            elif positions[str(start_id)] >= positions[record_id]:
-                errors.append(f"{record_id}: start_record must precede the chronicle")
-            previous = record.get("previous_chronicle")
-            if previous is not None:
-                target = earlier_chronicle(previous, record_id, "previous_chronicle")
-                if target is not None and target.get("plan_id") != plan_id:
-                    errors.append(
-                        f"{record_id}: previous_chronicle must belong to plan {plan_id}"
-                    )
-            for parent in record.get("parents", []) if isinstance(record.get("parents"), list) else []:
-                if isinstance(parent, dict):
-                    earlier_chronicle(parent.get("chronicle_id"), record_id, "parent")
-        elif record_type == "code-binding":
-            chronicle_id = record.get("chronicle_id")
-            target = earlier_chronicle(chronicle_id, record_id, "chronicle_id")
-            if target is not None:
-                if target.get("plan_id") != plan_id:
-                    errors.append(
-                        f"{record_id}: bound chronicle must belong to plan {plan_id}"
-                    )
-                if record.get("start_commit") != target.get("replay", {}).get(
-                    "start_commit"
-                ):
-                    errors.append(
-                        f"{record_id}: start_commit does not match the bound chronicle"
-                    )
-    return errors
 
 
 def history_contains_plan(meta: Path, plan_id: str) -> bool:
@@ -1114,99 +619,6 @@ def _event_records(events_dir: Path) -> list[dict[str, Any]]:
     ]
 
 
-def _change_bindings(plan: dict[str, Any], state: dict[str, Any], events: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    bindings = []
-    for node in plan.get("nodes", []):
-        item = state.get("nodes", {}).get(node.get("id"), {})
-        result = item.get("last_result")
-        if not isinstance(result, dict):
-            continue
-        bindings.append(
-            {
-                "task": node["id"],
-                "purpose": node.get("summary"),
-                "changed_files": sorted(set(result.get("changed_files", []))),
-                "changed_assets": sorted(set(result.get("changed_assets", []))),
-                "implementation_events": [
-                    event["id"]
-                    for event in events
-                    if event.get("node") == node["id"]
-                    and event.get("type") == "task.implemented"
-                ],
-                "checks": copy.deepcopy(result.get("checks", [])),
-                "acceptance_evidence": copy.deepcopy(result.get("acceptance_evidence", [])),
-            }
-        )
-    return bindings
-
-
-def _replay_evidence_gaps(bindings: list[dict[str, Any]]) -> list[str]:
-    gaps: list[str] = []
-    for binding in bindings:
-        task = str(binding.get("task", "unknown task"))
-        checks = binding.get("checks")
-        if not isinstance(checks, list) or not checks:
-            gaps.append(f"{task}: no validation command was recorded")
-        else:
-            for position, check in enumerate(checks, start=1):
-                if (
-                    not isinstance(check, dict)
-                    or not _nonempty_string(check.get("command"))
-                    or check.get("result") != "passed"
-                ):
-                    gaps.append(
-                        f"{task}: validation check {position} lacks a passed command result"
-                    )
-        evidence = binding.get("acceptance_evidence")
-        if not isinstance(evidence, list) or not evidence:
-            gaps.append(f"{task}: no acceptance evidence was recorded")
-        else:
-            for position, item in enumerate(evidence, start=1):
-                if (
-                    not isinstance(item, dict)
-                    or not _nonempty_string(item.get("criterion"))
-                    or not _nonempty_string(item.get("reference"))
-                    or item.get("result") != "passed"
-                ):
-                    gaps.append(
-                        f"{task}: acceptance evidence {position} is incomplete or not passed"
-                    )
-    return gaps
-
-
-def _journey(plan: dict[str, Any], state: dict[str, Any], events: list[dict[str, Any]]) -> dict[str, Any]:
-    outcomes = []
-    for node in sorted(plan.get("nodes", []), key=lambda item: (item.get("wave", 0), item.get("level", 0), item.get("id", ""))):
-        if node.get("selection") != "primary" or node.get("kind") != "outcome":
-            continue
-        node_state = state.get("nodes", {}).get(node["id"], {})
-        outcomes.append(
-            {
-                "id": node["id"],
-                "title": node.get("title"),
-                "summary": node.get("summary"),
-                "verification": node_state.get("verification"),
-                "last_audit": copy.deepcopy(node_state.get("last_audit")),
-            }
-        )
-    turning_types = {
-        "plan.replanned",
-        "task.amended",
-        "task.expanded",
-        "task.reopened",
-        "task.blocked",
-        "task.at-risk",
-        "audit.fail",
-    }
-    turning_points = [event for event in events if event.get("type") in turning_types]
-    return {
-        "decisions": copy.deepcopy(plan.get("decisions", [])),
-        "demonstrable_outcomes": outcomes,
-        "event_refs": events,
-        "turning_points": turning_points,
-    }
-
-
 def _material_git_changes(start: dict[str, Any], end: dict[str, Any], root: Path) -> tuple[list[str], list[str]]:
     start_git = start.get("source_snapshot", {}).get("git", {})
     end_git = end.get("git", {})
@@ -1504,141 +916,24 @@ def record_code_binding(
     return _append_record(meta, record)
 
 
-def _effective_chronicle(record: dict[str, Any], bindings: list[dict[str, Any]], current_id: str | None) -> dict[str, Any]:
-    item = copy.deepcopy(record)
-    item["code_bindings"] = copy.deepcopy(bindings)
-    item["current_applicability"] = "current" if item.get("chronicle_id") == current_id else "historical"
-    if bindings:
-        item["effective_replay_fidelity"] = bindings[-1].get("replay_fidelity", "artifact-identical")
-        item["bound_commit"] = bindings[-1].get("commit")
-    else:
-        item["effective_replay_fidelity"] = item.get("replay", {}).get("fidelity", "partial")
-        item["bound_commit"] = (
-            item.get("replay", {}).get("end_commit")
-            if item["effective_replay_fidelity"] == "artifact-identical"
-            else None
-        )
-    if item["effective_replay_fidelity"] == "artifact-identical":
-        item["binding_status"] = "established"
-        item["binding_next_action"] = None
-    elif not item.get("replay", {}).get("start_commit"):
-        item["binding_status"] = "unavailable"
-        item["binding_next_action"] = (
-            "No Git commit was captured at intent start; retain the partial replay record."
-        )
-    elif item.get("outcome") == "completed":
-        item["binding_status"] = "pending"
-        item["binding_next_action"] = (
-            "Commit the implementation, ensure the worktree is clean, then bind this chronicle."
-        )
-    else:
-        item["binding_status"] = "optional"
-        item["binding_next_action"] = (
-            "Bind a clean descendant commit only if this incomplete intent must be reproduced exactly."
-        )
-    return item
-
-
 def history_chronicles(
     meta: Path, current_plan_id: str | None = None
 ) -> list[dict[str, Any]]:
-    records = _records(meta)
-    chronicles = [item for item in records if item.get("record_type") == "intent-chronicle"]
-    bindings = [item for item in records if item.get("record_type") == "code-binding"]
-    current_id = next(
-        (
-            item.get("chronicle_id")
-            for item in reversed(chronicles)
-            if current_plan_id is not None and item.get("plan_id") == current_plan_id
-        ),
-        None,
-    )
-    if current_plan_id is None and chronicles:
-        current_id = chronicles[-1].get("chronicle_id")
-    return [
-        _effective_chronicle(
-            chronicle,
-            [item for item in bindings if item.get("chronicle_id") == chronicle.get("chronicle_id")],
-            current_id,
-        )
-        for chronicle in chronicles
-    ]
+    return _history_model.chronicles_from_records(_records(meta), current_plan_id)
 
 
 def history_summary(
     meta: Path, current_plan_id: str | None = None
 ) -> dict[str, Any]:
-    chronicles = history_chronicles(meta, current_plan_id)
-    return {
-        "schema": "pyramid-history-summary-v1",
-        "chronicles": [
-            {
-                "chronicle_id": item["chronicle_id"],
-                "plan_id": item["plan_id"],
-                "title": item["title"],
-                "recorded_at": item["recorded_at"],
-                "outcome": item["outcome"],
-                "intent": item.get("intent", {}).get("statement"),
-                "path": item.get("human_story", {}).get("path", []),
-                "progress": item.get("human_story", {}).get("progress", []),
-                "turning_points": item.get("human_story", {}).get("turning_points", []),
-                "ending": item.get("human_story", {}).get("ending"),
-                "why_this_result": item.get("human_story", {}).get("why_this_result"),
-                "changed_files": len(item.get("provenance_coverage", {}).get("declared_files", [])),
-                "provenance_status": item.get("provenance_coverage", {}).get("status"),
-                "replay_fidelity": item.get("effective_replay_fidelity"),
-                "bound_commit": item.get("bound_commit"),
-                "binding_status": item.get("binding_status"),
-                "binding_next_action": item.get("binding_next_action"),
-                "current_applicability": item.get("current_applicability"),
-            }
-            for item in chronicles
-        ],
-    }
+    return _history_model.summary_from_chronicles(history_chronicles(meta, current_plan_id))
 
 
 def rebuild_history_index(meta: Path) -> dict[str, Any]:
     paths = history_paths(meta)
     if not paths["head"].exists():
-        return {
-            "schema": "pyramid-history-index-v1",
-            "generated_at": _now(),
-            "chronicles": [],
-            "files": {},
-            "commits": {},
-        }
+        return _history_model.index_from_records([], _now())
     records = _records(meta)
-    index = {
-        "schema": "pyramid-history-index-v1",
-        "generated_at": _now(),
-        "chronicles": [
-            {
-                "chronicle_id": item["chronicle_id"],
-                "plan_id": item["plan_id"],
-                "title": item["title"],
-                "outcome": item["outcome"],
-                "recorded_at": item["recorded_at"],
-            }
-            for item in records
-            if item.get("record_type") == "intent-chronicle"
-        ],
-        "files": {},
-        "commits": {},
-    }
-    for item in records:
-        if item.get("record_type") == "intent-chronicle":
-            for path in item.get("provenance_coverage", {}).get("declared_files", []):
-                index["files"].setdefault(path, []).append(item["chronicle_id"])
-            for commit in (
-                item.get("replay", {}).get("start_commit"),
-                item.get("replay", {}).get("end_commit"),
-            ):
-                if commit:
-                    index["commits"].setdefault(commit, []).append(item["chronicle_id"])
-        elif item.get("record_type") == "code-binding" and item.get("commit"):
-            index["commits"].setdefault(item["commit"], []).append(item["chronicle_id"])
-    index["files"] = dict(sorted(index["files"].items()))
-    index["commits"] = dict(sorted(index["commits"].items()))
+    index = _history_model.index_from_records(records, _now())
     _write_json(paths["index"], index)
     return index
 
@@ -1656,63 +951,14 @@ def query_history(
     if errors:
         raise HistoryError("History validation failed:\n- " + "\n- ".join(errors))
     chronicles = history_chronicles(meta, current_plan_id)
-    if replay:
-        matches = [item for item in chronicles if item["chronicle_id"] == replay or item["plan_id"] == replay]
-        if not matches:
-            raise HistoryError(f"Unknown intent chronicle: {replay}")
-        item = matches[-1]
-        return {
-            "schema": "pyramid-replay-context-v1",
-            "chronicle_id": item["chronicle_id"],
-            "plan_id": item["plan_id"],
-            "fidelity": item["effective_replay_fidelity"],
-            "bound_commit": item.get("bound_commit"),
-            "binding_status": item.get("binding_status"),
-            "binding_next_action": item.get("binding_next_action"),
-            "starting_plan": next(
-                (
-                    record.get("starting_plan")
-                    for record in _records(meta)
-                    if record.get("record_id") == item.get("start_record", {}).get("record_id")
-                ),
-                None,
-            ),
-            "ending_plan": item.get("ending_plan"),
-            "change_bindings": item.get("change_bindings", []),
-            "commands": item.get("replay", {}).get("commands", []),
-            "limitations": item.get("replay", {}).get("limitations", []),
-            "execution_policy": "preview-only; execute commands only with normal task authorization in an isolated worktree",
-        }
-    matches = chronicles
-    query = "list"
-    if intent:
-        query = "intent"
-        matches = [item for item in matches if item["plan_id"] == intent or item["chronicle_id"] == intent]
-    elif path:
-        query = "path"
-        normalized = path.removeprefix("./")
-        matches = [
-            item for item in matches
-            if normalized in item.get("provenance_coverage", {}).get("declared_files", [])
-            or normalized in item.get("provenance_coverage", {}).get("material_files", [])
-        ]
-    elif commit:
-        query = "commit"
-        matches = [
-            item for item in matches
-            if commit in {
-                item.get("replay", {}).get("start_commit"),
-                item.get("replay", {}).get("end_commit"),
-                item.get("bound_commit"),
-            }
-        ]
-    return {
-        "schema": "pyramid-history-query-v1",
-        "query": query,
-        "value": intent or path or commit,
-        "count": len(matches),
-        "chronicles": matches if query == "intent" else [
-            item for item in history_summary(meta, current_plan_id)["chronicles"]
-            if item["chronicle_id"] in {match["chronicle_id"] for match in matches}
-        ],
-    }
+    starting_records = (
+        _records(meta) if replay and any(
+            item["chronicle_id"] == replay or item["plan_id"] == replay
+            for item in chronicles
+        ) else []
+    )
+    summary = None if replay or intent else history_summary(meta, current_plan_id)
+    return _history_model.query_from_chronicles(
+        chronicles, starting_records, summary,
+        intent=intent, path=path, commit=commit, replay=replay,
+    )

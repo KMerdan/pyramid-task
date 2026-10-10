@@ -45,7 +45,7 @@ Keep contract fixtures for fast negative-path coverage, and use executed integra
 - Existing project operations and restore sources require V3 format; do not reintroduce implicit V2/V2.1 migration. Keep historical provenance intact and distinguish project format from plan schema version.
 - Agent packets never expand normal authorization to files or external systems.
 - Codex and Claude Code manifests ship from `main` and keep the same base release version; only the Codex manifest may carry a cache-busting build suffix.
-- Pure domain modules do not import `pyramid_core`; the core facade owns locks, events, guarded mutations, and compatibility exports.
+- Pure domain modules do not import `pyramid_core`. The facade preserves compatibility exports and named clock/fault adapters; storage and publication modules own locks, guarded commits, events, and projections. Use the [runtime navigation](docs/runtime-navigation.md) to find the implementation and matching checks.
 
 ## Skill changes
 
@@ -58,6 +58,8 @@ For multi-agent work, give each worker only the selected task packet. Keep topol
 ## Documentation changes
 
 Keep the README, published examples, schemas, skill instructions, and runtime help consistent. Documentation must distinguish canonical state, immutable history, and generated projections; distinguish global context from scoped guards; and describe refresh policies as scheduling intent rather than a waiver of audit freshness.
+
+`make check` includes runtime tests and the stdlib-only guidance/trace-grader tests in `tools/tests`. Model-backed evaluation is optional and separately authorized; ordinary checks do not invoke a model service. Read [the evaluation guide](tools/skill_evals/README.md) before using that runner.
 
 ## Pull requests
 

@@ -2,6 +2,14 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## 4.2.1 — 2026-10-10
+
+- Split the runtime into explicit rule, storage/publication, command, query, history, assurance and observer owners. Preserve public exports/signatures, CLI behavior, schemas, guards, lock/publication order and history durability. Package the relocated HTML/live resources with the complete plugin.
+- Keep helper capabilities and selection criteria in the task entry, then load relevant collaboration contracts before deciding or delegating. Clarify adjacent skill routing, valid packet/evidence reuse, exact audit refresh blockers and proof-command/input scope. Authorization and evidence obligations remain intact.
+- Add stdlib-only skill metadata/resource validation and maintenance tests to normal checks and CI. Provide an optional read-only Claude decision-evaluation runner and synthetic cases; ordinary checks do not invoke it.
+- Qualify the source candidate with retained regression tests, frozen-source comparisons, real process/fault tests, copied-package and browser checks. Three paired built-in agent decision scenarios found no regression or gain; native installed-host behavior, token savings and workflow speedup remain unqualified. See the [release record](docs/releases/4.2.1.md).
+- Keep matching Codex/Claude manifests and runtime at 4.2.1. No project migration or installed-plugin update is included.
+
 ## 4.2.0 — 2026-10-09
 
 - Add opt-in read-only `inspect --proof-analysis <node>` for producer proof families, existing input files, declared write overlap, shared inputs, current blockers and reusable runs. Preserve all proof fingerprints, audit and inspection obligations.

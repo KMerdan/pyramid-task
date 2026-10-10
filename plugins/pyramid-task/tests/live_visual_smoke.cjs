@@ -10,11 +10,14 @@ async function main() {
   if (!url || !project || !runtime || !screenshot) {
     throw new Error('Usage: live_visual_smoke.cjs <url> <project> <pyramid.py> <screenshot>');
   }
-  const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const launchOptions = { headless: true };
+  if (process.env.PYRAMID_BROWSER) launchOptions.executablePath = process.env.PYRAMID_BROWSER;
+  const browser = await chromium.launch(launchOptions);
+  const page = await browser.newPage({ viewport: { width: Number(process.env.PYRAMID_VIEWPORT_WIDTH || 1280), height: 900 } });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(url);
+  await page.locator('[data-surface="graph"]').click();
   await page.locator('#node-select').selectOption('TASK-201');
   await page.locator('#live-status.connected').waitFor({ timeout: 5000 });
 
@@ -24,17 +27,19 @@ async function main() {
   ], { encoding: 'utf8' });
   if (mutation.status !== 0) throw new Error(`Mutation failed: ${mutation.stderr || mutation.stdout}`);
 
-  await page.waitForFunction(() => document.querySelector('#page-meta')?.textContent.includes('graph 2'), null, { timeout: 5000 });
+  await page.waitForFunction(() => document.querySelector('#live-status')?.textContent.includes('graph 2'), null, { timeout: 5000 });
   await page.waitForFunction(() => document.querySelector('#live-status')?.textContent.includes('updated'), null, { timeout: 5000 });
   const selected = await page.locator('#node-select').inputValue();
+  const working = await page.locator('#overview [data-summary-filter="working"] strong').innerText();
   const overview = await page.locator('#overview').innerText();
   const liveStatus = await page.locator('#live-status').innerText();
+  await page.locator('[data-surface="observer"]').click();
   await page.screenshot({ path: screenshot, fullPage: true });
   await browser.close();
 
   if (errors.length) throw new Error(`Page errors: ${errors.join('; ')}`);
   if (selected !== 'TASK-201') throw new Error('Selected node was not preserved across the live update');
-  if (!overview.includes('1\nWorking')) throw new Error('Working summary did not update');
+  if (working.trim() !== '1' || !overview.includes('Working')) throw new Error(`Working summary did not update: ${JSON.stringify({working, overview})}`);
   process.stdout.write(JSON.stringify({ ok: true, selected, liveStatus, screenshot }) + '\n');
 }
 

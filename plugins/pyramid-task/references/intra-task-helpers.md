@@ -4,10 +4,19 @@ Pyramid may use spare host-agent capacity for bounded research, reconnaissance, 
 
 The coordinator owns the parent task, the global agent-slot ledger, every canonical `.pyramid` mutation, and all decisions based on helper output.
 
+## Read by need
+
+- Before deciding to delegate: [Eligibility](#eligibility) and [Phases and freshness](#phases-and-freshness).
+- Before issuing a job: [Slot ownership](#slot-ownership) and [Job envelope](#job-envelope).
+- Before accepting output: [Result envelope and reconciliation](#result-envelope-and-reconciliation), including current parent authority and the accepted snapshot.
+
+For example, changing a candidate after its review makes the affected review stale even if the parent lease is renewed. Freeze and review the new candidate; a fresh guard alone cannot promote the old result.
+
 ## Eligibility
 
 Create a helper only when:
 
+- delegation is authorized by the user and applicable host/repository rules;
 - its question is independent of the coordinator's current work;
 - its expected value is greater than its coordination cost;
 - a host slot remains after reserving the coordinator and all selected graph-task workers;

@@ -7,7 +7,9 @@
 
 Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
-Version 4.2.0 adds optional read-only proof analysis: inspect producer input footprint, declared write overlap, current proof blockers and reusable evidence. Dependency facts cover JS, JSX, TS, TSX and Rust through Python by default, without discovering or requiring ast-grep. Explicit optional AST extraction remains available. Analysis never changes proof inputs or waives checks. The project format remains V3, with 17 skills and 26 CLI commands. Codex and Claude Code share the same `main` source package.
+Version 4.2.1 separates runtime rules, storage, publication, commands, queries and viewer resources into explicit modules while preserving public CLI/API and canonical contracts. Skill entry guidance keeps helper selection criteria visible and routes detailed reading by need. See the [release qualification](docs/releases/4.2.1.md) and [runtime navigation](docs/runtime-navigation.md). Static source measurements do not establish agent token or speed savings.
+
+The inherited 4.2 proof analysis inspects producer input footprint, declared write overlap, current proof blockers and reusable evidence. Dependency facts cover JS, JSX, TS, TSX and Rust through Python by default, without discovering or requiring ast-grep. Explicit optional AST extraction remains available. Analysis never changes proof inputs or waives checks. The project format remains V3, with 17 skills and 26 CLI commands. Codex and Claude Code share the same `main` source package.
 
 [4.2 qualification](docs/planning/proof-efficiency/qualification-4.2.md) records measured no-tool and optional AST results. The small fresh Rust pilot has 50% file-resolution recall; no automatic input removal or end-to-end speedup is qualified. Publishing a version does not update existing installations or migrate plans.
 

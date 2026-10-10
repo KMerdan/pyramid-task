@@ -12,7 +12,7 @@ async function main() {
   const launchOptions = { headless: true };
   if (process.env.PYRAMID_BROWSER) launchOptions.executablePath = process.env.PYRAMID_BROWSER;
   const browser = await chromium.launch(launchOptions);
-  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const page = await browser.newPage({ viewport: { width: Number(process.env.PYRAMID_VIEWPORT_WIDTH || 1280), height: 900 } });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(`file://${path.resolve(input)}`);
@@ -28,7 +28,10 @@ async function main() {
   const assuranceOverlay = page.locator('[data-overlay="impact"]');
   if (await assuranceOverlay.isEnabled()) await assuranceOverlay.click();
   await page.locator('#node-select').selectOption('TASK-201');
-  if (process.env.PYRAMID_SCREENSHOT_SURFACE !== 'history') {
+  if (process.env.PYRAMID_SCREENSHOT_SURFACE === 'focus') {
+    await page.screenshot({ path: screenshot, fullPage: true });
+  }
+  if (!['history', 'focus'].includes(process.env.PYRAMID_SCREENSHOT_SURFACE)) {
     await page.locator('[data-surface="observer"]').click();
     await page.screenshot({ path: screenshot, fullPage: true });
     await page.locator('[data-surface="graph"]').click();

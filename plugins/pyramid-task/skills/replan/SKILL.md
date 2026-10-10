@@ -1,6 +1,6 @@
 ---
 name: replan
-description: Replan an existing Pyramid Task V3 graph or demonstrable-increment ladder from new evidence, audit failure, invalid assumptions, architecture changes, or an explicitly changed intent. Use when topology, increment boundaries, or path selection must change while preserving valid work, state history, assurance provenance, and traceability.
+description: Revise a Pyramid Task V3 plan when evidence changes its path, topology, increment boundaries or proof contracts. Preserve valid work and history; use amend for eligible additive scope changes and expand for a deeper task subtree.
 ---
 
 # Replan a Pyramid Task Path
@@ -12,6 +12,8 @@ For a semantic or topology replan, read `../../references/graph-contract.md` and
 Use `pyramid-task:expand` instead when a single executable task keeps the same purpose, contract, selected path, and external relations and only needs a deeper approved subtree.
 
 Read `../../references/development-harness.md` when changing proof or adopting it in a legacy plan. Reuse sufficient procedures and add only capability required by the changed outcome. Preserve schema 2 once adopted. Explain invalidated shared proof and dependent claims, not only changed task text; regenerate the guide through guarded replan.
+
+For costly broad proof, query `inspect --proof-analysis <node>` first. Review command scope and required dependencies together; add source extraction only when it informs that decision. Read `../../references/proof-analysis.md` for uncertainty and provider limits. Batch established contract changes into one candidate when appropriate, preview their invalidations, and establish fresh affected proof. A narrower file layout alone does not justify narrower verification inputs.
 
 ## Workflow
 

@@ -10,6 +10,16 @@ Intra-task helper delegation follows that boundary too. Skills decide when spare
 
 ## Current module boundaries
 
+The [runtime navigation](runtime-navigation.md) maps behavior to its implementation and tests. Start with that row; expand to consumed dependencies instead of loading the full runtime and evidence history.
+
+Pure state/topology/validation/packet rules consume explicit values. Task and plan commands compose those rules with a common storage/publication kernel. `pyramid_storage.py` owns locks, guarded canonical reads, state/event/head commits; `pyramid_publication.py` owns projections and graph-last publication. `pyramid_core.py` preserves public signatures and named clock/fault adapters; it has no domain implementation bodies or reverse imports from lower modules. Immutable TaskPorts/PlanPorts/QueryPorts preserve old seams without a generic transition registry.
+
+Queries use concrete read owners. CLI options and named plan/task/query handlers retain parser and dispatch order; `pyramid.py` handles usage, output and the live process. History contracts and loaded-record models are pure; `pyramid_history.py` retains its independent append/fsync/head/pending/repair/Git protocol. Assurance contracts, freshness and explicit defaults are separate from opt-in footprint I/O; the compatibility clock entry preserves evaluation order.
+
+`pyramid_observer.py` derives values from a loaded graph. `pyramid_visualizer.py` reads exact package-relative HTML/live resources and renders self-contained output. `pyramid_live.py` consumes validated publication. Schema, state, event, identity and serialized history contracts are unchanged.
+
+The [4.2.1 qualification record](releases/4.2.1.md) summarizes executed frozen-source comparisons, retained tests, real process/fault evidence, package/browser/image checks and all twelve context cases. Static budgets are partly unmet; no measured agent productivity improvement is claimed. Source acceptance does not establish installed-host or release acceptance.
+
 `pyramid_proof_analysis.py` projects declared producer families, write overlap,
 current proof blockers and reuse through existing verification primitives. It
 does not execute procedures or change contracts. The opt-in
@@ -25,27 +35,28 @@ permission. Normal inspect queries do not discover or launch an extractor.
 
 ```mermaid
 flowchart LR
-    H["Codex or Claude Code"] --> K["Skills and references"]
-    K --> CLI["pyramid.py CLI adapter"]
-    CLI --> CORE["pyramid_core.py transaction facade"]
-    CLI --> OUTPUT["pyramid_output.py compact response projection"]
-    CORE --> AMEND["pyramid_amendment.py additive candidate preparation"]
-    CORE --> GRAPH["pyramid_graph.py pure graph rules"]
-    CORE --> PAR["pyramid_parallel.py pure batch analysis"]
-    PAR --> GRAPH
-    CORE --> ASSURE["pyramid_assurance.py assurance rules"]
-    CORE --> PROOF["pyramid_verification.py proof contracts and evidence"]
-    CORE --> HISTORY["pyramid_history.py intent chronicle ledger"]
-    CORE --> STORE["Canonical JSON and hash-linked events"]
-    CORE --> VIEW["Compiled projections"]
-    VIEW --> LIVE["pyramid_live.py"]
-    VIEW --> VIS["pyramid_visualizer.py"]
+    K["Skills: reasoning and evidence"] --> CLI["CLI argument/output adapters"]
+    CLI --> CMD["Task / plan / assurance commands"]
+    CMD --> RULE["Pure state, validation, topology and result rules"]
+    CMD --> STORE["Storage: locks, guarded reads, event/state/head"]
+    CMD --> PUB["Publication: reports, projections, graph last"]
+    PUB --> VALUE["Pure graph / packet / observer values"]
+    PUB --> STORE
+    CLI --> QUERY["Concrete query owners"]
+    QUERY --> STORE
+    QUERY --> HIST["History ledger + pure contracts/read model"]
+    PUB --> HIST
+    STORE --> VIEW["Validated graph publication"]
+    VIEW --> LIVE["Live service and resource renderer"]
+    FACADE["core legacy API + named clock/fault adapters"] --> CMD
+    FACADE --> QUERY
 ```
+
 
 The dependency direction is intentional:
 
 - pure domain modules do not import `pyramid_core`;
-- `pyramid_core` remains the compatibility facade for existing imports and owns locks, guarded transactions, events, and publication;
+- `pyramid_core` remains the compatibility facade; concrete storage/publication owners enforce the shared transaction boundary;
 - the CLI translates arguments and errors but does not contain domain policy;
 - live and static visualization consume validated projections, never partial canonical writes;
 - the history module owns an independent append-only hash chain so reset and restore cannot roll cross-intent evidence backward;
@@ -140,6 +151,15 @@ The increment ladder is recorded in a selected-path decision and normally forms 
 7. **Queries** — inspect, diff, readiness, and closure views.
 
 Each extraction should preserve the compatibility imports from `pyramid_core.py`, add focused tests around the moved boundary, and avoid serialized changes unless a published schema is updated.
+
+The completed extraction covers pure validation/state/topology/packet rules,
+shared storage and publication, task and plan operations, queries and CLI,
+history contracts/read models, assurance and the observer/resource renderer.
+The [runtime navigation](runtime-navigation.md) maps these boundaries to checks;
+the [4.2.1 release record](releases/4.2.1.md) states measured limits. Stage plans,
+canonical state and full experimental traces remain development evidence rather
+than installed skill context. The core facade delegates to concrete owners;
+lower modules do not import it and no second transaction framework is added.
 
 ## Parallel orchestration boundary
 

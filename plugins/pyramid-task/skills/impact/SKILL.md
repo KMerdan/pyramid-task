@@ -22,7 +22,7 @@ Request `--assurance-detail` only when you must edit or audit individual baselin
 2. Map each executable change and joint gate to directly or transitively affected assets. Record the dependency path, confidence, status, and evidence. Preserve hypotheses until evidence confirms or dismisses them.
 3. Define risk-sensitive inspections for every impacted asset. Keep task and asset scope narrow. Record invalidating change classes and choose `per-change`, `per-wave`, `pre-audit`, or `release` refresh timing. Record method, required flag, performed result, sufficiency, evidence, and limitations. Add findings and give material findings an explicit resolved or accountable accepted disposition.
 4. Establish evidenced rollback and monitoring controls or explain why either is not applicable.
-5. Reconcile open drift only when evidence maps the actual changed file or asset to an impact record. Repeat only the `refresh_inspection_ids` needed at the next audit boundary; do not refresh broad release inspections after every task. Complete a required legacy bridge with targeted sufficient inspections.
+5. Reconcile open drift only when evidence maps the actual changed file or asset to an impact record. Query `inspect --audit-readiness <target>` for the next audit's exact blockers and `refresh_inspection_ids`; refresh that set rather than all historical inspections. A broad release inspection can wait only while it is not required by the current audit. Changing its scheduling label does not clear an asset/frontier blocker. Complete a required legacy bridge with targeted sufficient inspections.
 6. Preview and apply the complete assurance candidate:
 
 ```bash

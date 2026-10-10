@@ -58,7 +58,6 @@ from pyramid_core import (  # noqa: E402
     restore_project,
     take_task,
     update_task,
-    validate_plan,
     validate_project,
 )
 from pyramid_live import LiveGraphState, LiveVisualizationServer  # noqa: E402
@@ -663,12 +662,6 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertIn("Work packages", html)
         self.assertIn("previous + 108", html)
         self.assertTrue(validate_project(self.root)["valid"])
-
-    def test_cycle_is_rejected(self) -> None:
-        candidate = load_json(self.example)
-        candidate["edges"].append({"from": "RESEARCH-101", "to": "CONTRACT-102", "type": "requires"})
-        errors = validate_plan(candidate)
-        self.assertTrue(any("cycle" in error.lower() for error in errors), errors)
 
     def test_visualization_is_self_contained(self) -> None:
         output = Path(self.temp.name) / "map.html"

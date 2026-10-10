@@ -2,6 +2,28 @@
 
 The runtime produces compact packets so a worker does not need the entire graph. Agents must keep normal authorization boundaries; plan metadata does not authorize files, services, deployments, messages, or destructive actions.
 
+## Read by need
+
+- CLI invocation or deterministic/agent responsibility: [Runtime interface and context](#runtime-interface-and-context).
+- Select a packet, guard or bounded query: [Agent task packet](#agent-task-packet).
+- Renew authority without changing reviewed source: [Stable procedure, fresh invocation authority](#stable-procedure-fresh-invocation-authority).
+- Consider delegated research or validation: [Ephemeral intra-task helpers](#ephemeral-intra-task-helpers), then the helper contract before deciding.
+- Submit implementation or audit evidence: [Agent result](#agent-result) or [Audit result](#audit-result).
+- Resolve owner or lifecycle questions: [Ownership and transitions](#ownership-and-transitions).
+
+Read the relevant contract and its linked constraints; this navigation does not waive authorization, freshness or evidence requirements.
+
+## Runtime interface and context
+
+Resolve `../../scripts/pyramid.py` from the active skill's directory. Invoke its
+absolute path with an explicit project root. Keep the complete plugin available:
+the CLI uses sibling modules and visualization assets.
+
+Use returned packets, guards, blockers and reuse references for deterministic
+state facts. The agent judges evidence sufficiency, scope, risk and visual
+quality. Normal operation does not require reading runtime source; inspect it
+only when output, help and the applicable contract cannot explain a tool failure.
+
 Authorization, review, readiness, implementation and verification are distinct.
 For instruction authoring or ambiguous terminology, consult `operational-language.md`;
 normal task work does not require loading that profile.

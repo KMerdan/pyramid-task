@@ -1,6 +1,19 @@
 # Read-only proof analysis
 
+## Read by need
+
+- Find overlap and current blockers first: [Queries and providers](#queries-and-providers).
+- Interpret extracted source relationships: [Supported subset and limits](#supported-subset-and-limits).
+- Compare providers or qualify fallback: [Measured accuracy](#measured-accuracy).
+- Propose a scope or refresh change: [Agent decisions](#agent-decisions); extraction never authorizes contraction.
+
+## Queries and providers
+
 Use these optional queries when broad inputs or repeated ancestor proof are costly:
+
+Start with producer/write overlap and current blockers; source extraction is a
+second step when unresolved relationships affect a scope decision. Run the
+bundled command without preloading its implementation or installing a parser.
 
 ```bash
 python3 ../../scripts/pyramid.py inspect --project <root> --proof-analysis <node> --json
@@ -95,3 +108,7 @@ replan/amendment and establish fresh affected proof. Refresh labels do not waive
 inspection blockers. Parallel implementation still needs dependency, write scope
 and resource coordination. Measure actual check/stack counts and elapsed time
 separately before claiming development speedup.
+
+For example, splitting a source file does not remove the shared schema its test
+still imports. Preserve that input and matching command scope; a missing extracted
+edge or a later full-suite gate is insufficient evidence to drop it.

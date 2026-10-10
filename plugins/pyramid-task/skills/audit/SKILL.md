@@ -1,6 +1,6 @@
 ---
 name: audit
-description: Audit a Pyramid Task V3 implementation node, joint or demonstrable-increment gate, level outcome, or final intent against explicit evidence and brownfield inspection coverage. Use when the agent must determine whether completed work is correct, whether branches compose, whether the current candidate remains runnable or otherwise demonstrable, whether predicted impact matches actual scope, or whether a parent claim may become verified. For command usage audits or workflow overhead analysis, use inspect instead.
+description: Verify a Pyramid Task V3 task, composition or increment gate, outcome, or intent against current proof and applicable assurance. Use for acceptance decisions; route command usage and workflow cost analysis to inspect.
 ---
 
 # Audit a Pyramid Task
@@ -14,7 +14,7 @@ For a schema-2 plan, read `../../references/development-harness.md` and use `ins
 ## Workflow
 
 1. Inspect `--audit-readiness <target>` first. It returns the same freshness blockers enforced by audit, the minimal inspection refresh set, and an `audit_guard`. Determine whether the target is an implementation, internal joint gate, demonstrable-increment gate, outcome, or intent; load related nodes only when that claim requires them.
-2. In brownfield mode, inspect canonical impact, inspection, finding, drift, rollback, monitoring, and legacy-bridge records. Compare predicted scope with the worker's actual changed files and assets.
+2. In brownfield mode, inspect the records required by this target's packet and readiness blockers. Compare predicted scope with the worker's actual changed files and assets. Load broad controls and complete assurance coverage when the target requires them, including final intent acceptance.
 3. Execute or inspect every required check. For an increment gate, establish constructability, entry, the promised meaningful scenario, inherited prior scenarios against the current candidate, applicable safety and recovery, and reproduction details. Seek disconfirming evidence for load-bearing claims, composition edges, compatibility, recovery, and operational behavior.
 4. Create an `audit-result-v1` JSON file with per-check results and evidence references. For brownfield pass, add an `assurance` assertion naming every reviewed impact, inspection, and finding ID, a complete scope review, and limitations.
 5. Submit the result:
@@ -38,3 +38,4 @@ python3 ../../scripts/pyramid.py audit --project <project-root> --node GATE-205 
 - Never treat an audit assertion as evidence by itself; its IDs must resolve to sufficient canonical records.
 - Keep observed result, evidence and limitations separate. Simulated transport, source hashes, process starts and screenshot files are not real external execution or visual review. A blocked check blocks that claim, not all independent authorized work.
 - Reuse an unchanged policy review when its relevant inputs remain current. A new turn or lease is not by itself new human authority; escalate only material ambiguity, new authority, irreversible/high-impact effects or unresolved consequential risk.
+- Refresh the reported inspection set and stale proof producers before retrying. Changing a refresh policy or adding a downstream regression gate does not clear current blockers or replace required dependencies.

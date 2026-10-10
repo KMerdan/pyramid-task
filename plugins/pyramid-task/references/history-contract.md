@@ -2,6 +2,15 @@
 
 Pyramid keeps the active intent graph small and stores cross-intent implementation history in a separate append-only ledger. The ledger explains why the system changed, how the work progressed, which evidence justified it, and how closely an authorized agent can reproduce the result.
 
+## Read by need
+
+- Find a bounded history query: [Queries](#queries).
+- Interpret a result for a human: [Human interpretation](#human-interpretation).
+- Assess commit binding or reproduction strength: [Provenance and replay strength](#provenance-and-replay-strength).
+- Understand record layout or creation: [Storage model](#storage-model) and [Lifecycle behavior](#lifecycle-behavior).
+- Diagnose a prepared append: [Recovery](#recovery); repair still requires explicit authority.
+- Before binding, repairing or sharing: [Integrity boundaries](#integrity-boundaries).
+
 ## Storage model
 
 ```text

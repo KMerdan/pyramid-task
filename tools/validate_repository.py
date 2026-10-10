@@ -5,6 +5,8 @@ import json
 import re
 from pathlib import Path
 
+from validate_skill_guidance import validate as validate_guidance
+
 
 ROOT = Path(__file__).resolve().parents[1]
 PLUGIN = ROOT / "plugins" / "pyramid-task"
@@ -84,6 +86,8 @@ def main() -> int:
         and not IGNORED_TREES.intersection(path.relative_to(ROOT).parts)
     ]
     errors.extend(f"forbidden generated path: {path.relative_to(ROOT)}" for path in forbidden)
+
+    errors.extend(validate_guidance(PLUGIN)["errors"])
 
     if errors:
         print("Repository validation failed:")
