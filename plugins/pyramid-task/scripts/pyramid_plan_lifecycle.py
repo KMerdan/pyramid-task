@@ -1,7 +1,4 @@
-"""P3B plan_lifecycle boundary; no facade imports.
-
-Existing control flow and canonical/history publication protocol are retained.
-"""
+"""Lifecycle transitions with guarded mode promotion and durable archives/history."""
 from __future__ import annotations
 from pathlib import Path
 from pyramid_assurance_contracts import RUNTIME_VERSION
@@ -185,6 +182,7 @@ def reset_project(
     expected_version: int | dict[str, Any] | None = None,
     transition_approval: dict[str, Any] | None = None,
     *,
+    mode: str = "auto",
     ports: PlanPorts | None = None,
 ) -> dict[str, Any]:
     ports = ports or default_ports()
@@ -196,7 +194,26 @@ def reset_project(
         raise PyramidError("Candidate reset plan is invalid:\n- " + "\n- ".join(errors))
     paths, current, state = ports.read_project(project)
     manifest, current_baseline, _ = load_assurance_bundle(paths, current)
-    next_mode = manifest["mode"]
+    next_mode = manifest["mode"] if mode == "auto" else mode
+    if next_mode not in {"greenfield", "brownfield"}:
+        raise PyramidError("reset mode must be auto, greenfield, or brownfield")
+    if manifest["mode"] == "brownfield" and next_mode == "greenfield":
+        raise PyramidError("Cannot change brownfield to greenfield and discard assurance")
+    if next_mode != manifest["mode"]:
+        if not transition_approval or not all(
+            transition_approval.get(key) for key in ("approved_by", "reference", "new_intent_sha256")
+        ):
+            raise PyramidError("Mode changes require the approved new-intent transition")
+        bound_preview, _ = _new_intent_material(
+            project, plan_path, actor, reason, mode=next_mode,
+            expected_version=expected_version, ports=ports,
+        )
+        if (
+            bound_preview["status"] != "preview"
+            or transition_approval.get("mode_transition") != bound_preview.get("mode_transition")
+            or transition_approval["new_intent_sha256"] != bound_preview["new_intent_sha256"]
+        ):
+            raise PyramidError("Approved new-intent mode transition does not match the current preview")
     check_expected_version(current, state, expected_version)
     if candidate["plan_id"] == current["plan_id"]:
         raise PyramidError("A reset must use a new plan_id; use replan to revise the current plan")
@@ -261,6 +278,7 @@ def _new_intent_material(
     paths = project_paths(project)
     route = ports.transition_route(project)
     current: dict[str, Any] | None = None
+    mode_transition: dict[str, str] | None = None
     selected_mode = detect_repository_mode(paths["root"]) if mode == "auto" else mode
     if selected_mode not in {"greenfield", "brownfield"}:
         raise PyramidError("new-intent mode must be auto, greenfield, or brownfield")
@@ -271,7 +289,12 @@ def _new_intent_material(
         if candidate["plan_id"] == current_plan["plan_id"]:
             raise PyramidError("A new intent must use a new plan_id; use replan for the current intent")
         manifest = load_json(paths["project"])
-        selected_mode = manifest["mode"]
+        if mode == "auto":
+            selected_mode = manifest["mode"]
+        if manifest["mode"] == "brownfield" and selected_mode == "greenfield":
+            raise PyramidError("Cannot change brownfield to greenfield and discard assurance")
+        if selected_mode != manifest["mode"]:
+            mode_transition = {"from": manifest["mode"], "to": selected_mode}
         current = {
             "plan_id": current_plan["plan_id"],
             "project_format_version": manifest["format_version"],
@@ -296,6 +319,7 @@ def _new_intent_material(
         "transition": route["transition"],
         "blockers": route["blockers"],
         "warnings": route["warnings"],
+        **({"mode_transition": mode_transition} if mode_transition else {}),
     }
     approval_required = current is not None
     preview = {
@@ -303,13 +327,15 @@ def _new_intent_material(
         "status": "preview" if route["can_start_new_intent"] else "blocked",
         "runtime_version": RUNTIME_VERSION,
         "mode": selected_mode,
+        **({"mode_transition": copy.deepcopy(mode_transition)} if mode_transition else {}),
         "current": current,
         "candidate": copy.deepcopy(material["candidate"]),
         "transition": copy.deepcopy(route["transition"]),
         "preserves": [
             "canonical plan and node history in a restorable archive",
             "events, reports, dossiers, and completed evidence",
-            *(["the current brownfield baseline for the next assurance cycle"] if selected_mode == "brownfield" else []),
+            *(["the current brownfield baseline for the next assurance cycle"] if selected_mode == "brownfield" and not mode_transition else []),
+            *(["a new incomplete brownfield baseline and assurance bundle requiring assess and impact"] if mode_transition else []),
         ],
         "blockers": copy.deepcopy(route["blockers"]),
         "warnings": copy.deepcopy(route["warnings"]),
@@ -353,6 +379,7 @@ def new_intent_project(
         return {
             "schema": "pyramid-new-intent-result-v1",
             "status": "started",
+            "mode": preview["mode"],
             "transition": ["create"],
             "new_intent_sha256": preview["new_intent_sha256"],
             "reset": None,
@@ -370,6 +397,7 @@ def new_intent_project(
         "approved_by": approved_by,
         "reference": approval_reference,
         "new_intent_sha256": approved_new_intent_sha256,
+        **({"mode_transition": copy.deepcopy(preview["mode_transition"])} if "mode_transition" in preview else {}),
     }
     reset_result = reset_project(
         project,
@@ -381,11 +409,13 @@ def new_intent_project(
             "context_id": current["context"]["id"],
         },
         transition_approval=approval,
+        mode=preview["mode"],
         ports=ports,
     )
     return {
         "schema": "pyramid-new-intent-result-v1",
         "status": "started",
+        "mode": preview["mode"],
         "transition": preview["transition"],
         "new_intent_sha256": approved_new_intent_sha256,
         "approval": approval,

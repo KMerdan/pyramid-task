@@ -8,7 +8,7 @@ from typing import Any
 
 PROJECT_FORMAT_VERSION = 3
 
-RUNTIME_VERSION = "4.2.1"
+RUNTIME_VERSION = "4.2.2"
 
 ID_PATTERN = re.compile(r"^[A-Z][A-Z0-9-]*$")
 

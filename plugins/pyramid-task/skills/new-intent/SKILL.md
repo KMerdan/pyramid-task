@@ -22,6 +22,7 @@ python3 ../../scripts/pyramid.py new-intent --project <project-root> --plan <can
 ```
 
 4. If the preview is blocked, preserve the current plan and explain the reported action. Never silently replace active work or active claims.
+   For an existing greenfield project whose next intent changes an existing system, use explicit `--mode brownfield` in preview and apply. Confirm the reported mode transition and incomplete baseline/assurance initialization. `auto` inherits the current mode; brownfield cannot downgrade to greenfield.
 5. If approval is required, explain the current format and lifecycle, exact transition, preserved evidence, baseline behavior, blockers, and transition hash. Ask the user to approve that preview.
 6. Apply only with the approved hash and provenance:
 

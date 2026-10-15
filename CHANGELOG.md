@@ -2,6 +2,13 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## 4.2.2 — 2026-10-15
+
+- Honor explicit `new-intent --mode brownfield` when the current V3 manifest is greenfield. Bind the from/to mode transition into the approved preview hash, carry the selected mode into reset, and report the applied mode. Keep `auto` mode inheritance unchanged.
+- Preserve the old greenfield manifest, archived events/reports and prior intent records. Create missing brownfield baseline/assurance as incomplete placeholders, then require normal assess/impact and audit coverage. Reject brownfield-to-greenfield requests before writes.
+- Add optional `mode_transition` to the preview schema and record it with transition approval in the successor event. Add lifecycle, stale-hash, byte-preservation, schema-2 CLI and assessment/enforcement regressions. Update guidance to require matching explicit mode in preview/apply.
+- Keep matching Codex/Claude manifests and runtime at 4.2.2. Installation does not convert projects or accept customer work; see the [release qualification](docs/releases/4.2.2.md).
+
 ## 4.2.1 — 2026-10-10
 
 - Split the runtime into explicit rule, storage/publication, command, query, history, assurance and observer owners. Preserve public exports/signatures, CLI behavior, schemas, guards, lock/publication order and history durability. Package the relocated HTML/live resources with the complete plugin.
