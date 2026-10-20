@@ -7,7 +7,7 @@
 
 Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
-Version 4.3.0 adds opt-in bounded proof-reuse explanations and readiness summaries, plus guidance for failure disposition and smaller evidence sets. V3 acceptance remains unchanged. See the [release scope and qualification](docs/releases/4.3.0.md).
+Version 4.3.1 repairs live startup publication races and bounded best-effort usage recording. It retains the lean proof inspection and workflow guidance introduced in 4.3.0. V3 acceptance and event protocols remain unchanged. See the [release scope and qualification](docs/releases/4.3.1.md).
 
 Version 4.2.2 supports a hash-bound greenfield-to-brownfield successor through `new-intent --mode brownfield`. Preview and apply honor the explicit mode, preserve the old archive/history, and initialize incomplete assurance for normal assess/impact. `auto` still inherits an existing project's mode; brownfield-to-greenfield requests are refused. See the [transition contract](plugins/pyramid-task/references/new-intent-contract.md#project-mode) and [release qualification](docs/releases/4.2.2.md).
 
@@ -568,6 +568,14 @@ tools/validate_repository.py           Repository-level contract validation
 ```
 
 ## Development
+
+Version 4.3.1 repairs live startup publication races and usage lock
+handling. Usage initialization writes the schema only for version-zero databases;
+each start/finish recording phase has a 500 ms lock-retry budget. Retries require
+confirmed non-commit or rollback, and never rerun the main command. Expiry retains
+best-effort behavior and original command output/exit code, with bounded
+phase/reason/SQLite-code warnings. OS/filesystem work is not subject to a hard
+500 ms deadline. The prior 4.3.0 release does not contain these repairs.
 
 Version 4.3.0 provides two read-only inspection options:
 

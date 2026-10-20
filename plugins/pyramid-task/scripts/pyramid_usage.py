@@ -14,6 +14,7 @@ from pathlib import Path
 
 
 SCHEMA_VERSION = 1
+_LOCK_BUDGET_SECONDS = 0.5
 COUNTERS = ('invocations', 'succeeded', 'failed', 'interrupted', 'duration_ms', 'stdout_bytes')
 MODES = {
     'inspect': ('summary', 'ready', 'blocked', 'pending_audits', 'paused', 'assurance',
@@ -52,12 +53,59 @@ def command_mode(args) -> str:
     return 'default'
 
 
-def _warn() -> None:
+def _locked(error) -> bool:
+    if not isinstance(error, sqlite3.OperationalError):
+        return False
+    code = getattr(error, 'sqlite_errorcode', None)
+    if isinstance(code, int):
+        return (code & 255) in {5, 6}  # SQLite BUSY/LOCKED, including extended codes.
+    # Python 3.10 does not expose sqlite_errorcode.
+    return str(error).lower().startswith(('database is locked', 'database table is locked',
+                                          'database schema is locked'))
+
+
+def _transaction(connection, write) -> None:
+    """Retry usage writes only after confirmed non-commit or rollback."""
+    deadline = time.monotonic() + _LOCK_BUDGET_SECONDS
+    while True:
+        begun = False
+        try:
+            connection.execute('BEGIN IMMEDIATE')
+            begun = True
+            write()
+            connection.commit()
+            return
+        except BaseException as error:
+            safe_to_retry = not begun and not connection.in_transaction
+            if connection.in_transaction:
+                connection.rollback()
+                safe_to_retry = not connection.in_transaction
+            remaining = deadline - time.monotonic()
+            # Never replay an increment whose commit may already have succeeded.
+            if not (_locked(error) and safe_to_retry and remaining > 0):
+                raise
+            time.sleep(min(0.01, remaining))
+
+
+def _warn(phase, error) -> None:
+    reason = ('locked' if _locked(error) else 'sqlite-error' if isinstance(error, sqlite3.Error)
+              else 'invalid-data' if isinstance(error, ValueError) else 'storage-error')
+    code = getattr(error, 'sqlite_errorcode', None)
+    code = code if isinstance(code, int) else 'unknown'
     try:
         print('Warning: Pyramid usage tracking unavailable; command behavior is unchanged. '
+              f'(phase={phase}, reason={reason}, sqlite_code={code}) '
               'Use inspect --usage to check storage, or PYRAMID_USAGE=off to disable.', file=sys.stderr)
     except OSError:
         pass
+
+
+def _close(connection, phase) -> None:
+    if connection is not None:
+        try:
+            connection.close()
+        except (OSError, sqlite3.Error) as error:
+            _warn(phase, error)
 
 
 class UsageRecorder:
@@ -81,32 +129,34 @@ class UsageRecorder:
                 pass
             else:
                 os.close(fd)
-            connection = sqlite3.connect(path, timeout=0.1)
+            # One bounded retry budget per recording phase, not per SQL statement.
+            connection = sqlite3.connect(path, timeout=0)
             now = datetime.now(timezone.utc).isoformat(timespec='milliseconds')
             key = (now[:10], version, args.command, command_mode(args),
                    'compact' if getattr(args, 'compact', True) else 'full')
-            with connection:
+            def record_start():
                 schema = connection.execute('PRAGMA user_version').fetchone()[0]
                 if schema not in (0, SCHEMA_VERSION):
                     raise ValueError('Unsupported usage schema')
-                connection.execute('''CREATE TABLE IF NOT EXISTS counts (
-                    day TEXT, version TEXT, command TEXT, mode TEXT, format TEXT,
-                    invocations INTEGER NOT NULL DEFAULT 0,
-                    succeeded INTEGER NOT NULL DEFAULT 0, failed INTEGER NOT NULL DEFAULT 0,
-                    interrupted INTEGER NOT NULL DEFAULT 0, duration_ms INTEGER NOT NULL DEFAULT 0,
-                    stdout_bytes INTEGER NOT NULL DEFAULT 0, first_seen TEXT, last_seen TEXT,
-                    PRIMARY KEY (day, version, command, mode, format))''')
-                connection.execute('PRAGMA user_version=1')
+                if schema == 0:
+                    connection.execute('''CREATE TABLE IF NOT EXISTS counts (
+                        day TEXT, version TEXT, command TEXT, mode TEXT, format TEXT,
+                        invocations INTEGER NOT NULL DEFAULT 0,
+                        succeeded INTEGER NOT NULL DEFAULT 0, failed INTEGER NOT NULL DEFAULT 0,
+                        interrupted INTEGER NOT NULL DEFAULT 0, duration_ms INTEGER NOT NULL DEFAULT 0,
+                        stdout_bytes INTEGER NOT NULL DEFAULT 0, first_seen TEXT, last_seen TEXT,
+                        PRIMARY KEY (day, version, command, mode, format))''')
+                    connection.execute('PRAGMA user_version=1')
                 connection.execute('''INSERT INTO counts
                     (day, version, command, mode, format, invocations, first_seen, last_seen)
                     VALUES (?, ?, ?, ?, ?, 1, ?, ?)
                     ON CONFLICT(day, version, command, mode, format) DO UPDATE SET
                     invocations=invocations+1, last_seen=excluded.last_seen''', (*key, now, now))
+            _transaction(connection, record_start)
             return cls(connection, key)
-        except (OSError, sqlite3.Error, ValueError):
-            if connection is not None:
-                connection.close()
-            _warn()
+        except (OSError, sqlite3.Error, ValueError) as error:
+            _close(connection, 'start')
+            _warn('start', error)
             return None
 
     def finish(self, exit_code: int, stdout_bytes: int) -> None:
@@ -116,15 +166,16 @@ class UsageRecorder:
         elapsed = max(0, round((time.perf_counter() - self.started) * 1000))
         outcome = 'succeeded' if exit_code == 0 else ('interrupted' if exit_code == 130 else 'failed')
         try:
-            with connection:
+            def record_finish():
                 connection.execute(f'''UPDATE counts SET {outcome}={outcome}+1,
                     duration_ms=duration_ms+?, stdout_bytes=stdout_bytes+?
                     WHERE day=? AND version=? AND command=? AND mode=? AND format=?''',
                     (elapsed, stdout_bytes, *self.key))
-        except (OSError, sqlite3.Error):
-            _warn()
+            _transaction(connection, record_finish)
+        except (OSError, sqlite3.Error) as error:
+            _warn('finish', error)
         finally:
-            connection.close()
+            _close(connection, 'finish')
 
 
 def _measure(rows) -> dict:

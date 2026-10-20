@@ -2,6 +2,14 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## 4.3.1 — 2026-10-20
+
+- Revalidate the initial live snapshot before acknowledging publication signatures, so a concurrent startup publication cannot leave the Observer on an old graph. Compare with the publisher's implementation frontier so legitimate brownfield blockers are preserved. Keep the event protocol and tampered-projection rejection unchanged; wait for target version/context in tests and retain bounded event diagnostics.
+- Initialize usage schema only for version-zero databases. Retry only confirmed uncommitted or rolled-back BUSY/LOCKED transactions within a 500 ms budget per recording phase; keep best-effort failure, original command output/exit code and the existing counter format. Report safe phase/reason/code diagnostics without raw paths or arguments.
+- Add deterministic publication and real-process SQLite recovery/timeout controls, including committed-increment ambiguity and successful task execution once. Rename the usage test's CLI failure helper so it no longer hides unittest assertion failures.
+
+- Publish matching Codex/Claude Code 4.3.1 manifests and runtime. See [release scope and qualification](docs/releases/4.3.1.md).
+
 ## 4.3.0 — 2026-10-20
 
 - Accept existing V3 health-result shapes in read-only failure diagnostics, expose unknowns and status conflicts, and locate complete original assessments with a field fingerprint. Keep V3 acceptance unchanged. Bound successful fixture exports while retaining failed checks; label S3 as controlled feasibility only.

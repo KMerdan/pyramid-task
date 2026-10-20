@@ -11,6 +11,7 @@ import threading
 import time
 import unittest
 from datetime import datetime, timezone
+from dataclasses import replace
 from http import HTTPStatus
 from pathlib import Path
 from unittest import mock
@@ -61,6 +62,7 @@ from pyramid_core import (  # noqa: E402
     validate_project,
 )
 from pyramid_live import LiveGraphState, LiveVisualizationServer  # noqa: E402
+from pyramid_task_commands import default_ports, take_task as take_with_ports
 from pyramid_visualizer import load_visualization_graph, render_visualization  # noqa: E402
 import pyramid_history  # noqa: E402
 
@@ -704,17 +706,106 @@ class PyramidRuntimeTests(unittest.TestCase):
         self.assertEqual("Repository evidence is incomplete.", issue["reason"])
         self.assertEqual("needs-attention", blocked["next_outcome"]["status"])
 
+    def wait_live_publication(self, live, after, kind, version, context):
+        deadline = time.monotonic() + 3.0
+        recent = []
+        while time.monotonic() < deadline:
+            event = live.wait_for_event(after, timeout=max(0, deadline - time.monotonic()))
+            if event is None:
+                break
+            recent = (recent + [event])[-8:]
+            if (event['type'], event['graph_version'], event.get('context_id')) == (kind, version, context):
+                return event
+            after = event['sequence']
+        _, _, graph = live.snapshot()
+        self.fail(json.dumps({'expected': [kind, version, context], 'recent_events': recent,
+                              'last_event': live.event(), 'snapshot_version': graph['graph_version'],
+                              'snapshot_context': graph.get('context')}, ensure_ascii=False))
+
+    def test_live_startup_revalidates_snapshot_before_acknowledging_new_signature(self):
+        graph = load_visualization_graph(self.root)
+        taken = take_task(self.root, 'worker', nid='RESEARCH-101')
+        live = LiveGraphState(self.root, graph)
+        self.assertTrue(live.refresh(), live.event())
+        self.assertEqual(2, live.snapshot()[2]['graph_version'])
+        self.assertEqual(taken['event']['context_id'], live.event()['context_id'])
+        self.assertFalse(live.refresh())
+
+    def test_live_startup_validates_brownfield_frontier_without_waiving_blockers(self):
+        root = Path(self.temp.name) / 'live-brownfield'
+        create_project(root, self.example, 'planner', mode='brownfield',
+                       baseline_path=PLUGIN_ROOT / 'assets/example-baseline.json',
+                       assurance_path=PLUGIN_ROOT / 'assets/example-assurance.json')
+        take_task(root, 'worker', nid='RESEARCH-101')
+        result = load_json(self.result_for('RESEARCH-101', ['AC-101-01']))
+        result.update(changed_files=[], changed_assets=['ASSET-EXECUTOR'])
+        update_task(root, 'RESEARCH-101', 'worker', 'implemented',
+                    result_path=self.write_json('live-brownfield-result.json', result))
+        graph = load_visualization_graph(root)
+        self.assertFalse(inspect_project(root, audit_readiness='RESEARCH-101')['ready'])
+        live = LiveGraphState(root, graph)
+        live.refresh()
+        live.refresh()
+        self.assertNotEqual('graph-error', live.event()['type'], live.event())
+        path = root / '.pyramid/graph.json'
+        tampered = load_json(path)
+        tampered['summary']['closure_ready'] = True
+        path.write_text(json.dumps(tampered))
+        live.refresh()
+        live.refresh()
+        self.assertEqual('graph-error', live.event()['type'])
+        self.assertIn('canonical runtime projection', live.event()['message'])
+        self.assertFalse(inspect_project(root, audit_readiness='RESEARCH-101')['ready'])
+
+    def test_live_delayed_projection_reports_then_converges_to_target_context(self):
+        live = LiveGraphState(self.root, load_visualization_graph(self.root), poll_interval=0.02)
+        committed, release = threading.Event(), threading.Event()
+        result, errors = [], []
+        ports = default_ports()
+
+        def compile_after_release(*args, **kwargs):
+            committed.set()
+            if not release.wait(5):
+                raise RuntimeError('Diagnostic compile barrier timed out')
+            return ports.compile_project(*args, **kwargs)
+
+        def writer():
+            try:
+                result.append(take_with_ports(self.root, 'worker', nid='RESEARCH-101',
+                                             ports=replace(ports, compile_project=compile_after_release)))
+            except Exception as exc:
+                errors.append(repr(exc))
+
+        thread = threading.Thread(target=writer)
+        thread.start()
+        try:
+            self.assertTrue(committed.wait(5), errors)
+            live.refresh()
+            live.refresh()
+            pending = live.event()
+            self.assertEqual('graph-error', pending['type'], pending)
+            self.assertIn('does not match canonical runtime state', pending['message'])
+            self.assertEqual(1, live.snapshot()[2]['graph_version'])
+            release.set()
+            thread.join(5)
+            self.assertFalse(thread.is_alive())
+            self.assertFalse(errors)
+            live.start()
+            self.wait_live_publication(live, 0, 'graph', 2, result[0]['event']['context_id'])
+        finally:
+            release.set()
+            thread.join(5)
+            live.stop()
+
     def test_live_graph_follows_complete_publications_and_keeps_last_valid_snapshot(self) -> None:
         graph = load_visualization_graph(self.root)
         live = LiveGraphState(self.root, graph, poll_interval=0.02)
         initial_sequence = live.event()["sequence"]
         live.start()
         try:
-            take_task(self.root, "worker", nid="RESEARCH-101")
-            published = live.wait_for_event(initial_sequence, timeout=2.0)
-            self.assertIsNotNone(published)
-            self.assertEqual("graph", published["type"])
-            self.assertEqual(2, published["graph_version"])
+            taken = take_task(self.root, "worker", nid="RESEARCH-101")
+            context = taken['event']['context_id']
+            published = self.wait_live_publication(live, initial_sequence, 'graph', 2, context)
             body, _, current = live.snapshot()
             self.assertEqual(2, current["graph_version"])
             self.assertEqual("working", next(node for node in current["nodes"] if node["id"] == "RESEARCH-101")["availability"])
@@ -724,18 +815,13 @@ class PyramidRuntimeTests(unittest.TestCase):
             tampered = json.loads(graph_path.read_text(encoding="utf-8"))
             tampered["nodes"][0]["title"] = "Tampered outside the canonical runtime"
             graph_path.write_text(json.dumps(tampered), encoding="utf-8")
-            rejected = live.wait_for_event(published["sequence"], timeout=2.0)
-            self.assertIsNotNone(rejected)
-            self.assertEqual("graph-error", rejected["type"])
+            rejected = self.wait_live_publication(live, published['sequence'], 'graph-error', 2, context)
             self.assertIn("canonical runtime projection", rejected["message"])
             _, _, last_valid = live.snapshot()
             self.assertEqual(2, last_valid["graph_version"])
 
             compile_project(self.root)
-            recovered = live.wait_for_event(rejected["sequence"], timeout=2.0)
-            self.assertIsNotNone(recovered)
-            self.assertEqual("ready", recovered["type"])
-            self.assertEqual(2, recovered["graph_version"])
+            self.wait_live_publication(live, rejected['sequence'], 'ready', 2, context)
         finally:
             live.stop()
 

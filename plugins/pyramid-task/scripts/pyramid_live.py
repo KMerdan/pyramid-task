@@ -12,7 +12,7 @@ from urllib.parse import unquote, urlparse
 
 from pyramid_errors import PyramidError
 from pyramid_queries import runtime_snapshot as graph_snapshot
-from pyramid_storage import load_project, load_assurance_bundle
+from pyramid_storage import load_project, load_assurance_bundle, implementation_frontier
 from pyramid_projection import node_doc_path
 from pyramid_graph import node_map
 from pyramid_files import project_paths
@@ -46,7 +46,9 @@ class LiveGraphState:
         self._graph = graph
         self._body = _json_bytes(graph)
         self._etag = _semantic_etag(graph)
-        self._observed_signature = self._published_signature()
+        # The supplied graph can predate a publication made before construction.
+        # A filesystem signature is acknowledged only after refresh validates it.
+        self._observed_signature = None
         self._pending_failure: tuple[tuple[tuple[int | None, int | None], ...], str] | None = None
         self._sequence = 0
         self._event: dict[str, Any] = {
@@ -136,7 +138,8 @@ class LiveGraphState:
                     "Published graph version does not match canonical runtime state "
                     f"({candidate['graph_version']} != {runtime_state['graph_version']})"
                 )
-            expected = graph_snapshot(plan, runtime_state, baseline, assurance, manifest)
+            expected = graph_snapshot(plan, runtime_state, baseline, assurance, manifest,
+                                      implementation_frontier(paths))
             expected["history"] = history_summary(paths["meta"], plan["plan_id"])
             by_id = node_map(plan)
             for item in expected["nodes"]:
