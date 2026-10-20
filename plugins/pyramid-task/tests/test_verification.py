@@ -32,6 +32,28 @@ from pyramid_verification import (
 from pyramid_output import compact_response
 
 
+def evidence_response(data):
+    """Bound successful fixture exports; retain actual errors and failed checks.
+
+    Event references identify disposable fixture events, not retained project
+    history. Acceptance still uses the original response, never this projection.
+    """
+    result = {key: copy.deepcopy(data[key]) for key in
+              ('status', 'ok', 'error', 'ready', 'target', 'graph_version') if key in data}
+    event = data.get('event') or {}
+    if event:
+        result['fixture_event'] = {key: event[key] for key in
+                                   ('id', 'type', 'node', 'graph_version') if key in event}
+        audit = event.get('payload', {}).get('audit')
+        if isinstance(audit, dict) and audit.get('result') == 'fail':
+            result['failed_audit'] = copy.deepcopy(audit)
+    packet = data.get('packet') or {}
+    if packet:
+        result['state'] = {key: packet[key] for key in
+                           ('execution', 'verification', 'health', 'blocker') if key in packet}
+    return result
+
+
 class HarnessTests(unittest.TestCase):
     def setUp(self):
         usage = mock.patch.dict(os.environ, {'PYRAMID_USAGE': 'off'})
@@ -313,6 +335,8 @@ class HarnessTests(unittest.TestCase):
         nid = 'RESEARCH-101'
         probe = self.root / 'inputs/probe.py'
         probe.write_text("from pathlib import Path\n"
+                         "counter = Path('proof-output/executions.txt')\n"
+                         "counter.write_text(str(int(counter.read_text()) + 1) if counter.exists() else '1')\n"
                          "ok = Path('inputs/RESEARCH-101.txt').read_text() == 'RESEARCH-101'\n"
                          "print('PASS producer' if ok else 'FAIL producer')\n"
                          "raise SystemExit(0 if ok else 1)\n")
@@ -330,10 +354,14 @@ class HarnessTests(unittest.TestCase):
                 [sys.executable, '-B', str(PLUGIN / 'scripts/pyramid.py'), *args,
                  '--project', str(self.root), '--json'],
                 capture_output=True, text=True, timeout=30)
-            transcript.append({'args': list(args), 'exit_code': completed.returncode,
-                               'stdout': completed.stdout, 'stderr': completed.stderr})
             self.assertEqual(expected_code, completed.returncode, completed.stdout + completed.stderr)
-            return json.loads(completed.stdout)
+            data = json.loads(completed.stdout)
+            transcript.append({'args': list(args), 'exit_code': completed.returncode,
+                               'stdout_bytes': len(completed.stdout.encode()),
+                               'stdout_sha256': hashlib.sha256(completed.stdout.encode()).hexdigest(),
+                               'response': evidence_response(data),
+                               **({'stderr': completed.stderr} if completed.returncode else {})})
+            return data
 
         taken = cli('take', '--node', nid, '--actor', 'worker')
         proof = cli('inspect', '--harness', nid)['proof_templates'][0]
@@ -394,7 +422,30 @@ class HarnessTests(unittest.TestCase):
         self.assertEqual(prior['last_result'], state['nodes'][nid]['last_result'])
         self.assertEqual(prior['last_audit'], state['nodes'][nid]['last_audit'])
         self.assertEqual('unverified', state['nodes']['TASK-202']['verification'])
-        self.assertTrue(cli('inspect', '--harness', 'TASK-202')['reusable_proofs'])
+        reusable = cli('inspect', '--harness', 'TASK-202')['reusable_proofs']
+        self.assertTrue(reusable)
+        explained = cli('inspect', '--harness', 'TASK-202', '--explain')
+        self.assertEqual(len(reusable), explained['explanation']['passed_pair_count'])
+        consumer_taken = cli('take', '--node', 'TASK-202', '--actor', 'worker')
+        # A real unauthorized submission must not be made acceptable by a valid run.
+        before_denied = (self.root / '.pyramid/head.json').read_bytes()
+        denied = cli('update', '--node', 'TASK-202', '--actor', 'not-the-owner',
+                     '--status', 'implemented', '--result', str(self.write(
+                         'consumer-result.json', self.result('TASK-202', reusable[0]))), expected_code=2)
+        self.assertIn('does not own', denied['error'].lower())
+        self.assertEqual(before_denied, (self.root / '.pyramid/head.json').read_bytes())
+        cli('update', '--node', 'TASK-202', '--actor', 'worker', '--status', 'implemented',
+            '--expected-guard', consumer_taken['packet']['mutation_guard'],
+            '--result', str(self.write('consumer-result.json', self.result('TASK-202', reusable[0]))))
+        ready = cli('inspect', '--audit-readiness', 'TASK-202', '--readiness-summary')
+        self.assertTrue(ready['ready'])
+        cli('audit', '--node', 'TASK-202', '--actor', 'reviewer', '--result', 'pass',
+            '--expected-guard', ready['audit_guard'], '--evidence', str(self.write('consumer-audit.json', {
+                'schema': 'audit-result-v1', 'target': 'TASK-202', 'result': 'pass',
+                'affected_claims': ['TASK-202'], 'recommended_action': 'advance'})))
+        consumer_run = load_project(self.root)[2]['nodes']['TASK-202']['last_audit']['proofs'][0]['run']['id']
+        self.assertEqual(prior['last_audit']['proofs'][0]['run']['id'], consumer_run)
+        self.assertEqual('1', (self.root / 'proof-output/executions.txt').read_text())
         if legacy_contract:
             rid = prior['last_audit']['proofs'][0]['run']['id']
             self.assertIn(rid, applied['event']['payload']['proof_contract_bindings'])
@@ -419,6 +470,7 @@ class HarnessTests(unittest.TestCase):
         self.assertIn('Stale graph version', rejected['error'])
         (self.root / 'inputs/RESEARCH-101.txt').write_text('changed after the accepted run')
         self.assertFalse(cli('inspect', '--harness', 'TASK-202')['reusable_proofs'])
+        self.assertFalse(cli('inspect', '--audit-readiness', 'TASK-202', '--readiness-summary')['ready'])
         self.assertFalse(proof_readiness(self.root, plan, state, nid)['ready'])
         self.assertTrue(cli('validate')['valid'])
         # Optional export preserves real probe/CLI output before temporary cleanup.
@@ -437,6 +489,10 @@ class HarnessTests(unittest.TestCase):
                                             for name, data in event_bytes.items()},
                 'history_and_artifacts_unchanged': True,
                 'changed_source_refused': True,
+                'consumer_reused_run': consumer_run,
+                'probe_execution_count': int((self.root / 'proof-output/executions.txt').read_text()),
+                'unauthorized_submission_refused': True,
+                'readiness_summary_bytes': len((json.dumps(ready, indent=2, ensure_ascii=False) + '\n').encode()),
             }, indent=2))
 
     def test_guarded_replan_preserves_executed_40_proof_without_rewriting_it(self):

@@ -9,7 +9,7 @@ Use the compact ready frontier first. Load `../../references/agent-contracts.md`
 
 Consider a read-only helper for an independent repository/dependency question, test discovery, or review of a frozen candidate when it can resolve uncertainty or shorten the remaining work. Weigh that benefit against duplicated context and coordination cost. Check authorization and capacity, then read `../../references/intra-task-helpers.md` before deciding or spawning. Continue serially when those conditions are absent. A dependency investigation independent of the current edit may qualify; reading one known file does not.
 
-When the packet has `harness`, reuse the current contract or read the relevant section of `../../references/development-harness.md` if it is missing. Capture `inspect --harness <node>` before checks and use valid reusable runs first. Establish only missing observation capability required by the task, using project-fit probes and browser tooling. Do not install a generic test stack or make independent product work wait unnecessarily.
+When the packet has `harness`, reuse the current contract or read the relevant section of `../../references/development-harness.md` if it is missing. For rework after failure, read the failed check and existing disposition before reusing a RUN; retain unresolved failures through the normal health/finding controls. Use valid reusable runs first; capture `inspect --harness <node>` before any new checks. A rehearsal or another consumer does not require repeat execution when the actual conditions and contract still qualify. Establish only missing observation capability required by the task, using project-fit probes and browser tooling. Do not install a generic test stack or make independent product work wait unnecessarily.
 
 ## Workflow
 
@@ -27,7 +27,7 @@ python3 ../../scripts/pyramid.py take --project <project-root> --next --actor <a
 5. If repository evidence shows that the task contains multiple independently reviewable work units or needs a composition gate, do not silently improvise a subtree. Release the claim and use `pyramid-task:expand`; otherwise continue without asking the user about expansion.
 6. Before choosing an eligible helper, read `intra-task-helpers.md`'s Eligibility and Phases and freshness sections. If selected, follow its job, result and slot contracts for immutable snapshots, bounded work, isolation and evidence reconciliation.
 7. Respect `allowed_write_scope`, non-goals, dependencies, evidence requirements, affected assets, inspections, and assurance blockers. Helpers never write source or mutate `.pyramid`; the task owner remains responsible for the result.
-8. If the request includes implementation, perform the task and finish through the `update` interface. Otherwise return the claimed packet.
+8. If the request includes implementation, perform the task and finish through the `update` interface. Run checks that may write only in a disposable checkout you own, made as `../../references/development-harness.md` (Collect and submit, step 2) describes, and remove it when you submit. Otherwise return the claimed packet.
 
 ## Boundaries
 

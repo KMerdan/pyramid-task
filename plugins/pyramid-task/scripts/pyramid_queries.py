@@ -28,6 +28,7 @@ from pyramid_storage import implementation_frontier
 from pyramid_storage import load_assurance_bundle
 from pyramid_verification import VerificationError
 from pyramid_verification import query_harness
+from pyramid_output import readiness_summary as summarize_readiness
 from typing import Any
 import copy
 
@@ -171,6 +172,10 @@ def inspect_project(
     max_agents: int = 4,
     audit_readiness: str | None = None,
     harness: str | None = None,
+    harness_explain: bool = False,
+    harness_explain_page: int | None = None,
+    harness_explain_full: bool = False,
+    readiness_summary: bool = False,
     footprint: bool = False,
     footprint_detail: bool = False,
     footprint_limit: int = 10000,
@@ -178,6 +183,12 @@ def inspect_project(
     ports: QueryPorts | None = None,
 ) -> dict[str, Any]:
     ports = ports or default_ports()
+    if harness_explain and (not harness or audit_readiness):
+        raise PyramidError('harness explanation requires only --harness')
+    if (harness_explain_page is not None or harness_explain_full) and not harness_explain:
+        raise PyramidError('explanation detail requires --explain')
+    if readiness_summary and (not audit_readiness or harness):
+        raise PyramidError('readiness summary requires only --audit-readiness')
     if not footprint and (footprint_detail or footprint_limit != 10000):
         raise PyramidError('footprint detail/limit require --footprint')
     paths, plan, state = ports.read_project(project)
@@ -196,7 +207,8 @@ def inspect_project(
     context = context_identity(plan, state)
     if harness:
         try:
-            return {**query_harness(paths["root"], plan, state, harness), "context": context}
+            return {**query_harness(paths["root"], plan, state, harness, explain=harness_explain,
+                                   explain_page=harness_explain_page, explain_full=harness_explain_full), "context": context}
         except (VerificationError, OSError) as exc:
             raise PyramidError(str(exc)) from exc
     if assurance_view or assurance_summary_view or assurance_detail:
@@ -262,7 +274,7 @@ def inspect_project(
                 implementation_frontier=frontier,
             )
             blockers.extend(coverage["blockers"])
-        return {
+        result = {
             "schema": "pyramid-audit-readiness-v1",
             "target": audit_readiness,
             "graph_version": state["graph_version"],
@@ -291,6 +303,10 @@ def inspect_project(
                 )
             ),
         }
+        if readiness_summary:
+            stale_count = len(assurance.get('stale_reasons', [])) if assurance and assurance['status'] == 'stale' else 0
+            return summarize_readiness(result, str(paths['root']), stale_reason_count=stale_count)
+        return result
     if nid:
         return task_packet(plan, state, nid, baseline, assurance, frontier)
     if ready:

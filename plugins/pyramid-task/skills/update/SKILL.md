@@ -7,7 +7,7 @@ description: Record progress, blockers, risk, release, or implementation complet
 
 Read `../../references/agent-contracts.md` when constructing a result or resolving a contract question, not for a simple health/release update with a current packet. Load `../../references/brownfield-assurance.md` only when reporting changed assets or drift, and `../../references/lifecycle-contract.md` only if the plan is inactive.
 
-When submitting harness evidence, follow `../../references/development-harness.md`: submit performed observations and hashed artifacts or valid run references with the existing result. Reuse the contract already in context; a health/release update does not require another harness read or test run. Never refresh a pre-run fingerprint after checking to disguise changed inputs. Stage evidence outside `.pyramid`; the update imports it. Keep failed/unperformed checks visible.
+When submitting harness evidence, follow `../../references/development-harness.md`: submit performed observations and hashed artifacts or valid run references with the existing result. Reuse the contract already in context; a health/release update does not require another harness read or test run. Never refresh a pre-run fingerprint after checking to disguise changed inputs. Stage evidence outside `.pyramid`; the update imports it. Keep failed/unperformed checks visible. After a relevant failure, record its candidate/environment, affected check and evidence-based disposition in existing result checks/risks or a finding/handoff before selecting an older RUN. Unexplained failure stays blocked or at risk; a valid RUN does not resolve it.
 
 ## Workflow
 
@@ -29,7 +29,7 @@ python3 ../../scripts/pyramid.py update --project <project-root> --node TASK-203
 
 - `implemented` means the worker finished the scoped work; it does not mean `verified`.
 - Do not report tests as passed unless they were run successfully.
-- Save complete test logs as evidence; return results, actionable failures and references rather than repeatedly injecting successful logs. Never omit failed attempts or required acceptance evidence to reduce output.
+- Retain bounded acceptance results and necessary failure output; reference large diagnostic logs separately when needed. Use the shared runner/result builder rather than round-specific copies. Never omit failed attempts or required acceptance evidence to reduce output; follow the harness's reuse and stop guidance.
 - Do not hand-edit state, claims, graph snapshots, or event files.
 - Do not use this interface to add, remove, or reparent nodes.
 - Never omit an out-of-scope changed file to avoid drift detection. Reconcile drift through `pyramid-task:impact`.

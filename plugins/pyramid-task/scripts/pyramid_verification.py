@@ -317,7 +317,65 @@ def known_runs(state: dict) -> dict[str, dict]:
     return runs
 
 
-def query_harness(root: Path, plan: dict, state: dict, nid: str) -> dict:
+def _failure_context(state: dict, nid: str) -> dict:
+    """Advisory current assessment, never an eligibility rule or history ledger."""
+    item = state['nodes'][nid]
+    signals, unknowns = [], []
+    vocabulary = {'pass': 'passed', 'passed': 'passed', 'fail': 'failed',
+                  'failed': 'failed', 'not-run': 'not-run', 'blocked': 'blocked'}
+    def reported(values, source, check, location):
+        statuses = []
+        for value in values:
+            if value is None or value == '':
+                continue
+            if isinstance(value, str) and value in vocabulary:
+                statuses.append(vocabulary[value])
+            else:
+                unknowns.append({'source': source, 'location': location, 'reason': 'unrecognized result/status'})
+        if len(set(statuses)) > 1:
+            unknowns.append({'source': source, 'location': location, 'reason': 'conflicting result/status'})
+        failed = next((value for value in statuses if value != 'passed'), None)
+        if failed:
+            signals.append({'source': source, 'check': check, 'result': failed})
+        return bool(statuses)
+    for field in ('last_result', 'last_audit'):
+        payload = item.get(field)
+        if payload is None:
+            continue
+        if not isinstance(payload, dict):
+            unknowns.append({'source': field, 'location': field, 'reason': 'non-object assessment'})
+            continue
+        reported([payload.get('result')], field, 'assessment', field + '.result')
+        if 'checks' not in payload:
+            continue
+        checks = payload['checks']
+        if not isinstance(checks, list):
+            unknowns.append({'source': field, 'location': field + '.checks', 'reason': 'checks is not an array'})
+            continue
+        for index, check in enumerate(checks):
+            location = f'{field}.checks[{index}]'
+            if not isinstance(check, dict):
+                unknowns.append({'source': field, 'location': location, 'reason': 'non-object check'})
+                continue
+            start = len(unknowns)
+            known = reported([check.get('result'), check.get('status')], field,
+                             str(check.get('id') or check.get('command') or 'unnamed'), location)
+            if not known and len(unknowns) == start:
+                unknowns.append({'source': field, 'location': location, 'reason': 'missing result/status'})
+    return {'verification': item.get('verification'), 'health': item.get('health'),
+            'signal_count': len(signals), 'signals': signals[:4],
+            'omitted_signals': max(0, len(signals) - 4),
+            'unknown_count': len(unknowns), 'unknowns': unknowns[:4],
+            'omitted_unknowns': max(0, len(unknowns) - 4),
+            'requires_disposition_review': bool(signals or unknowns or item.get('verification') == 'failed' or item.get('health') == 'blocked'),
+            'scope': 'selected-node-current-assessment-only',
+            'warning': 'V3 may accept an older RUN after retake and implemented. Readiness does not establish failure resolution. Updates can replace last_result; a later audit replaces last_audit. Consult original failed results/events when relevant.'}
+
+
+def query_harness(root: Path, plan: dict, state: dict, nid: str, *, explain: bool = False,
+                  explain_page: int | None = None, explain_full: bool = False) -> dict:
+    if explain_page is not None and (not explain or isinstance(explain_page, bool) or not isinstance(explain_page, int) or explain_page < 1):
+        raise VerificationError('explanation page requires --explain and a positive page number')
     if nid not in {n['id'] for n in plan['nodes']}:
         raise VerificationError(f'Unknown node: {nid}')
     specs = contracts(plan, nid)
@@ -332,19 +390,85 @@ def query_harness(root: Path, plan: dict, state: dict, nid: str) -> dict:
                     for kind in spec['observations']]}})
         except (VerificationError, OSError) as exc:
             blockers.append(str(exc))
-    reusable = []
-    for rid, run in known_runs(state).items():
-        for spec in specs:
+    reusable, diagnostics, rejected = [], [], {}
+    runs = known_runs(state)
+    page_size = 10
+    start = (explain_page - 1) * page_size if explain_page is not None else -1
+    pair_count = 0
+    for rid, run in (sorted(runs.items()) if explain else runs.items()):
+        for spec in (sorted(specs, key=lambda value: value['requirement']) if explain else specs):
+            reason = None
             try:
                 validate_run(root, plan, spec, run, state.get('proof_contract_bindings', {}))
-            except (VerificationError, OSError):
-                continue
-            reusable.append({'requirement': spec['requirement'], 'reuse_run': rid})
-    return {'schema': 'pyramid-harness-v1', 'target': nid,
+            except (VerificationError, OSError) as exc:
+                if explain:
+                    reason = str(exc)
+                    rejected[reason] = rejected.get(reason, 0) + 1
+            else:
+                reusable.append({'requirement': spec['requirement'], 'reuse_run': rid})
+            if explain and start <= pair_count < start + page_size and explain_page is not None:
+                diagnostics.append({'requirement': spec['requirement'], 'run': rid,
+                                    'validation': 'rejected' if reason is not None else 'passed', 'reason': reason})
+            pair_count += 1
+    result = {'schema': 'pyramid-harness-v1', 'target': nid,
             'mode': 'candidate-bound' if plan.get('schema_version') == 2 else 'legacy-unbound',
             'contracts': specs, 'proof_templates': templates, 'reusable_proofs': reusable,
             'setup_blockers': sorted(set(blockers)),
             'instruction': 'Capture this template BEFORE the checks. Execute or inspect the stated procedure; never invent observations. Source inputs must remain unchanged through submission.'}
+    if explain:
+        pages = max(1, (pair_count + page_size - 1) // page_size)
+        if explain_page is not None and explain_page > pages:
+            raise VerificationError(f'explanation page exceeds current total_pages: {pages}')
+        def bounded(value):
+            return value if explain_full or not isinstance(value, str) or len(value) <= 160 else value[:159] + '…'
+        abbreviated = sum(isinstance(v, str) and bounded(v) != v for row in diagnostics for v in row.values())
+        diagnostics = [{k: bounded(v) for k, v in row.items()} for row in diagnostics]
+        groups = sorted(rejected.items(), key=lambda value: (-value[1], value[0]))
+        failure = _failure_context(state, nid)
+        assessment = {field: state['nodes'][nid].get(field) for field in ('last_result', 'last_audit')}
+        assessment_sha = digest(assessment)
+        for row in failure['signals']:
+            row['check'] = row['check'][:160]
+        # Opt-in summary deliberately omits unbounded contracts/templates/RUN pairs.
+        # The old/default harness response remains the complete capture interface.
+        result = {'schema': 'pyramid-harness-explanation-v1', 'target': nid, 'mode': result['mode'], 'explanation': {
+            'scope': 'current-state-last-result-and-audit',
+            'known_run_count': len(runs),
+            'contract_count': len(specs), 'pair_count': pair_count,
+            'passed_pair_count': len(reusable), 'rejected_pair_count': pair_count - len(reusable),
+            'setup_blocker_count': len(result['setup_blockers']),
+            'setup_blockers': [value[:160] for value in result['setup_blockers'][:4]],
+            'rejection_group_count': len(groups),
+            'rejection_groups': [{'reason': reason[:160], 'count': count, 'abbreviated': len(reason) > 160}
+                                 for reason, count in groups[:8]],
+            'omitted_rejection_groups': max(0, len(groups) - 8),
+            'failure_context': failure,
+            'scan_sha256': digest({'templates': templates, 'runs': runs, 'failure': failure,
+                                   'assessment_sha256': assessment_sha, 'groups': groups}),
+            'page': {'number': explain_page, 'size': page_size, 'total_pages': pages,
+                     'returned': len(diagnostics), 'omitted_pairs': pair_count - len(diagnostics),
+                     'abbreviated_values': abbreviated, 'full_text': explain_full},
+            'diagnostics': diagnostics,
+            'rejection_detail': 'first-validator-error-per-pair',
+            'detail_queries': {
+                'pairs': {'command': 'inspect', 'arguments': ['--project', str(root), '--harness', nid,
+                          '--explain', '--explain-page', str(explain_page or 1), '--full', '--json']},
+                'harness': {'command': 'inspect', 'arguments': ['--project', str(root), '--harness', nid, '--json']},
+            },
+            'detail_sources': {'assessment': {
+                'path': str(root / '.pyramid/state.json'),
+                'json_pointer': '/nodes/' + nid.replace('~', '~0').replace('/', '~1'),
+                'fields': ['last_result', 'last_audit'], 'assessment_sha256': assessment_sha,
+            }},
+            'limitations': [
+                'Only runs resolved by known_runs from current state were searched; historical payloads were not searched for additional runs.',
+                'Run validation is not audit readiness, acceptance, execution attestation or environment/reviewer authentication.',
+                'All pairs are validated; summary/page bounds limit presentation only. Full page text is row-bounded, not byte-bounded.',
+                'Detail queries recompute current source/state. Compare context and scan_sha256 before joining pages; neither pins a remote environment.',
+                'Read the assessment source at its JSON Pointer, select the named fields, and compare assessment_sha256 using SHA-256 of UTF-8 JSON with sorted keys, ensure_ascii=false and separators=(comma,colon). It is a current-state locator, not an immutable historical record.',
+            ],
+        }}
+    return result
 
 
 def _artifact(root: Path, artifact: dict) -> tuple[Path, bytes]:

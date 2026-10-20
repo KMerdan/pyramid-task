@@ -1426,6 +1426,11 @@ class PyramidRuntimeTests(unittest.TestCase):
         readiness = inspect_project(root, audit_readiness="RESEARCH-101")
         self.assertFalse(readiness["ready"])
         self.assertIn(blocker, readiness["blockers"])
+        from pyramid_queries import inspect_project as inspect_query
+        bounded = inspect_query(root, audit_readiness="RESEARCH-101", readiness_summary=True)
+        self.assertEqual(readiness["ready"], bounded["ready"])
+        self.assertEqual(len(readiness["blockers"]), bounded["counts"]["blockers"])
+        self.assertEqual(readiness["refresh_inspection_ids"], bounded["refresh_inspection_ids"])
         with self.assertRaisesRegex(PyramidError, "predates implementation"):
             audit_node(
                 root,

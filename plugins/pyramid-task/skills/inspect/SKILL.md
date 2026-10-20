@@ -9,6 +9,8 @@ Start with the smallest runtime query. Execute the bundled CLI without preloadin
 
 For proof collection or reuse, query `inspect --harness <node> --json`. It returns scoped contracts, pre-run candidate templates, setup blockers and reusable runs without executing tools or writing state. Consult `../../references/development-harness.md` when interpreting or changing proof. Recorded verification in the Observer is historical; audit readiness checks the current declared inputs.
 
+Add `--explain` to that harness query only when a run's validation needs explanation. It searches current-state results/audits, not all history, and aggregates validation counts/rejection reasons with bounded samples. Follow `--explain-page N` for 10 pair rows (`--full` for complete page text); compare `scan_sha256` and context across pages. A passing run check is not target acceptance. For a short readiness read use `--audit-readiness <node> --readiness-summary --json`. Check complete counts and omissions; follow `details_query` for the full current result and compare context. Source/environment can change without a context change. Do not repeat execution to recover omitted detail or interpret truncation as a readiness failure. These opt-in flags require a runtime that provides them; keep the normal queries for older installations.
+
 For repeated proof or broad-input cost, use `inspect --project <root> --proof-analysis <node> --json`. Add `--source-dependencies` only when source relationships inform scope review. Read `../../references/proof-analysis.md` for providers, bounds, fallback accuracy and limitations. Check uncertainty and current proof blockers; never use this projection to waive required inputs or inspections. Normal inspection does not launch the extractor.
 
 ## Inspect artifact footprint
@@ -71,7 +73,7 @@ Use `--assurance-detail` only for individual assurance records and `diff --detai
 
 Use `--parallel-ready` when the question is which ready tasks can safely run together. Its groups are derived from the current wave, dependency, write/generated scope, asset, inspection-policy, and drift state; they are not stored graph versions. Route actual multi-agent execution through `pyramid-task:orchestrate`.
 
-4. Explain derived facts with causes: unmet dependencies for `locked`, ownership for working tasks, handoff mode and deadline for paused tasks, failed checks, assurance blockers, stale evidence, open drift, and material findings.
+4. Treat `--harness <node> --explain` as a bounded current-state diagnostic, not failure clearance or acceptance. Follow its detail queries for grouped/omitted rows (`--explain-page N`, optionally `--full` for unabridged page text). A failed assessment may coexist with reusable RUNs; after a newer audit, historical failures require the original result/event. Explain derived facts with causes: unmet dependencies for `locked`, ownership for working tasks, handoff mode and deadline for paused tasks, failed checks, assurance blockers, stale evidence, open drift, and material findings.
 5. For delivery progress, read the selected increment-ladder decision and inspect only its outcome and gate nodes. Report the last verified increment, the next gate and exact blockers, ahead-of-gate work, stale inherited proof, and remaining rungs. Do not invent a runtime increment status.
 6. Distinguish `implemented` from `verified`, task readiness from assurance readiness, a wave from a demonstrable increment, and node completion from plan closure. Report labeled coverage counts, not an invented percentage.
 

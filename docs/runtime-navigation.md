@@ -17,6 +17,7 @@ Start with the row for the changed behavior. Read its implementation and matchin
 | Archive / reset / restore / clean / new intent | `pyramid_plan_lifecycle.py` | `test_plan_modularization.py`, lifecycle cases in `test_runtime.py` |
 | Assess / impact | `pyramid_assurance_commands.py` | `test_plan_modularization.py`, brownfield cases in `test_runtime.py` |
 | Project / history / diff / readiness queries | `pyramid_queries.py`, `pyramid_project_queries.py` | `test_query_modularization.py`, `query_modularization_support.py` |
+| Opt-in run explanation / readiness summary | `pyramid_verification.py:query_harness`, `pyramid_output.py:readiness_summary`, `pyramid_cli_queries.py`; response `schemas/proof-inspection.schema.json` | `test_proof_inspection.py`, real consumer-growth subprocess case in `test_verification.py`; unchanged acceptance validators |
 | CLI flags / dispatch / output | `pyramid_cli_options.py`, `pyramid_cli_plan.py`, `pyramid_cli_task.py`, `pyramid_cli_queries.py`; entry `pyramid.py` | Query/CLI independent oracle; CLI cases in `test_runtime.py` |
 | History contract / loaded read model / durable ledger | `pyramid_history_contracts.py`, `pyramid_history_model.py`, `pyramid_history.py` | `test_history_modularization.py`, history/recovery cases in `test_runtime.py` |
 | Freshness / blockers / explicit defaults | `pyramid_assurance_rules.py`, `pyramid_assurance_defaults.py`; clock compatibility in `pyramid_assurance.py` | `test_assurance_modularization.py` |

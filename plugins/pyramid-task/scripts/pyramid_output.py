@@ -6,7 +6,56 @@ import json
 from typing import Any
 
 
+def readiness_summary(data: dict[str, Any], project: str, *, stale_reason_count: int = 0) -> dict[str, Any]:
+    """Project a fully computed readiness result; never infer or change ready."""
+    result = {key: copy.deepcopy(data[key]) for key in (
+        'target', 'graph_version', 'context', 'audit_guard', 'ready', 'harness_query',
+    )}
+    result['schema'] = 'pyramid-audit-readiness-summary-v1'
+    counts, omitted = {'global_stale_reasons': stale_reason_count}, {}
+    for key, limit, width in (
+        ('blockers', 4, 240), ('covered_task_ids', 8, None),
+        ('refresh_inspection_ids', 8, None),
+    ):
+        values = data[key]
+        shown = [value if width is None or len(value) <= width else value[:width] + '…'
+                 for value in values[:limit]]
+        result[key] = shown
+        counts[key] = len(values)
+        # Count an omitted or abbreviated value once, not every lost character.
+        missing = len(values) - len(shown) + sum(a != b for a, b in zip(values, shown))
+        if missing:
+            omitted[key] = missing
+    assurance = data['assurance']
+    result['assurance'] = None
+    if assurance is not None:
+        fields = ('task_ids', 'impact_ids', 'asset_ids', 'inspection_ids',
+                  'finding_ids', 'scope_drift_ids', 'blockers')
+        result['assurance'] = {'status': assurance['status'],
+                               'counts': {key: len(assurance.get(key, [])) for key in fields}}
+        for key in fields:
+            if assurance.get(key):
+                omitted['assurance.' + key] = len(assurance[key])
+    result['counts'] = counts
+    result['omitted_fields'] = omitted
+    result['omitted_count'] = sum(omitted.values())
+    result['details_complete'] = not omitted
+    result['details_query'] = {
+        'command': 'inspect',
+        'arguments': ['--project', project, '--audit-readiness', data['target'], '--full', '--json'],
+        'observed_context': copy.deepcopy(data['context']),
+    }
+    result['limitations'] = [
+        'Summary presentation does not change readiness; omitted_count counts omitted or abbreviated list values.',
+        'Details recompute current readiness. Compare context; source or external state can also change without a context change.',
+    ]
+    return result
+
+
 def compact_response(data: dict[str, Any], command: str) -> dict[str, Any]:
+    if data.get('schema') == 'pyramid-audit-readiness-summary-v1':
+        # This explicit projection already owns its loss accounting.
+        return data
     result = copy.deepcopy(data)
     omitted: dict[str, list[str]] = {}
     event = result.get("event")

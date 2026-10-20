@@ -2,6 +2,16 @@
 
 All notable changes follow semantic versioning. Serialized task graph and state schemas keep their existing version where backward compatibility is preserved; the project manifest declares the V3 format.
 
+## 4.3.0 — 2026-10-20
+
+- Accept existing V3 health-result shapes in read-only failure diagnostics, expose unknowns and status conflicts, and locate complete original assessments with a field fingerprint. Keep V3 acceptance unchanged. Bound successful fixture exports while retaining failed checks; label S3 as controlled feasibility only.
+- Bound opt-in proof explanations with aggregate counts, rejection groups, paged details and explicit current failure context. Characterize the unchanged V3 fail/retake/old-RUN acceptance limit; require evidence-based failure disposition in Skill guidance. Add a controlled paired workflow experiment and pre-3.8 recovery defect replay.
+- Add opt-in `inspect --harness NODE --explain` diagnostics using existing run validation and `inspect --audit-readiness NODE --readiness-summary` with truthful readiness, complete counts and retrievable detail. Preserve default responses, V3 acceptance, canonical/history formats and event encoding.
+- Converge proof collection around existing valid runs, shared parameterized builders, concrete review triggers, bounded evidence and inspection refresh after relevant implementation/impact writes; preserve all V3 acceptance obligations and reported failures.
+- Require writing checks to run in a disposable checkout the agent owns (`git worktree add` plus a sparse checkout without evidence directories, never a repository copy) and require its removal at `update`, keeping at most one failed checkout per task. Motivated by 10 GB repository copies accumulating under `/private/tmp` on the operator Mac (`take` step 8, development harness Collect and submit step 2).
+
+- Publish matching Codex/Claude Code 4.3.0 manifests and runtime. See [release scope, compatibility and qualification](docs/releases/4.3.0.md).
+
 ## 4.2.2 — 2026-10-15
 
 - Honor explicit `new-intent --mode brownfield` when the current V3 manifest is greenfield. Bind the from/to mode transition into the approved preview hash, carry the selected mode into reset, and report the applied mode. Keep `auto` mode inheritance unchanged.

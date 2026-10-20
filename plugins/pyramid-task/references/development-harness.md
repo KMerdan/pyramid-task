@@ -55,14 +55,61 @@ A gate or parent that needs the **same proof**, not another test execution, decl
 
 Reuse must establish the consumer's actual criterion. New composition, safety or release claims still need their own observation. Reuse references must resolve to a primary requirement and cannot cycle. Separate unrelated proof families to avoid unnecessarily broad invalidation.
 
+## Reuse, review and stop
+
+Keep one parameterized project runner/result builder per proof family. Use the
+existing `agent-result-v1`, `audit-result-v1`, `proofs` and `reuse_run` contracts;
+do not copy a script for each round or add a parallel acceptance ledger. Repair
+a shared builder defect at its source. A rehearsal can supply acceptance proof
+when its procedure, declared inputs, observations and actual environment qualify;
+another consumer or a "formal" batch label alone does not require another run.
+
+Retain real failures, incomplete attempts and uncertain environment identity.
+Before reusing a RUN after a relevant failure, identify the failed attempt/check,
+its candidate and environment, affected claims, and the reason it is now resolved
+or inapplicable. Put that disposition and its evidence references in the existing
+result checks/risks, audit checks, finding or handoff; do not create another ledger.
+A same-payload failed check is rejected, but V3 does not veto an old RUN merely
+because an earlier audit failed: retake + implemented can restore readiness, and
+a later passing audit replaces the current failed assessment. A valid RUN or a
+ready query therefore cannot establish failure resolution. Do not approve reuse
+with an unexplained relevant failure; keep it blocked or at risk through existing
+health/finding controls. Re-observe the affected check after a relevant repair,
+input/environment change, flaky investigation or required repeat sampling. Reuse
+unaffected observations when their existing contracts still qualify. Preserve the
+original failure and bounded resolution evidence rather than copying all logs.
+The CLI cannot discover an unsubmitted external failure. Explanation diagnostics
+inspect current state only; after a later audit, consult the referenced prior
+result/event when the failure history matters.
+
+Give another review a concrete trigger: a new finding, related edit, changed
+environment, unresolved coverage, applicable risk requirement or human gate.
+Stop when the current contract is sufficiently covered and blockers are resolved.
+Keep required independent, semantic and visual review; a run ID is not reviewer
+authentication. Do not add a fixed number of review rounds.
+
+Keep bounded acceptance results and necessary failure/capture evidence. Reference
+the original material instead of copying it into README, claims replay,
+carried-review or hash-list chains. Generate those only for an actual contract or
+new judgment; formally revise an existing material requirement before dropping it.
+Check newly added content and the final new evidence set for secrets using the
+project's effective controls. Do not repeatedly rescan unchanged material or
+delete required artifacts to meet a size target.
+
+Determine the minimal inspection refresh set from current readiness **after**
+relevant implemented updates and impact reconciliation. Refresh labels schedule
+work; they never waive asset/frontier staleness. Reuse still-current packets and
+validation rather than loading full graphs/history at every step. Measure actual
+runs, environment starts, review triggers and all new material, not JSON lines.
+
 ## Collect and submit
 
 1. Read the task packet and use `inspect --harness <node> --json` (with the normal `--project` argument). It returns only that node's contracts, pre-run candidate templates, setup blockers and reusable run references. Prefer a currently valid reusable run when it proves the claim; do not rerun a test solely because another node owns acceptance.
-2. Capture the template **before** running checks. Resolve any setup blocker, launch/rebuild the actual candidate, perform the procedure, and observe all required channels. For browser or external state, verify the server/build and fixture identity; a repository hash alone does not identify a remote process or database. Record relevant identity in artifacts and observations. A read-only helper can execute or review against an isolated immutable candidate, subject to `intra-task-helpers.md`; revalidate the candidate on join before promoting its result.
+2. Capture the template **before** running checks. Resolve any setup blocker, launch/rebuild the actual candidate, perform the procedure, and observe all required channels. For browser or external state, verify the server/build and fixture identity; a repository hash alone does not identify a remote process or database. Record relevant identity in artifacts and observations. A read-only helper can execute or review against an isolated immutable candidate, subject to `intra-task-helpers.md`; revalidate the candidate on join before promoting its result. Run checks that may write in a disposable checkout you own: `git worktree add` at the candidate commit with a sparse checkout that leaves out evidence directories, never a copy of the repository. Remove it with `git worktree remove` when you submit the update; keep at most one failed checkout per task for diagnosis.
 3. Fill each observation with `result: "passed"`, a concrete `summary`, the actual `reviewer` (agent/tool identity), and artifact objects containing a project-relative `path` and the file's `sha256`. The template's `not-run` observations cannot pass. Visual observations require a PNG, JPEG or WebP capture **and actual model review**. Use bounded reports, never raw secrets or unbounded logs. Limits are 16 MiB per artifact, 16 artifacts per observation, 32 MiB per run.
 4. Add the resulting template under `proofs` in the normal `agent-result-v1` or `audit-result-v1`. Or use a returned `{"requirement":"EV-ID","reuse_run":"RUN-..."}` reference. The runtime generates check/criterion summaries when omitted or empty; supplied failed checks are never replaced by passing ones. The remaining result fields and brownfield assurance assertion are unchanged. An executable task's passing audit may omit `proofs` to revalidate its last implementation proof; a parent with no implementation submits explicit proof/reuse references.
 5. Stage artifacts outside canonical storage. The normal guarded update/audit ingests them into content-addressed `.pyramid/reports/proof-artifacts/`, deduplicates bytes, and publishes paths with the existing event/head boundary. Do not copy evidence into that directory yourself. Normal task packets carry contracts, not logs, images, historical runs or the full guide.
-6. Before audit, use `inspect --audit-readiness <node>`. Missing submitted proof is a blocker, not a demand to repeat a run: query `--harness` for reusable proof. Audit rechecks candidate fingerprints and related prerequisite evidence; closure does the same for all primary claims. Graph mutation guards and source fingerprints have different jobs; retain both.
+6. Before audit, use `inspect --audit-readiness <node>`. Missing submitted proof is a blocker, not a demand to repeat a run: query `--harness` for reusable proof. On runtimes providing `--harness <node> --explain`, inspect aggregate current-state validation counts and failure context; use `--explain-page N` for 10 pairs and `--full` for complete page text. Follow returned detail queries for templates and assessments, and compare context plus scan identity across pages. This is not target acceptance or a full history search. `--audit-readiness <node> --readiness-summary` preserves the full computed ready value and reports omissions; follow `details_query` for full detail. Context changes require a fresh read, and source/environment may change without a context change. Audit rechecks candidate fingerprints and related prerequisite evidence; closure does the same for all primary claims. Graph mutation guards and source fingerprints have different jobs; retain both.
 
 `RUN-...` identifies observation content, not a process-execution attestation. Hashes establish declared input/artifact identity, not test quality, honest tool execution or unchanged external state. The agent must substantiate those claims. Never claim that the runtime independently judged an image. If environmental state can change independently, capture it through a reproducible local fixture/manifest, refresh that manifest before reuse, and re-observe when identity is uncertain.
 

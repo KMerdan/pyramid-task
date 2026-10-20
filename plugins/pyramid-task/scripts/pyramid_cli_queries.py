@@ -47,6 +47,9 @@ def add_initial_commands(sub):
         )
     group.add_argument("--audit-readiness")
     group.add_argument("--harness", help="Show scoped proof contracts, pre-run candidate templates, and reusable runs")
+    inspect.add_argument("--explain", action="store_true", help="With --harness, explain current-state run validation without changing acceptance")
+    inspect.add_argument("--explain-page", type=int, help="With --harness --explain, show one page of 10 validated pairs; --full preserves complete page text")
+    inspect.add_argument("--readiness-summary", action="store_true", help="With --audit-readiness, summarize complete readiness; use --full without this flag for all details")
     group.add_argument("--proof-analysis", metavar="NODE", help="Explain proof input overlap and reuse without changing authority")
     group.add_argument("--node")
     group.add_argument("--footprint", action="store_true", help="Bounded read-only artifact counts, bytes and current references; never deletes")
@@ -132,6 +135,14 @@ def run_queries(args):
                 "compiled": compile_project(args.project),
             }, 0
     if args.command == "inspect":
+            if args.explain and not args.harness:
+                raise PyramidError("--explain requires --harness")
+            if args.explain_page is not None and (not args.explain or args.explain_page < 1):
+                raise PyramidError("--explain-page requires --explain and a positive page number")
+            if args.readiness_summary and not args.audit_readiness:
+                raise PyramidError("--readiness-summary requires --audit-readiness")
+            if args.readiness_summary and not args.compact:
+                raise PyramidError("--readiness-summary cannot be combined with --full")
             if args.source_dependencies and not args.proof_analysis:
                 raise PyramidError("--source-dependencies requires --proof-analysis")
             if args.analysis_provider != "python" and not args.source_dependencies:
@@ -165,6 +176,10 @@ def run_queries(args):
                 max_agents=args.max_agents,
                 audit_readiness=args.audit_readiness,
                 harness=args.harness,
+                harness_explain=args.explain,
+                harness_explain_page=args.explain_page,
+                harness_explain_full=args.explain_page is not None and not args.compact,
+                readiness_summary=args.readiness_summary,
                 footprint=args.footprint,
                 footprint_detail=args.footprint_detail,
                 footprint_limit=args.footprint_limit,

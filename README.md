@@ -7,6 +7,8 @@
 
 Pyramid Task turns a software intent into an evidence-backed ladder of demonstrable increments and an execution graph for reaching them. In an existing repository, it also maintains a change-assurance case: what exists, what a task may affect, which evidence remains fresh, and whether the completed branches actually establish a runnable or otherwise usable outcome.
 
+Version 4.3.0 adds opt-in bounded proof-reuse explanations and readiness summaries, plus guidance for failure disposition and smaller evidence sets. V3 acceptance remains unchanged. See the [release scope and qualification](docs/releases/4.3.0.md).
+
 Version 4.2.2 supports a hash-bound greenfield-to-brownfield successor through `new-intent --mode brownfield`. Preview and apply honor the explicit mode, preserve the old archive/history, and initialize incomplete assurance for normal assess/impact. `auto` still inherits an existing project's mode; brownfield-to-greenfield requests are refused. See the [transition contract](plugins/pyramid-task/references/new-intent-contract.md#project-mode) and [release qualification](docs/releases/4.2.2.md).
 
 The inherited 4.2.1 runtime separates rules, storage, publication, commands, queries and viewer resources into explicit modules while preserving public CLI/API and canonical contracts. Skill entry guidance keeps helper selection criteria visible and routes detailed reading by need. See its [qualification](docs/releases/4.2.1.md) and [runtime navigation](docs/runtime-navigation.md). Static source measurements do not establish agent token or speed savings.
@@ -566,6 +568,43 @@ tools/validate_repository.py           Repository-level contract validation
 ```
 
 ## Development
+
+Version 4.3.0 provides two read-only inspection options:
+
+```bash
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --harness TASK-201 --explain --json
+python3 plugins/pyramid-task/scripts/pyramid.py inspect --project /path/to/project --audit-readiness TASK-201 --readiness-summary --json
+```
+
+The explanation validates every current-state RUN/requirement pair, but returns
+aggregate counts and at most eight rejection groups. It omits capture templates
+and the full reusable list; follow `detail_queries.harness` for those. Pair details
+use `--explain-page N` (10 rows); `--full` preserves unabridged page text, which is
+row-bounded rather than byte-bounded. Compare context and `scan_sha256` across
+pages because details recompute the candidate. Current failed assessments remain
+an explicit advisory even if an old RUN qualifies. Unknown result shapes are
+reported explicitly and require disposition review; the original V3 write and
+acceptance rules stay unchanged. `detail_sources.assessment` locates the original
+`last_result` and `last_audit` in canonical state at the returned JSON Pointer.
+Select its named fields and compare `assessment_sha256` (SHA-256 of UTF-8 JSON,
+sorted keys, `ensure_ascii=false`, separators `,` and `:`) before using them.
+Updates/audits can replace those fields; consult the original failed result/event
+when history matters. The locator reads current state, and this is not a history
+scan or a new failure veto. Follow the Skill's existing-record disposition and
+re-observation requirements before accepting relevant rework. Readiness summaries retain the complete
+computed `ready`, counts and loss metadata; use their `details_query` for full
+current details. A changed context requires a fresh read; source or external
+state may also change without a context change. Normal responses and all V3
+proof, dependency, assurance and history rules remain unchanged. These options
+require runtime 4.3.0 or newer; 4.2.2 does not provide them.
+
+`tools/qualify_lean_workflow.py` is a **controlled feasibility** experiment. Its
+old/new policies deliberately model repeated checks and auxiliary copies; it
+does not measure real agent convergence, global productivity or net storage
+savings. Qualification exports retain actual errors and failed checks with
+bounded success summaries; fixture event IDs refer to disposable test projects.
+Keep one necessary successful result and use existing canonical references;
+preserve original failures and any evidence still referenced by accepted records.
 
 ```bash
 python3 -m venv .venv
